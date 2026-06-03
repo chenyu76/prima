@@ -365,20 +365,29 @@ else % The problem turns out 'normal' during preprima
         error(sprintf('%s:ProblemTooLarge', funname), '%s: The problem is too large; at most %d constraints are allowed.', funname, maxint());
     end
 
-    % Call the Fortran code
-    mfiledir = fileparts(mfilename('fullpath'));  % The directory where this .m file resides.
-    mexdir = fullfile(mfiledir, 'private');
-    fsolver = str2func(get_mexname(solver, precision, debug_flag, variant, mexdir));
-    % The mexified Fortran function is a private function generating only private errors;
-    % however, public errors can occur due to, e.g., evalobj; error handling needed
     try
-        setenv('GFORTRAN_ERROR_BACKTRACE', '1');  % Enable Fortran backtrace if the compiler is gfortran
-        [x, fx, constrviolation, exitflag, nf, xhist, fhist, chist] = ...
-            fsolver(fun, x0, Aineq, bineq, Aeq, beq, lb, ub, rhobeg, rhoend, eta1, eta2, gamma1, ...
-            gamma2, ftarget, ctol, cweight, maxfun, npt, iprint, maxhist, double(output_xhist), maxfilt);
-        % Fortran MEX does not provide an API for reading Boolean variables. So we convert
-        % output_xhist to a double (0 or 1) before passing it to the MEX gateway.
-        % In C MEX, however, we have mxGetLogicals.
+        if options.fortran
+            % Call the Fortran code
+            mfiledir = fileparts(mfilename('fullpath'));  % The directory where this .m file resides.
+            mexdir = fullfile(mfiledir, 'private');
+            fsolver = str2func(get_mexname(solver, precision, debug_flag, variant, mexdir));
+            setenv('GFORTRAN_ERROR_BACKTRACE', '1');  % Enable Fortran backtrace if the compiler is gfortran
+            [x, fx, constrviolation, exitflag, nf, xhist, fhist, chist] = ...
+                fsolver(fun, x0, Aineq, bineq, Aeq, beq, lb, ub, rhobeg, rhoend, eta1, eta2, gamma1, ...
+                gamma2, ftarget, ctol, cweight, maxfun, npt, iprint, maxhist, double(output_xhist), maxfilt);
+            % Fortran MEX does not provide an API for reading Boolean variables. So we convert
+            % output_xhist to a double (0 or 1) before passing it to the MEX gateway.
+            % In C MEX, however, we have mxGetLogicals.
+        else
+            % Call the pure MATLAB code
+            [x, fx, constrviolation, nf, xhist, fhist, chist, exitflag] = prima_matlab_call(solver, ...
+                fun, x0, 'Aineq', Aineq, 'bineq', bineq, 'Aeq', Aeq, 'beq', beq, ...
+                'xl', lb, 'xu', ub, 'rhobeg', rhobeg, 'rhoend', rhoend, ...
+                'ftarget', ftarget, 'ctol', ctol, 'cweight', cweight, ...
+                'maxfun', maxfun, 'npt', npt, 'iprint', iprint, ...
+                'eta1', eta1, 'eta2', eta2, 'gamma1', gamma1, 'gamma2', gamma2, ...
+                'maxhist', maxhist, 'maxfilt', maxfilt);
+        end
     catch exception
         if ~isempty(regexp(exception.identifier, sprintf('^%s:', funname), 'once')) % Public error; displayed friendly
             error(exception.identifier, '%s\n(error generated in %s, line %d)', exception.message, exception.stack(1).file, exception.stack(1).line);

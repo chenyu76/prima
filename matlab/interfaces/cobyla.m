@@ -438,21 +438,35 @@ else % The problem turns out 'normal' during preprima
         error(sprintf('%s:ProblemTooLarge', funname), '%s: The problem is too large; at most %d constraints are allowed.', funname, maxint());
     end
 
-    % Call the Fortran code
-    mfiledir = fileparts(mfilename('fullpath'));  % The directory where this .m file resides.
-    mexdir = fullfile(mfiledir, 'private');
-    fsolver = str2func(get_mexname(solver, precision, debug_flag, variant, mexdir));
-    % The mexified Fortran Function is a private function generating only private errors;
-    % however, public errors can occur due to, e.g., evalobj; error handling needed.
+    % Call the solver; branching on the use of Fortran or pure MATLAB
     try
-        setenv('GFORTRAN_ERROR_BACKTRACE', '1');  % Enable Fortran backtrace if the compiler is gfortran
-        [x, fx, constrviolation, nlconstr, exitflag, nf, xhist, fhist, chist, nlchist] = ...
-            fsolver(funcon, x0, f_x0, nlconstr_x0, Aineq, bineq, Aeq, beq, lb, ub, rhobeg, rhoend, ...
-            eta1, eta2, gamma1, gamma2, ftarget, ctol, cweight, maxfun, iprint, maxhist, ...
-            double(output_xhist), double(output_nlchist), maxfilt);
-        % Fortran MEX does not provide an API for reading Boolean variables. So we convert
-        % output_xhist and output_nlchist to doubles (0 or 1) before passing them to the MEX gateway.
-        % In C MEX, however, we have mxGetLogicals.
+        if options.fortran
+            % Call the Fortran code
+            mfiledir = fileparts(mfilename('fullpath'));  % The directory where this .m file resides.
+            mexdir = fullfile(mfiledir, 'private');
+            fsolver = str2func(get_mexname(solver, precision, debug_flag, variant, mexdir));
+            setenv('GFORTRAN_ERROR_BACKTRACE', '1');  % Enable Fortran backtrace if the compiler is gfortran
+            [x, fx, constrviolation, nlconstr, exitflag, nf, xhist, fhist, chist, nlchist] = ...
+                fsolver(funcon, x0, f_x0, nlconstr_x0, Aineq, bineq, Aeq, beq, lb, ub, rhobeg, rhoend, ...
+                eta1, eta2, gamma1, gamma2, ftarget, ctol, cweight, maxfun, iprint, maxhist, ...
+                double(output_xhist), double(output_nlchist), maxfilt);
+            % Fortran MEX does not provide an API for reading Boolean variables. So we convert
+            % output_xhist and output_nlchist to doubles (0 or 1) before passing them to the MEX gateway.
+            % In C MEX, however, we have mxGetLogicals.
+        else
+            % Call the pure MATLAB code
+            calcfc_matlab = @(x, constr_in) cobyla_calfc_matlab(x, constr_in, fun, nonlcon);
+            m_nlcon = m_nlcineq + 2*m_nlceq;
+            [x, fx, constrviolation, nlconstr, nf, xhist, fhist, chist, nlchist, exitflag] = ...
+                prima_matlab_call(solver, calcfc_matlab, m_nlcon, x0, ...
+                'Aineq', Aineq, 'bineq', bineq, 'Aeq', Aeq, 'beq', beq, ...
+                'xl', lb, 'xu', ub, 'rhobeg', rhobeg, 'rhoend', rhoend, ...
+                'ftarget', ftarget, 'ctol', ctol, 'cweight', cweight, ...
+                'maxfun', maxfun, 'iprint', iprint, ...
+                'eta1', eta1, 'eta2', eta2, 'gamma1', gamma1, 'gamma2', gamma2, ...
+                'maxhist', maxhist, 'maxfilt', maxfilt, ...
+                'f0', f_x0, 'nlconstr0', nlconstr_x0);
+        end
     catch exception
         if ~isempty(regexp(exception.identifier, sprintf('^%s:', funname), 'once')) % Public error; displayed friendly
             error(exception.identifier, '%s\n(error generated in %s, line %d)', exception.message, exception.stack(1).file, exception.stack(1).line);
@@ -541,5 +555,19 @@ else
     m_nlcineq = 0;
     m_nlceq = 0;
     nlconstr = [];
+end
+return
+
+function [f, nlconstr] = cobyla_calfc_matlab(x, constr_in, fun, nonlcon)
+% This function wraps fun and nonlcon into a single function handle for the pure MATLAB
+% COBYLA backend. The nonlinear constraint expected: nlconstr(x) <= 0.
+% CONSTR_IN is a preallocated array passed by the solver (used for shape determination),
+% but we compute the constraint values directly from fun/nonlcon.
+f = fun(x);
+if isempty(nonlcon)
+    nlconstr = [];
+else
+    [nlcineq, nlceq] = nonlcon(x);
+    nlconstr = [-nlceq(:); nlceq(:); nlcineq(:)];
 end
 return

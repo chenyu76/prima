@@ -336,18 +336,29 @@ elseif ~strcmp(invoker, 'prima') && probinfo.feasibility_problem
     output.chist = output.constrviolation;
 else % The problem turns out 'normal' during preprima
 
-    % Call the Fortran code
-    mfiledir = fileparts(mfilename('fullpath'));  % The directory where this .m file resides.
-    mexdir = fullfile(mfiledir, 'private');
-    fsolver = str2func(get_mexname(solver, precision, debug_flag, variant, mexdir));
     try
-        setenv('GFORTRAN_ERROR_BACKTRACE', '1');  % Enable Fortran backtrace if the compiler is gfortran
-        [x, fx, exitflag, nf, xhist, fhist] = ...
-            fsolver(fun, x0, lb, ub, rhobeg, rhoend, eta1, eta2, gamma1, gamma2, ftarget, ...
-            maxfun, npt, iprint, maxhist, double(output_xhist));
-        % Fortran MEX does not provide an API for reading Boolean variables. So we convert
-        % output_xhist to a double (0 or 1) before passing it to the MEX gateway.
-        % In C MEX, however, we have mxGetLogicals.
+        if options.fortran
+            % Call the Fortran code
+            mfiledir = fileparts(mfilename('fullpath'));  % The directory where this .m file resides.
+            mexdir = fullfile(mfiledir, 'private');
+            fsolver = str2func(get_mexname(solver, precision, debug_flag, variant, mexdir));
+            setenv('GFORTRAN_ERROR_BACKTRACE', '1');  % Enable Fortran backtrace if the compiler is gfortran
+            [x, fx, exitflag, nf, xhist, fhist] = ...
+                fsolver(fun, x0, lb, ub, rhobeg, rhoend, eta1, eta2, gamma1, gamma2, ftarget, ...
+                maxfun, npt, iprint, maxhist, double(output_xhist));
+            % Fortran MEX does not provide an API for reading Boolean variables. So we convert
+            % output_xhist to a double (0 or 1) before passing it to the MEX gateway.
+            % In C MEX, however, we have mxGetLogicals.
+        else
+            % Call the pure MATLAB code
+            [x, fx, nf, xhist, fhist, exitflag] = prima_matlab_call(solver, ...
+                fun, x0, 'xl', lb, 'xu', ub, ...
+                'rhobeg', rhobeg, 'rhoend', rhoend, ...
+                'ftarget', ftarget, 'maxfun', maxfun, 'npt', npt, ...
+                'iprint', iprint, 'eta1', eta1, 'eta2', eta2, ...
+                'gamma1', gamma1, 'gamma2', gamma2, 'maxhist', maxhist, ...
+                'honour_x0', options.honour_x0);
+        end
     catch exception
         if ~isempty(regexp(exception.identifier, sprintf('^%s:', funname), 'once')) % Public error; displayed friendly
             error(exception.identifier, '%s\n(error generated in %s, line %d)', exception.message, exception.stack(1).file, exception.stack(1).line);
