@@ -20,7 +20,7 @@ classdef memory_mod
                 [varargout{1:nargout}] = obj.size_of_sp(varargin{:});
             elseif numel(varargin) == 1
                 [varargout{1:nargout}] = obj.size_of_dp(varargin{:});
-            elseif numel(varargin) == 1
+            else
                 [varargout{1:nargout}] = obj.size_of_qp(varargin{:});
             end
         end
@@ -37,13 +37,13 @@ classdef memory_mod
                 [varargout{1:nargout}] = obj.alloc_rvector_dp(varargin{:});
             elseif numel(varargin) == 2 && isfloat(varargin{1}) && isvector(varargin{1})
                 [varargout{1:nargout}] = obj.alloc_rvector_qp(varargin{:});
-            elseif numel(varargin) == 3 && isnumeric(varargin{1}) && ndims(varargin{1}) >= 2
+            elseif numel(varargin) == 3 && isnumeric(varargin{1}) && (~isvector(varargin{1}) && ~isscalar(varargin{1}))
                 [varargout{1:nargout}] = obj.alloc_imatrix(varargin{:});
-            elseif numel(varargin) == 3 && isfloat(varargin{1}) && ndims(varargin{1}) >= 2
+            elseif numel(varargin) == 3 && isfloat(varargin{1}) && (~isvector(varargin{1}) && ~isscalar(varargin{1}))
                 [varargout{1:nargout}] = obj.alloc_rmatrix_sp(varargin{:});
-            elseif numel(varargin) == 3 && isfloat(varargin{1}) && ndims(varargin{1}) >= 2
+            elseif numel(varargin) == 3 && isfloat(varargin{1}) && (~isvector(varargin{1}) && ~isscalar(varargin{1}))
                 [varargout{1:nargout}] = obj.alloc_rmatrix_dp(varargin{:});
-            elseif numel(varargin) == 3 && isfloat(varargin{1}) && ndims(varargin{1}) >= 2
+            else
                 [varargout{1:nargout}] = obj.alloc_rmatrix_qp(varargin{:});
             end
         end

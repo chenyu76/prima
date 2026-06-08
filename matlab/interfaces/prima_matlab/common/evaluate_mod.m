@@ -13,7 +13,7 @@ classdef evaluate_mod
         function varargout = evaluate(obj, varargin)
             if numel(varargin) == 3
                 [varargout{1:nargout}] = obj.evaluatef(varargin{:});
-            elseif numel(varargin) == 4
+            else
                 [varargout{1:nargout}] = obj.evaluatefc(varargin{:});
             end
         end

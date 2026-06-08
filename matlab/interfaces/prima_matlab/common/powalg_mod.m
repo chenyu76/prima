@@ -40,28 +40,28 @@ classdef powalg_mod
         function varargout = qradd(obj, varargin)
             if numel(varargin) == 4 && isvector(varargin{3})
                 [varargout{1:nargout}] = obj.qradd_Rdiag(varargin{:});
-            elseif numel(varargin) == 4 && ndims(varargin{3}) >= 2
+            else
                 [varargout{1:nargout}] = obj.qradd_Rfull(varargin{:});
             end
         end
         function varargout = qrexc(obj, varargin)
             if numel(varargin) == 3 && isnumeric(varargin{3}) && isscalar(varargin{3})
                 [varargout{1:nargout}] = obj.qrexc_Rfull(varargin{:});
-            elseif numel(varargin) == 4 && isfloat(varargin{3}) && isvector(varargin{3})
+            else
                 [varargout{1:nargout}] = obj.qrexc_Rdiag(varargin{:});
             end
         end
         function varargout = quadinc(obj, varargin)
             if numel(varargin) == 3 && isvector(varargin{2})
                 [varargout{1:nargout}] = obj.quadinc_ghv(varargin{:});
-            elseif numel(varargin) >= 4 && numel(varargin) <= 5 && ndims(varargin{2}) >= 2
+            else
                 [varargout{1:nargout}] = obj.quadinc_d0(varargin{:});
             end
         end
         function varargout = calvlag(obj, varargin)
-            if numel(varargin) >= 5 && numel(varargin) <= 6 && isnumeric(varargin{1}) && isscalar(varargin{1}) && ndims(varargin{2}) >= 2 && isfloat(varargin{4}) && ndims(varargin{4}) >= 2
+            if numel(varargin) >= 5 && numel(varargin) <= 6 && isnumeric(varargin{1}) && isscalar(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2})) && isfloat(varargin{4}) && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
                 [varargout{1:nargout}] = obj.calvlag_lfqint(varargin{:});
-            elseif numel(varargin) == 4 && isfloat(varargin{1}) && ndims(varargin{1}) >= 2 && isvector(varargin{2}) && isnumeric(varargin{4}) && isscalar(varargin{4})
+            else
                 [varargout{1:nargout}] = obj.calvlag_qint(varargin{:});
             end
         end

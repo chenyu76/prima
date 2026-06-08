@@ -78,7 +78,7 @@ classdef infnan_mod
                 [varargout{1:nargout}] = obj.is_nan_sp(varargin{:});
             elseif numel(varargin) == 1
                 [varargout{1:nargout}] = obj.is_nan_dp(varargin{:});
-            elseif numel(varargin) == 1
+            else
                 [varargout{1:nargout}] = obj.is_nan_qp(varargin{:});
             end
         end

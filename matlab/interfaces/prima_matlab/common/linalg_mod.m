@@ -48,74 +48,74 @@ classdef linalg_mod
 
         end
         function varargout = matprod(obj, varargin)
-            if numel(varargin) == 2 && isvector(varargin{1}) && ndims(varargin{2}) >= 2
+            if numel(varargin) == 2 && isvector(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2}))
                 [varargout{1:nargout}] = obj.matprod12(varargin{:});
-            elseif numel(varargin) == 2 && ndims(varargin{1}) >= 2 && isvector(varargin{2})
+            elseif numel(varargin) == 2 && (~isvector(varargin{1}) && ~isscalar(varargin{1})) && isvector(varargin{2})
                 [varargout{1:nargout}] = obj.matprod21(varargin{:});
-            elseif numel(varargin) == 2 && ndims(varargin{1}) >= 2 && ndims(varargin{2}) >= 2
+            else
                 [varargout{1:nargout}] = obj.matprod22(varargin{:});
             end
         end
         function varargout = r1update(obj, varargin)
             if numel(varargin) == 3
                 [varargout{1:nargout}] = obj.r1_sym(varargin{:});
-            elseif numel(varargin) == 4
+            else
                 [varargout{1:nargout}] = obj.r1(varargin{:});
             end
         end
         function varargout = r2update(obj, varargin)
             if numel(varargin) == 4
                 [varargout{1:nargout}] = obj.r2_sym(varargin{:});
-            elseif numel(varargin) == 7
+            else
                 [varargout{1:nargout}] = obj.r2(varargin{:});
             end
         end
         function varargout = eye(obj, varargin)
             if numel(varargin) == 1
                 [varargout{1:nargout}] = obj.eye1(varargin{:});
-            elseif numel(varargin) == 2
+            else
                 [varargout{1:nargout}] = obj.eye2(varargin{:});
             end
         end
         function varargout = project(obj, varargin)
             if numel(varargin) == 2 && isvector(varargin{2})
                 [varargout{1:nargout}] = obj.project1(varargin{:});
-            elseif numel(varargin) == 2 && ndims(varargin{2}) >= 2
+            else
                 [varargout{1:nargout}] = obj.project2(varargin{:});
             end
         end
         function varargout = lsqr(obj, varargin)
-            if numel(varargin) == 3 && isvector(varargin{1}) && ndims(varargin{2}) >= 2
+            if numel(varargin) == 3 && isvector(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2}))
                 [varargout{1:nargout}] = obj.lsqr_Rfull(varargin{:});
-            elseif numel(varargin) >= 2 && numel(varargin) <= 4 && ndims(varargin{1}) >= 2 && isvector(varargin{2})
+            else
                 [varargout{1:nargout}] = obj.lsqr_Rdiag(varargin{:});
             end
         end
         function varargout = isminor(obj, varargin)
             if numel(varargin) == 2 && isscalar(varargin{1}) && isscalar(varargin{2})
                 [varargout{1:nargout}] = obj.isminor0(varargin{:});
-            elseif numel(varargin) == 2 && isvector(varargin{1}) && isvector(varargin{2})
+            else
                 [varargout{1:nargout}] = obj.isminor1(varargin{:});
             end
         end
         function varargout = sort(obj, varargin)
             if numel(varargin) >= 1 && numel(varargin) <= 2 && isvector(varargin{1}) && (numel(varargin) < 2 || (ischar(varargin{2})))
                 [varargout{1:nargout}] = obj.sort_i1(varargin{:});
-            elseif numel(varargin) >= 1 && numel(varargin) <= 3 && ndims(varargin{1}) >= 2 && (numel(varargin) < 2 || (isnumeric(varargin{2})))
+            else
                 [varargout{1:nargout}] = obj.sort_i2(varargin{:});
             end
         end
         function varargout = minimum(obj, varargin)
             if numel(varargin) == 1 && isvector(varargin{1})
                 [varargout{1:nargout}] = obj.minimum1(varargin{:});
-            elseif numel(varargin) == 1 && ndims(varargin{1}) >= 2
+            else
                 [varargout{1:nargout}] = obj.minimum2(varargin{:});
             end
         end
         function varargout = maximum(obj, varargin)
             if numel(varargin) == 1 && isvector(varargin{1})
                 [varargout{1:nargout}] = obj.maximum1(varargin{:});
-            elseif numel(varargin) == 1 && ndims(varargin{1}) >= 2
+            else
                 [varargout{1:nargout}] = obj.maximum2(varargin{:});
             end
         end
@@ -124,21 +124,21 @@ classdef linalg_mod
                 [varargout{1:nargout}] = obj.p_norm(varargin{:});
             elseif numel(varargin) == 2 && isvector(varargin{1}) && ischar(varargin{2})
                 [varargout{1:nargout}] = obj.named_norm_vec(varargin{:});
-            elseif numel(varargin) == 2 && ndims(varargin{1}) >= 2 && ischar(varargin{2})
+            else
                 [varargout{1:nargout}] = obj.named_norm_mat(varargin{:});
             end
         end
         function varargout = linspace(obj, varargin)
             if numel(varargin) == 3 && isfloat(varargin{1}) && isfloat(varargin{2})
                 [varargout{1:nargout}] = obj.linspace_r(varargin{:});
-            elseif numel(varargin) == 3 && isnumeric(varargin{1}) && isnumeric(varargin{2})
+            else
                 [varargout{1:nargout}] = obj.linspace_i(varargin{:});
             end
         end
         function varargout = hessenberg(obj, varargin)
             if numel(varargin) == 3 && isvector(varargin{2}) && isvector(varargin{3})
                 [varargout{1:nargout}] = obj.hessenberg_hhd_trid(varargin{:});
-            elseif numel(varargin) >= 2 && numel(varargin) <= 3 && ndims(varargin{2}) >= 2 && (numel(varargin) < 3 || (ndims(varargin{3}) >= 2))
+            else
                 [varargout{1:nargout}] = obj.hessenberg_full(varargin{:});
             end
         end

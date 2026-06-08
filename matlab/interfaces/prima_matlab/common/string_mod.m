@@ -27,7 +27,7 @@ classdef string_mod
                 [varargout{1:nargout}] = obj.int2str(varargin{:});
             elseif numel(varargin) >= 1 && numel(varargin) <= 3 && isfloat(varargin{1}) && isscalar(varargin{1})
                 [varargout{1:nargout}] = obj.real2str_scalar(varargin{:});
-            elseif numel(varargin) >= 1 && numel(varargin) <= 4 && isfloat(varargin{1}) && isvector(varargin{1})
+            else
                 [varargout{1:nargout}] = obj.real2str_vector(varargin{:});
             end
         end

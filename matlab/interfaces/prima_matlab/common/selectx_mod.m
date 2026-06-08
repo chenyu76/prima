@@ -15,7 +15,7 @@ classdef selectx_mod
         function varargout = isbetter(obj, varargin)
             if numel(varargin) == 5 && isscalar(varargin{1}) && isscalar(varargin{2}) && isvector(varargin{3}) && isvector(varargin{4})
                 [varargout{1:nargout}] = obj.isbetter01(varargin{:});
-            elseif numel(varargin) == 5 && isvector(varargin{1}) && isvector(varargin{2}) && isscalar(varargin{3}) && isscalar(varargin{4})
+            else
                 [varargout{1:nargout}] = obj.isbetter10(varargin{:});
             end
         end

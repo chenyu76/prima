@@ -450,7 +450,7 @@ classdef geometry_bobyqa_mod
             %---------------------------------------------------------------------%
             % 2. Recall that we have set the NaN entries of PREDSQ to zero, if there is any. Thus the KSQS below
             % is a well defined integer array, all the three entries lying between 1 and NPT.
-            ksqs(:) = fix(fortran.maxloc(predsq, 'dim', 2));
+            ksqs = repmat(fix(fortran.maxloc(predsq, 'dim', 2)), size(ksqs));
             isq = fix(fortran.maxloc([predsq(1, ksqs(1)), predsq(2, ksqs(2)), predsq(3, ksqs(3))], 'dim', 1));
             ksq = ksqs(isq);
             %%MATLAB:
@@ -485,8 +485,8 @@ classdef geometry_bobyqa_mod
             % How to make this condition adaptive? A naive idea is to replace the thresholds to,
             % e.g.,1.0E-2*RHOBEG. However, in a test on 20220517, this adaptation worsened the performance. In
             % such a test, RHOBEG must take a value that is quite different from one. We tried RHOBEG = 0.9E-2.
-            %if (delbar > 1.0E-3) then
-            %if (delbar > 1.0E-1) then
+            %if (delbar > 1.0E-3_RP) then
+            %if (delbar > 1.0E-1_RP) then
             if delbar > 1.0e-2
                 return
             end

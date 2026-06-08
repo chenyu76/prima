@@ -22,7 +22,7 @@ classdef inf_mod
                 [varargout{1:nargout}] = obj.is_finite_sp(varargin{:});
             elseif numel(varargin) == 1
                 [varargout{1:nargout}] = obj.is_finite_dp(varargin{:});
-            elseif numel(varargin) == 1
+            else
                 [varargout{1:nargout}] = obj.is_finite_qp(varargin{:});
             end
         end
@@ -31,7 +31,7 @@ classdef inf_mod
                 [varargout{1:nargout}] = obj.is_posinf_sp(varargin{:});
             elseif numel(varargin) == 1
                 [varargout{1:nargout}] = obj.is_posinf_dp(varargin{:});
-            elseif numel(varargin) == 1
+            else
                 [varargout{1:nargout}] = obj.is_posinf_qp(varargin{:});
             end
         end
@@ -40,7 +40,7 @@ classdef inf_mod
                 [varargout{1:nargout}] = obj.is_neginf_sp(varargin{:});
             elseif numel(varargin) == 1
                 [varargout{1:nargout}] = obj.is_neginf_dp(varargin{:});
-            elseif numel(varargin) == 1
+            else
                 [varargout{1:nargout}] = obj.is_neginf_qp(varargin{:});
             end
         end
@@ -49,7 +49,7 @@ classdef inf_mod
                 [varargout{1:nargout}] = obj.is_inf_sp(varargin{:});
             elseif numel(varargin) == 1
                 [varargout{1:nargout}] = obj.is_inf_dp(varargin{:});
-            elseif numel(varargin) == 1
+            else
                 [varargout{1:nargout}] = obj.is_inf_qp(varargin{:});
             end
         end

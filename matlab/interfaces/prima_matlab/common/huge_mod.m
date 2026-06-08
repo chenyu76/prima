@@ -15,7 +15,7 @@ classdef huge_mod
                 [varargout{1:nargout}] = obj.huge_value_sp(varargin{:});
             elseif numel(varargin) == 1
                 [varargout{1:nargout}] = obj.huge_value_dp(varargin{:});
-            elseif numel(varargin) == 1
+            else
                 [varargout{1:nargout}] = obj.huge_value_qp(varargin{:});
             end
         end

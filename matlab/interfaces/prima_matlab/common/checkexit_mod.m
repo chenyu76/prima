@@ -14,7 +14,7 @@ classdef checkexit_mod
         function varargout = checkexit(obj, varargin)
             if numel(varargin) == 7 && isscalar(varargin{5})
                 [varargout{1:nargout}] = obj.checkexit_con(varargin{:});
-            elseif numel(varargin) == 5 && isvector(varargin{5})
+            else
                 [varargout{1:nargout}] = obj.checkexit_unc(varargin{:});
             end
         end

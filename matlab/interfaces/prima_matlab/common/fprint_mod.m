@@ -111,7 +111,7 @@ classdef fprint_mod
                 fstat = fortran.merge('tsource', "old", 'fsource', "new", 'mask', fexist);
                 % Open the file.
 
-                fid_funit_loc = fopen(fname_loc, 'w');
+                funit_loc = fopen(fname_loc, 'w');
 
                 if iostat ~= 0
                     debug_obj.warning(srname, "Failed to open file " + fname_loc);
@@ -138,7 +138,7 @@ classdef fprint_mod
 
             % Close the file if necessary.
             if strlength(fname_loc) > 0 && iostat == 0
-                fclose(fid_funit_loc);
+                fclose(funit_loc);
             end
 
             %====================%

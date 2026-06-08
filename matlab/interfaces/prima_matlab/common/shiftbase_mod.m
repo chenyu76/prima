@@ -14,9 +14,9 @@ classdef shiftbase_mod
 
     methods
         function varargout = shiftbase(obj, varargin)
-            if numel(varargin) >= 7 && numel(varargin) <= 8 && isvector(varargin{2}) && ndims(varargin{3}) >= 2 && ndims(varargin{4}) >= 2
+            if numel(varargin) >= 7 && numel(varargin) <= 8 && isvector(varargin{2}) && (~isvector(varargin{3}) && ~isscalar(varargin{3})) && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
                 [varargout{1:nargout}] = obj.shiftbase_lfqint(varargin{:});
-            elseif numel(varargin) == 5 && ndims(varargin{2}) >= 2 && isvector(varargin{3}) && isvector(varargin{4})
+            else
                 [varargout{1:nargout}] = obj.shiftbase_qint(varargin{:});
             end
         end

@@ -267,7 +267,7 @@ classdef geometry_cobyla_mod
             % So we cannot pass G and A from outside.
             g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
             A(:, 1:m_lcon) = amat;
-            A(:, m_lcon + 1:m) = linalg_obj.matprod(conmat(m_lcon + 1:m, 1:n) - fortran.spread(conmat(m_lcon + 1:m, n + 1), 'dim', 2, 'ncopies', n), simi)';
+            A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - fortran.spread(conmat(m_lcon + 1:m, n + 1), 'dim', 2, 'ncopies', n), simi)';
             %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
             % CVPD and CVND are the predicted constraint violation of D and -D by the linear models.
             cvpd = linalg_obj.maximum1([consts_obj.ZERO; reshape(conmat(:, n + 1) + linalg_obj.matprod12(d, A), [], 1)]);

@@ -328,7 +328,7 @@ classdef cobylb_mod
                 % (not necessarily a good algorithm). No preconditioning or scaling was used.
                 g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
                 A(:, 1:m_lcon) = amat;
-                A(:, m_lcon + 1:m) = linalg_obj.matprod(conmat(m_lcon + 1:m, 1:n) - fortran.spread(conmat(m_lcon + 1:m, n + 1), 'dim', 2, 'ncopies', n), simi)';
+                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - fortran.spread(conmat(m_lcon + 1:m, n + 1), 'dim', 2, 'ncopies', n), simi)';
                 %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
 
                 % Calculate the trust-region trial step D. Note that D does NOT depend on CPEN.
@@ -814,7 +814,7 @@ classdef cobylb_mod
                 % Calculate the linear approximations to the objective and constraint functions.
                 g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
                 A(:, 1:m_lcon) = amat;
-                A(:, m_lcon + 1:m) = linalg_obj.matprod(conmat(m_lcon + 1:m, 1:n) - fortran.spread(conmat(m_lcon + 1:m, n + 1), 'dim', 2, 'ncopies', n), simi)';
+                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - fortran.spread(conmat(m_lcon + 1:m, n + 1), 'dim', 2, 'ncopies', n), simi)';
                 %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
 
                 % Calculate the trust-region trial step D. Note that D does NOT depend on CPEN.
