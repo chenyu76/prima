@@ -420,7 +420,7 @@ end
 output.constrviolation = constrviolation;
 
 % Revise output.constrviolation and output.chist according to problem type
-if strcmp(probinfo.refined_type, 'unconstrained') && (constrviolation > 0 || max([0, chist]) > 0)
+if strcmp(probinfo.refined_type, 'unconstrained') && (constrviolation > 0 || max([0; chist(:)]) > 0)
     % Public/unexpected error
     error(sprintf('%s:InvalidConstrViolation', invoker), ...
     '%s: UNEXPECTED ERROR: %s returns a positive constrviolation for an unconstrained problem.', invoker, solver);
