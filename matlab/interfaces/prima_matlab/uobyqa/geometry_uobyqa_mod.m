@@ -90,11 +90,11 @@ classdef geometry_uobyqa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
@@ -302,7 +302,7 @@ classdef geometry_uobyqa_mod
             end
 
             % Pick V such that ||HV|| / ||V|| is large.
-            v(:) = h(:, fortran.maxloc(sum(h .^ 2, 1).', 'dim', 1));
+            v(:) = h(:, fortran.maxloc(sum(h .^ 2, 1), 'dim', 1));
             % Normalize V. Powell's code does not do this. It does not change the algorithm as only its
             % direction matters. It slightly improves the performance in the noiseless case.
             v(:) = v ./ linalg_obj.p_norm(v);

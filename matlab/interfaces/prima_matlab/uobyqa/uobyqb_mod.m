@@ -266,7 +266,7 @@ classdef uobyqb_mod
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT? It affects IMPROVE_GEO, REDUCE_RHO.
                 % N.B. (Zaikun 20240331): In Powell's algorithms, CLOSE_ITPSET is defined after XPT is updated
                 % according to the trust-region trial step.
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                 close_itpset = all(distsq <= 4.0 * delta ^ 2, 'all'); % Powell's NEWUOA code.
                 % Below are some alternative definitions of CLOSE_ITPSET.
@@ -301,7 +301,7 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1).', [], 1); % Implied do-loop
+                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2
@@ -449,7 +449,7 @@ classdef uobyqb_mod
                 % Improve the geometry of the interpolation set by removing a point and adding a new one.
                 if improve_geo
                     % XPT(:, KNEW_GEO) will become XOPT + D below. KNEW_GEO /= KOPT unless there is a bug.
-                    distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                    distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                     %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                     knew_geo = fix(fortran.maxloc(distsq, 'dim', 1));
 
@@ -467,7 +467,7 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1).', [], 1); % Implied do-loop
+                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2

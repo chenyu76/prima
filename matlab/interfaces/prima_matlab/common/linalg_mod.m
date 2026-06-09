@@ -871,7 +871,7 @@ classdef linalg_mod
             Q_loc(:, :) = obj.eye1(m);
             T(:, :) = A'; % T is the transpose of R. We consider T in order to work on columns.
             if pivot
-                P(:) = obj.linspace_i(1, n, n);
+                P = obj.linspace_i(1, n, n);
             end
 
             for j = 1:n
@@ -892,10 +892,10 @@ classdef linalg_mod
             end
 
             if nargout >= 1
-                Q(:, :) = Q_loc(:, 1:size(Q, 2));
+                Q = Q_loc(:, 1:size(Q, 2));
             end
             if nargout >= 2
-                R(:, :) = T(:, 1:size(R, 1))';
+                R = T(:, 1:size(R, 1))';
             end
 
             %====================%
@@ -2680,7 +2680,7 @@ classdef linalg_mod
 
             H(:, :) = A;
             if nargout >= 2
-                Q(:, :) = obj.eye1(n);
+                Q = obj.eye1(n);
             end
 
             % According to a test on 20220508, scaling enhances the stability and slightly improves the

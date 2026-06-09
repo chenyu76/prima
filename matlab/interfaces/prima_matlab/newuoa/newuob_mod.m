@@ -297,7 +297,7 @@ classdef newuob_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1).', [], 1); % Implied do-loop
+                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(k) <= (1.0e-3 * rhoend) ^ 2
@@ -400,7 +400,7 @@ classdef newuob_mod
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
                 accurate_mod = all(abs(moderr_rec) <= 0.125 * crvmin * rho ^ 2, 'all') && all(dnorm_rec <= rho, 'all');
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT? It affects IMPROVE_GEO, REDUCE_RHO.
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                 close_itpset = all(distsq <= 4.0 * delta ^ 2, 'all'); % Powell's code.
                 % Below are some alternative definitions of CLOSE_ITPSET.
@@ -545,7 +545,7 @@ classdef newuob_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1).', [], 1); % Implied do-loop
+                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(k) <= (1.0e-3 * rhoend) ^ 2

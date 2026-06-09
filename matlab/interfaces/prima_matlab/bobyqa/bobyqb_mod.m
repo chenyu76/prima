@@ -454,7 +454,7 @@ classdef bobyqb_mod
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
                 accurate_mod = all(abs(moderr_rec) <= ebound, 'all') && all(dnorm_rec <= rho, 'all');
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                 close_itpset = all(distsq <= max(delta ^ 2, (consts_obj.TEN * rho) ^ 2), 'all');
                 % Below are some alternative definitions of CLOSE_ITPSET.

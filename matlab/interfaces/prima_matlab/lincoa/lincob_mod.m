@@ -529,7 +529,7 @@ classdef lincob_mod
                 % Powell's version (note that size(dnorm_rec) = 5 in his implementation):
                 %accurate_mod = all(dnorm_rec <= HALF * rho) .or. all(dnorm_rec(3:size(dnorm_rec)) <= TENTH * rho)
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                 close_itpset = all(distsq <= 4.0 * delta ^ 2, 'all'); % Powell's NEWUOA code.
                 % Below are some alternative definitions of CLOSE_ITPSET.

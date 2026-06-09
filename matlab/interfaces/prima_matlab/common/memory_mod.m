@@ -29,7 +29,7 @@ classdef memory_mod
                 [varargout{1:nargout}] = obj.alloc_character(varargin{:});
             elseif numel(varargin) == 2 && islogical(varargin{1}) && isvector(varargin{1})
                 [varargout{1:nargout}] = obj.alloc_lvector(varargin{:});
-            elseif numel(varargin) == 2 && isnumeric(varargin{1}) && isvector(varargin{1})
+            elseif numel(varargin) == 2 && isinteger(varargin{1}) && isvector(varargin{1})
                 [varargout{1:nargout}] = obj.alloc_ivector(varargin{:});
             elseif numel(varargin) == 2 && isfloat(varargin{1}) && isvector(varargin{1})
                 [varargout{1:nargout}] = obj.alloc_rvector_sp(varargin{:});
@@ -37,7 +37,7 @@ classdef memory_mod
                 [varargout{1:nargout}] = obj.alloc_rvector_dp(varargin{:});
             elseif numel(varargin) == 2 && isfloat(varargin{1}) && isvector(varargin{1})
                 [varargout{1:nargout}] = obj.alloc_rvector_qp(varargin{:});
-            elseif numel(varargin) == 3 && isnumeric(varargin{1}) && (~isvector(varargin{1}) && ~isscalar(varargin{1}))
+            elseif numel(varargin) == 3 && isinteger(varargin{1}) && (~isvector(varargin{1}) && ~isscalar(varargin{1}))
                 [varargout{1:nargout}] = obj.alloc_imatrix(varargin{:});
             elseif numel(varargin) == 3 && isfloat(varargin{1}) && (~isvector(varargin{1}) && ~isscalar(varargin{1}))
                 [varargout{1:nargout}] = obj.alloc_rmatrix_sp(varargin{:});

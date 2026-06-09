@@ -96,11 +96,11 @@ classdef geometry_newuoa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
@@ -607,7 +607,7 @@ classdef geometry_newuoa_mod
                 %---------!dstemp = matprod(d, xpt) - inprod(x, d) !-------------%
                 dstemp(:) = linalg_obj.matprod12(d, xptemp);
                 %----------------------------------------------------------------%
-                sstemp(:) = sum((xptemp) .^ 2, 1).';
+                sstemp(:) = sum((xptemp) .^ 2, 1);
 
                 dstemp(kopt) = consts_obj.TWO * ds + consts_obj.ONE;
                 sstemp(kopt) = ss;

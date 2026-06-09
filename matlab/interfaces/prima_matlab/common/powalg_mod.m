@@ -45,7 +45,7 @@ classdef powalg_mod
             end
         end
         function varargout = qrexc(obj, varargin)
-            if numel(varargin) == 3 && isnumeric(varargin{3}) && isscalar(varargin{3})
+            if numel(varargin) == 3 && isinteger(varargin{3}) && isscalar(varargin{3})
                 [varargout{1:nargout}] = obj.qrexc_Rfull(varargin{:});
             else
                 [varargout{1:nargout}] = obj.qrexc_Rdiag(varargin{:});
@@ -59,7 +59,7 @@ classdef powalg_mod
             end
         end
         function varargout = calvlag(obj, varargin)
-            if numel(varargin) >= 5 && numel(varargin) <= 6 && isnumeric(varargin{1}) && isscalar(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2})) && isfloat(varargin{4}) && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
+            if numel(varargin) >= 5 && numel(varargin) <= 6 && isinteger(varargin{1}) && isscalar(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2})) && isfloat(varargin{4}) && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
                 [varargout{1:nargout}] = obj.calvlag_lfqint(varargin{:});
             else
                 [varargout{1:nargout}] = obj.calvlag_qint(varargin{:});
@@ -1033,13 +1033,13 @@ classdef powalg_mod
             maxabs = max([consts_obj.ONE, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), max(abs(bmat), [], 'all')], [], 'all');
             U(:, :) = linalg_obj.eye1(npt) - linalg_obj.matprod22(A, Omega) - linalg_obj.matprod22(xpt', bmat(:, 1:npt));
             V(:, :) = -linalg_obj.matprod22(bmat(:, 1:npt), A) - linalg_obj.matprod22(bmat(:, npt + 1:npt + n), xpt);
-            r(:) = sum(U, 1).' ./ double(npt);
+            r(:) = sum(U, 1) ./ double(npt);
             s(:) = sum(V, 2) ./ double(npt);
             t(:) = -linalg_obj.matprod21(A, r) - linalg_obj.matprod12(s, xpt);
-            e(1, 1) = max(max(U, [], 1).' - min(U, [], 1).', [], 'all');
+            e(1, 1) = max(max(U, [], 1) - min(U, [], 1), [], 'all');
             e(1, 2) = max(t, [], 'all') - min(t, [], 'all');
             e(1, 3) = max(max(V, [], 2) - min(V, [], 2), [], 'all');
-            e(2, 1) = max(abs(sum(Omega, 1).'), [], 'all');
+            e(2, 1) = max(abs(sum(Omega, 1)), [], 'all');
             e(2, 2) = abs(sum(r, 'all') - consts_obj.ONE);
             e(2, 3) = max(abs(sum(bmat(:, 1:npt), 2)), [], 'all');
             e(3, 1) = max(abs(linalg_obj.matprod22(xpt, Omega)), [], 'all');

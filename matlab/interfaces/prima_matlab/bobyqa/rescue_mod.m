@@ -299,7 +299,7 @@ classdef rescue_mod
             % but there is no square in the BOBYQA paper (see the paragraph between (5.9) and (5.10) of the
             % BOBYQA paper). The latter seem to work better in a test on 20221125.
             %score = sum(xpt**2, dim=1)  ! Powell's BOBYQA code
-            score(:) = sqrt(sum(xpt .^ 2, 1).'); % Powell's BOBYQA paper
+            score(:) = sqrt(sum(xpt .^ 2, 1)); % Powell's BOBYQA paper
             % In theory, SCORE(KOPT) = 0. Make sure this so that KOPT will be skipped when we choose KORIG below.
             score(kopt) = consts_obj.ZERO;
             scoreinc = max(score, [], 'all');

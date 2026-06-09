@@ -686,7 +686,7 @@ classdef cobyla_mod
 
 
             if nargout >= 4
-                nlconstr(:) = constr_loc(m - m_nlcon + 1:m);
+                nlconstr = constr_loc(m - m_nlcon + 1:m);
             end
             constr_loc = [];
 

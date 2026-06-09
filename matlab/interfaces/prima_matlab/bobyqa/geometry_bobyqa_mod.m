@@ -95,11 +95,11 @@ classdef geometry_bobyqa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
@@ -327,7 +327,7 @@ classdef geometry_bobyqa_mod
             % point on the K-th line attains the J-th upper bound, SBDI(I, K) = -J < 0 indicates reaching the
             % J-th lower bound, and SBDI(I, K) = 0 means not touching any bound.
             dderiv(:) = linalg_obj.matprod12(glag, xpt) - linalg_obj.inprod(glag, xopt); % The derivatives PHI_K'(0).
-            distsq(:) = sum((xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt)) .^ 2, 1).';
+            distsq(:) = sum((xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt)) .^ 2, 1);
             for k = 1:npt
                 % It does not make sense to consider "straight line through XOPT and XPT(:, KOPT)". Hence set
                 % STPLEN(:, KOPT) = 0 and ISBD(:, KOPT) = 0 so that VLAG(:, K) and PREDSQ(:, K) obtained after
