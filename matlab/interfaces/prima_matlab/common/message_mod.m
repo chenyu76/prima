@@ -37,10 +37,6 @@ classdef message_mod
 
 
 
-
-
-
-
             % Optional inputs
 
 
@@ -187,13 +183,7 @@ classdef message_mod
 
 
 
-
-
-
-
-
             % Optional inputs
-
 
 
 
@@ -364,10 +354,6 @@ classdef message_mod
 
             % `state` is a string indicating the solver's state when the function evaluation is invoked. Its
             % value can be 'Initialization', 'Trust region', 'Geometry', or 'Rescue'.
-
-
-
-
 
 
 

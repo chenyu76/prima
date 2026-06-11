@@ -249,7 +249,6 @@ classdef cobyla_mod
             consts_obj = consts_mod();
 
 
-
             debug_obj = debug_mod();
             evaluate_obj = evaluate_mod();
             history_obj = history_mod();
@@ -275,8 +274,6 @@ classdef cobyla_mod
 
 
 
-
-
             % Aeq(Meq, N)
             % Aineq(Mineq, N)
             % Beq(Meq)
@@ -285,18 +282,10 @@ classdef cobyla_mod
 
 
 
-
-
-
-
-
-
-
             % XL(N)
             % XU(N)
 
             % Optional outputs
-
 
 
 
@@ -683,15 +672,10 @@ classdef cobyla_mod
 
 
 
-
-
             if nargout >= 4
                 nlconstr = constr_loc(m - m_nlcon + 1:m);
             end
             constr_loc = [];
-
-
-
 
 
             % Copy XHIST_LOC to XHIST if needed.
@@ -810,10 +794,6 @@ classdef cobyla_mod
 
 
             % Inputs
-
-
-
-
 
 
 

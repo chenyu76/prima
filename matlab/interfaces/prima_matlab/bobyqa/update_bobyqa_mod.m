@@ -124,7 +124,7 @@ classdef update_bobyqa_mod
             % performance of BOBYQA in a test on 20220413.
             alpha = hcol(knew);
             tau = vlag(knew);
-            denom = alpha * beta + tau ^ 2;
+            denom = alpha * beta + fortran.power(tau, 2);
 
             % After the following line, VLAG = H*w - e_KNEW in the NEWUOA paper (where t = KNEW).
             vlag(knew) = vlag(knew) - consts_obj.ONE;
@@ -159,7 +159,7 @@ classdef update_bobyqa_mod
             end
 
             % Complete the updating of ZMAT. See (4.14) of the BOBYQA paper.
-            sqrtdn = sqrt(denom);
+            sqrtdn = fortran.sqrt(denom);
             zmat(:, 1) = (tau / sqrtdn) * zmat(:, 1) - (zmat(knew, 1) / sqrtdn) * vlag(1:npt);
             % Zaikun 20231012: Either of the following two lines worsens the performance of BOBYQA when the
             % objective function is evaluated with 5 or less correct significance digits. Strange.

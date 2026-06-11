@@ -79,8 +79,6 @@ classdef debug_mod
             consts_obj = consts_mod();
 
 
-
-
             % `backtr` prints a backtrace. With gfortran 12, even without calling `backtrace`, a backtrace is
             % printed when the program is stopped by an error stop.
             obj.backtr();
@@ -128,7 +126,6 @@ classdef debug_mod
             % This subroutine prints 'Warning: '//STRIP(SRNAME)//': '//STRIP(MSG)//'.' to STDERR.
             %--------------------------------------------------------------------------------------------------%
             consts_obj = consts_mod();
-
 
 
             fprintf(consts_obj.STDERR, '\n%s\n\n', "Warning: " + strtrim(strjust(srname, 'left')) + ": " + strtrim(strjust(msg, 'left')) + ".");

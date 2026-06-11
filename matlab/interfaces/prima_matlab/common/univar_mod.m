@@ -40,7 +40,6 @@ classdef univar_mod
 
 
 
-
             % Outputs
             angle = NaN;
 
@@ -125,7 +124,6 @@ classdef univar_mod
 
 
 
-
             % Outputs
             angle = NaN;
 
@@ -201,9 +199,6 @@ classdef univar_mod
             linalg_obj = linalg_mod();
 
             % Inputs
-
-
-
 
 
 

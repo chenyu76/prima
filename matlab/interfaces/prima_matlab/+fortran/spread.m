@@ -36,7 +36,6 @@ function result = spread(varargin)
     if length(sz) == 2 
         if sz(1) == 1 && sz(2) > 1 
             sz = sz(2);
-            source = source(:);
         elseif sz(2) == 1
             sz = sz(1);
         elseif sz(1) == 1 && sz(2) == 1 

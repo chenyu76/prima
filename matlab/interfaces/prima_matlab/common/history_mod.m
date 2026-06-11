@@ -27,16 +27,10 @@ classdef history_mod
 
 
 
-
-
-
-
             % In-outputs
 
 
             % Outputs
-
-
 
 
 
@@ -143,12 +137,7 @@ classdef history_mod
 
 
 
-
-
-
             % In-outputs
-
-
 
 
 
@@ -327,8 +316,6 @@ classdef history_mod
 
 
             % In-outputs
-
-
 
 
 

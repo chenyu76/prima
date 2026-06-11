@@ -149,7 +149,6 @@ classdef uobyqa_mod
             consts_obj = consts_mod();
 
 
-
             debug_obj = debug_mod();
             evaluate_obj = evaluate_mod();
             history_obj = history_mod();
@@ -168,15 +167,6 @@ classdef uobyqa_mod
             % X(N)
 
             % Optional inputs
-
-
-
-
-
-
-
-
-
 
 
 
@@ -355,10 +345,6 @@ classdef uobyqa_mod
 
 
             % Write the outputs.
-
-
-
-
 
 
 

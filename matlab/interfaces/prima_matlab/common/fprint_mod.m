@@ -25,8 +25,6 @@ classdef fprint_mod
 
 
 
-
-
             % Local variables
             newline = compose('\n');
             srname = "FPRINT";

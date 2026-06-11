@@ -157,7 +157,6 @@ classdef newuoa_mod
             consts_obj = consts_mod();
 
 
-
             debug_obj = debug_mod();
             evaluate_obj = evaluate_mod();
             history_obj = history_mod();
@@ -179,20 +178,7 @@ classdef newuoa_mod
 
 
 
-
-
-
-
-
-
-
-
-
-
             % Optional outputs
-
-
-
 
 
 
@@ -372,10 +358,6 @@ classdef newuoa_mod
 
 
             % Write the outputs.
-
-
-
-
 
 
 

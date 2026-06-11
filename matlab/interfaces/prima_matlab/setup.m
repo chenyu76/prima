@@ -6,3 +6,5 @@ addpath(fullfile(base_dir, 'lincoa'));
 addpath(fullfile(base_dir, 'newuoa'));
 addpath(fullfile(base_dir, 'uobyqa'));
 addpath(fullfile(base_dir, 'examples/newuoa'));
+
+run('setup_mex.m');

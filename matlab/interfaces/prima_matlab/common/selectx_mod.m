@@ -41,7 +41,6 @@ classdef selectx_mod
 
 
 
-
             % N
             % M
 
@@ -227,8 +226,6 @@ classdef selectx_mod
 
 
 
-
-
             % Outputs
             kopt = NaN;
 
@@ -344,9 +341,6 @@ classdef selectx_mod
 
 
 
-
-
-
             % Outputs
             is_better = false;
 
@@ -404,9 +398,6 @@ classdef selectx_mod
 
 
 
-
-
-
             % Outputs
             is_better = false(1, 1);
 
@@ -454,9 +445,6 @@ classdef selectx_mod
             memory_obj = memory_mod();
 
             % Inputs
-
-
-
 
 
 

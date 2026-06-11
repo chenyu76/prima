@@ -50,7 +50,6 @@ classdef initialize_bobyqa_mod
 
 
 
-
             % XL(N)
             % XU(N)
 
@@ -59,7 +58,6 @@ classdef initialize_bobyqa_mod
 
             % Outputs
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
-
 
 
 
@@ -479,7 +477,7 @@ classdef initialize_bobyqa_mod
 
             % Some values to be used for setting BMAT and ZMAT.
             rhobeg = max(abs(xpt(:, 2)), [], 'all'); % Read RHOBEG from XPT. Note that XPT(:, 1) = 0.
-            rhosq = rhobeg ^ 2;
+            rhosq = fortran.power(rhobeg, 2);
 
             % The interpolation set decides the first NDIAG diagonal 2nd derivatives of the Lagrange polynomials.
             ndiag = min(n, npt - n - 1);
@@ -502,10 +500,10 @@ classdef initialize_bobyqa_mod
 
             zmat = repmat(consts_obj.ZERO, size(zmat));
             % Set ZMAT(:, 1 : NDIAG)
-            zmat(1, 1:ndiag) = sqrt(consts_obj.TWO) ./ (xa .* xb);
+            zmat(1, 1:ndiag) = fortran.sqrt(consts_obj.TWO) ./ (xa .* xb);
             for k = 1:ndiag
-                zmat(k + 1, k) = -zmat(1, k) - sqrt(consts_obj.HALF) / rhosq;
-                zmat(k + n + 1, k) = sqrt(consts_obj.HALF) / rhosq;
+                zmat(k + 1, k) = -zmat(1, k) - fortran.sqrt(consts_obj.HALF) / rhosq;
+                zmat(k + n + 1, k) = fortran.sqrt(consts_obj.HALF) / rhosq;
             end
             % Set ZMAT(:, NDIAG+1 : NPT-N-1)
             for k = ndiag + 1:npt - n - 1

@@ -34,24 +34,6 @@ classdef infos_mod
             obj.consts_obj = consts_mod();
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             obj.INFO_DFT = 0;
             obj.SMALL_TR_RADIUS = 0;
             obj.FTARGET_ACHIEVED = 1;

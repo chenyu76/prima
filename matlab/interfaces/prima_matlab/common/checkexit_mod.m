@@ -34,9 +34,6 @@ classdef checkexit_mod
 
 
 
-
-
-
             % Outputs
             info = NaN;
 
@@ -101,11 +98,6 @@ classdef checkexit_mod
 
 
             % Inputs
-
-
-
-
-
 
 
 

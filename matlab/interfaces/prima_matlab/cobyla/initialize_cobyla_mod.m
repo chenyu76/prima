@@ -40,7 +40,6 @@ classdef initialize_cobyla_mod
 
 
 
-
             % X0(N)
 
             % Outputs
@@ -246,15 +245,7 @@ classdef initialize_cobyla_mod
 
 
 
-
-
-
-
-
             % In-outputs
-
-
-
 
 
 

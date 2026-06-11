@@ -21,10 +21,6 @@ classdef xinbd_mod
 
 
 
-
-
-
-
             % Outputs
             x = NaN(numel(xbase), 1);
 

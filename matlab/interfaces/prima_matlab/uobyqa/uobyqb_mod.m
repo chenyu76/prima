@@ -64,14 +64,6 @@ classdef uobyqb_mod
 
 
 
-
-
-
-
-
-
-
-
             % In-outputs
             % X(N)
 
@@ -266,9 +258,9 @@ classdef uobyqb_mod
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT? It affects IMPROVE_GEO, REDUCE_RHO.
                 % N.B. (Zaikun 20240331): In Powell's algorithms, CLOSE_ITPSET is defined after XPT is updated
                 % according to the trust-region trial step.
-                distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
+                distsq(:) = sum(fortran.dot_power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
-                close_itpset = all(distsq <= 4.0 * delta ^ 2, 'all'); % Powell's NEWUOA code.
+                close_itpset = all(distsq <= 4.0 * fortran.power(delta, 2), 'all'); % Powell's NEWUOA code.
                 % Below are some alternative definitions of CLOSE_ITPSET.
                 % N.B.: The threshold for CLOSE_ITPSET is at least DELBAR, the trust region radius for GEOSTEP.
                 % %close_itpset = all(distsq <= 4.0_RP * rho**2)  ! Powell's code.
@@ -287,7 +279,7 @@ classdef uobyqb_mod
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
                 qred = -powalg_obj.quadinc_ghv(pq, d, xpt(:, kopt)); % QRED = Q(XOPT) - Q(XOPT + D)
-                trfail = (~(qred > 1.0e-6 * rho ^ 2)); % QRED is tiny/negative or NaN.
+                trfail = (~(qred > 1.0e-6 * fortran.power(rho, 2))); % QRED is tiny/negative or NaN.
 
                 if shortd || trfail
                     % Powell's code does not reduce DELTA as follows. This comes from NEWUOA and works well.
@@ -301,10 +293,10 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1), [], 1); % Implied do-loop
+                    distsq(:) = reshape(sum(fortran.dot_power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
-                    if distsq(k) <= (1.0e-4 * rhoend) ^ 2
+                    if distsq(k) <= fortran.power((1.0e-4 * rhoend), 2)
                         f = fval(k);
                     else
                         % Evaluate the objective function at X, taking care of possible Inf/NaN values.
@@ -351,7 +343,7 @@ classdef uobyqb_mod
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
-                        ddmove = sum((xdrop - xpt(:, kopt)) .^ 2, 'all'); % KOPT is updated.
+                        ddmove = sum(fortran.dot_power((xdrop - xpt(:, kopt)), 2), 'all'); % KOPT is updated.
 
                     end
 
@@ -375,7 +367,7 @@ classdef uobyqb_mod
                 % 2. If an iteration sets IMPROVE_GEO = TRUE, it must also reduce DELTA or set DELTA to RHO.
 
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
-                accurate_mod = all(abs(moderr_rec) <= 0.125 * crvmin * rho ^ 2, 'all') && all(dnorm_rec <= rho, 'all');
+                accurate_mod = all(abs(moderr_rec) <= 0.125 * crvmin * fortran.power(rho, 2), 'all') && all(dnorm_rec <= rho, 'all');
                 % ADEQUATE_GEO: Is the geometry of the interpolation set "adequate"?
                 adequate_geo = (shortd && accurate_mod) || close_itpset;
                 % SMALL_TRRAD: Is the trust-region radius small? This indicator seems not impactive in practice.
@@ -412,7 +404,7 @@ classdef uobyqb_mod
 
                 % BAD_TRSTEP (for IMPROVE_GEO): Is the last trust-region step bad? For UOBYQA, it is CRUCIAL to
                 % include DMOVE <= 4.0_RP*RHO**2 in the definition of BAD_TRSTEP for IMPROVE_GEO.
-                bad_trstep = (shortd || trfail || (ratio <= eta1 && ddmove <= 4.0 * delta ^ 2) || knew_tr == 0);
+                bad_trstep = (shortd || trfail || (ratio <= eta1 && ddmove <= 4.0 * fortran.power(delta, 2)) || knew_tr == 0);
                 %bad_trstep = (shortd .or. trfail .or. ratio <= eta1 .or. knew_tr == 0)  ! Works poorly!
                 improve_geo = bad_trstep && ~adequate_geo;
                 % BAD_TRSTEP (for REDUCE_RHO): Is the last trust-region step bad?
@@ -449,7 +441,7 @@ classdef uobyqb_mod
                 % Improve the geometry of the interpolation set by removing a point and adding a new one.
                 if improve_geo
                     % XPT(:, KNEW_GEO) will become XOPT + D below. KNEW_GEO /= KOPT unless there is a bug.
-                    distsq(:) = sum((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)) .^ 2, 1);
+                    distsq(:) = sum(fortran.dot_power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                     %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                     knew_geo = fix(fortran.maxloc(distsq, 'dim', 1));
 
@@ -467,10 +459,10 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1), [], 1); % Implied do-loop
+                    distsq(:) = reshape(sum(fortran.dot_power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
-                    if distsq(k) <= (1.0e-4 * rhoend) ^ 2
+                    if distsq(k) <= fortran.power((1.0e-4 * rhoend), 2)
                         f = fval(k);
                     else
                         % Evaluate the objective function at X, taking care of possible Inf/NaN values.
@@ -527,7 +519,7 @@ classdef uobyqb_mod
                 % Shifting XBASE to the best point so far, and make the corresponding changes to the gradients
                 % of the Lagrange functions and the quadratic model. Powell's implementation does this each time
                 % after RHO is reduced. Our implementation aligns with NEWUOA/BOBYQA/LINCOA.
-                if sum(xpt(:, kopt) .^ 2, 'all') >= 1000.0 * delta ^ 2
+                if sum(fortran.dot_power(xpt(:, kopt), 2), 'all') >= 1000.0 * fortran.power(delta, 2)
                     [pl, pq, xbase, xpt] = shiftbase_obj.shiftbase_qint(kopt, pl, pq, xbase, xpt);
                 end
 

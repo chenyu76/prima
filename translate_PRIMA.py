@@ -104,6 +104,7 @@ def translate_sources(
         "-o",
         str(output_dir),
         "--create-setup-m",
+        "--try-full-consistency",
     ]
     return subprocess.run(
         cmd,

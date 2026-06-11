@@ -155,8 +155,8 @@ classdef trustregion_uobyqa_mod
             d = repmat(consts_obj.ZERO, size(d));
             crvmin = consts_obj.ZERO;
 
-            gsq = sum(gg .^ 2, 'all');
-            gnorm = sqrt(gsq);
+            gsq = sum(fortran.dot_power(gg, 2), 'all');
+            gnorm = fortran.sqrt(gsq);
 
             if infnan_obj.is_nan_sp(gsq)
                 return
@@ -253,7 +253,7 @@ classdef trustregion_uobyqa_mod
                 % Powell implemented the loop by a GOTO, and K = N when the loop exits. It may not be true here.
                 for k = 1:n - 1
                     if piv(k) > 0
-                        piv(k + 1) = td(k + 1) + par - tn(k) ^ 2 / piv(k);
+                        piv(k + 1) = td(k + 1) + par - fortran.power(tn(k), 2) / piv(k);
                     elseif abs(piv(k)) + abs(tn(k)) <= 0
                         % PIV(K) == 0 == TN(K)
                         piv(k + 1) = td(k + 1) + par;
@@ -348,7 +348,7 @@ classdef trustregion_uobyqa_mod
                         end
                     end
 
-                    dsq = sum(d .^ 2, 'all');
+                    dsq = sum(fortran.dot_power(d, 2), 'all');
                     parl = par;
                     parlest = par - dhd / dsq;
                 end
@@ -379,9 +379,9 @@ classdef trustregion_uobyqa_mod
                         dtg = linalg_obj.inprod(d, gg);
                         if dtg > 0
                             % Has DSQ got the correct value?
-                            d(:) = -(delta / sqrt(dsq)) * d;
+                            d(:) = -(delta / fortran.sqrt(dsq)) * d;
                         else                            % This ELSE covers the unlikely yet possible case where DTG is zero or even NaN.
-                            d(:) = (delta / sqrt(dsq)) * d;
+                            d(:) = (delta / fortran.sqrt(dsq)) * d;
                         end
                         % N.B.: As per Powell's code, the lines above would be D = -SIGN(DELTA/SQRT(DSQ), DTG)*D.
                         % However, our version here seems more reasonable in case DTG == 0, which is unlikely
@@ -399,7 +399,7 @@ classdef trustregion_uobyqa_mod
                     for k = 1:n - 1
                         d(k + 1) = -(gg(k + 1) + tn(k) * d(k)) / piv(k + 1);
                     end
-                    wsq = linalg_obj.inprod(piv, d .^ 2); % GG^T*(H+PAR*I)^{-1}*GG. Needed in the convergence test.
+                    wsq = linalg_obj.inprod(piv, fortran.dot_power(d, 2)); % GG^T*(H+PAR*I)^{-1}*GG. Needed in the convergence test.
                     % The loop sets D = L^{-T}*D = -L^{-T}*PIV^{-1}*L^{-1}*GG = -(H+PAR*I)^{-1}*GG.
                     for k = n - 1:-1:1
                         d(k) = d(k) - tn(k) * d(k + 1) / piv(k);
@@ -410,7 +410,7 @@ classdef trustregion_uobyqa_mod
                         break
                     end
 
-                    dsq = sum(d .^ 2, 'all');
+                    dsq = sum(fortran.dot_power(d, 2), 'all');
 
                     % Return if the Newton-Raphson step is feasible, setting CRVMIN to the least eigenvalue of H.
                     if par <= 0 && dsq <= delsq
@@ -424,7 +424,7 @@ classdef trustregion_uobyqa_mod
                     end
 
                     % Make the usual test for acceptability of a full trust region step.
-                    dnorm = sqrt(dsq);
+                    dnorm = fortran.sqrt(dsq);
 
                     phi = consts_obj.ONE / dnorm - consts_obj.ONE / delta;
                     if tol * (consts_obj.ONE + par * dsq / wsq) - dsq * phi * phi >= 0
@@ -480,22 +480,22 @@ classdef trustregion_uobyqa_mod
                                     z(k + 1) = (consts_obj.ONE - tnz) / piv(k + 1);
                                 end
                             end
-                            wwsq = linalg_obj.inprod(piv, z .^ 2); % Needed in the convergence test.
+                            wwsq = linalg_obj.inprod(piv, fortran.dot_power(z, 2)); % Needed in the convergence test.
                             for k = n - 1:-1:1
                                 z(k) = z(k) - tn(k) * z(k + 1) / piv(k);
                             end
 
-                            zsq = sum(z .^ 2, 'all');
+                            zsq = sum(fortran.dot_power(z, 2), 'all');
                             dtz = linalg_obj.inprod(d, z);
 
                             % Apply the alternative test for convergence.
                             tempa = abs(delsq - dsq);
-                            tempb = sqrt(dtz * dtz + tempa * zsq);
+                            tempb = fortran.sqrt(dtz * dtz + tempa * zsq);
                             if abs(dtz) > 0
                                 gam = tempa / (abs(tempb) .* ((dtz >= 0) * 2 - 1) + dtz); %%MATLAB: gam = tempa / (sign(dtz)*tempb + dtz)
 
                             else                                % This ELSE covers the unlikely yet possible case where DTZ is zero or even NaN.
-                                gam = sqrt(tempa / zsq);
+                                gam = fortran.sqrt(tempa / zsq);
                             end
                             if tol * (wsq + par * delsq) - gam * gam * wwsq >= 0
                                 d(:) = d + gam * z;
