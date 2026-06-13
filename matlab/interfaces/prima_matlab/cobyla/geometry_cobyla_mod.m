@@ -133,15 +133,15 @@ classdef geometry_cobyla_mod
             % DISTQ(J) is the square of the distance from the J-th vertex of the simplex to the "best" point so
             % far, taking the trial point SIM(:, N+1) + D into account.
             if ximproved
-                distsq(1:n) = sum(fortran.dot_power((sim(:, 1:n) - fortran.spread(d, 'dim', 2, 'ncopies', n)), 2), 1);
+                distsq(1:n) = sum(fortran.power((sim(:, 1:n) - fortran.spread(d, 'dim', 2, 'ncopies', n)), 2), 1);
                 %%MATLAB: distsq = sum((sim(:, 1:n) - d).^2);  % d should be a column! Implicit expansion
-                distsq(n + 1) = sum(fortran.dot_power(d, 2), 'all');
+                distsq(n + 1) = sum(fortran.power(d, 2), 'all');
             else
-                distsq(1:n) = sum(fortran.dot_power(sim(:, 1:n), 2), 1);
+                distsq(1:n) = sum(fortran.power(sim(:, 1:n), 2), 1);
                 distsq(n + 1) = consts_obj.ZERO;
             end
 
-            weight(:) = max(consts_obj.ONE, distsq ./ fortran.power(max(rho, consts_obj.TENTH * delta), 2)); % Similar to Powell's NEWUOA code
+            weight(:) = max(consts_obj.ONE, distsq ./ max(rho, consts_obj.TENTH * delta) ^ 2); % Similar to Powell's NEWUOA code
             % Other possible definitions of WEIGHT.
             % %weight = distsq  ! Similar to Powell's LINCOA code, but WRONG. See comments in LINCOA/geometry.f90.
             % %weight = max(ONE, 25.0_RP * distsq / delta**2)  ! Similar to Powell's BOBYQA code, works well

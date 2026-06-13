@@ -94,16 +94,16 @@ classdef geometry_lincoa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum(fortran.dot_power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column!! Implicit expansion
 
             else
-                distsq(:) = sum(fortran.dot_power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
             %distsq = sum((xpt - spread(xpt(:, kopt), dim=2, ncopies=npt))**2, dim=1)  ! Powell's code
 
-            weight(:) = fortran.dot_power(max(consts_obj.ONE, distsq ./ fortran.power(max(consts_obj.TENTH * delta, rho), 2)), 3); % Powell's NEWUOA code
+            weight(:) = fortran.power(max(consts_obj.ONE, distsq ./ max(consts_obj.TENTH * delta, rho) ^ 2), 3); % Powell's NEWUOA code
             % Other possible definitions of WEIGHT.
             % %weight = distsq**2  ! Powell's code. WRONG.
             % %weight = max(ONE, distsq / max(TENTH * delta, rho)**2)**2.5  ! Worse than power 3
@@ -322,7 +322,7 @@ classdef geometry_lincoa_mod
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(delbar > 0, "DELBAR> 0", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
+                tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
                 debug_obj.assert(numel(rescon) == m, "SIZE(RESCON) == M", srname);
@@ -346,7 +346,7 @@ classdef geometry_lincoa_mod
             % without considering the linear constraints. In the following, VLAGABS(K) is set to the maximum of
             % |PHI_K(t)| subject to the trust-region constraint with PHI_K(t) = LFUNC((1-t)*XOPT + t*XPT(:, K)).
             dderiv(:) = linalg_obj.matprod12(glag, xpt) - linalg_obj.inprod(glag, xopt); % The derivatives PHI_K'(0).
-            distsq(:) = sum(fortran.dot_power((xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt)), 2), 1);
+            distsq(:) = sum(fortran.power((xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt)), 2), 1);
             % Set DISTSQ(KOPT) to a positive artificial value. Otherwise, the calculation of STPLEN will raise a
             % floating point exception. This artificial value will NOT be used.
             distsq(kopt) = consts_obj.ONE;
@@ -359,7 +359,7 @@ classdef geometry_lincoa_mod
             if dderiv(knew) * (dderiv(knew) - consts_obj.ONE) < 0
                 stplen(knew) = -stplen(knew);
             end
-            vlagabs(knew) = abs(stplen(knew) * dderiv(knew)) + fortran.power(stplen(knew), 2) * abs(dderiv(knew) - consts_obj.ONE);
+            vlagabs(knew) = abs(stplen(knew) * dderiv(knew)) + stplen(knew) ^ 2 * abs(dderiv(knew) - consts_obj.ONE);
             % It does not make sense to consider "the straight line through XOPT and XPT(:, KOPT)". Thus we set
             % VLAGABS(KOPT) to -1 so that KOPT is skipped when we maximize VLAGABS.
             vlagabs(kopt) = -consts_obj.ONE;

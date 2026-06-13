@@ -90,15 +90,15 @@ classdef geometry_uobyqa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum(fortran.dot_power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = sum(fortran.dot_power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
-            weight(:) = fortran.dot_power(max(consts_obj.ONE, distsq ./ fortran.power(rho, 2)), 4);
+            weight(:) = fortran.power(max(consts_obj.ONE, distsq ./ rho ^ 2), 4);
             % Other possible definitions of WEIGHT.
             % %weight = max(ONE, distsq / rho**2)**3.5_RP ! ! No better than power 4.
             % %weight = max(ONE, distsq / delta**2)**3.5_RP  ! Not better than DISTSQ/RHO**2.
@@ -266,7 +266,7 @@ classdef geometry_uobyqa_mod
             h(:, :) = linalg_obj.vec2smat(pl(n + 1:npt - 1, knew));
 
             % Evaluate GG = G^T*G and GHG = G^T*H*G. They will be used later.
-            gg = sum(fortran.dot_power(g, 2), 'all');
+            gg = sum(fortran.power(g, 2), 'all');
             ghg = linalg_obj.inprod(g, linalg_obj.matprod21(h, g));
 
             % Calculate the Cauchy step as a backup. Powell's code does not have this, and D may be 0 or NaN.
@@ -302,19 +302,19 @@ classdef geometry_uobyqa_mod
             end
 
             % Pick V such that ||HV|| / ||V|| is large.
-            v(:) = h(:, fortran.maxloc(sum(fortran.dot_power(h, 2), 1), 'dim', 1));
+            v(:) = h(:, fortran.maxloc(sum(fortran.power(h, 2), 1), 'dim', 1));
             % Normalize V. Powell's code does not do this. It does not change the algorithm as only its
             % direction matters. It slightly improves the performance in the noiseless case.
             v(:) = v ./ linalg_obj.p_norm(v);
 
             % Set D to a vector in the subspace span{V, HV} that maximizes |(D, HD)|/(D, D), except that we set
             % D = HV if V and HV are nearly parallel.
-            vv = sum(fortran.dot_power(v, 2), 'all');
+            vv = sum(fortran.power(v, 2), 'all');
             d(:) = linalg_obj.matprod21(h, v);
             vhv = linalg_obj.inprod(v, d);
-            if vhv * vhv <= 0.9999 * sum(fortran.dot_power(d, 2), 'all') * vv
+            if vhv * vhv <= 0.9999 * sum(fortran.power(d, 2), 'all') * vv
                 d(:) = d - (vhv / vv) * v;
-                dd = sum(fortran.dot_power(d, 2), 'all');
+                dd = sum(fortran.power(d, 2), 'all');
                 scaling = fortran.sqrt(dd / vv);
                 dhd = linalg_obj.inprod(d, linalg_obj.matprod21(h, d));
                 v(:) = scaling * v;
@@ -322,15 +322,15 @@ classdef geometry_uobyqa_mod
                 vhd = scaling * dd;
                 temp = consts_obj.HALF * (dhd - vhv);
                 if dhd + vhv < 0
-                    d(:) = vhd * v + (temp - fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhd, 2))) * d;
+                    d(:) = vhd * v + (temp - fortran.sqrt(temp ^ 2 + vhd ^ 2)) * d;
                 else
-                    d(:) = vhd * v + (temp + fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhd, 2))) * d;
+                    d(:) = vhd * v + (temp + fortran.sqrt(temp ^ 2 + vhd ^ 2)) * d;
                 end
             end
 
             % We now turn our attention to the subspace span{G, D}. A multiple of the current D is returned if
             % that choice seems to be adequate.
-            dd = sum(fortran.dot_power(d, 2), 'all');
+            dd = sum(fortran.power(d, 2), 'all');
             gd = linalg_obj.inprod(g, d);
             dhd = linalg_obj.inprod(d, linalg_obj.matprod21(h, d));
 
@@ -341,7 +341,7 @@ classdef geometry_uobyqa_mod
             end
 
             v(:) = d - (gd / gg) * g;
-            vv = sum(fortran.dot_power(v, 2), 'all');
+            vv = sum(fortran.power(v, 2), 'all');
             if gd * dhd < 0
                 scaling = -delbar / fortran.sqrt(dd);
             else
@@ -374,11 +374,11 @@ classdef geometry_uobyqa_mod
             else
                 temp = consts_obj.HALF * (ghg - vhv);
                 if temp < 0
-                    vmu = temp - fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhg, 2));
+                    vmu = temp - fortran.sqrt(temp ^ 2 + vhg ^ 2);
                 else
-                    vmu = temp + fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhg, 2));
+                    vmu = temp + fortran.sqrt(temp ^ 2 + vhg ^ 2);
                 end
-                temp = fortran.sqrt(fortran.power(vmu, 2) + fortran.power(vhg, 2));
+                temp = fortran.sqrt(vmu ^ 2 + vhg ^ 2);
                 wcos = vmu / temp;
                 wsin = vhg / temp;
             end

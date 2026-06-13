@@ -407,7 +407,7 @@ classdef lincob_mod
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
                 qred = -powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
-                trfail = (~(qred > 1.0e-6 * fortran.power(rho, 2))); % QRED is tiny/negative or NaN.
+                trfail = (~(qred > 1.0e-6 * rho ^ 2)); % QRED is tiny/negative or NaN.
 
                 if shortd || trfail
                     % In this case, do nothing but reducing DELTA. Afterward, DELTA < DNORM may occur.
@@ -518,9 +518,9 @@ classdef lincob_mod
                 % Powell's version (note that size(dnorm_rec) = 5 in his implementation):
                 %accurate_mod = all(dnorm_rec <= HALF * rho) .or. all(dnorm_rec(3:size(dnorm_rec)) <= TENTH * rho)
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
-                distsq(:) = sum(fortran.dot_power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
-                close_itpset = all(distsq <= 4.0 * fortran.power(delta, 2), 'all'); % Powell's NEWUOA code.
+                close_itpset = all(distsq <= 4.0 * delta ^ 2, 'all'); % Powell's NEWUOA code.
                 % Below are some alternative definitions of CLOSE_ITPSET.
                 % N.B.: The threshold for CLOSE_ITPSET is at least DELBAR, the trust region radius for GEOSTEP.
                 % %close_itpset = all(distsq <= 4.0_RP * rho**2)  ! Powell's UOBYQA code.
@@ -659,7 +659,7 @@ classdef lincob_mod
                 % Shift XBASE if XOPT may be too far from XBASE.
                 % Powell's original criterion for shifting XBASE: before a trust region step or a geometry step,
                 % shift XBASE if SUM(XOPT**2) >= 1.0E3*DELTA**2.
-                if sum(fortran.dot_power(xpt(:, kopt), 2), 'all') >= 1000.0 * fortran.power(delta, 2)
+                if sum(fortran.power(xpt(:, kopt), 2), 'all') >= 1000.0 * delta ^ 2
                     % Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E3*RHO**2.
                     b(:) = b - linalg_obj.matprod12(xpt(:, kopt), amat);
                     [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq, 'idz', idz);

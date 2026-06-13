@@ -155,7 +155,7 @@ classdef trustregion_uobyqa_mod
             d = repmat(consts_obj.ZERO, size(d));
             crvmin = consts_obj.ZERO;
 
-            gsq = sum(fortran.dot_power(gg, 2), 'all');
+            gsq = sum(fortran.power(gg, 2), 'all');
             gnorm = fortran.sqrt(gsq);
 
             if infnan_obj.is_nan_sp(gsq)
@@ -253,7 +253,7 @@ classdef trustregion_uobyqa_mod
                 % Powell implemented the loop by a GOTO, and K = N when the loop exits. It may not be true here.
                 for k = 1:n - 1
                     if piv(k) > 0
-                        piv(k + 1) = td(k + 1) + par - fortran.power(tn(k), 2) / piv(k);
+                        piv(k + 1) = td(k + 1) + par - tn(k) ^ 2 / piv(k);
                     elseif abs(piv(k)) + abs(tn(k)) <= 0
                         % PIV(K) == 0 == TN(K)
                         piv(k + 1) = td(k + 1) + par;
@@ -348,7 +348,7 @@ classdef trustregion_uobyqa_mod
                         end
                     end
 
-                    dsq = sum(fortran.dot_power(d, 2), 'all');
+                    dsq = sum(fortran.power(d, 2), 'all');
                     parl = par;
                     parlest = par - dhd / dsq;
                 end
@@ -399,7 +399,7 @@ classdef trustregion_uobyqa_mod
                     for k = 1:n - 1
                         d(k + 1) = -(gg(k + 1) + tn(k) * d(k)) / piv(k + 1);
                     end
-                    wsq = linalg_obj.inprod(piv, fortran.dot_power(d, 2)); % GG^T*(H+PAR*I)^{-1}*GG. Needed in the convergence test.
+                    wsq = linalg_obj.inprod(piv, fortran.power(d, 2)); % GG^T*(H+PAR*I)^{-1}*GG. Needed in the convergence test.
                     % The loop sets D = L^{-T}*D = -L^{-T}*PIV^{-1}*L^{-1}*GG = -(H+PAR*I)^{-1}*GG.
                     for k = n - 1:-1:1
                         d(k) = d(k) - tn(k) * d(k + 1) / piv(k);
@@ -410,7 +410,7 @@ classdef trustregion_uobyqa_mod
                         break
                     end
 
-                    dsq = sum(fortran.dot_power(d, 2), 'all');
+                    dsq = sum(fortran.power(d, 2), 'all');
 
                     % Return if the Newton-Raphson step is feasible, setting CRVMIN to the least eigenvalue of H.
                     if par <= 0 && dsq <= delsq
@@ -480,12 +480,12 @@ classdef trustregion_uobyqa_mod
                                     z(k + 1) = (consts_obj.ONE - tnz) / piv(k + 1);
                                 end
                             end
-                            wwsq = linalg_obj.inprod(piv, fortran.dot_power(z, 2)); % Needed in the convergence test.
+                            wwsq = linalg_obj.inprod(piv, fortran.power(z, 2)); % Needed in the convergence test.
                             for k = n - 1:-1:1
                                 z(k) = z(k) - tn(k) * z(k + 1) / piv(k);
                             end
 
-                            zsq = sum(fortran.dot_power(z, 2), 'all');
+                            zsq = sum(fortran.power(z, 2), 'all');
                             dtz = linalg_obj.inprod(d, z);
 
                             % Apply the alternative test for convergence.

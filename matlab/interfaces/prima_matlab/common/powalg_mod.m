@@ -123,7 +123,7 @@ classdef powalg_mod
                 debug_obj.assert(numel(c) == m, "SIZE(C) == M", srname);
                 debug_obj.assert(numel(Rdiag) >= min(m, n + 1) && numel(Rdiag) <= m, "MIN(M, N+1) <= SIZE(Rdiag) <= M", srname);
                 debug_obj.assert(size(Q, 1) == m && size(Q, 2) == m, "SIZE(Q) == [M, M]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(12, consts_obj.MAXPOW10)) * consts_obj.EPS * double(m + 1)));
+                tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(12, consts_obj.MAXPOW10) * consts_obj.EPS * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthonormal", srname); % Costly!
                 Qsave(:, :) = Q(:, 1:n); % For debugging only
                 Rdsave(:) = Rdiag(1:n); % For debugging only
@@ -160,7 +160,7 @@ classdef powalg_mod
             % The two IFs cannot be merged as Fortran may evaluate CQ(N+1) even if N>=M, leading to a SEGFAULT.
             if n < m
                 % Powell's condition for the following IF: CQ(N+1) /= 0.
-                if abs(cq(n + 1)) > fortran.power(consts_obj.EPS, 2) && ~linalg_obj.isminor0(cq(n + 1), cqa(n + 1))
+                if abs(cq(n + 1)) > consts_obj.EPS ^ 2 && ~linalg_obj.isminor0(cq(n + 1), cqa(n + 1))
                     n = n + 1;
                 end
             end
@@ -240,7 +240,7 @@ classdef powalg_mod
                 debug_obj.assert(size(Q, 1) == m && size(Q, 2) == m, "SIZE(Q) = [M, M]", srname);
                 debug_obj.assert(size(Q, 2) == size(R, 1), "SIZE(Q, 2) == SIZE(R, 1)", srname);
                 debug_obj.assert(size(R, 2) >= n + 1 && size(R, 2) <= m, "N+1 <= SIZE(R, 2) <= M", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(m + 1)));
+                tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthogonal", srname);
                 debug_obj.assert(linalg_obj.istriu(R), "R is upper triangular", srname);
                 debug_obj.assert(all(linalg_obj.diag(R(:, 1:n)) > 0, 'all'), "DIAG(R(:, 1:N)) > 0", srname);
@@ -260,7 +260,7 @@ classdef powalg_mod
                     % Powell: IF (ABS(CQ(K + 1)) > 1.0D-20 * ABS(CQ(K))) THEN
                     G(:, :) = linalg_obj.planerot(cq([k, k + 1]));
                     Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k, k + 1]), G');
-                    cq(k) = fortran.sqrt(fortran.power(cq(k), 2) + fortran.power(cq(k + 1), 2));
+                    cq(k) = fortran.sqrt(cq(k) ^ 2 + cq(k + 1) ^ 2);
                 end
             end
 
@@ -341,7 +341,7 @@ classdef powalg_mod
                 debug_obj.assert(i >= 1 && i <= n, "1 <= i <= N", srname);
                 debug_obj.assert(numel(Rdiag) == n, "SIZE(Rdiag) == N", srname);
                 debug_obj.assert(size(Q, 1) == m && size(Q, 2) >= n && size(Q, 2) <= m, "SIZE(Q, 1) == M, N <= SIZE(Q, 2) <= M", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(m + 1)));
+                tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthonormal", srname); % Costly!
                 Qsave(:, :) = Q; % For debugging only.
                 Rdsave(:) = Rdiag(1:i); % For debugging only.
@@ -457,7 +457,7 @@ classdef powalg_mod
                 debug_obj.assert(size(Q, 2) == size(R, 1), "SIZE(Q, 2) == SIZE(R, 1)", srname);
                 debug_obj.assert(size(Q, 2) >= n && size(Q, 2) <= m, "N <= SIZE(Q, 2) <= M", srname);
                 debug_obj.assert(size(R, 1) >= n && size(R, 1) <= m, "N <= SIZE(R, 1) <= M", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(m + 1)));
+                tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthogonal", srname);
                 debug_obj.assert(linalg_obj.istriu(R), "R is upper triangular", srname);
                 debug_obj.assert(all(linalg_obj.diag(R(:, 1:n)) > 0, 'all'), "DIAG(R(:, 1:N)) > 0", srname);
@@ -1022,7 +1022,7 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            A(:, :) = consts_obj.HALF * fortran.dot_power(linalg_obj.matprod22(xpt', xpt), 2);
+            A(:, :) = consts_obj.HALF * fortran.power(linalg_obj.matprod22(xpt', xpt), 2);
             Omega(:, :) = -linalg_obj.matprod22(zmat(:, 1:idz - 1), zmat(:, 1:idz - 1)') + linalg_obj.matprod22(zmat(:, idz:npt - n - 1), zmat(:, idz:npt - n - 1)');
             maxabs = max([consts_obj.ONE, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), max(abs(bmat), [], 'all')], [], 'all');
             U(:, :) = linalg_obj.eye1(npt) - linalg_obj.matprod22(A, Omega) - linalg_obj.matprod22(xpt', bmat(:, 1:npt));
@@ -1212,7 +1212,7 @@ classdef powalg_mod
             % Calculate the parameters of the updating formula (4.18)--(4.20) in the NEWUOA paper.
             alpha = hcol(knew); % Nonnegative in precise arithmetic.
             tau = vlag(knew); % Nonzero due to the definition of KNEW.
-            denom = alpha * beta + fortran.power(tau, 2); % Positive in precise arithmetic.
+            denom = alpha * beta + tau ^ 2; % Positive in precise arithmetic.
 
             % After the following line, VLAG = H*w - e_KNEW in the NEWUOA paper (where t = KNEW).
             vlag(knew) = vlag(knew) - consts_obj.ONE;
@@ -1339,7 +1339,7 @@ classdef powalg_mod
                 tempa = (beta / denom) * zmat(knew, jb);
                 tempb = (tau / denom) * zmat(knew, jb);
                 temp = zmat(knew, ja);
-                scala = consts_obj.ONE / fortran.sqrt(abs(beta) * fortran.power(temp, 2) + fortran.power(tau, 2)); % 1/SQRT(ZETA) in (4.19)-(4.20) of NEWUOA paper
+                scala = consts_obj.ONE / fortran.sqrt(abs(beta) * temp ^ 2 + tau ^ 2); % 1/SQRT(ZETA) in (4.19)-(4.20) of NEWUOA paper
                 scalb = scala * sqrtdn;
                 zmat(:, ja) = scala * (tau * zmat(:, ja) - temp * vlag(1:npt));
                 zmat(:, jb) = scalb * (zmat(:, jb) - tempa * hcol(1:npt) - tempb * vlag(1:npt));
@@ -1574,7 +1574,7 @@ classdef powalg_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(numel(vlag) == npt + n, "SIZE(VLAG) == NPT + N", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(12, consts_obj.MAXPOW10)) * consts_obj.EPS * double(npt + n)));
+                tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(12, consts_obj.MAXPOW10) * consts_obj.EPS * double(npt + n)));
                 debug_obj.wassert(abs(sum(vlag(1:npt), 'all') - consts_obj.ONE) / double(npt) <= tol || floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))), "SUM(VLAG(1:NPT)) == 1", srname);
             end
 
@@ -1674,7 +1674,7 @@ classdef powalg_mod
             xrefsq = linalg_obj.inprod(xref, xref);
             dvlag = linalg_obj.inprod(d, vlag(npt + 1:npt + n));
             wvlag = linalg_obj.inprod(wcheck, vlag(1:npt));
-            beta = fortran.power(dxref, 2) + dsq * (xrefsq + dxref + dxref + consts_obj.HALF * dsq) - dvlag - wvlag;
+            beta = dxref ^ 2 + dsq * (xrefsq + dxref + dxref + consts_obj.HALF * dsq) - dvlag - wvlag;
             %---------------------------------------------------------------------------------------------------%
             % The last line is equivalent to either of the following lines, but performs better numerically.
             % %BETA = DXREF**2 + DSQ * (XREFSQ + DXREF + DXREF + HALF * DSQ) - INPROD(VLAG, WMV)  ! not good
@@ -1768,10 +1768,10 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            hdiag(:) = -sum(fortran.dot_power(zmat(:, 1:idz_loc - 1), 2), 2) + sum(fortran.dot_power(zmat(:, idz_loc:size(zmat, 2)), 2), 2);
+            hdiag(:) = -sum(fortran.power(zmat(:, 1:idz_loc - 1), 2), 2) + sum(fortran.power(zmat(:, idz_loc:size(zmat, 2)), 2), 2);
             vlag(:) = obj.calvlag_lfqint(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             beta = obj.calbeta(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
-            den(:) = hdiag * beta + fortran.dot_power(vlag(1:npt), 2);
+            den(:) = hdiag * beta + fortran.power(vlag(1:npt), 2);
 
             %====================%
             %  Calculation ends  %

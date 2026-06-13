@@ -309,7 +309,7 @@ classdef cobylb_mod
                 end
 
                 % Does the interpolation set have adequate geometry? It affects IMPROVE_GEO and REDUCE_RHO.
-                adequate_geo = all(sum(fortran.dot_power(sim(:, 1:n), 2), 1) <= 4.0 * fortran.power(delta, 2), 'all');
+                adequate_geo = all(sum(fortran.power(sim(:, 1:n), 2), 1) <= 4.0 * delta ^ 2, 'all');
 
                 % Calculate the linear approximations to the objective and constraint functions.
                 % N.B.: TRSTLP accesses A mostly by columns, so it is more reasonable to save A instead of A^T.
@@ -363,11 +363,11 @@ classdef cobylb_mod
                     % objective and constraints at X, assuming them to have the values at the closest point.
                     % N.B.: If this happens, do NOT include X into the filter, as F and CONSTR are inaccurate.
                     x(:) = sim(:, n + 1) + d;
-                    distsq(n + 1) = sum(fortran.dot_power((x - sim(:, n + 1)), 2), 'all');
+                    distsq(n + 1) = sum(fortran.power((x - sim(:, n + 1)), 2), 'all');
                     distsq(1:n) = reshape(cell2mat(arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n), "UniformOutput", false)), [], 1); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     j = fix(fortran.minloc(distsq, 'dim', 1));
-                    if distsq(j) <= fortran.power((1.0e-4 * rhoend), 2)
+                    if distsq(j) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(j);
                         constr(:) = conmat(:, j);
                         cstrv = cval(j);
@@ -517,7 +517,7 @@ classdef cobylb_mod
                 % we take another geometry step in that case? If no, why should we do it here? Indeed, this
                 % distinction makes no practical difference for CUTEst problems with at most 100 variables
                 % and 5000 constraints, while the algorithm framework is simplified.
-                if improve_geo && ~all(sum(fortran.dot_power(sim(:, 1:n), 2), 1) <= 4.0 * fortran.power(delta, 2), 'all')
+                if improve_geo && ~all(sum(fortran.power(sim(:, 1:n), 2), 1) <= 4.0 * delta ^ 2, 'all')
                     % Before the geometry step, UPDATEPOLE has been called either implicitly by UPDATEXFC or
                     % explicitly after CPEN is updated, so that SIM(:, N + 1) is the optimal vertex.
 
@@ -545,7 +545,7 @@ classdef cobylb_mod
                     % reduced, leading to infinite cycling. (N.B.: Our implementation uses DELTA as the trust
                     % region radius, with RHO being its lower bound. When the infinite cycling occurred in this
                     % test, DELTA = RHO and it could not be reduced due to the requirement that DELTA >= RHO.)
-                    jdrop_geo = fix(fortran.maxloc(sum(fortran.dot_power(sim(:, 1:n), 2), 1), 'dim', 1));
+                    jdrop_geo = fix(fortran.maxloc(sum(fortran.power(sim(:, 1:n), 2), 1), 'dim', 1));
 
                     % Calculate the geometry step D.
                     delbar = consts_obj.HALF * delta;
@@ -560,11 +560,11 @@ classdef cobylb_mod
                     % and any interpolation point is at least DELBAR, yet X may be close to them due to
                     % rounding. In an experiment with single precision on 20240317, X = SIM(:, N+1) occurred.
                     x(:) = sim(:, n + 1) + d;
-                    distsq(n + 1) = sum(fortran.dot_power((x - sim(:, n + 1)), 2), 'all');
+                    distsq(n + 1) = sum(fortran.power((x - sim(:, n + 1)), 2), 'all');
                     distsq(1:n) = reshape(cell2mat(arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n), "UniformOutput", false)), [], 1); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     j = fix(fortran.minloc(distsq, 'dim', 1));
-                    if distsq(j) <= fortran.power((1.0e-4 * rhoend), 2)
+                    if distsq(j) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(j);
                         constr(:) = conmat(:, j);
                         cstrv = cval(j);

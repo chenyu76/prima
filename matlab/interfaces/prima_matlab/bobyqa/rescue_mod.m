@@ -264,7 +264,7 @@ classdef rescue_mod
                 else
                     bmat(k, 1) = -consts_obj.ONE / ptsaux(1, k);
                     bmat(k, k + 1) = consts_obj.ONE / ptsaux(1, k);
-                    bmat(k, k + npt) = -consts_obj.HALF * fortran.power(ptsaux(1, k), 2);
+                    bmat(k, k + npt) = -consts_obj.HALF * ptsaux(1, k) ^ 2;
                 end
             end
 
@@ -296,7 +296,7 @@ classdef rescue_mod
             % but there is no square in the BOBYQA paper (see the paragraph between (5.9) and (5.10) of the
             % BOBYQA paper). The latter seem to work better in a test on 20221125.
             %score = sum(xpt**2, dim=1)  ! Powell's BOBYQA code
-            score(:) = fortran.sqrt(sum(fortran.dot_power(xpt, 2), 1)); % Powell's BOBYQA paper
+            score(:) = fortran.sqrt(sum(fortran.power(xpt, 2), 1)); % Powell's BOBYQA paper
             % In theory, SCORE(KOPT) = 0. Make sure this so that KOPT will be skipped when we choose KORIG below.
             score(kopt) = consts_obj.ZERO;
             scoreinc = max(score, [], 'all');
@@ -311,7 +311,7 @@ classdef rescue_mod
             % Originally, it is a WHILE loop, but we change it to a DO loop to avoid infinite cycling.
             % N.B.: Overflow will occur in NPT^2 if NPT > 180 and IK = 16. The following is a workaround, which
             % is **not needed in Python/MATLAB/Julia/R. In MATLAB, we can just take maxiter = npt^2**.
-            maxiter = fix(min(fortran.power(10, min(floor(log10(double(intmax('int64')))), floor(log10(double(intmax('int64')))))), fortran.power(fix(npt), 2))); %%MATLAB: maxiter = npt^2;
+            maxiter = fix(min(10 ^ min(floor(log10(double(intmax('int64')))), floor(log10(double(intmax('int64'))))), fix(npt) ^ 2)); %%MATLAB: maxiter = npt^2;
             for iter = 1:maxiter
                 % %DO WHILE (ANY(SCORE > 0) .AND. NPROV > 1)   ! WHILE version.
                 % %IF (ALL(SCORE <= 0) .AND. NPROV <= 0) THEN ! Powell's code. May not take any provisional point.
@@ -373,7 +373,7 @@ classdef rescue_mod
                 % B2 = BMAT(:, NPT+1:NPT+N). Denoting W1 = WMV(1:NPT) and W2 = WMV(NPT+1:NPT+N), we then have
                 % WMV'*H*WMV = ||W1'*Z||^2 + 2*W1'*B1*W2 + W1'*B2*W2 = ||W1'*Z||^2 + W1'(B1*W2 + [B1, B2]*WMV).
                 bsum = linalg_obj.inprod(wmv(1:n), linalg_obj.matprod21(bmat(:, 1:npt), wmv(1:npt)) + linalg_obj.matprod21(bmat, wmv));
-                beta = consts_obj.HALF * fortran.power(sum(fortran.dot_power(xpt(:, korig), 2), 'all'), 2) - sum(fortran.dot_power(linalg_obj.matprod12(wmv(1:npt), zmat), 2), 'all') - bsum;
+                beta = consts_obj.HALF * sum(fortran.power(xpt(:, korig), 2), 'all') ^ 2 - sum(fortran.power(linalg_obj.matprod12(wmv(1:npt), zmat), 2), 'all') - bsum;
 
                 % Finally, set VLAG(KOPT) to the correct value.
                 vlag(kopt) = vlag(kopt) + consts_obj.ONE;
@@ -381,8 +381,8 @@ classdef rescue_mod
                 % For all K with PTSID(K) > 0, calculate the denominator DEN(K) = SIGMA in the updating formula
                 % of H for XPT(:, KORIG) to replace XPT_PROV(:, K).
                 den = repmat(consts_obj.ZERO, size(den));
-                hdiag(linalg_obj.trueloc(ptsid > 0)) = sum(fortran.dot_power(zmat(linalg_obj.trueloc(ptsid > 0), :), 2), 2);
-                den(linalg_obj.trueloc(ptsid > 0)) = hdiag(linalg_obj.trueloc(ptsid > 0)) * beta + fortran.dot_power(vlag(linalg_obj.trueloc(ptsid > 0)), 2);
+                hdiag(linalg_obj.trueloc(ptsid > 0)) = sum(fortran.power(zmat(linalg_obj.trueloc(ptsid > 0), :), 2), 2);
+                den(linalg_obj.trueloc(ptsid > 0)) = hdiag(linalg_obj.trueloc(ptsid > 0)) * beta + fortran.power(vlag(linalg_obj.trueloc(ptsid > 0)), 2);
 
                 % Attempt setting KPROV to the index of the provisional point to be replaced with the KORIG-th
                 % original interpolation point. We choose KPROV by maximizing DEN(KPROV), which will be the
@@ -402,7 +402,7 @@ classdef rescue_mod
                 % point will be ranked lower if it fails to fulfill MAXVAL(DEN) > C*MAXVAL(VLAG(1:NPT)**2).
                 % Even if KORIG cannot satisfy this condition for now, it may validate the inequality in future
                 % attempts, as BMAT and ZMAT will be updated.
-                if ~(infnan_obj.is_finite(sum(abs(vlag), 'all')) && any(den > 5.0e-2 * max(fortran.dot_power(vlag(1:npt), 2), [], 'all'), 'all'))
+                if ~(infnan_obj.is_finite(sum(abs(vlag), 'all')) && any(den > 5.0e-2 * max(fortran.power(vlag(1:npt), 2), [], 'all'), 'all'))
                     % The above condition works a bit better than Powell's version below due to the factor 0.05.
                     % %IF (.NOT. (ANY(DEN > 1.0E-2_RP * MAXVAL(VLAG(1:NPT)**2)))) THEN  ! Powell' code
                     score(korig) = -score(korig) - scoreinc;
@@ -550,16 +550,16 @@ classdef rescue_mod
                         ip = floor(ptsid(k));
                         iq = floor(double(n + 1) * ptsid(k) - double((n + 1) * ip));
                         if ip > 0 && iq > 0
-                            hq(ip, ip) = hq(ip, ip) + pqinc(k) * fortran.power(ptsaux(1, ip), 2);
-                            hq(iq, iq) = hq(iq, iq) + pqinc(k) * fortran.power(ptsaux(1, iq), 2);
+                            hq(ip, ip) = hq(ip, ip) + pqinc(k) * ptsaux(1, ip) ^ 2;
+                            hq(iq, iq) = hq(iq, iq) + pqinc(k) * ptsaux(1, iq) ^ 2;
                             hq(ip, iq) = hq(ip, iq) + pqinc(k) * ptsaux(1, ip) * ptsaux(1, iq);
                             hq(iq, ip) = hq(ip, iq);
                         elseif ip > 0
                             % IP > 0, IQ == 0
-                            hq(ip, ip) = hq(ip, ip) + pqinc(k) * fortran.power(ptsaux(1, ip), 2);
+                            hq(ip, ip) = hq(ip, ip) + pqinc(k) * ptsaux(1, ip) ^ 2;
                         elseif iq > 0
                             % IP == 0, IP > 0
-                            hq(iq, iq) = hq(iq, iq) + pqinc(k) * fortran.power(ptsaux(2, iq), 2);
+                            hq(iq, iq) = hq(iq, iq) + pqinc(k) * ptsaux(2, iq) ^ 2;
                         end
                     end
                     ptsid(kpt) = consts_obj.ZERO;
@@ -722,7 +722,7 @@ classdef rescue_mod
             tau = vlag(knew);
             % In theory, DENOM can also be calculated after ZMAT is rotated below. However, this worsened the
             % performance of BOBYQA in a test on 20220413.
-            denom = sum(fortran.dot_power(zmat(knew, :), 2), 'all') * beta + fortran.power(tau, 2);
+            denom = sum(fortran.power(zmat(knew, :), 2), 'all') * beta + tau ^ 2;
 
             % Quite rarely, due to rounding errors, VLAG or BETA may not be finite, or DENOM may not be
             % positive. In such cases, [BMAT, ZMAT] would be destroyed by the update, and hence we would rather

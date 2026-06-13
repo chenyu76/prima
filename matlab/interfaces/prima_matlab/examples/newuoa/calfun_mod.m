@@ -25,7 +25,7 @@ classdef calfun_mod
             % Outputs
 
 
-            f = fortran.power((x(1) - 5.0), 2) + fortran.power((x(2) - 4.0), 2);
+            f = (x(1) - 5.0) ^ 2 + (x(2) - 4.0) ^ 2;
 
         end
         % Callback function

@@ -155,11 +155,11 @@ classdef consts_mod
             % N.B.: The `if` is a workaround for the following issues with LLVM flang 19.0.0 and nvfortran 24.3.0:
             % https://fortran-lang.discourse.group/t/flang-new-19-0-warning-overflow-on-power-with-integer-exponent/7801
             % https://forums.developer.nvidia.com/t/bug-of-nvfortran-24-3-0-fort1-terminated-by-signal-11/289026
-            obj.TINYCV = fortran.power(obj.TEN, max(-60, -obj.MAXPOW10));
+            obj.TINYCV = obj.TEN ^ max(-60, -obj.MAXPOW10);
             % FUNCMAX is used in the moderated extreme barrier. All function values are projected to the
             % interval [-FUNCMAX, FUNCMAX] before passing to the solvers, and NaN is replaced with FUNCMAX.
             % CONSTRMAX plays a similar role for constraints.
-            obj.FUNCMAX = fortran.power(obj.TEN, max(4, min(30, obj.HALF_MAXPOW10)));
+            obj.FUNCMAX = obj.TEN ^ max(4, min(30, obj.HALF_MAXPOW10));
             obj.CONSTRMAX = obj.FUNCMAX;
             % Any bound with an absolute value at least BOUNDMAX is considered as no bound.
             obj.BOUNDMAX = obj.QUART * obj.REALMAX;
@@ -183,7 +183,7 @@ classdef consts_mod
             % and if the floating-point numbers are in single precision.
             %
             % Double or higher precision in released mode
-            obj.SYMTOL_DFT = max(obj.TEN * obj.EPS, fortran.power(obj.TEN, max(-10, -obj.MAXPOW10)));
+            obj.SYMTOL_DFT = max(obj.TEN * obj.EPS, obj.TEN ^ max(-10, -obj.MAXPOW10));
 
             % ORTHTOL_DFT is the default tolerance for testing orthogonality of matrices.
             % In some cases, due to compiler bugs, we need to disable the test. We signify such cases by setting
@@ -198,14 +198,14 @@ classdef consts_mod
             obj.RHOBEG_DFT = obj.ONE;
             % RHOEND: final value of the trust region radius. Should indicate the accuracy required in the final
             % values of the variables.
-            obj.RHOEND_DFT = fortran.power(obj.TEN, max(-6, -obj.MAXPOW10)); % 1.0E-6
+            obj.RHOEND_DFT = obj.TEN ^ max(-6, -obj.MAXPOW10); % 1.0E-6
             % FTARGET: target value of the objective function. Solvers exit when finding a feasible point with
             % the objective function value no more than FTARGET.
             obj.FTARGET_DFT = -obj.REALMAX;
             % CTOL: tolerance for constraint violation. A point with constraint violation <= CTOL is considered feasible.
             obj.CTOL_DFT = fortran.sqrt(obj.EPS);
             % CWEIGHT: weight of constraint violation in the merit function used to select the output point.
-            obj.CWEIGHT_DFT = fortran.power(obj.TEN, min(8, obj.MAXPOW10)); % 1.0E8
+            obj.CWEIGHT_DFT = obj.TEN ^ min(8, obj.MAXPOW10); % 1.0E8
             % ETA1: threshold of reduction ratio for shrinking the trust region radius.
             obj.ETA1_DFT = obj.TENTH;
             % ETA2: threshold of reduction ratio for expanding the trust region radius.
@@ -220,7 +220,7 @@ classdef consts_mod
             obj.MAXFUN_DIM_DFT = 500;
 
             % Maximal amount of memory (Byte) allowed for XHIST, FHIST, CONHIST, CHIST, and the filters.
-            obj.MHM = 300 * fortran.power(10, 6);
+            obj.MHM = 300 * 10 ^ 6;
             % Make sure that MAXHISTMEM does not exceed HUGE(0) to avoid overflow and memory errors.
             obj.MAXHISTMEM = min(obj.MHM, (intmax('int32') - 1) / 2);
 

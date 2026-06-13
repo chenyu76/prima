@@ -271,7 +271,7 @@ classdef newuob_mod
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
                 qred = -powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq);
-                trfail = (~(qred > 1.0e-6 * fortran.power(rho, 2))); % QRED is tiny/negative, or NaN.
+                trfail = (~(qred > 1.0e-6 * rho ^ 2)); % QRED is tiny/negative, or NaN.
 
                 if shortd || trfail
                     % In this case, do nothing but reducing DELTA. Afterward, DELTA < DNORM may occur.
@@ -288,10 +288,10 @@ classdef newuob_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum(fortran.dot_power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
+                    distsq(:) = reshape(sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
-                    if distsq(k) <= fortran.power((1.0e-3 * rhoend), 2)
+                    if distsq(k) <= (1.0e-3 * rhoend) ^ 2
                         f = fval(k);
                     else
                         % Evaluate the objective function at X, taking care of possible Inf/NaN values.
@@ -389,11 +389,11 @@ classdef newuob_mod
                 % 2. If an iteration sets IMPROVE_GEO = TRUE, it must also reduce DELTA or set DELTA to RHO.
 
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
-                accurate_mod = all(abs(moderr_rec) <= 0.125 * crvmin * fortran.power(rho, 2), 'all') && all(dnorm_rec <= rho, 'all');
+                accurate_mod = all(abs(moderr_rec) <= 0.125 * crvmin * rho ^ 2, 'all') && all(dnorm_rec <= rho, 'all');
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT? It affects IMPROVE_GEO, REDUCE_RHO.
-                distsq(:) = sum(fortran.dot_power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
-                close_itpset = all(distsq <= 4.0 * fortran.power(delta, 2), 'all'); % Powell's code.
+                close_itpset = all(distsq <= 4.0 * delta ^ 2, 'all'); % Powell's code.
                 % Below are some alternative definitions of CLOSE_ITPSET.
                 % N.B.: The threshold for CLOSE_ITPSET is at least DELBAR, the trust region radius for GEOSTEP.
                 % %close_itpset = all(distsq <= 4.0_RP * rho**2)  ! Powell's UOBYQA code.
@@ -536,10 +536,10 @@ classdef newuob_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum(fortran.dot_power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
+                    distsq(:) = reshape(sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
-                    if distsq(k) <= fortran.power((1.0e-3 * rhoend), 2)
+                    if distsq(k) <= (1.0e-3 * rhoend) ^ 2
                         f = fval(k);
                     else
                         % Evaluate the objective function at X, taking care of possible Inf/NaN values.
@@ -614,7 +614,7 @@ classdef newuob_mod
                 % 2. Before a geometry step, shift XBASE if SUM(XOPT**2) >= 1.0E3*DELBAR**2.
                 % 3. 1.0E2 works better than 1.0E3 on 20230227. In addition, 1.0E2 works better than 2.0E2,
                 % 5.0E2, and 1.0E3 on 20240406, especially if RP = REAL32.
-                if sum(fortran.dot_power(xpt(:, kopt), 2), 'all') >= 100.0 * fortran.power(delta, 2)
+                if sum(fortran.power(xpt(:, kopt), 2), 'all') >= 100.0 * delta ^ 2
                     [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq, 'idz', idz);
                 end
 
