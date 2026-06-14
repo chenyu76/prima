@@ -1,11 +1,12 @@
 function y = power(x, n)
     if isnumeric(n) && isscalar(n) && isfinite(n)
-    	if n == round(n)
+        if n == round(n)
             y = fortran_power_integer(x, double(n));
-    	else
+        else
             y = fortran_power_real(x, double(n));
+        end
     else
         error('fortran:power:InvalidExponent', ...
-            'power requires a finite scalar exponent.');
+              'power requires a finite scalar exponent.');
     end
 end
