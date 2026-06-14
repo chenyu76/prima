@@ -210,7 +210,7 @@ classdef trustregion_bobyqa_mod
             % Powell commented in the BOBYQA paper (the paragraph above (3.7)) that "numerical experiments show
             % that it is very unusual for subroutine TRSBOX to make more than ten changes to d when seeking an
             % approximate solution to the subproblem (1.8), even if there are hundreds of variables."
-            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), fix(n - nact) ^ 2));
+            maxiter = fix(min(fortran.power(10, min(4, floor(log10(double(intmax('int64')))))), fortran.power(fix(n - nact), 2)));
             for iter = 1:maxiter
                 resid = delsq - sum(fortran.power(d(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
                 if resid <= 0
@@ -232,7 +232,7 @@ classdef trustregion_bobyqa_mod
                 stepsq = sum(fortran.power(s, 2), 'all');
                 ds = linalg_obj.inprod(d(linalg_obj.trueloc(xbdi == 0)), s(linalg_obj.trueloc(xbdi == 0)));
 
-                if ~(stepsq > consts_obj.EPS * delsq && gredsq * delsq > (tol * qred) ^ 2 && ~infnan_obj.is_nan_sp(ds))
+                if ~(stepsq > consts_obj.EPS * delsq && gredsq * delsq > fortran.power((tol * qred), 2) && ~infnan_obj.is_nan_sp(ds))
                     break
                 end
 
@@ -365,7 +365,7 @@ classdef trustregion_bobyqa_mod
                         break % This leads to a difference. Why?
 
                     end
-                    delsq = delsq - d(iact) ^ 2;
+                    delsq = delsq - fortran.power(d(iact), 2);
                     if delsq <= 0
                         twod_search = true;
                         % Why set TWOD_SEARCH to TRUE? Because DELSQ <= 0 just means that D reaches the trust
@@ -442,7 +442,7 @@ classdef trustregion_bobyqa_mod
                 % Let the search direction S be a linear combination of the reduced D and the reduced G that is
                 % orthogonal to the reduced D.
                 temp = gredsq * dredsq - dredg * dredg;
-                if ~(temp > tol ^ 2 * max(gredsq * dredsq, qred ^ 2))
+                if ~(temp > fortran.power(tol, 2) * max(gredsq * dredsq, fortran.power(qred, 2)))
                     % TEMP is tiny or NaN occurs
                     break
                 end
@@ -531,8 +531,8 @@ classdef trustregion_bobyqa_mod
                 % Update GNEW, D and HDRED. If the angle of the alternative iteration is restricted by a bound
                 % on a free variable, that variable is fixed at the bound. The MIN below is a precaution against
                 % rounding errors.
-                cth = min((consts_obj.ONE - hangt ^ 2) / (consts_obj.ONE + hangt ^ 2), consts_obj.ONE - hangt ^ 2);
-                sth = min((hangt + hangt) / (consts_obj.ONE + hangt ^ 2), hangt + hangt);
+                cth = min((consts_obj.ONE - fortran.power(hangt, 2)) / (consts_obj.ONE + fortran.power(hangt, 2)), consts_obj.ONE - fortran.power(hangt, 2));
+                sth = min((hangt + hangt) / (consts_obj.ONE + fortran.power(hangt, 2)), hangt + hangt);
                 gnew(:) = gnew + (cth - consts_obj.ONE) * hdred + sth * hs;
                 dold(:) = d;
                 d(linalg_obj.trueloc(xbdi == 0)) = cth * d(linalg_obj.trueloc(xbdi == 0)) + sth * s(linalg_obj.trueloc(xbdi == 0));

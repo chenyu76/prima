@@ -103,7 +103,7 @@ classdef geometry_bobyqa_mod
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
-            weight(:) = fortran.power(max(consts_obj.ONE, distsq ./ rho ^ 2), 4);
+            weight(:) = fortran.power(max(consts_obj.ONE, distsq ./ fortran.power(rho, 2)), 4);
             % Other possible definitions of WEIGHT.
             % %weight = max(ONE, distsq / rho**2)**3.5  ! Quite similar to power 4
             % %weight = max(ONE, distsq / rho**2)**3  ! Not bad
@@ -522,7 +522,7 @@ classdef geometry_bobyqa_mod
                 sfixsq = consts_obj.ZERO;
                 grdstp = consts_obj.ZERO;
                 for k = 1:n
-                    resis = delbar ^ 2 - sfixsq;
+                    resis = fortran.power(delbar, 2) - sfixsq;
                     if resis <= 0
                         break
                     end
@@ -561,9 +561,9 @@ classdef geometry_bobyqa_mod
                 if curv > -gs && curv < -(consts_obj.ONE + fortran.sqrt(consts_obj.TWO)) * gs
                     scaling = -gs / curv;
                     x(:) = max(sl, min(su, xopt + scaling * s));
-                    vlagsq = (consts_obj.HALF * gs * scaling) ^ 2;
+                    vlagsq = fortran.power((consts_obj.HALF * gs * scaling), 2);
                 else
-                    vlagsq = (gs + consts_obj.HALF * curv) ^ 2;
+                    vlagsq = fortran.power((gs + consts_obj.HALF * curv), 2);
                 end
 
                 if vlagsq > vlagsq_cauchy

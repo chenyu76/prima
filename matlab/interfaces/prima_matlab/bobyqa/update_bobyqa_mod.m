@@ -124,7 +124,7 @@ classdef update_bobyqa_mod
             % performance of BOBYQA in a test on 20220413.
             alpha = hcol(knew);
             tau = vlag(knew);
-            denom = alpha * beta + tau ^ 2;
+            denom = alpha * beta + fortran.power(tau, 2);
 
             % After the following line, VLAG = H*w - e_KNEW in the NEWUOA paper (where t = KNEW).
             vlag(knew) = vlag(knew) - consts_obj.ONE;

@@ -264,7 +264,7 @@ classdef rescue_mod
                 else
                     bmat(k, 1) = -consts_obj.ONE / ptsaux(1, k);
                     bmat(k, k + 1) = consts_obj.ONE / ptsaux(1, k);
-                    bmat(k, k + npt) = -consts_obj.HALF * ptsaux(1, k) ^ 2;
+                    bmat(k, k + npt) = -consts_obj.HALF * fortran.power(ptsaux(1, k), 2);
                 end
             end
 
@@ -311,7 +311,7 @@ classdef rescue_mod
             % Originally, it is a WHILE loop, but we change it to a DO loop to avoid infinite cycling.
             % N.B.: Overflow will occur in NPT^2 if NPT > 180 and IK = 16. The following is a workaround, which
             % is **not needed in Python/MATLAB/Julia/R. In MATLAB, we can just take maxiter = npt^2**.
-            maxiter = fix(min(10 ^ min(floor(log10(double(intmax('int64')))), floor(log10(double(intmax('int64'))))), fix(npt) ^ 2)); %%MATLAB: maxiter = npt^2;
+            maxiter = fix(min(fortran.power(10, min(floor(log10(double(intmax('int64')))), floor(log10(double(intmax('int64')))))), fortran.power(fix(npt), 2))); %%MATLAB: maxiter = npt^2;
             for iter = 1:maxiter
                 % %DO WHILE (ANY(SCORE > 0) .AND. NPROV > 1)   ! WHILE version.
                 % %IF (ALL(SCORE <= 0) .AND. NPROV <= 0) THEN ! Powell's code. May not take any provisional point.
@@ -373,7 +373,7 @@ classdef rescue_mod
                 % B2 = BMAT(:, NPT+1:NPT+N). Denoting W1 = WMV(1:NPT) and W2 = WMV(NPT+1:NPT+N), we then have
                 % WMV'*H*WMV = ||W1'*Z||^2 + 2*W1'*B1*W2 + W1'*B2*W2 = ||W1'*Z||^2 + W1'(B1*W2 + [B1, B2]*WMV).
                 bsum = linalg_obj.inprod(wmv(1:n), linalg_obj.matprod21(bmat(:, 1:npt), wmv(1:npt)) + linalg_obj.matprod21(bmat, wmv));
-                beta = consts_obj.HALF * sum(fortran.power(xpt(:, korig), 2), 'all') ^ 2 - sum(fortran.power(linalg_obj.matprod12(wmv(1:npt), zmat), 2), 'all') - bsum;
+                beta = consts_obj.HALF * fortran.power(sum(fortran.power(xpt(:, korig), 2), 'all'), 2) - sum(fortran.power(linalg_obj.matprod12(wmv(1:npt), zmat), 2), 'all') - bsum;
 
                 % Finally, set VLAG(KOPT) to the correct value.
                 vlag(kopt) = vlag(kopt) + consts_obj.ONE;
@@ -550,16 +550,16 @@ classdef rescue_mod
                         ip = floor(ptsid(k));
                         iq = floor(double(n + 1) * ptsid(k) - double((n + 1) * ip));
                         if ip > 0 && iq > 0
-                            hq(ip, ip) = hq(ip, ip) + pqinc(k) * ptsaux(1, ip) ^ 2;
-                            hq(iq, iq) = hq(iq, iq) + pqinc(k) * ptsaux(1, iq) ^ 2;
+                            hq(ip, ip) = hq(ip, ip) + pqinc(k) * fortran.power(ptsaux(1, ip), 2);
+                            hq(iq, iq) = hq(iq, iq) + pqinc(k) * fortran.power(ptsaux(1, iq), 2);
                             hq(ip, iq) = hq(ip, iq) + pqinc(k) * ptsaux(1, ip) * ptsaux(1, iq);
                             hq(iq, ip) = hq(ip, iq);
                         elseif ip > 0
                             % IP > 0, IQ == 0
-                            hq(ip, ip) = hq(ip, ip) + pqinc(k) * ptsaux(1, ip) ^ 2;
+                            hq(ip, ip) = hq(ip, ip) + pqinc(k) * fortran.power(ptsaux(1, ip), 2);
                         elseif iq > 0
                             % IP == 0, IP > 0
-                            hq(iq, iq) = hq(iq, iq) + pqinc(k) * ptsaux(2, iq) ^ 2;
+                            hq(iq, iq) = hq(iq, iq) + pqinc(k) * fortran.power(ptsaux(2, iq), 2);
                         end
                     end
                     ptsid(kpt) = consts_obj.ZERO;
@@ -722,7 +722,7 @@ classdef rescue_mod
             tau = vlag(knew);
             % In theory, DENOM can also be calculated after ZMAT is rotated below. However, this worsened the
             % performance of BOBYQA in a test on 20220413.
-            denom = sum(fortran.power(zmat(knew, :), 2), 'all') * beta + tau ^ 2;
+            denom = sum(fortran.power(zmat(knew, :), 2), 'all') * beta + fortran.power(tau, 2);
 
             % Quite rarely, due to rounding errors, VLAG or BETA may not be finite, or DENOM may not be
             % positive. In such cases, [BMAT, ZMAT] would be destroyed by the update, and hence we would rather

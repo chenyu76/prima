@@ -313,7 +313,7 @@ classdef bobyqb_mod
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
                 qred = -powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
-                trfail = (~(qred > 1.0e-6 * rho ^ 2)); % QRED is tiny/negative or NaN.
+                trfail = (~(qred > 1.0e-6 * fortran.power(rho, 2))); % QRED is tiny/negative or NaN.
 
                 % When D is short, make a choice between reducing RHO and improving the geometry depending
                 % on whether or not our work with the current RHO seems complete. RHO is reduced if the
@@ -448,7 +448,7 @@ classdef bobyqb_mod
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
                 distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
-                close_itpset = all(distsq <= max(delta ^ 2, (consts_obj.TEN * rho) ^ 2), 'all');
+                close_itpset = all(distsq <= max(fortran.power(delta, 2), fortran.power((consts_obj.TEN * rho), 2)), 'all');
                 % Below are some alternative definitions of CLOSE_ITPSET.
                 % N.B.: The threshold for CLOSE_ITPSET is at least DELBAR, the trust region radius for GEOSTEP.
                 % %close_itpset = all(distsq <= max((TWO * delta)**2, (TEN * rho)**2))  ! Powell's code.
@@ -529,7 +529,7 @@ classdef bobyqb_mod
                     % KNEW_GEO, the step D will become improper as it was chosen according to the old KNEW_GEO.
                     vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat);
                     den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
-                    to_rescue = (~(infnan_obj.is_finite(sum(abs(vlag), 'all')) && den(knew_geo) > consts_obj.HALF * vlag(knew_geo) ^ 2));
+                    to_rescue = (~(infnan_obj.is_finite(sum(abs(vlag), 'all')) && den(knew_geo) > consts_obj.HALF * fortran.power(vlag(knew_geo), 2)));
                     if to_rescue
                         if rescued
                             info = infos_obj.DAMAGING_ROUNDING; % The last RESCUE did not improve the situation.
@@ -612,7 +612,7 @@ classdef bobyqb_mod
                 % 1. After a trust region step that is not short, shift XBASE if SUM(XOPT**2) >= 1.0E3*DNORM**2.
                 % In this case, it seems quite important for the performance to recalculate QRED.
                 % 2. Before a geometry step, shift XBASE if SUM(XOPT**2) >= 1.0E3*DELBAR**2.
-                if sum(fortran.power(xpt(:, kopt), 2), 'all') >= 1000.0 * delta ^ 2
+                if sum(fortran.power(xpt(:, kopt), 2), 'all') >= 1000.0 * fortran.power(delta, 2)
                     % Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E4*RHO**2.
                     sl(:) = min(sl - xpt(:, kopt), consts_obj.ZERO);
                     su(:) = max(su - xpt(:, kopt), consts_obj.ZERO);
@@ -737,10 +737,10 @@ classdef bobyqb_mod
             bfirst = repmat(max(abs(moderr_rec), [], 'all'), size(bfirst));
             bfirst(linalg_obj.trueloc(xnew <= sl)) = gnew(linalg_obj.trueloc(xnew <= sl)) * rho;
             bfirst(linalg_obj.trueloc(xnew >= su)) = -gnew(linalg_obj.trueloc(xnew >= su)) * rho;
-            bsecond(:) = consts_obj.HALF * (linalg_obj.diag(hq) + linalg_obj.matprod21(fortran.power(xpt, 2), pq)) * rho ^ 2;
+            bsecond(:) = consts_obj.HALF * (linalg_obj.diag(hq) + linalg_obj.matprod21(fortran.power(xpt, 2), pq)) * fortran.power(rho, 2);
             ebound = min(max(bfirst, bfirst + bsecond), [], 'all');
             if crvmin > 0
-                ebound = min(ebound, 0.125 * crvmin * rho ^ 2);
+                ebound = min(ebound, 0.125 * crvmin * fortran.power(rho, 2));
             end
 
             %====================%
