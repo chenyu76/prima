@@ -174,7 +174,7 @@ classdef preproc_mod
                 if maxfun > 0
                     maxfun = fix(min_maxfun);
                 else                    % We assume that non-positive values of MAXFUN are produced by overflow.
-                    maxfun = fix(max(min_maxfun, 10 ^ min(4, floor(log10(realmax(class(maxfun))))))); %%MATLAB: maxfun =  max(min_maxfun, 10^4);
+                    maxfun = fix(max(min_maxfun, fortran.power(10, min(4, floor(log10(realmax(class(maxfun)))))))); %%MATLAB: maxfun =  max(min_maxfun, 10^4);
                     % N.B.: Do NOT set MAXFUN to HUGE(MAXFUN), as it may cause overflow and infinite cycling
                     % when used as the upper bound of DO loops. This occurred on 20240225 with gfortran 13. See
                     % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop

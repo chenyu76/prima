@@ -253,7 +253,7 @@ classdef trustregion_uobyqa_mod
                 % Powell implemented the loop by a GOTO, and K = N when the loop exits. It may not be true here.
                 for k = 1:n - 1
                     if piv(k) > 0
-                        piv(k + 1) = td(k + 1) + par - tn(k) ^ 2 / piv(k);
+                        piv(k + 1) = td(k + 1) + par - fortran.power(tn(k), 2) / piv(k);
                     elseif abs(piv(k)) + abs(tn(k)) <= 0
                         % PIV(K) == 0 == TN(K)
                         piv(k + 1) = td(k + 1) + par;

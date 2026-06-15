@@ -173,10 +173,10 @@ classdef string_mod
                 % printing. Thus we relax the assertions as below.
                 %call assert(is_posinf(x) .eqv. is_posinf(str2real(s)), 'IS_POSINF(X) .EQV. IS_POSINF(STR2REAL(S))', srname)
                 %call assert(is_neginf(x) .eqv. is_neginf(str2real(s)), 'IS_NEGINF(X) .EQV. IS_NEGINF(STR2REAL(S))', srname)
-                debug_obj.assert((x >= consts_obj.REALMAX * (1.0 - 10.0 ^ (-ndgt_loc))) == (obj.str2real(s) >= consts_obj.REALMAX * (1.0 - 10.0 ^ (-ndgt_loc))), "IS_POSINF(X) .EQV. IS_POSINF(STR2REAL(S))", srname);
-                debug_obj.assert((x <= -consts_obj.REALMAX * (1.0 - 10.0 ^ (-ndgt_loc))) == (obj.str2real(s) <= -consts_obj.REALMAX * (1.0 - 10.0 ^ (-ndgt_loc))), "IS_NEGINF(X) .EQV. IS_NEGINF(STR2REAL(S))", srname);
+                debug_obj.assert((x >= consts_obj.REALMAX * (1.0 - fortran.power(10.0, (-ndgt_loc)))) == (obj.str2real(s) >= consts_obj.REALMAX * (1.0 - fortran.power(10.0, (-ndgt_loc)))), "IS_POSINF(X) .EQV. IS_POSINF(STR2REAL(S))", srname);
+                debug_obj.assert((x <= -consts_obj.REALMAX * (1.0 - fortran.power(10.0, (-ndgt_loc)))) == (obj.str2real(s) <= -consts_obj.REALMAX * (1.0 - fortran.power(10.0, (-ndgt_loc)))), "IS_NEGINF(X) .EQV. IS_NEGINF(STR2REAL(S))", srname);
                 if abs(x) < consts_obj.REALMAX
-                    debug_obj.assert(abs(x - obj.str2real(s)) <= abs(x) * 10.0 ^ (-ndgt_loc), "STR2REAL(S) == X", srname);
+                    debug_obj.assert(abs(x - obj.str2real(s)) <= abs(x) * fortran.power(10.0, (-ndgt_loc)), "STR2REAL(S) == X", srname);
                 end
             end
         end

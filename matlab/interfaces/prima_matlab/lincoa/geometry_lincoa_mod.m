@@ -103,7 +103,7 @@ classdef geometry_lincoa_mod
             end
             %distsq = sum((xpt - spread(xpt(:, kopt), dim=2, ncopies=npt))**2, dim=1)  ! Powell's code
 
-            weight(:) = fortran.power(max(consts_obj.ONE, distsq ./ max(consts_obj.TENTH * delta, rho) ^ 2), 3); % Powell's NEWUOA code
+            weight(:) = fortran.power(max(consts_obj.ONE, distsq ./ fortran.power(max(consts_obj.TENTH * delta, rho), 2)), 3); % Powell's NEWUOA code
             % Other possible definitions of WEIGHT.
             % %weight = distsq**2  ! Powell's code. WRONG.
             % %weight = max(ONE, distsq / max(TENTH * delta, rho)**2)**2.5  ! Worse than power 3
@@ -322,7 +322,7 @@ classdef geometry_lincoa_mod
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(delbar > 0, "DELBAR> 0", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(n)));
+                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
                 debug_obj.assert(numel(rescon) == m, "SIZE(RESCON) == M", srname);
@@ -359,7 +359,7 @@ classdef geometry_lincoa_mod
             if dderiv(knew) * (dderiv(knew) - consts_obj.ONE) < 0
                 stplen(knew) = -stplen(knew);
             end
-            vlagabs(knew) = abs(stplen(knew) * dderiv(knew)) + stplen(knew) ^ 2 * abs(dderiv(knew) - consts_obj.ONE);
+            vlagabs(knew) = abs(stplen(knew) * dderiv(knew)) + fortran.power(stplen(knew), 2) * abs(dderiv(knew) - consts_obj.ONE);
             % It does not make sense to consider "the straight line through XOPT and XPT(:, KOPT)". Thus we set
             % VLAGABS(KOPT) to -1 so that KOPT is skipped when we maximize VLAGABS.
             vlagabs(kopt) = -consts_obj.ONE;

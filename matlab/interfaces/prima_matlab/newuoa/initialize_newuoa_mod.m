@@ -427,7 +427,7 @@ classdef initialize_newuoa_mod
             %====================%
 
             rhobeg = max(abs(xpt(:, 2)), [], 'all'); % Read RHOBEG from XPT.
-            rhosq = rhobeg ^ 2;
+            rhosq = fortran.power(rhobeg, 2);
 
             % Set BMAT.
             recip = consts_obj.ONE / rhobeg;

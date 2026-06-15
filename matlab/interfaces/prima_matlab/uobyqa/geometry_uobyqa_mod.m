@@ -98,7 +98,7 @@ classdef geometry_uobyqa_mod
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
-            weight(:) = fortran.power(max(consts_obj.ONE, distsq ./ rho ^ 2), 4);
+            weight(:) = fortran.power(max(consts_obj.ONE, distsq ./ fortran.power(rho, 2)), 4);
             % Other possible definitions of WEIGHT.
             % %weight = max(ONE, distsq / rho**2)**3.5_RP ! ! No better than power 4.
             % %weight = max(ONE, distsq / delta**2)**3.5_RP  ! Not better than DISTSQ/RHO**2.
@@ -322,9 +322,9 @@ classdef geometry_uobyqa_mod
                 vhd = scaling * dd;
                 temp = consts_obj.HALF * (dhd - vhv);
                 if dhd + vhv < 0
-                    d(:) = vhd * v + (temp - fortran.sqrt(temp ^ 2 + vhd ^ 2)) * d;
+                    d(:) = vhd * v + (temp - fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhd, 2))) * d;
                 else
-                    d(:) = vhd * v + (temp + fortran.sqrt(temp ^ 2 + vhd ^ 2)) * d;
+                    d(:) = vhd * v + (temp + fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhd, 2))) * d;
                 end
             end
 
@@ -374,11 +374,11 @@ classdef geometry_uobyqa_mod
             else
                 temp = consts_obj.HALF * (ghg - vhv);
                 if temp < 0
-                    vmu = temp - fortran.sqrt(temp ^ 2 + vhg ^ 2);
+                    vmu = temp - fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhg, 2));
                 else
-                    vmu = temp + fortran.sqrt(temp ^ 2 + vhg ^ 2);
+                    vmu = temp + fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhg, 2));
                 end
-                temp = fortran.sqrt(vmu ^ 2 + vhg ^ 2);
+                temp = fortran.sqrt(fortran.power(vmu, 2) + fortran.power(vhg, 2));
                 wcos = vmu / temp;
                 wsin = vhg / temp;
             end

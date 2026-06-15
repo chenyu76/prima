@@ -141,7 +141,7 @@ classdef geometry_cobyla_mod
                 distsq(n + 1) = consts_obj.ZERO;
             end
 
-            weight(:) = max(consts_obj.ONE, distsq ./ max(rho, consts_obj.TENTH * delta) ^ 2); % Similar to Powell's NEWUOA code
+            weight(:) = max(consts_obj.ONE, distsq ./ fortran.power(max(rho, consts_obj.TENTH * delta), 2)); % Similar to Powell's NEWUOA code
             % Other possible definitions of WEIGHT.
             % %weight = distsq  ! Similar to Powell's LINCOA code, but WRONG. See comments in LINCOA/geometry.f90.
             % %weight = max(ONE, 25.0_RP * distsq / delta**2)  ! Similar to Powell's BOBYQA code, works well

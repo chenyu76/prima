@@ -761,7 +761,7 @@ classdef lincoa_mod
             ixl = []; ixu = []; ieq = []; iineq = []; Anorm = [];
 
             % Print a warning if the starting point is sufficiently infeasible and the constraints are modified.
-            smallx = consts_obj.TEN ^ max(-6, -consts_obj.MAXPOW10) * rhoend;
+            smallx = fortran.power(consts_obj.TEN, max(-6, -consts_obj.MAXPOW10)) * rhoend;
             constr_modified = (any(x0 + smallx < xl, 'all') || any(x0 - smallx > xu, 'all') || any(abs(Aeqx0 - beq) > smallx * Aeq_norm, 'all') || any(Aineqx0 - bineq > smallx * Aineq_norm, 'all'));
             if constr_modified
                 debug_obj.warning(solver, "The starting point is infeasible. " + solver + " modified the right-hand sides of the constraints to make it feasible");
@@ -774,7 +774,7 @@ classdef lincoa_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(size(amat, 1) == numel(x0) && size(amat, 2) == numel(bvec), "SIZE(AMAT) == [SIZE(X), SIZE(BVEC)]", srname);
-                debug_obj.assert(all(linalg_obj.matprod12(x0, amat) - bvec <= max(consts_obj.TEN ^ max(-12, -consts_obj.MAXPOW10), 100.0 * consts_obj.EPS) * (consts_obj.ONE + sum(abs(x0), 'all') + sum(abs(bvec), 'all')), 'all'), "The starting point is feasible", srname);
+                debug_obj.assert(all(linalg_obj.matprod12(x0, amat) - bvec <= max(fortran.power(consts_obj.TEN, max(-12, -consts_obj.MAXPOW10)), 100.0 * consts_obj.EPS) * (consts_obj.ONE + sum(abs(x0), 'all') + sum(abs(bvec), 'all')), 'all'), "The starting point is feasible", srname);
             end
         end
 

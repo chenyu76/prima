@@ -252,7 +252,7 @@ classdef trustregion_cobyla_mod
                 m = mcon;
                 sdirn = repmat(consts_obj.ZERO, size(sdirn));
             else
-                if linalg_obj.inprod(d, d) >= delta ^ 2
+                if linalg_obj.inprod(d, d) >= fortran.power(delta, 2)
                     % Check whether a quick return is possible.
                     return
                 end
@@ -284,7 +284,7 @@ classdef trustregion_cobyla_mod
             % this, we set the maximal number of iterations to MAXITER, and terminate if Inf/NaN occurs in D.
             % The formulation of MAXITER below contains a precaution against overflow. In MATLAB/Python/Julia/R,
             % we can write maxiter = min(10000, 100*max(m, n))
-            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 100 * fix(max(m, n))));
+            maxiter = fix(min(fortran.power(10, min(4, floor(log10(double(intmax('int64')))))), 100 * fix(max(m, n))));
             for iter = 1:maxiter
                 if consts_obj.DEBUGGING
                     debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || all(vmultc >= 0, 'all'), "VMULTC >= 0", srname);
@@ -357,7 +357,7 @@ classdef trustregion_cobyla_mod
                         % following IF: .NOT. ABS(ZDOTA(NACT)) > 0. Note that it is different from
                         % 'ABS(ZDOTA(NACT) <= 0)', as ZDOTA(NACT) can be NaN.
                         % N.B.: We cannot arrive here with NACT == 0, which should have triggered an exit above.
-                        if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= consts_obj.EPS ^ 2
+                        if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= fortran.power(consts_obj.EPS, 2)
                             break
                         end
                         vmultc([icon, nact]) = [consts_obj.ZERO, frac]; % VMULTC([ICON, NACT]) is valid as ICON > NACT.
@@ -385,7 +385,7 @@ classdef trustregion_cobyla_mod
 
                     % Powell's code does not have the following. It avoids subsequent floating point exceptions.
                     %------------------------------------------------------------------------------------------%
-                    if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= consts_obj.EPS ^ 2
+                    if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= fortran.power(consts_obj.EPS, 2)
                         break
                     end
                     %------------------------------------------------------------------------------------------%
@@ -426,7 +426,7 @@ classdef trustregion_cobyla_mod
 
                     end
                     if nact > 0
-                        if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= consts_obj.EPS ^ 2
+                        if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= fortran.power(consts_obj.EPS, 2)
                             break
                         end
                     end
@@ -450,14 +450,14 @@ classdef trustregion_cobyla_mod
                 % The following calculation of STEP is adopted from NEWUOA/BOBYQA/LINCOA. It seems to improve
                 % the performance of COBYLA. We also found that removing the precaution about underflows is
                 % beneficial to the overall performance of COBYLA --- the underflows are harmless anyway.
-                dd = delta ^ 2 - linalg_obj.inprod(d, d);
+                dd = fortran.power(delta, 2) - linalg_obj.inprod(d, d);
                 ss = linalg_obj.inprod(sdirn, sdirn);
                 sd = linalg_obj.inprod(sdirn, d);
-                if dd <= 0 || ss <= consts_obj.EPS * delta ^ 2 || infnan_obj.is_nan_sp(sd)
+                if dd <= 0 || ss <= consts_obj.EPS * fortran.power(delta, 2) || infnan_obj.is_nan_sp(sd)
                     break
                 end
                 % SQRTD: square root of a discriminant. The MAXVAL avoids SQRTD < ABS(SD) due to underflow.
-                sqrtd = max([fortran.sqrt(ss * dd + sd ^ 2), abs(sd), fortran.sqrt(ss * dd)], [], 'all');
+                sqrtd = max([fortran.sqrt(ss * dd + fortran.power(sd, 2)), abs(sd), fortran.sqrt(ss * dd)], [], 'all');
                 if sd > 0
                     step = dd / (sqrtd + sd);
                 else
