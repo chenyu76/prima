@@ -355,9 +355,9 @@ classdef geometry_bobyqa_mod
                 % need to worry about the case where XDIFF = 0, because we only use LFRAC when XDIFF /= 0.
                 % Similar things can be said about UFRAC.
                 xdiff(:) = xpt(:, k) - xopt;
-                lfrac(:) = abs(subd) .* ((-xdiff >= 0) * 2 - 1);
+                lfrac(:) = fortran.sign(subd, -xdiff);
                 lfrac(sl - xopt > -abs(xdiff) * subd) = (sl(sl - xopt > -abs(xdiff) * subd) - xopt(sl - xopt > -abs(xdiff) * subd)) ./ xdiff(sl - xopt > -abs(xdiff) * subd);
-                ufrac(:) = abs(subd) .* ((xdiff >= 0) * 2 - 1);
+                ufrac(:) = fortran.sign(subd, xdiff);
                 ufrac(su - xopt < abs(xdiff) * subd) = (su(su - xopt < abs(xdiff) * subd) - xopt(su - xopt < abs(xdiff) * subd)) ./ xdiff(su - xopt < abs(xdiff) * subd);
                 %%MATLAB code for LFRAC and UFRAC (the code is simpler as we are not concerned about overflow):
                 %%xdiff = xpt(:, k) - xopt;
@@ -371,7 +371,7 @@ classdef geometry_bobyqa_mod
                 if any(slbd_test > slbd, 'all')
                     ilbd = fix(fortran.maxloc(slbd_test, 'mask', (~infnan_obj.is_nan(slbd_test)), 'dim', 1));
                     slbd = slbd_test(ilbd);
-                    ilbd = -ilbd * round(abs(consts_obj.ONE) .* ((xdiff(ilbd) >= 0) * 2 - 1));
+                    ilbd = -ilbd * round(fortran.sign(consts_obj.ONE, xdiff(ilbd)));
                     %%MATLAB:
                     %%[slbd, ilbd] = max(slbd_test, [], 'omitnan');
                     %%ilbd = -ilbd * sign(xdiff(ilbd));
@@ -385,7 +385,7 @@ classdef geometry_bobyqa_mod
                 if any(subd_test < subd, 'all')
                     iubd = fix(fortran.minloc(subd_test, 'mask', (~infnan_obj.is_nan(subd_test)), 'dim', 1));
                     subd = max(sumin, subd_test(iubd));
-                    iubd = iubd * round(abs(consts_obj.ONE) .* ((xdiff(iubd) >= 0) * 2 - 1));
+                    iubd = iubd * round(fortran.sign(consts_obj.ONE, xdiff(iubd)));
                     %%MATLAB:
                     %%[subd, iubd] = min(subd_test, [], 'omitnan');
                     %%subd = max(sumin, subd);

@@ -359,7 +359,7 @@ classdef trustregion_bobyqa_mod
                 if iact > 0
                     nact = nact + 1;
                     debug_obj.assert(abs(s(iact)) > 0, "S(IACT) /= 0", srname);
-                    xbdi(iact) = round(abs(consts_obj.ONE) .* ((s(iact) >= 0) * 2 - 1)); %%MATLAB: xbdi(iact) = sign(s(iact))
+                    xbdi(iact) = round(fortran.sign(consts_obj.ONE, s(iact))); %%MATLAB: xbdi(iact) = sign(s(iact))
                     % Exit when NACT = N (NACT > N is impossible). We must update XBDI before exiting!
                     if nact >= n
                         break % This leads to a difference. Why?
@@ -547,7 +547,7 @@ classdef trustregion_bobyqa_mod
                 qred = qred + sdec;
                 if iact >= 1 && iact <= n && hangt >= hangt_bd
                     % D(IACT) reaches lower/upper bound.
-                    xbdi(iact) = round(abs(consts_obj.ONE) .* ((xopt(iact) + d(iact) - consts_obj.HALF * (sl(iact) + su(iact)) >= 0) * 2 - 1));
+                    xbdi(iact) = round(fortran.sign(consts_obj.ONE, xopt(iact) + d(iact) - consts_obj.HALF * (sl(iact) + su(iact))));
                     %%MATLAB: xbdi(iact) = sign(xopt(iact)+d(iact) - 0.5*(sl+su));
 
                 elseif ~(sdec > tol * qred)

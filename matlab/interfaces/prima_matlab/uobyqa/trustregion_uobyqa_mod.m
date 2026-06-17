@@ -173,7 +173,7 @@ classdef trustregion_uobyqa_mod
             % encounters memory errors). This is indeed why the original UOBYQA code constantly terminates with
             % "a trust region step has failed to reduce the quadratic model" when applied to univariate problems.
             if n == 1
-                d(:) = abs(delta) .* ((-g >= 0) * 2 - 1); %%MATLAB: d = -delta * sign(g)
+                d(:) = fortran.sign(delta, -g); %%MATLAB: d = -delta * sign(g)
                 if h(1, 1) > 0
                     dnewton(:) = -g ./ h(1, 1);
                     if abs(dnewton(1)) <= delta
@@ -327,7 +327,7 @@ classdef trustregion_uobyqa_mod
                             % PIV(K+1) was named as "TEMP" in Powell's code. Is PIV(K+1) consistent with the meaning of PIV?
                             piv(k + 1) = td(k + 1) + par;
                             if piv(k + 1) <= abs(piv(k))
-                                d(k + 1) = abs(consts_obj.ONE) .* ((-tn(k) >= 0) * 2 - 1); %%MATLAB: d(k + 1) = -sing(tn(k))
+                                d(k + 1) = fortran.sign(consts_obj.ONE, -tn(k)); %%MATLAB: d(k + 1) = -sing(tn(k))
                                 dhd = piv(k) + piv(k + 1) - consts_obj.TWO * abs(tn(k));
                             else
                                 d(k + 1) = -tn(k) / piv(k + 1);
@@ -492,7 +492,7 @@ classdef trustregion_uobyqa_mod
                             tempa = abs(delsq - dsq);
                             tempb = fortran.sqrt(dtz * dtz + tempa * zsq);
                             if abs(dtz) > 0
-                                gam = tempa / (abs(tempb) .* ((dtz >= 0) * 2 - 1) + dtz); %%MATLAB: gam = tempa / (sign(dtz)*tempb + dtz)
+                                gam = tempa / (fortran.sign(tempb, dtz) + dtz); %%MATLAB: gam = tempa / (sign(dtz)*tempb + dtz)
 
                             else                                % This ELSE covers the unlikely yet possible case where DTZ is zero or even NaN.
                                 gam = fortran.sqrt(tempa / zsq);

@@ -1392,7 +1392,7 @@ classdef linalg_mod
 
             elseif any(infnan_obj.is_inf(v), 'all')
                 u = repmat(consts_obj.ZERO, size(u));
-                u(obj.trueloc(infnan_obj.is_inf(v))) = abs(consts_obj.ONE) .* ((v(obj.trueloc(infnan_obj.is_inf(v))) >= 0) * 2 - 1);
+                u(obj.trueloc(infnan_obj.is_inf(v))) = fortran.sign(consts_obj.ONE, v(obj.trueloc(infnan_obj.is_inf(v))));
                 %%MATLAB: u = 0; u(isinf(v)) = sign(v(isinf(v)))
                 u(:) = u ./ obj.p_norm(u);
                 y(:) = obj.inprod(x, u) * u;
@@ -1453,7 +1453,7 @@ classdef linalg_mod
 
             elseif any(infnan_obj.is_inf(V), 'all')
                 mask00 = infnan_obj.is_inf(V); %Unsupported statement inside WHERE block: StmtLineBreak 1
-                V_loc(mask00) = abs(consts_obj.ONE) .* ((V(mask00) >= 0) * 2 - 1); %Unsupported statement inside WHERE block: StmtLineBreak 1
+                V_loc(mask00) = fortran.sign(consts_obj.ONE, V(mask00)); %Unsupported statement inside WHERE block: StmtLineBreak 1
                 mask01 = ~mask00; %Unsupported statement inside WHERE block: StmtLineBreak 1
                 V_loc(mask01) = consts_obj.ZERO; %Unsupported statement inside WHERE block: StmtLineBreak 1
 
@@ -1577,8 +1577,8 @@ classdef linalg_mod
                 s = consts_obj.ZERO;
             elseif all(infnan_obj.is_inf(x), 'all')
                 % In this case, MATLAB sets G to NaN(2, 2). We refrain from doing so to keep G orthogonal.
-                c = abs(1 / fortran.sqrt(2.0)) .* ((x(1) >= 0) * 2 - 1);
-                s = abs(1 / fortran.sqrt(2.0)) .* ((x(2) >= 0) * 2 - 1);
+                c = fortran.sign(1 / fortran.sqrt(2.0), x(1));
+                s = fortran.sign(1 / fortran.sqrt(2.0), x(2));
             elseif abs(x(1)) <= 0 && abs(x(2)) <= 0
                 % X(1) == 0 == X(2).
                 c = consts_obj.ONE;
@@ -1589,14 +1589,14 @@ classdef linalg_mod
                 % to avoid the confusing SIGN(., 0) (see 1).
                 % 1. SIGN(A, 0) = ABS(A) in Fortran but sign(0) = 0 in MATLAB, Python, Julia, and R!
                 % 2. Taking SIGN(X(1)) into account ensures the continuity of G with respect to X except at 0.
-                c = abs(consts_obj.ONE) .* ((x(1) >= 0) * 2 - 1); %%MATLAB: c = sign(x(1))
+                c = fortran.sign(consts_obj.ONE, x(1)); %%MATLAB: c = sign(x(1))
                 s = consts_obj.ZERO;
             elseif abs(x(1)) <= consts_obj.EPS * abs(x(2))
                 % N.B.: SIGN(A, X) = ABS(A) * sign of X /= A * sign of X ! Therefore, it is WRONG to define G
                 % as SIGN(RESHAPE([ZERO, -ONE, ONE, ZERO], [2, 2]), X(2)). This mistake was committed on
                 % 20211206 and took a whole day to debug! NEVER use SIGN on arrays unless you are really sure.
                 c = consts_obj.ZERO;
-                s = abs(consts_obj.ONE) .* ((x(2) >= 0) * 2 - 1); %%MATLAB: s = sign(x(2))
+                s = fortran.sign(consts_obj.ONE, x(2)); %%MATLAB: s = sign(x(2))
 
             else
                 % Here is the normal case. It implements the Givens rotation in a stable & continuous way as in:
@@ -1612,13 +1612,13 @@ classdef linalg_mod
                 elseif abs(x(1)) > abs(x(2))
                     t = x(2) / x(1);
                     u = max([consts_obj.ONE, abs(t), fortran.sqrt(consts_obj.ONE + fortran.power(t, 2))], [], 'all'); % MAXVAL: precaution against rounding error.
-                    u = abs(u) .* ((x(1) >= 0) * 2 - 1); %%MATLAB: u = sign(x(1))*sqrt(ONE + t**2)
+                    u = fortran.sign(u, x(1)); %%MATLAB: u = sign(x(1))*sqrt(ONE + t**2)
                     c = consts_obj.ONE / u;
                     s = t / u;
                 else
                     t = x(1) / x(2);
                     u = max([consts_obj.ONE, abs(t), fortran.sqrt(consts_obj.ONE + fortran.power(t, 2))], [], 'all'); % MAXVAL: precaution against rounding error.
-                    u = abs(u) .* ((x(2) >= 0) * 2 - 1); %%MATLAB: u = sign(x(2))*sqrt(ONE + t**2)
+                    u = fortran.sign(u, x(2)); %%MATLAB: u = sign(x(2))*sqrt(ONE + t**2)
                     c = t / u;
                     s = consts_obj.ONE / u;
                 end
@@ -2582,7 +2582,7 @@ classdef linalg_mod
                 end
 
                 Asubd = A(k + 1, k);
-                tsubdiag(k) = abs(fortran.sqrt(colsq + fortran.power(Asubd, 2))) .* ((Asubd >= 0) * 2 - 1);
+                tsubdiag(k) = fortran.sign(fortran.sqrt(colsq + fortran.power(Asubd, 2)), Asubd);
 
                 A(k + 1, k) = -colsq / (Asubd + tsubdiag(k));
                 w(k + 1:n) = fortran.sqrt(consts_obj.TWO / (colsq + fortran.power(A(k + 1, k), 2))) * A(k + 1:n, k);
@@ -2700,7 +2700,7 @@ classdef linalg_mod
                 end
 
                 v(j + 1:n) = H(j + 1:n, j);
-                subd = abs(fortran.sqrt(fortran.power(v(j + 1), 2) + colsq)) .* ((v(j + 1) >= 0) * 2 - 1);
+                subd = fortran.sign(fortran.sqrt(fortran.power(v(j + 1), 2) + colsq), v(j + 1));
 
                 %----------------------------------------------------------------------------------------------%
                 v(j + 1) = -colsq / (v(j + 1) + subd);
