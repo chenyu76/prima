@@ -10,7 +10,8 @@
 % To detect -0.0 in MATLAB, we use the trick that
 %   1/(-0.0) == -Inf   and   1/0.0 == Inf.
 function result = sign(a, b)
-    if b < 0 || (b == 0 && 1 / b < 0)
+    is_neg = (b < 0) | (b == 0 & 1 ./ b < 0);
+    if is_neg
         result = -abs(a);
     else
         result = abs(a);
