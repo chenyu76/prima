@@ -84,6 +84,7 @@ end
 
 % First, set `extra_compiler_options` to the extra compiler options needed by the Fortran compiler.
 extra_compiler_options = '';
+foptim_override = '';  % May be overridden below for gfortran to disable auto-vectorization.
 if contains(compiler_manufacturer, 'gnu')  % gfortran
     % 1. -Wno-missing-include-dirs is needed to suppress the warning about missing include directories
     % when Simulink is not installed. Note the space before the new options.
@@ -95,6 +96,12 @@ if contains(compiler_manufacturer, 'gnu')  % gfortran
     %extra_compiler_options = [extra_compiler_options, ' -Wno-missing-include-dirs -fno-stack-arrays -frecursive'];
     extra_compiler_options = [extra_compiler_options, ' -Wno-missing-include-dirs -fno-stack-arrays -frecursive -fbacktrace'];
     extra_compiler_options = [extra_compiler_options, ' -fno-stack-protector'];
+    % -O0 is needed because gfortran's -O2 optimizations (instruction scheduling, vectorization,
+    % etc.) change floating-point evaluation order in iterative loops (e.g., trsapp CG, biglag/bigden),
+    % producing results that differ from the pure MATLAB interpreter by 1-20 ULP. These tiny differences
+    % cascade through hundreds of solver iterations. Using -O0 ensures bit-identical results with the
+    % MATLAB backend. See notes/vectorize_bug/ for details.
+    foptim_override = 'FOPTIMFLAGS=-O0';
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
     % -ftrampoline-impl=heap instructs the compiler to put the trampolines on the heap instead of the
@@ -164,7 +171,7 @@ if ismac && contains(compiler_manufacturer, 'intel')  % macOS with Intel compile
 end
 
 % MEX options shared by all compiling processes below.
-common_mex_options = {verbose_option, compiler_options, linker_options};
+common_mex_options = {verbose_option, compiler_options, foptim_override, linker_options};
 
 
 
