@@ -23,12 +23,12 @@ try
 catch
 end
 extra_fflags = [extra_fflags, '"'];
-mex('-R2018a', 'FOPTIMFLAGS=-O2', extra_fflags, '../fortran_cos.F90');
-mex('-R2018a', 'FOPTIMFLAGS=-O2', extra_fflags, '../fortran_exp.F90');
-mex('-R2018a', 'FOPTIMFLAGS=-O2', extra_fflags, '../fortran_log.F90');
-mex('-R2018a', 'FOPTIMFLAGS=-O2', extra_fflags, '../fortran_power_integer.F90');
-mex('-R2018a', 'FOPTIMFLAGS=-O2', extra_fflags, '../fortran_power_real.F90');
-mex('-R2018a', 'FOPTIMFLAGS=-O2', extra_fflags, '../fortran_sin.F90');
-mex('-R2018a', 'FOPTIMFLAGS=-O2', extra_fflags, '../fortran_sqrt.F90');
-mex('-R2018a', 'FOPTIMFLAGS=-O2', extra_fflags, '../fortran_tan.F90');
+mex('-R2018a', 'FOPTIMFLAGS=-O0', extra_fflags, '../fortran_cos.F90');
+mex('-R2018a', 'FOPTIMFLAGS=-O0', extra_fflags, '../fortran_exp.F90');
+mex('-R2018a', 'FOPTIMFLAGS=-O0', extra_fflags, '../fortran_log.F90');
+mex('-R2018a', 'FOPTIMFLAGS=-O0', extra_fflags, '../fortran_power_integer.F90');
+mex('-R2018a', 'FOPTIMFLAGS=-O0', extra_fflags, '../fortran_power_real.F90');
+mex('-R2018a', 'FOPTIMFLAGS=-O0', extra_fflags, '../fortran_sin.F90');
+mex('-R2018a', 'FOPTIMFLAGS=-O0', extra_fflags, '../fortran_sqrt.F90');
+mex('-R2018a', 'FOPTIMFLAGS=-O0', extra_fflags, '../fortran_tan.F90');
 cd(original_dir);
