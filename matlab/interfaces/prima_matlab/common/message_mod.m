@@ -42,7 +42,7 @@ classdef message_mod
 
 
             % Local variables
-            newline = compose('\n');
+            newline_custom = newline;
             srname = "RETMSG";
             constr_message = "";
             fname = "";
@@ -128,27 +128,27 @@ classdef message_mod
             otherwise
                 reason = "UNKNOWN EXIT FLAG";
             end
-            ret_message = newline + "Return from " + solver + " because " + string_obj.strip(reason);
+            ret_message = newline_custom + "Return from " + solver + " because " + string_obj.strip(reason);
 
             if numel(x) <= 2
-                x_message = newline + "The corresponding X is: " + string_obj.real2str_vector(x); % Printed in one line
+                x_message = newline_custom + "The corresponding X is: " + string_obj.real2str_vector(x); % Printed in one line
 
             else
-                x_message = newline + "The corresponding X is:" + newline + string_obj.real2str_vector(x);
+                x_message = newline_custom + "The corresponding X is:" + newline_custom + string_obj.real2str_vector(x);
             end
 
             if is_constrained
-                nf_message = newline + "Number of function values = " + string_obj.int2str(nf) + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f) + obj.spaces + "Constraint violation = " + string_obj.real2str_scalar(cstrv_loc);
+                nf_message = newline_custom + "Number of function values = " + string_obj.int2str(nf) + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f) + obj.spaces + "Constraint violation = " + string_obj.real2str_scalar(cstrv_loc);
             else
-                nf_message = newline + "Number of function values = " + string_obj.int2str(nf) + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f);
+                nf_message = newline_custom + "Number of function values = " + string_obj.int2str(nf) + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f);
             end
 
             if is_constrained && ~ismember('constr', ipObj.UsingDefaults)
                 if numel(constr) <= 2
-                    constr_message = newline + "The constraint value is: " + string_obj.real2str_vector(constr); % Printed in one line
+                    constr_message = newline_custom + "The constraint value is: " + string_obj.real2str_vector(constr); % Printed in one line
 
                 else
-                    constr_message = newline + "The constraint value is:" + newline + string_obj.real2str_vector(constr);
+                    constr_message = newline_custom + "The constraint value is:" + newline_custom + string_obj.real2str_vector(constr);
                 end
             else
                 constr_message = "";
@@ -156,9 +156,9 @@ classdef message_mod
 
             % Print the message.
             if abs(iprint) >= 2
-                message = newline + ret_message + nf_message + x_message + constr_message + newline;
+                message = newline_custom + ret_message + nf_message + x_message + constr_message + newline_custom;
             else
-                message = ret_message + nf_message + x_message + constr_message + newline;
+                message = ret_message + nf_message + x_message + constr_message + newline_custom;
             end
             if strlength(fname) > 0
                 fprint_obj.fprint(message, 'fname', fname, 'faction', "append");
@@ -188,7 +188,7 @@ classdef message_mod
 
 
             % Local variables
-            newline = compose('\n');
+            newline_custom = newline;
             constr_message = "";
             fname = "";
             message = "";
@@ -240,30 +240,30 @@ classdef message_mod
             end
 
             if ismember('cpen', ipObj.UsingDefaults)
-                rho_message = newline + "New RHO = " + string_obj.real2str_scalar(rho) + obj.spaces + "Delta = " + string_obj.real2str_scalar(delta);
+                rho_message = newline_custom + "New RHO = " + string_obj.real2str_scalar(rho) + obj.spaces + "Delta = " + string_obj.real2str_scalar(delta);
             else
-                rho_message = newline + "New RHO = " + string_obj.real2str_scalar(rho) + obj.spaces + "Delta = " + string_obj.real2str_scalar(delta) + obj.spaces + "CPEN = " + string_obj.real2str_scalar(cpen);
+                rho_message = newline_custom + "New RHO = " + string_obj.real2str_scalar(rho) + obj.spaces + "Delta = " + string_obj.real2str_scalar(delta) + obj.spaces + "CPEN = " + string_obj.real2str_scalar(cpen);
             end
 
             if numel(x) <= 2
-                x_message = newline + "The corresponding X is: " + string_obj.real2str_vector(x); % Printed in one line
+                x_message = newline_custom + "The corresponding X is: " + string_obj.real2str_vector(x); % Printed in one line
 
             else
-                x_message = newline + "The corresponding X is:" + newline + string_obj.real2str_vector(x);
+                x_message = newline_custom + "The corresponding X is:" + newline_custom + string_obj.real2str_vector(x);
             end
 
             if is_constrained
-                nf_message = newline + "Number of function values = " + string_obj.int2str(nf) + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f) + obj.spaces + "Constraint violation = " + string_obj.real2str_scalar(cstrv_loc);
+                nf_message = newline_custom + "Number of function values = " + string_obj.int2str(nf) + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f) + obj.spaces + "Constraint violation = " + string_obj.real2str_scalar(cstrv_loc);
             else
-                nf_message = newline + "Number of function values = " + string_obj.int2str(nf) + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f);
+                nf_message = newline_custom + "Number of function values = " + string_obj.int2str(nf) + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f);
             end
 
             if is_constrained && ~ismember('constr', ipObj.UsingDefaults)
                 if numel(constr) <= 2
-                    constr_message = newline + "The constraint value is: " + string_obj.real2str_vector(constr); % Printed in one line
+                    constr_message = newline_custom + "The constraint value is: " + string_obj.real2str_vector(constr); % Printed in one line
 
                 else
-                    constr_message = newline + "The constraint value is:" + newline + string_obj.real2str_vector(constr);
+                    constr_message = newline_custom + "The constraint value is:" + newline_custom + string_obj.real2str_vector(constr);
                 end
             else
                 constr_message = "";
@@ -271,7 +271,7 @@ classdef message_mod
 
             % Print the message.
             if abs(iprint) >= 3
-                message = newline + rho_message + nf_message + x_message + constr_message;
+                message = newline_custom + rho_message + nf_message + x_message + constr_message;
             else
                 message = rho_message + nf_message + x_message + constr_message;
             end
@@ -301,7 +301,7 @@ classdef message_mod
 
 
             % Local variables
-            newline = compose('\n');
+            newline_custom = newline;
             fname = "";
             message = "";
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
@@ -327,9 +327,9 @@ classdef message_mod
             parse(ipObj, varargin{:});
             cpen = ipObj.Results.cpen;
             if abs(iprint) >= 3
-                message = newline + "Set CPEN to " + string_obj.real2str_scalar(cpen);
+                message = newline_custom + "Set CPEN to " + string_obj.real2str_scalar(cpen);
             else
-                message = newline + newline + "Set CPEN to " + string_obj.real2str_scalar(cpen);
+                message = newline_custom + newline_custom + "Set CPEN to " + string_obj.real2str_scalar(cpen);
             end
             if strlength(fname) > 0
                 fprint_obj.fprint(message, 'fname', fname, 'faction', "append");
@@ -362,7 +362,7 @@ classdef message_mod
 
 
             % Local variables
-            newline = compose('\n');
+            newline_custom = newline;
             constr_message = "";
             delta_message = "";
             fname = "";
@@ -411,27 +411,27 @@ classdef message_mod
                 cstrv_loc = consts_obj.ZERO;
             end
 
-            delta_message = newline + state + " step with radius = " + string_obj.real2str_scalar(delta);
+            delta_message = newline_custom + state + " step with radius = " + string_obj.real2str_scalar(delta);
 
             if is_constrained
-                nf_message = newline + "Function number " + string_obj.int2str(nf) + obj.spaces + "F = " + string_obj.real2str_scalar(f) + obj.spaces + "Constraint violation = " + string_obj.real2str_scalar(cstrv_loc);
+                nf_message = newline_custom + "Function number " + string_obj.int2str(nf) + obj.spaces + "F = " + string_obj.real2str_scalar(f) + obj.spaces + "Constraint violation = " + string_obj.real2str_scalar(cstrv_loc);
             else
-                nf_message = newline + "Function number " + string_obj.int2str(nf) + obj.spaces + "F = " + string_obj.real2str_scalar(f);
+                nf_message = newline_custom + "Function number " + string_obj.int2str(nf) + obj.spaces + "F = " + string_obj.real2str_scalar(f);
             end
 
             if numel(x) <= 2
-                x_message = newline + "The corresponding X is: " + string_obj.real2str_vector(x); % Printed in one line
+                x_message = newline_custom + "The corresponding X is: " + string_obj.real2str_vector(x); % Printed in one line
 
             else
-                x_message = newline + "The corresponding X is:" + newline + string_obj.real2str_vector(x);
+                x_message = newline_custom + "The corresponding X is:" + newline_custom + string_obj.real2str_vector(x);
             end
 
             if is_constrained && ~ismember('constr', ipObj.UsingDefaults)
                 if numel(constr) <= 2
-                    constr_message = newline + "The constraint value is: " + string_obj.real2str_vector(constr); % Printed in one line
+                    constr_message = newline_custom + "The constraint value is: " + string_obj.real2str_vector(constr); % Printed in one line
 
                 else
-                    constr_message = newline + "The constraint value is:" + newline + string_obj.real2str_vector(constr);
+                    constr_message = newline_custom + "The constraint value is:" + newline_custom + string_obj.real2str_vector(constr);
                 end
             else
                 constr_message = "";

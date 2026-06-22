@@ -26,7 +26,7 @@ classdef fprint_mod
 
 
             % Local variables
-            newline = compose('\n');
+            newline_custom = newline;
             srname = "FPRINT";
             fname_loc = "";
             fstat = "";
@@ -122,12 +122,12 @@ classdef fprint_mod
             % output" if string is long. This did occur with NAG Fortran Compiler R7.1(Hanzomon) Build 7122.
             % To avoid this problem, we print the string line by line, separated by newlines.
             i = 1;
-            j = fortran.index(string, newline); % Index of the first newline in the string.
+            j = fortran.index(string, newline_custom); % Index of the first newline in the string.
             slen = strlength(string);
             while j >= i                % J < I: No more newline in the string.
                 fprintf(funit_loc, '%s\n', extractBetween(string, i, j - 1)); % Print the string before the current newline.
                 i = j + 1; % Index of the character after the current newline.
-                j = i + fortran.index(extractBetween(string, i, slen), newline) - 1; % Index of the next newline.
+                j = i + fortran.index(extractBetween(string, i, slen), newline_custom) - 1; % Index of the next newline.
             end
             if extractBetween(string, i, slen) ~= ""
                 % Print the string after the last newline.

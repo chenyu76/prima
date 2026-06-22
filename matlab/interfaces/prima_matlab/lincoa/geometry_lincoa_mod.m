@@ -322,7 +322,7 @@ classdef geometry_lincoa_mod
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(delbar > 0, "DELBAR> 0", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
+                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS_custom * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
                 debug_obj.assert(numel(rescon) == m, "SIZE(RESCON) == M", srname);
@@ -380,7 +380,7 @@ classdef geometry_lincoa_mod
 
             % Replace S with a steepest ascent step from XOPT if the latter provides a larger value of DENABS.
             gnorm = linalg_obj.p_norm(glag);
-            if gnorm > consts_obj.EPS && infnan_obj.is_finite(gnorm)
+            if gnorm > consts_obj.EPS_custom && infnan_obj.is_finite(gnorm)
                 gstp(:) = (delbar / gnorm) * glag;
                 if linalg_obj.inprod(gstp, powalg_obj.hess_mul(gstp, xpt, pqlag)) < 0
                     % <GSTP, HESS_LAG*GSTP> is negative
@@ -414,7 +414,7 @@ classdef geometry_lincoa_mod
             pglag(:) = linalg_obj.matprod21(qfac(:, nact + 1:n), linalg_obj.matprod12(glag, qfac(:, nact + 1:n)));
             %%MATLAB: pglag = qfac(:, nact+1:n) * (glag' * qfac(:, nact+1:n))';
             gnorm = linalg_obj.p_norm(pglag);
-            if nact > 0 && gnorm > consts_obj.EPS && infnan_obj.is_finite(gnorm)
+            if nact > 0 && gnorm > consts_obj.EPS_custom && infnan_obj.is_finite(gnorm)
                 pgstp(:) = (delbar / gnorm) * pglag;
                 if linalg_obj.inprod(pgstp, powalg_obj.hess_mul(pgstp, xpt, pqlag)) < 0
                     % <PGSTP, HESS_LAG*PGSTP> is negative.
@@ -430,7 +430,7 @@ classdef geometry_lincoa_mod
                 % Powell's code is as follows. Note that MATPROD(PGSTP, AMAT(:, IACT(1:NACT))) is 0 in theory.
                 % %cvtol = min(0.01_RP * norm(pgstp), TEN * norm(matprod(pgstp, amat(:, iact(1:nact))), 'inf'))
                 % The following code works essentially the same as Powell's code.
-                cvtol = max(consts_obj.EPS * linalg_obj.p_norm(pgstp), consts_obj.TEN * linalg_obj.named_norm_vec(linalg_obj.matprod12(pgstp, amat(:, iact(1:nact))), "inf"));
+                cvtol = max(consts_obj.EPS_custom * linalg_obj.p_norm(pgstp), consts_obj.TEN * linalg_obj.named_norm_vec(linalg_obj.matprod12(pgstp, amat(:, iact(1:nact))), "inf"));
                 take_pgstp = false;
                 if cstrv <= cvtol
                     den(:) = powalg_obj.calden(kopt, bmat, pgstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.

@@ -140,7 +140,7 @@ classdef cobylb_mod
             % 2. There is no need to revise ACTREM and PREREM when CPEN = 0 and F = FVAL(N+1) as in lines
             % 312--314 of Powell's cobylb.f code. Powell's code revises ACTREM to CVAL(N + 1) - CSTRV and PREREM
             % to PREREC in this case, which is crucial for feasibility problems.
-            cpenmin = consts_obj.EPS;
+            cpenmin = consts_obj.EPS_custom;
 
             % Sizes
             m_lcon = fix(numel(bvec));
@@ -250,10 +250,10 @@ classdef cobylb_mod
             rho = rhobeg;
             delta = rhobeg;
             cpen = max(cpenmin, min(1000.0, obj.fcratio(conmat, fval))); % Powell's code: CPEN = ZERO
-            prerec = -consts_obj.REALMAX;
-            preref = -consts_obj.REALMAX;
-            prerem = -consts_obj.REALMAX;
-            actrem = -consts_obj.REALMAX;
+            prerec = -consts_obj.REALMAX_custom;
+            preref = -consts_obj.REALMAX_custom;
+            prerem = -consts_obj.REALMAX_custom;
+            actrem = -consts_obj.REALMAX_custom;
             shortd = false;
             trfail = false;
             ratio = -consts_obj.ONE;
@@ -817,7 +817,7 @@ classdef cobylb_mod
                 % only if it is currently less than 1.5*BARMU, a very "Powellful" scheme. In our implementation,
                 % however, we set CPEN directly to the maximum between its current value and 2*BARMU while
                 % handling possible overflow. This simplifies the scheme without worsening the performance.
-                cpen = max(cpen, min(-consts_obj.TWO * (preref / prerec), consts_obj.REALMAX));
+                cpen = max(cpen, min(-consts_obj.TWO * (preref / prerec), consts_obj.REALMAX_custom));
 
                 if update_cobyla_obj.findpole(cpen, cval, fval) == n + 1
                     break
@@ -830,8 +830,8 @@ classdef cobylb_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(cpen >= cpen_in && cpen > 0 && cpen <= consts_obj.REALMAX, "CPEN >= CPEN_IN, CPEN > 0, and CPEN <= REALMAX", srname);
-                debug_obj.assert(preref + cpen * prerec > 0 || info == infos_obj.DAMAGING_ROUNDING || ~(prerec >= 0 && max(prerec, preref) > 0) || ~infnan_obj.is_finite(preref) || cpen >= consts_obj.REALMAX, "PREREF + CPEN*PREREC > 0 unless the rounding is damaging", srname);
+                debug_obj.assert(cpen >= cpen_in && cpen > 0 && cpen <= consts_obj.REALMAX_custom, "CPEN >= CPEN_IN, CPEN > 0, and CPEN <= REALMAX", srname);
+                debug_obj.assert(preref + cpen * prerec > 0 || info == infos_obj.DAMAGING_ROUNDING || ~(prerec >= 0 && max(prerec, preref) > 0) || ~infnan_obj.is_finite(preref) || cpen >= consts_obj.REALMAX_custom, "PREREF + CPEN*PREREC > 0 unless the rounding is damaging", srname);
             end
         end
         function r = fcratio(~, conmat, fval)

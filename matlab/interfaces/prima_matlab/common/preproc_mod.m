@@ -118,7 +118,7 @@ classdef preproc_mod
                 debug_obj.validate(((~ismember('maxfilt', ipObj.UsingDefaults)) || (nargout >= 8)) == (string_obj.lower(solver) == "lincoa" || string_obj.lower(solver) == "cobyla"), "MAXFILT is present if and only if the solver is LINCOA or COBYLA", srname);
                 if string_obj.lower(solver) == "bobyqa"
                     debug_obj.validate(~ismember('xl', ipObj.UsingDefaults) && ~ismember('xu', ipObj.UsingDefaults), "XL and XU are present if the solver is BOBYQA", srname);
-                    debug_obj.validate(all(xu - xl >= consts_obj.TWO * consts_obj.EPS, 'all'), "MINVAL(XU-XL) > 2*EPS", srname);
+                    debug_obj.validate(all(xu - xl >= consts_obj.TWO * consts_obj.EPS_custom, 'all'), "MINVAL(XU-XL) > 2*EPS", srname);
                 end
                 debug_obj.validate((~ismember('honour_x0', ipObj.UsingDefaults) == ((~ismember('x0', ipObj.UsingDefaults)) || (nargout >= 15))) && (~ismember('honour_x0', ipObj.UsingDefaults) == ~ismember('has_rhobeg', ipObj.UsingDefaults)), "HONOUR_X0, X0, and HAS_RHOBEG are present or absent simultaneously", srname);
                 debug_obj.validate(~ismember('honour_x0', ipObj.UsingDefaults) == (string_obj.lower(solver) == "bobyqa"), "HONOUR_X0 is present if and only if the solver is BOBYQA", srname);
@@ -293,8 +293,8 @@ classdef preproc_mod
 
             % Revise the default values for RHOBEG/RHOEND according to the solver.
             if string_obj.lower(solver) == "bobyqa"
-                rhobeg_default = max(consts_obj.EPS, min(consts_obj.RHOBEG_DFT, min(xu - xl, [], 'all') / 4.0));
-                rhoend_default = max(consts_obj.EPS, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg_default, consts_obj.RHOEND_DFT));
+                rhobeg_default = max(consts_obj.EPS_custom, min(consts_obj.RHOBEG_DFT, min(xu - xl, [], 'all') / 4.0));
+                rhoend_default = max(consts_obj.EPS_custom, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg_default, consts_obj.RHOEND_DFT));
             else
                 rhobeg_default = consts_obj.RHOBEG_DFT;
                 rhoend_default = consts_obj.RHOEND_DFT;
@@ -325,7 +325,7 @@ classdef preproc_mod
 
             if ~(infnan_obj.is_finite(rhoend) && rhoend >= 0 && rhoend <= rhobeg)
                 % RHOEND = NaN falls into this case.
-                rhoend = max(consts_obj.EPS, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg, rhoend_default));
+                rhoend = max(consts_obj.EPS_custom, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg, rhoend_default));
                 debug_obj.warning(solver, "Invalid RHOEND: " + string_obj.real2str_scalar(rhoend_in) + "; we should have " + string_obj.real2str_scalar(rhobeg) + " = RHOBEG >= RHOEND >= 0; it is set to " + string_obj.real2str_scalar(rhoend));
             end
 
@@ -368,13 +368,13 @@ classdef preproc_mod
                 % Revise RHOBEG if needed.
                 % N.B.: If X0 has been revised above (i.e., HONOUR_X0 is FALSE), then the following revision
                 % is unnecessary in precise arithmetic. However, it may still be needed due to rounding errors.
-                lbx(:) = (infnan_obj.is_finite(xl) & x0 - xl <= consts_obj.EPS * max(consts_obj.ONE, abs(xl))); % X0 essentially equals XL
-                ubx(:) = (infnan_obj.is_finite(xu) & x0 - xu >= -consts_obj.EPS * max(consts_obj.ONE, abs(xu))); % X0 essentially equals XU
+                lbx(:) = (infnan_obj.is_finite(xl) & x0 - xl <= consts_obj.EPS_custom * max(consts_obj.ONE, abs(xl))); % X0 essentially equals XL
+                ubx(:) = (infnan_obj.is_finite(xu) & x0 - xu >= -consts_obj.EPS_custom * max(consts_obj.ONE, abs(xu))); % X0 essentially equals XU
                 x0(linalg_obj.trueloc(lbx)) = xl(linalg_obj.trueloc(lbx));
                 x0(linalg_obj.trueloc(ubx)) = xu(linalg_obj.trueloc(ubx));
-                rhobeg = max(consts_obj.EPS, min([rhobeg; reshape(x0(linalg_obj.falseloc(lbx)) - xl(linalg_obj.falseloc(lbx)), [], 1); reshape(xu(linalg_obj.falseloc(ubx)) - x0(linalg_obj.falseloc(ubx)), [], 1)], [], 'all'));
-                if rhobeg_in - rhobeg > consts_obj.EPS * max(consts_obj.ONE, rhobeg_in)
-                    rhoend = max(consts_obj.EPS, min((rhoend / rhobeg_in) * rhobeg, rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
+                rhobeg = max(consts_obj.EPS_custom, min([rhobeg; reshape(x0(linalg_obj.falseloc(lbx)) - xl(linalg_obj.falseloc(lbx)), [], 1); reshape(xu(linalg_obj.falseloc(ubx)) - x0(linalg_obj.falseloc(ubx)), [], 1)], [], 'all'));
+                if rhobeg_in - rhobeg > consts_obj.EPS_custom * max(consts_obj.ONE, rhobeg_in)
+                    rhoend = max(consts_obj.EPS_custom, min((rhoend / rhobeg_in) * rhobeg, rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
                     if has_rhobeg
                         debug_obj.warning(solver, "RHOBEG is revised from " + string_obj.real2str_scalar(rhobeg_in) + " to " + string_obj.real2str_scalar(rhobeg) + " and RHOEND from " + string_obj.real2str_scalar(rhoend_in) + " to " + string_obj.real2str_scalar(rhoend) + " so that the distance between X0 and the inactive bounds is at least RHOBEG");
                     end
@@ -383,8 +383,8 @@ classdef preproc_mod
 
             % The following revision may update RHOBEG and RHOEND slightly. It particularly prevents
             % RHOEND > RHOBEG due to rounding errors, which would not be accepted by the solvers.
-            rhobeg = max(rhobeg, consts_obj.EPS);
-            rhoend = min(max(rhoend, consts_obj.EPS), rhobeg);
+            rhobeg = max(rhobeg, consts_obj.EPS_custom);
+            rhoend = min(max(rhoend, consts_obj.EPS_custom), rhobeg);
 
             % Validate CTOL (it can be 0)
             if (~ismember('ctol', ipObj.UsingDefaults)) || (nargout >= 9)

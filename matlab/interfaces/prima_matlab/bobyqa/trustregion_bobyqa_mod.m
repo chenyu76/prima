@@ -186,7 +186,7 @@ classdef trustregion_bobyqa_mod
 
             % Initialized D and CRVMIN.
             d = repmat(consts_obj.ZERO, size(d));
-            crvmin = -consts_obj.REALMAX;
+            crvmin = -consts_obj.REALMAX_custom;
 
             % GNEW is the gradient at the current iterate.
             gnew(:) = gopt;
@@ -232,7 +232,7 @@ classdef trustregion_bobyqa_mod
                 stepsq = sum(fortran.power(s, 2), 'all');
                 ds = linalg_obj.inprod(d(linalg_obj.trueloc(xbdi == 0)), s(linalg_obj.trueloc(xbdi == 0)));
 
-                if ~(stepsq > consts_obj.EPS * delsq && gredsq * delsq > fortran.power((tol * qred), 2) && ~infnan_obj.is_nan_sp(ds))
+                if ~(stepsq > consts_obj.EPS_custom * delsq && gredsq * delsq > fortran.power((tol * qred), 2) && ~infnan_obj.is_nan_sp(ds))
                     break
                 end
 
@@ -332,7 +332,7 @@ classdef trustregion_bobyqa_mod
                     itercg = itercg + 1;
                     rayleighq = shs / stepsq;
                     if iact == 0 && rayleighq > 0
-                        if crvmin <= -consts_obj.REALMAX
+                        if crvmin <= -consts_obj.REALMAX_custom
                             % CRVMIN <= -REALMAX means CRVMIN has not been set.
                             crvmin = rayleighq;
                         else
@@ -469,10 +469,10 @@ classdef trustregion_bobyqa_mod
                 % 2. Even if XOPT - SL < SQRT(SSQ), rounding errors may render SSQ - (XOPT - SL)**2) < 0.
                 ssq(:) = fortran.power(d, 2) + fortran.power(s, 2); % Indeed, only SSQ(TRUELOC(XBDI == 0)) is needed.
                 tanbd = repmat(consts_obj.ONE, size(tanbd));
-                sqdscr = repmat(-consts_obj.REALMAX, size(sqdscr));
+                sqdscr = repmat(-consts_obj.REALMAX_custom, size(sqdscr));
                 sqdscr(xbdi == 0 & xopt - sl < sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - fortran.power((xopt(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - sl(xbdi == 0 & xopt - sl < fortran.sqrt(ssq))), 2)));
                 tanbd(sqdscr - s > 0) = min(tanbd(sqdscr - s > 0), (xnew(sqdscr - s > 0) - sl(sqdscr - s > 0)) ./ (sqdscr(sqdscr - s > 0) - s(sqdscr - s > 0)));
-                sqdscr = repmat(-consts_obj.REALMAX, size(sqdscr));
+                sqdscr = repmat(-consts_obj.REALMAX_custom, size(sqdscr));
                 sqdscr(xbdi == 0 & su - xopt < sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - fortran.power((su(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - xopt(xbdi == 0 & su - xopt < fortran.sqrt(ssq))), 2)));
                 tanbd(sqdscr + s > 0) = min(tanbd(sqdscr + s > 0), (su(sqdscr + s > 0) - xnew(sqdscr + s > 0)) ./ (sqdscr(sqdscr + s > 0) + s(sqdscr + s > 0)));
                 tanbd(linalg_obj.trueloc(infnan_obj.is_nan(tanbd))) = consts_obj.ZERO;
@@ -563,7 +563,7 @@ classdef trustregion_bobyqa_mod
             d(:) = xnew - xopt;
 
             % Set CRVMIN to ZERO if it has never been set or becomes NaN due to ill conditioning.
-            if crvmin <= -consts_obj.REALMAX || infnan_obj.is_nan_sp(crvmin)
+            if crvmin <= -consts_obj.REALMAX_custom || infnan_obj.is_nan_sp(crvmin)
                 crvmin = consts_obj.ZERO;
             end
 
@@ -583,7 +583,7 @@ classdef trustregion_bobyqa_mod
                 debug_obj.assert(linalg_obj.p_norm(d) <= consts_obj.TWO * delta, "||D|| <= 2*DELTA", srname);
                 debug_obj.assert(crvmin >= 0, "CRVMIN >= 0", srname);
                 % D is supposed to satisfy the bound constraints SL <= XOPT + D <= SU.
-                debug_obj.assert(all(xopt + d >= sl - consts_obj.TEN * consts_obj.EPS * max(consts_obj.ONE, abs(sl)) & xopt + d <= su + consts_obj.TEN * consts_obj.EPS * max(consts_obj.ONE, abs(su)), 'all'), "SL <= XOPT + D <= SU", srname);
+                debug_obj.assert(all(xopt + d >= sl - consts_obj.TEN * consts_obj.EPS_custom * max(consts_obj.ONE, abs(sl)) & xopt + d <= su + consts_obj.TEN * consts_obj.EPS_custom * max(consts_obj.ONE, abs(su)), 'all'), "SL <= XOPT + D <= SU", srname);
             end
 
         end

@@ -22,7 +22,7 @@ classdef string_mod
             % MAX_WIDTH is the maximum number of characters printed in each row when printing arrays.
             obj.MAX_WIDTH = 100;
         end
-        function varargout = num2str(obj, varargin)
+        function varargout = num2str_custom(obj, varargin)
             if numel(varargin) == 1 && isinteger(varargin{1}) && isscalar(varargin{1})
                 [varargout{1:nargout}] = obj.int2str(varargin{:});
             elseif numel(varargin) >= 1 && numel(varargin) <= 3 && isfloat(varargin{1}) && isscalar(varargin{1})
@@ -40,13 +40,13 @@ classdef string_mod
 
             y = pad(" ", strlength(x));
 
-            dist = unicode2native("A") - unicode2native("a");
+            dist = double(unicode2native("A")) - double(unicode2native("a"));
             i = NaN;
 
             y = x;
             for i = 1:strlength(y)
                 if extract(y, i) >= "A" && extract(y, i) <= "Z"
-                    y = replaceBetween(y, i, i, char(unicode2native(extract(y, i)) - dist));
+                    y = replaceBetween(y, i, i, char(double(unicode2native(extract(y, i))) - dist));
                 end
             end
         end
@@ -59,13 +59,13 @@ classdef string_mod
 
             y = pad(" ", strlength(x));
 
-            dist = unicode2native("A") - unicode2native("a");
+            dist = double(unicode2native("A")) - double(unicode2native("a"));
             i = NaN;
 
             y = x;
             for i = 1:strlength(y)
                 if extract(y, i) >= "a" && extract(y, i) <= "z"
-                    y = replaceBetween(y, i, i, char(unicode2native(extract(y, i)) + dist));
+                    y = replaceBetween(y, i, i, char(double(unicode2native(extract(y, i))) + dist));
                 end
             end
         end
@@ -90,7 +90,7 @@ classdef string_mod
 
             i = NaN;
 
-            y(:) = reshape(cell2mat(arrayfun(@(i) fix(unicode2native(extract(x, i))), (1:fix(strlength(x))), "UniformOutput", false)), [], 1);
+            y(:) = reshape(cell2mat(arrayfun(@(i) fix(double(unicode2native(extract(x, i)))), (1:fix(strlength(x))), "UniformOutput", false)), [], 1);
 
         end
         function s = real2str_scalar(obj, x, varargin)
@@ -153,10 +153,10 @@ classdef string_mod
                 wx = ndgt_loc + nexp_loc + 5;
                 debug_obj.validate(wx <= obj.MAX_NUM_STR_LEN, "The width of the printed number is at most " + obj.int2str(fix(obj.MAX_NUM_STR_LEN)), srname);
                 sformat = "(1PE" + obj.int2str(fix(wx)) + "." + obj.int2str(fix(ndgt_loc)) + "E" + obj.int2str(fix(nexp_loc)) + ")";
-                str = sprintf('%s \n', obj.num2str(x));
+                str = sprintf('%s \n', num2str(x));
                 s = strtrim(str); % Remove the trailing spaces, but keep the leading ones, if any.
             else
-                str = sprintf('%s \n', obj.num2str(x));
+                str = sprintf('%s \n', num2str(x));
                 s = obj.strip(str); % Remove the leading and trailing spaces, if any.
 
             end
@@ -173,9 +173,9 @@ classdef string_mod
                 % printing. Thus we relax the assertions as below.
                 %call assert(is_posinf(x) .eqv. is_posinf(str2real(s)), 'IS_POSINF(X) .EQV. IS_POSINF(STR2REAL(S))', srname)
                 %call assert(is_neginf(x) .eqv. is_neginf(str2real(s)), 'IS_NEGINF(X) .EQV. IS_NEGINF(STR2REAL(S))', srname)
-                debug_obj.assert((x >= consts_obj.REALMAX * (1.0 - fortran.power(10.0, (-ndgt_loc)))) == (obj.str2real(s) >= consts_obj.REALMAX * (1.0 - fortran.power(10.0, (-ndgt_loc)))), "IS_POSINF(X) .EQV. IS_POSINF(STR2REAL(S))", srname);
-                debug_obj.assert((x <= -consts_obj.REALMAX * (1.0 - fortran.power(10.0, (-ndgt_loc)))) == (obj.str2real(s) <= -consts_obj.REALMAX * (1.0 - fortran.power(10.0, (-ndgt_loc)))), "IS_NEGINF(X) .EQV. IS_NEGINF(STR2REAL(S))", srname);
-                if abs(x) < consts_obj.REALMAX
+                debug_obj.assert((x >= consts_obj.REALMAX_custom * (1.0 - fortran.power(10.0, (-ndgt_loc)))) == (obj.str2real(s) >= consts_obj.REALMAX_custom * (1.0 - fortran.power(10.0, (-ndgt_loc)))), "IS_POSINF(X) .EQV. IS_POSINF(STR2REAL(S))", srname);
+                debug_obj.assert((x <= -consts_obj.REALMAX_custom * (1.0 - fortran.power(10.0, (-ndgt_loc)))) == (obj.str2real(s) <= -consts_obj.REALMAX_custom * (1.0 - fortran.power(10.0, (-ndgt_loc)))), "IS_NEGINF(X) .EQV. IS_NEGINF(STR2REAL(S))", srname);
+                if abs(x) < consts_obj.REALMAX_custom
                     debug_obj.assert(abs(x - obj.str2real(s)) <= abs(x) * fortran.power(10.0, (-ndgt_loc)), "STR2REAL(S) == X", srname);
                 end
             end
@@ -279,7 +279,7 @@ classdef string_mod
                 end
                 j = j + wx;
                 if mod(i, nx_loc) == 0
-                    s = replaceBetween(s, j + 1, j + 1, compose('\n'));
+                    s = replaceBetween(s, j + 1, j + 1, newline);
                     j = j + 1;
                 else
                     s = replaceBetween(s, j + 1, j + strlength(spaces), spaces);

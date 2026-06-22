@@ -132,7 +132,7 @@ classdef getact_mod
                 debug_obj.assert(numel(resact) == m, "SIZE(RESACT) == M", srname);
                 debug_obj.assert(numel(resnew) == m, "SIZE(RESNEW) == M", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
+                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS_custom * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, "SIZE(RFAC) == [N, N]", srname);
                 debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
@@ -229,7 +229,7 @@ classdef getact_mod
                 dd = linalg_obj.inprod(psd, psd);
                 dnorm = fortran.sqrt(dd);
 
-                if dnorm <= consts_obj.EPS || infnan_obj.is_nan_sp(dnorm)
+                if dnorm <= consts_obj.EPS_custom || infnan_obj.is_nan_sp(dnorm)
                     break
                 end
 
@@ -270,7 +270,7 @@ classdef getact_mod
                     violmx = apsd(l);
                 else
                     l = 0;
-                    violmx = -consts_obj.REALMAX;
+                    violmx = -consts_obj.REALMAX_custom;
                 end
                 %%MATLAB: apsd(mask) = -Inf; [violmx, l] = max(apsd);
                 % N.B.: the value of L will differ from the Fortran version if MASK is all FALSE, but this is OK
@@ -288,7 +288,7 @@ classdef getact_mod
                 % The following condition works essentially the same as Powell's. However, it ensures that
                 % VIOLMX > EPS * DNORM when the EXIT is not triggered, which implies that AMAT(:, L) is not in
                 % the range of QFAC(:, 1:NACT).
-                if all(~mask, 'all') || violmx <= max(consts_obj.EPS * dnorm, consts_obj.TEN * linalg_obj.named_norm_vec(apsd(iact(1:nact)), "inf"))
+                if all(~mask, 'all') || violmx <= max(consts_obj.EPS_custom * dnorm, consts_obj.TEN * linalg_obj.named_norm_vec(apsd(iact(1:nact)), "inf"))
                     break
                 end
 
@@ -310,7 +310,7 @@ classdef getact_mod
                     % Calculate the multiple of VMU to subtract from VLAM, and update VLAM.
                     % N.B.: 1. VLAM(1:NACT-1) < 0 and VLAM(NACT) <= 0 by the updates of VLAM. 2. VMU(NACT) > 0.
                     % 3. Only the places where VMU(1:NACT) < 0 is relevant below, if any.
-                    frac = repmat(consts_obj.REALMAX, size(frac));
+                    frac = repmat(consts_obj.REALMAX_custom, size(frac));
                     frac(vmu(1:nact) < 0 & vlam(1:nact) < 0) = vlam(vmu(1:nact) < 0 & vlam(1:nact) < 0) ./ vmu(vmu(1:nact) < 0 & vlam(1:nact) < 0);
                     %%MATLAB: frac = vlam / vmu; frac(vmu >= 0 | vlam >= 0) = Inf;
                     vmult = min([violmx; reshape(frac(1:nact), [], 1)], [], 'all');
@@ -386,7 +386,7 @@ classdef getact_mod
                 % In theory, ||PSD||^2 <= GG and -GG <= PSD^T*G <= 0.
                 % N.B. 1. Do not use DD, which may not be up to date. 2. PSD^T*G can be NaN if G is huge.
                 debug_obj.assert(linalg_obj.inprod(psd, psd) <= consts_obj.TWO * gg, "||PSD||^2 <= 2*GG", srname);
-                debug_obj.assert(~(linalg_obj.inprod(psd, g) > 100.0 * consts_obj.EPS * gg || linalg_obj.inprod(psd, g) < -consts_obj.TWO * gg), "-2*GG <= PSD^T*G <= 0", srname);
+                debug_obj.assert(~(linalg_obj.inprod(psd, g) > 100.0 * consts_obj.EPS_custom * gg || linalg_obj.inprod(psd, g) < -consts_obj.TWO * gg), "-2*GG <= PSD^T*G <= 0", srname);
             end
 
         end
@@ -435,7 +435,7 @@ classdef getact_mod
                 debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), "1 <= IACT <= M", srname);
                 debug_obj.assert(~any(iact(1:nact) == l, 'all'), "L is not in IACT(1:NACT)", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
+                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS_custom * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, "SIZE(RFAC) == [N, N]", srname);
                 debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
@@ -526,7 +526,7 @@ classdef getact_mod
                 debug_obj.assert(icon >= 1 && icon <= nact, "1 <= ICON <= NACT", srname);
                 debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), "1 <= IACT <= M", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
+                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS_custom * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, "SIZE(RFAC) == [N, N]", srname);
                 debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);

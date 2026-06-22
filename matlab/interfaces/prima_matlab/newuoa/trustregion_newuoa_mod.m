@@ -202,7 +202,7 @@ classdef trustregion_newuoa_mod
 
                     % Powell's code does not have the following two IFs.
                     %--------------------------------------------------%
-                    if dd <= consts_obj.EPS * delsq
+                    if dd <= consts_obj.EPS_custom * delsq
                         info_loc = 0;
                         break
                     end

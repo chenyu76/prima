@@ -393,7 +393,7 @@ classdef geometry_newuoa_mod
                 maxiter = 0; % Return immediately to avoid producing a D containing NaN/Inf.
             end
 
-            tol = min(0.1, max(fortran.power(consts_obj.EPS, consts_obj.QUART), 1.0e-4));
+            tol = min(0.1, max(fortran.power(consts_obj.EPS_custom, consts_obj.QUART), 1.0e-4));
             for iter = 1:maxiter
                 % Begin the iteration by overwriting S with a vector that has the required length and direction,
                 % except that termination occurs if the given D and S are nearly parallel.
@@ -536,7 +536,7 @@ classdef geometry_newuoa_mod
             dtest = NaN;
             par = NaN(5, 1);
             pqlag = NaN(size(xpt, 2), 1);
-            prod = NaN(size(xpt, 1) + size(xpt, 2), 5);
+            prod_custom = NaN(size(xpt, 1) + size(xpt, 2), 5);
             s = NaN(size(xpt, 1), 1);
             ss = NaN;
             sstemp = NaN(size(xpt, 2), 1);
@@ -625,7 +625,7 @@ classdef geometry_newuoa_mod
 
             densav = consts_obj.ZERO;
 
-            tol = min(0.1, max(fortran.power(consts_obj.EPS, consts_obj.QUART), 1.0e-4));
+            tol = min(0.1, max(fortran.power(consts_obj.EPS_custom, consts_obj.QUART), 1.0e-4));
             for iter = 1:n
                 % Begin the iteration by overwriting S with a vector that has the required length and direction.
                 % TOL is the tolerance for telling whether S and D are nearly parallel. In Powell's code, the
@@ -689,57 +689,57 @@ classdef geometry_newuoa_mod
 
                 % Put the coefficients of THETA*WCHECK in PROD.
                 for j = 1:5
-                    prod(1:npt, j) = powalg_obj.omega_mul(idz, zmat, w(1:npt, j));
+                    prod_custom(1:npt, j) = powalg_obj.omega_mul(idz, zmat, w(1:npt, j));
                     nw = npt;
                     if j == 2 || j == 3
-                        prod(1:npt, j) = prod(1:npt, j) + linalg_obj.matprod12(w(npt + 1:npt + n, j), bmat(:, 1:npt));
+                        prod_custom(1:npt, j) = prod_custom(1:npt, j) + linalg_obj.matprod12(w(npt + 1:npt + n, j), bmat(:, 1:npt));
                         nw = npt + n;
                     end
-                    prod(npt + 1:npt + n, j) = linalg_obj.matprod21(bmat(:, 1:nw), w(1:nw, j));
+                    prod_custom(npt + 1:npt + n, j) = linalg_obj.matprod21(bmat(:, 1:nw), w(1:nw, j));
                 end
 
                 % Include in DEN the part of BETA that depends on THETA.
                 for k = 1:npt + n
-                    par(1:5) = consts_obj.HALF * prod(k, 1:5) .* w(k, 1:5);
+                    par(1:5) = consts_obj.HALF * prod_custom(k, 1:5) .* w(k, 1:5);
                     den(1) = den(1) - par(1) - sum(par(1:5), 'all');
-                    tempa = prod(k, 1) * w(k, 2) + prod(k, 2) * w(k, 1);
-                    tempb = prod(k, 2) * w(k, 4) + prod(k, 4) * w(k, 2);
-                    tempc = prod(k, 3) * w(k, 5) + prod(k, 5) * w(k, 3);
+                    tempa = prod_custom(k, 1) * w(k, 2) + prod_custom(k, 2) * w(k, 1);
+                    tempb = prod_custom(k, 2) * w(k, 4) + prod_custom(k, 4) * w(k, 2);
+                    tempc = prod_custom(k, 3) * w(k, 5) + prod_custom(k, 5) * w(k, 3);
                     den(2) = den(2) - tempa - consts_obj.HALF * (tempb + tempc);
                     den(6) = den(6) - consts_obj.HALF * (tempb - tempc);
-                    tempa = prod(k, 1) * w(k, 3) + prod(k, 3) * w(k, 1);
-                    tempb = prod(k, 2) * w(k, 5) + prod(k, 5) * w(k, 2);
-                    tempc = prod(k, 3) * w(k, 4) + prod(k, 4) * w(k, 3);
+                    tempa = prod_custom(k, 1) * w(k, 3) + prod_custom(k, 3) * w(k, 1);
+                    tempb = prod_custom(k, 2) * w(k, 5) + prod_custom(k, 5) * w(k, 2);
+                    tempc = prod_custom(k, 3) * w(k, 4) + prod_custom(k, 4) * w(k, 3);
                     den(3) = den(3) - tempa - consts_obj.HALF * (tempb - tempc);
                     den(7) = den(7) - consts_obj.HALF * (tempb + tempc);
-                    tempa = prod(k, 1) * w(k, 4) + prod(k, 4) * w(k, 1);
+                    tempa = prod_custom(k, 1) * w(k, 4) + prod_custom(k, 4) * w(k, 1);
                     den(4) = den(4) - tempa - par(2) + par(3);
-                    tempa = prod(k, 1) * w(k, 5) + prod(k, 5) * w(k, 1);
-                    tempb = prod(k, 2) * w(k, 3) + prod(k, 3) * w(k, 2);
+                    tempa = prod_custom(k, 1) * w(k, 5) + prod_custom(k, 5) * w(k, 1);
+                    tempb = prod_custom(k, 2) * w(k, 3) + prod_custom(k, 3) * w(k, 2);
                     den(5) = den(5) - tempa - consts_obj.HALF * tempb;
                     den(8) = den(8) - par(4) + par(5);
-                    tempa = prod(k, 4) * w(k, 5) + prod(k, 5) * w(k, 4);
+                    tempa = prod_custom(k, 4) * w(k, 5) + prod_custom(k, 5) * w(k, 4);
                     den(9) = den(9) - consts_obj.HALF * tempa;
                 end
 
-                par(1:5) = consts_obj.HALF * fortran.power(prod(knew, 1:5), 2);
+                par(1:5) = consts_obj.HALF * fortran.power(prod_custom(knew, 1:5), 2);
                 denex(1) = alpha * den(1) + par(1) + sum(par(1:5), 'all');
-                tempa = consts_obj.TWO * prod(knew, 1) * prod(knew, 2);
-                tempb = prod(knew, 2) * prod(knew, 4);
-                tempc = prod(knew, 3) * prod(knew, 5);
+                tempa = consts_obj.TWO * prod_custom(knew, 1) * prod_custom(knew, 2);
+                tempb = prod_custom(knew, 2) * prod_custom(knew, 4);
+                tempc = prod_custom(knew, 3) * prod_custom(knew, 5);
                 denex(2) = alpha * den(2) + tempa + tempb + tempc;
                 denex(6) = alpha * den(6) + tempb - tempc;
-                tempa = consts_obj.TWO * prod(knew, 1) * prod(knew, 3);
-                tempb = prod(knew, 2) * prod(knew, 5);
-                tempc = prod(knew, 3) * prod(knew, 4);
+                tempa = consts_obj.TWO * prod_custom(knew, 1) * prod_custom(knew, 3);
+                tempb = prod_custom(knew, 2) * prod_custom(knew, 5);
+                tempc = prod_custom(knew, 3) * prod_custom(knew, 4);
                 denex(3) = alpha * den(3) + tempa + tempb - tempc;
                 denex(7) = alpha * den(7) + tempb + tempc;
-                tempa = consts_obj.TWO * prod(knew, 1) * prod(knew, 4);
+                tempa = consts_obj.TWO * prod_custom(knew, 1) * prod_custom(knew, 4);
                 denex(4) = alpha * den(4) + tempa + par(2) - par(3);
-                tempa = consts_obj.TWO * prod(knew, 1) * prod(knew, 5);
-                denex(5) = alpha * den(5) + tempa + prod(knew, 2) * prod(knew, 3);
+                tempa = consts_obj.TWO * prod_custom(knew, 1) * prod_custom(knew, 5);
+                denex(5) = alpha * den(5) + tempa + prod_custom(knew, 2) * prod_custom(knew, 3);
                 denex(8) = alpha * den(8) + par(4) - par(5);
-                denex(9) = alpha * den(9) + prod(knew, 4) * prod(knew, 5);
+                denex(9) = alpha * den(9) + prod_custom(knew, 4) * prod_custom(knew, 5);
 
                 % Seek the value of the angle that maximizes the |DENOM|.
                 angle = univar_obj.circle_maxabs(@obj.circle_fun_bigden, denex, 50);
@@ -766,7 +766,7 @@ classdef geometry_newuoa_mod
 
                 % Set S to HALF the gradient of the denominator with respect to D. First, calculate the new VLAG.
                 par(:) = [consts_obj.ONE, fortran.cos(angle), fortran.sin(angle), fortran.cos(2.0 * angle), fortran.sin(2.0 * angle)];
-                vlag(:) = linalg_obj.matprod21(prod, par);
+                vlag(:) = linalg_obj.matprod21(prod_custom, par);
                 tau = vlag(knew);
                 y(:) = x + d;
                 yd = linalg_obj.inprod(y, d);

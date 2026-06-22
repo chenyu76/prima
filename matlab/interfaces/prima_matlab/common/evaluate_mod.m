@@ -32,7 +32,7 @@ classdef evaluate_mod
 
             y(:) = x;
             y(linalg_obj.trueloc(infnan_obj.is_nan(x))) = consts_obj.ZERO;
-            y(:) = max(-consts_obj.REALMAX, min(consts_obj.REALMAX, y));
+            y(:) = max(-consts_obj.REALMAX_custom, min(consts_obj.REALMAX_custom, y));
         end
         function y = moderatef(~, f)
             %--------------------------------------------------------------------------------------------------%
@@ -51,7 +51,7 @@ classdef evaluate_mod
             if infnan_obj.is_nan(y)
                 y = consts_obj.FUNCMAX;
             end
-            y = max(-consts_obj.REALMAX, min(consts_obj.FUNCMAX, y));
+            y = max(-consts_obj.REALMAX_custom, min(consts_obj.FUNCMAX, y));
             % We may moderate huge negative function values as follows, but we decide not to.
             %y = max(-FUNCMAX, min(FUNCMAX, y))
         end

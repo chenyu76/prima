@@ -604,7 +604,7 @@ classdef geometry_bobyqa_mod
                 % to the bound constraints, ||D|| may be much smaller than DELBAR.
                 debug_obj.assert(linalg_obj.p_norm(d) > 0 && linalg_obj.p_norm(d) < consts_obj.TWO * delbar, "0 < ||D|| < 2*DELBAR", srname);
                 % D is supposed to satisfy the bound constraints SL <= XOPT + D <= SU.
-                debug_obj.assert(all(xopt + d >= sl - consts_obj.TEN * consts_obj.EPS * max(consts_obj.ONE, abs(sl)) & xopt + d <= su + consts_obj.TEN * consts_obj.EPS * max(consts_obj.ONE, abs(su)), 'all'), "SL <= XOPT + D <= SU", srname);
+                debug_obj.assert(all(xopt + d >= sl - consts_obj.TEN * consts_obj.EPS_custom * max(consts_obj.ONE, abs(sl)) & xopt + d <= su + consts_obj.TEN * consts_obj.EPS_custom * max(consts_obj.ONE, abs(su)), 'all'), "SL <= XOPT + D <= SU", srname);
             end
 
         end

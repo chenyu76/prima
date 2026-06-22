@@ -153,11 +153,11 @@ classdef initialize_lincoa_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-consts_obj.REALMAX, size(xhist));
-            fhist = repmat(consts_obj.REALMAX, size(fhist));
-            chist = repmat(consts_obj.REALMAX, size(chist));
-            fval = repmat(consts_obj.REALMAX, size(fval));
-            cval = repmat(consts_obj.REALMAX, size(cval));
+            xhist = repmat(-consts_obj.REALMAX_custom, size(xhist));
+            fhist = repmat(consts_obj.REALMAX_custom, size(fhist));
+            chist = repmat(consts_obj.REALMAX_custom, size(chist));
+            fval = repmat(consts_obj.REALMAX_custom, size(fval));
+            cval = repmat(consts_obj.REALMAX_custom, size(cval));
 
             % Set the nonzero coordinates of XPT(K,.), K=1,2,...,min[2*N+1,NPT], but they may be altered
             % later to make a constraint violation sufficiently large.
@@ -185,7 +185,7 @@ classdef initialize_lincoa_mod
                 % Internally, we use AMAT and B to evaluate the constraints.
                 cval(k) = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(xpt(:, k), amat) - b, [], 1)]);
                 if infnan_obj.is_nan_sp(cval(k))
-                    cval(k) = consts_obj.REALMAX;
+                    cval(k) = consts_obj.REALMAX_custom;
                 end
                 % Powell's implementation contains the following procedure that shifts every infeasible point if
                 % necessary so that its constraint violation is at least 0.2*RHOBEG. According to a test on
@@ -268,7 +268,7 @@ classdef initialize_lincoa_mod
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
                 % LINCOA always starts with a feasible point.
                 if m > 0
-                    debug_obj.assert(all(linalg_obj.matprod12(xpt(:, 1), amat) - b <= max(fortran.power(consts_obj.TEN, max(-12, -consts_obj.MAXPOW10)), 100.0 * consts_obj.EPS) * (consts_obj.ONE + sum(abs(xpt(:, 1)), 'all') + sum(abs(b), 'all')), 'all'), "The starting point is feasible", srname);
+                    debug_obj.assert(all(linalg_obj.matprod12(xpt(:, 1), amat) - b <= max(fortran.power(consts_obj.TEN, max(-12, -consts_obj.MAXPOW10)), 100.0 * consts_obj.EPS_custom) * (consts_obj.ONE + sum(abs(xpt(:, 1)), 'all') + sum(abs(b), 'all')), 'all'), "The starting point is feasible", srname);
                 end
             end
 

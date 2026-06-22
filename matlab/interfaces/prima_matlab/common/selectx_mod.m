@@ -141,7 +141,7 @@ classdef selectx_mod
                     % we will check FFILT to exhaust the remaining degree of freedom.
 
                 else
-                    phi(:) = max(ffilt, -consts_obj.REALMAX) + cweight * cfilt_shifted;
+                    phi(:) = max(ffilt, -consts_obj.REALMAX_custom) + cweight * cfilt_shifted;
                     % MAX(FFILT, -REALMAX) makes sure that PHI will not contain NaN (unless there is a bug).
                 end
                 % We select X to maximize PHI. In case there are multiple maximizers, we take the one with the
@@ -261,15 +261,15 @@ classdef selectx_mod
             if any(fhist < consts_obj.FUNCMAX & chist < consts_obj.CONSTRMAX, 'all')
                 fref = consts_obj.FUNCMAX;
                 cref = consts_obj.CONSTRMAX;
-            elseif any(fhist < consts_obj.REALMAX & chist < consts_obj.CONSTRMAX, 'all')
-                fref = consts_obj.REALMAX;
+            elseif any(fhist < consts_obj.REALMAX_custom & chist < consts_obj.CONSTRMAX, 'all')
+                fref = consts_obj.REALMAX_custom;
                 cref = consts_obj.CONSTRMAX;
-            elseif any(fhist < consts_obj.FUNCMAX & chist < consts_obj.REALMAX, 'all')
+            elseif any(fhist < consts_obj.FUNCMAX & chist < consts_obj.REALMAX_custom, 'all')
                 fref = consts_obj.FUNCMAX;
-                cref = consts_obj.REALMAX;
+                cref = consts_obj.REALMAX_custom;
             else
-                fref = consts_obj.REALMAX;
-                cref = consts_obj.REALMAX;
+                fref = consts_obj.REALMAX_custom;
+                cref = consts_obj.REALMAX_custom;
             end
 
             if any(fhist < fref & chist < cref, 'all')
@@ -280,7 +280,7 @@ classdef selectx_mod
                 % We consider only the points whose shifted constraint violations are at most the CREF below.
                 % N.B.: Without taking MAX(EPS, .), CREF would be 0 if CMIN = 0. In that case, asking for
                 % CSTRV_SHIFTED < CREF would be WRONG!
-                cref = max(consts_obj.EPS, consts_obj.TWO * cmin);
+                cref = max(consts_obj.EPS_custom, consts_obj.TWO * cmin);
                 % We use the following PHI as our merit function to select X.
                 if cweight <= 0
                     phi(:) = fhist;
@@ -290,7 +290,7 @@ classdef selectx_mod
                     % we will check FHIST to exhaust the remaining degree of freedom.
 
                 else
-                    phi(:) = max(fhist, -consts_obj.REALMAX) + cweight * chist_shifted;
+                    phi(:) = max(fhist, -consts_obj.REALMAX_custom) + cweight * chist_shifted;
                     % MAX(FHIST, -REALMAX) makes sure that PHI will not contain NaN (unless there is a bug).
                 end
                 % We select X to minimize PHI subject to F < FREF and CSTRV_SHIFTED <= CREF (see the comments
@@ -369,8 +369,8 @@ classdef selectx_mod
             % If C1 <= CTOL and C2 is significantly larger/worse than CTOL, i.e., C2 > MAX(CTOL, CREF),
             % then FC1 is better than FC2 as long as F1 < REALMAX. Normally CREF >= CTOL so MAX(CTOL, CREF)
             % is indeed CREF. However, this may not be true if CTOL > 1E-1*CONSTRMAX.
-            cref = consts_obj.TEN * max(consts_obj.EPS, min(ctol, 1.0e-2 * consts_obj.CONSTRMAX)); % The MIN avoids overflow.
-            is_better = is_better || (f1 < consts_obj.REALMAX && c1 <= ctol && (c2 > max(ctol, cref) || infnan_obj.is_nan_sp(c2)));
+            cref = consts_obj.TEN * max(consts_obj.EPS_custom, min(ctol, 1.0e-2 * consts_obj.CONSTRMAX)); % The MIN avoids overflow.
+            is_better = is_better || (f1 < consts_obj.REALMAX_custom && c1 <= ctol && (c2 > max(ctol, cref) || infnan_obj.is_nan_sp(c2)));
 
             %====================%
             %  Calculation ends  %

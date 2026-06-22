@@ -123,7 +123,7 @@ classdef powalg_mod
                 debug_obj.assert(numel(c) == m, "SIZE(C) == M", srname);
                 debug_obj.assert(numel(Rdiag) >= min(m, n + 1) && numel(Rdiag) <= m, "MIN(M, N+1) <= SIZE(Rdiag) <= M", srname);
                 debug_obj.assert(size(Q, 1) == m && size(Q, 2) == m, "SIZE(Q) == [M, M]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(12, consts_obj.MAXPOW10)) * consts_obj.EPS * double(m + 1)));
+                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(12, consts_obj.MAXPOW10)) * consts_obj.EPS_custom * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthonormal", srname); % Costly!
                 Qsave(:, :) = Q(:, 1:n); % For debugging only
                 Rdsave(:) = Rdiag(1:n); % For debugging only
@@ -160,7 +160,7 @@ classdef powalg_mod
             % The two IFs cannot be merged as Fortran may evaluate CQ(N+1) even if N>=M, leading to a SEGFAULT.
             if n < m
                 % Powell's condition for the following IF: CQ(N+1) /= 0.
-                if abs(cq(n + 1)) > fortran.power(consts_obj.EPS, 2) && ~linalg_obj.isminor0(cq(n + 1), cqa(n + 1))
+                if abs(cq(n + 1)) > fortran.power(consts_obj.EPS_custom, 2) && ~linalg_obj.isminor0(cq(n + 1), cqa(n + 1))
                     n = n + 1;
                 end
             end
@@ -240,7 +240,7 @@ classdef powalg_mod
                 debug_obj.assert(size(Q, 1) == m && size(Q, 2) == m, "SIZE(Q) = [M, M]", srname);
                 debug_obj.assert(size(Q, 2) == size(R, 1), "SIZE(Q, 2) == SIZE(R, 1)", srname);
                 debug_obj.assert(size(R, 2) >= n + 1 && size(R, 2) <= m, "N+1 <= SIZE(R, 2) <= M", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(m + 1)));
+                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS_custom * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthogonal", srname);
                 debug_obj.assert(linalg_obj.istriu(R), "R is upper triangular", srname);
                 debug_obj.assert(all(linalg_obj.diag(R(:, 1:n)) > 0, 'all'), "DIAG(R(:, 1:N)) > 0", srname);
@@ -341,7 +341,7 @@ classdef powalg_mod
                 debug_obj.assert(i >= 1 && i <= n, "1 <= i <= N", srname);
                 debug_obj.assert(numel(Rdiag) == n, "SIZE(Rdiag) == N", srname);
                 debug_obj.assert(size(Q, 1) == m && size(Q, 2) >= n && size(Q, 2) <= m, "SIZE(Q, 1) == M, N <= SIZE(Q, 2) <= M", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(m + 1)));
+                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS_custom * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthonormal", srname); % Costly!
                 Qsave(:, :) = Q; % For debugging only.
                 Rdsave(:) = Rdiag(1:i); % For debugging only.
@@ -457,7 +457,7 @@ classdef powalg_mod
                 debug_obj.assert(size(Q, 2) == size(R, 1), "SIZE(Q, 2) == SIZE(R, 1)", srname);
                 debug_obj.assert(size(Q, 2) >= n && size(Q, 2) <= m, "N <= SIZE(Q, 2) <= M", srname);
                 debug_obj.assert(size(R, 1) >= n && size(R, 1) <= m, "N <= SIZE(R, 1) <= M", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(m + 1)));
+                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS_custom * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthogonal", srname);
                 debug_obj.assert(linalg_obj.istriu(R), "R is upper triangular", srname);
                 debug_obj.assert(all(linalg_obj.diag(R(:, 1:n)) > 0, 'all'), "DIAG(R(:, 1:N)) > 0", srname);
@@ -775,7 +775,7 @@ classdef powalg_mod
                 fmq(:) = fval - qval;
                 err = (max(fmq, [], 'all') - min(fmq, [], 'all')) / max([consts_obj.ONE; reshape(abs(fval), [], 1)], [], 'all');
             else
-                err = consts_obj.REALMAX;
+                err = consts_obj.REALMAX_custom;
             end
 
             %====================%
@@ -1574,7 +1574,7 @@ classdef powalg_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(numel(vlag) == npt + n, "SIZE(VLAG) == NPT + N", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(12, consts_obj.MAXPOW10)) * consts_obj.EPS * double(npt + n)));
+                tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(12, consts_obj.MAXPOW10)) * consts_obj.EPS_custom * double(npt + n)));
                 debug_obj.wassert(abs(sum(vlag(1:npt), 'all') - consts_obj.ONE) / double(npt) <= tol || floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))), "SUM(VLAG(1:NPT)) == 1", srname);
             end
 
