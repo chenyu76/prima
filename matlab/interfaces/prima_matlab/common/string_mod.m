@@ -40,7 +40,7 @@ classdef string_mod
 
             y = pad(" ", strlength(x));
 
-            dist = double(unicode2native("A")) - double(unicode2native("a"));
+            dist = 'A' - 'a';
             i = NaN;
 
             y = x;
@@ -59,7 +59,7 @@ classdef string_mod
 
             y = pad(" ", strlength(x));
 
-            dist = double(unicode2native("A")) - double(unicode2native("a"));
+            dist = 'A' - 'a';
             i = NaN;
 
             y = x;
