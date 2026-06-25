@@ -131,13 +131,13 @@ classdef initialize_cobyla_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-consts_obj.REALMAX_custom, size(xhist));
-            fhist = repmat(consts_obj.REALMAX_custom, size(fhist));
-            chist = repmat(consts_obj.REALMAX_custom, size(chist));
-            conhist = repmat(consts_obj.REALMAX_custom, size(conhist));
-            fval = repmat(consts_obj.REALMAX_custom, size(fval));
-            cval = repmat(consts_obj.REALMAX_custom, size(cval));
-            conmat = repmat(consts_obj.REALMAX_custom, size(conmat));
+            xhist = repmat(-consts_obj.REALMAX, size(xhist));
+            fhist = repmat(consts_obj.REALMAX, size(fhist));
+            chist = repmat(consts_obj.REALMAX, size(chist));
+            conhist = repmat(consts_obj.REALMAX, size(conhist));
+            fval = repmat(consts_obj.REALMAX, size(fval));
+            cval = repmat(consts_obj.REALMAX, size(cval));
+            conmat = repmat(consts_obj.REALMAX, size(conmat));
 
             for k = 1:n + 1
                 x(:) = sim(:, n + 1);

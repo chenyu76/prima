@@ -449,7 +449,7 @@ classdef lincoa_mod
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(consts_obj.EPS_custom, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg_loc, consts_obj.RHOEND_DFT));
+                rhoend_loc = max(consts_obj.EPS, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg_loc, consts_obj.RHOEND_DFT));
             else
                 rhoend_loc = consts_obj.RHOEND_DFT;
             end
@@ -497,7 +497,7 @@ classdef lincoa_mod
                 eta1_loc = eta1;
             elseif ~ismember('eta2', ipObj.UsingDefaults)
                 if eta2 > 0 && eta2 < 1
-                    eta1_loc = max(consts_obj.EPS_custom, eta2 / 7.0);
+                    eta1_loc = max(consts_obj.EPS, eta2 / 7.0);
                 end
             else
                 eta1_loc = consts_obj.TENTH;
@@ -774,7 +774,7 @@ classdef lincoa_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(size(amat, 1) == numel(x0) && size(amat, 2) == numel(bvec), "SIZE(AMAT) == [SIZE(X), SIZE(BVEC)]", srname);
-                debug_obj.assert(all(linalg_obj.matprod12(x0, amat) - bvec <= max(fortran.power(consts_obj.TEN, max(-12, -consts_obj.MAXPOW10)), 100.0 * consts_obj.EPS_custom) * (consts_obj.ONE + sum(abs(x0), 'all') + sum(abs(bvec), 'all')), 'all'), "The starting point is feasible", srname);
+                debug_obj.assert(all(linalg_obj.matprod12(x0, amat) - bvec <= max(fortran.power(consts_obj.TEN, max(-12, -consts_obj.MAXPOW10)), 100.0 * consts_obj.EPS) * (consts_obj.ONE + sum(abs(x0), 'all') + sum(abs(bvec), 'all')), 'all'), "The starting point is feasible", srname);
             end
         end
 

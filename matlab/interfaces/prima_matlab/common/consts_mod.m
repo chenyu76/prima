@@ -22,10 +22,10 @@ classdef consts_mod
         QUART;
         TEN;
         TENTH;
-        PI_custom;
-        EPS_custom;
+        PI;
+        EPS;
         REALMIN;
-        REALMAX_custom;
+        REALMAX;
         MAXPOW10;
         TINYCV;
         FUNCMAX;
@@ -129,10 +129,10 @@ classdef consts_mod
             obj.QUART = 0.25;
             obj.TEN = 10.0;
             obj.TENTH = 0.1;
-            obj.PI_custom = 3.141592653589793;
+            obj.PI = 3.141592653589793;
 
             % EPS is the machine epsilon, namely the smallest floating-point number such that 1.0 + EPS > 1.0.
-            obj.EPS_custom = eps(class(obj.ZERO));
+            obj.EPS = eps(class(obj.ZERO));
             % REALMIN is the smallest positive normalized floating-point number, which is 2^(-1022) ~ 2.225E-308
             % for IEEE double precision. Taking double precision as an example, REALMIN in other languages:
             % MATLAB: realmin or realmin('double')
@@ -146,7 +146,7 @@ classdef consts_mod
             % Python: numpy.finfo(numpy.float64).max
             % Julia: realmax(Float64)
             % R: double.xmax
-            obj.REALMAX_custom = realmax;
+            obj.REALMAX = realmax;
 
             obj.MAXPOW10 = floor(log10(realmax(class(obj.ZERO))));
             obj.HALF_MAXPOW10 = floor(double(obj.MAXPOW10) / 2.0);
@@ -162,7 +162,7 @@ classdef consts_mod
             obj.FUNCMAX = fortran.power(obj.TEN, max(4, min(30, obj.HALF_MAXPOW10)));
             obj.CONSTRMAX = obj.FUNCMAX;
             % Any bound with an absolute value at least BOUNDMAX is considered as no bound.
-            obj.BOUNDMAX = obj.QUART * obj.REALMAX_custom;
+            obj.BOUNDMAX = obj.QUART * obj.REALMAX;
 
             % SYMTOL_DFT is the default tolerance for testing symmetry of matrices. It can be set to 0 if the
             % IEEE Standard for Floating-Point Arithmetic (IEEE 754) is respected, particularly if addition and
@@ -183,13 +183,13 @@ classdef consts_mod
             % and if the floating-point numbers are in single precision.
             %
             % Double or higher precision in released mode
-            obj.SYMTOL_DFT = max(obj.TEN * obj.EPS_custom, fortran.power(obj.TEN, max(-10, -obj.MAXPOW10)));
+            obj.SYMTOL_DFT = max(obj.TEN * obj.EPS, fortran.power(obj.TEN, max(-10, -obj.MAXPOW10)));
 
             % ORTHTOL_DFT is the default tolerance for testing orthogonality of matrices.
             % In some cases, due to compiler bugs, we need to disable the test. We signify such cases by setting
             % ORTHTOL_DFT to REALMAX. For instance, NAG Fortran Compiler is buggy concerning half-precision
             % floating-point numbers before Release 7.2 Build 7201.
-            obj.ORTHTOL_DFT = obj.REALMAX_custom;
+            obj.ORTHTOL_DFT = obj.REALMAX;
 
 
             % Some default values
@@ -201,9 +201,9 @@ classdef consts_mod
             obj.RHOEND_DFT = fortran.power(obj.TEN, max(-6, -obj.MAXPOW10)); % 1.0E-6
             % FTARGET: target value of the objective function. Solvers exit when finding a feasible point with
             % the objective function value no more than FTARGET.
-            obj.FTARGET_DFT = -obj.REALMAX_custom;
+            obj.FTARGET_DFT = -obj.REALMAX;
             % CTOL: tolerance for constraint violation. A point with constraint violation <= CTOL is considered feasible.
-            obj.CTOL_DFT = fortran.sqrt(obj.EPS_custom);
+            obj.CTOL_DFT = fortran.sqrt(obj.EPS);
             % CWEIGHT: weight of constraint violation in the merit function used to select the output point.
             obj.CWEIGHT_DFT = fortran.power(obj.TEN, min(8, obj.MAXPOW10)); % 1.0E8
             % ETA1: threshold of reduction ratio for shrinking the trust region radius.

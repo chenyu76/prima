@@ -109,9 +109,9 @@ classdef initialize_uobyqa_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-consts_obj.REALMAX_custom, size(xhist));
-            fhist = repmat(consts_obj.REALMAX_custom, size(fhist));
-            fval = repmat(consts_obj.REALMAX_custom, size(fval));
+            xhist = repmat(-consts_obj.REALMAX, size(xhist));
+            fhist = repmat(consts_obj.REALMAX, size(fhist));
+            fval = repmat(consts_obj.REALMAX, size(fval));
 
             % Set XPT(:, 1 : 2*N+1) and FVAL(:, 1 : 2*N+1).
             xpt = repmat(consts_obj.ZERO, size(xpt));

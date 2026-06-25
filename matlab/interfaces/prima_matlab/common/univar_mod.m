@@ -64,7 +64,7 @@ classdef univar_mod
             % Calculation starts %
             %====================%
 
-            agrid(:) = linalg_obj.linspace_r(consts_obj.ZERO, consts_obj.TWO * consts_obj.PI_custom, grid_size + 1); % Size: GRID_SIZE+1; the last entry will be unused
+            agrid(:) = linalg_obj.linspace_r(consts_obj.ZERO, consts_obj.TWO * consts_obj.PI, grid_size + 1); % Size: GRID_SIZE+1; the last entry will be unused
             fgrid(:) = reshape(cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size), "UniformOutput", false)), [], 1);
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 
@@ -87,7 +87,7 @@ classdef univar_mod
             end
 
             if infnan_obj.is_finite(step) && abs(step) > 0
-                unit_angle = (consts_obj.TWO * consts_obj.PI_custom) / double(grid_size);
+                unit_angle = (consts_obj.TWO * consts_obj.PI) / double(grid_size);
                 angle = (double(kopt - 1) + step) * unit_angle;
                 % 1. AGRID(KOPT) = (KOPT-1) * UNIT_ANGLE. 2. ANGLE may not be in [0, 2*PI].
 
@@ -148,7 +148,7 @@ classdef univar_mod
             % Calculation starts %
             %====================%
 
-            agrid(:) = linalg_obj.linspace_r(consts_obj.ZERO, consts_obj.TWO * consts_obj.PI_custom, grid_size + 1); % Size: GRID_SIZE+1; the last entry is not used
+            agrid(:) = linalg_obj.linspace_r(consts_obj.ZERO, consts_obj.TWO * consts_obj.PI, grid_size + 1); % Size: GRID_SIZE+1; the last entry is not used
             fgrid(:) = reshape(cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size), "UniformOutput", false)), [], 1);
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 
@@ -171,7 +171,7 @@ classdef univar_mod
             end
 
             if infnan_obj.is_finite(step) && abs(step) > 0
-                unit_angle = (consts_obj.TWO * consts_obj.PI_custom) / double(grid_size);
+                unit_angle = (consts_obj.TWO * consts_obj.PI) / double(grid_size);
                 angle = (double(kopt - 1) + step) * unit_angle;
                 % 1. AGRID(KOPT) = (KOPT-1) * UNIT_ANGLE. 2. ANGLE may not be in [0, 2*PI].
 

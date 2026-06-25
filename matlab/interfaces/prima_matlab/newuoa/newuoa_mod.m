@@ -270,7 +270,7 @@ classdef newuoa_mod
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(consts_obj.EPS_custom, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg_loc, consts_obj.RHOEND_DFT));
+                rhoend_loc = max(consts_obj.EPS, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg_loc, consts_obj.RHOEND_DFT));
             else
                 rhoend_loc = consts_obj.RHOEND_DFT;
             end
@@ -306,7 +306,7 @@ classdef newuoa_mod
                 eta1_loc = eta1;
             elseif ~ismember('eta2', ipObj.UsingDefaults)
                 if eta2 > 0 && eta2 < 1
-                    eta1_loc = max(consts_obj.EPS_custom, eta2 / 7.0);
+                    eta1_loc = max(consts_obj.EPS, eta2 / 7.0);
                 end
             else
                 eta1_loc = consts_obj.TENTH;

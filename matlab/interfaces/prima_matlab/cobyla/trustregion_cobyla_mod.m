@@ -270,7 +270,7 @@ classdef trustregion_cobyla_mod
             %%MATLAB: zdota(1:nact) = sum(z(:, 1:nact) .* A(:, iact(1:nact)), 1);  % Row vector
 
             % More initialization.
-            optold = consts_obj.REALMAX_custom;
+            optold = consts_obj.REALMAX;
             nactold = nact;
             nfail = 0;
 
@@ -345,7 +345,7 @@ classdef trustregion_cobyla_mod
                         vmultd(nact + 1:mcon) = -consts_obj.ONE; % SIZE(VMULTD) = MCON
 
                         % Revise the Lagrange multipliers. The revision is not applicable to VMULTC(NACT + 1:M).
-                        fracmult = repmat(consts_obj.REALMAX_custom, size(fracmult));
+                        fracmult = repmat(consts_obj.REALMAX, size(fracmult));
                         fracmult(vmultd > 0 & iact <= m) = vmultc(vmultd > 0 & iact <= m) ./ vmultd(vmultd > 0 & iact <= m);
                         %%MATLAB: mask = (vmultd > 0 & iact <= m); fracmult(mask) = vmultc(mask) / vmultd(mask);
                         % Only the places with VMULTD > 0 and IACT <= M is relevant blow, if any.
@@ -357,7 +357,7 @@ classdef trustregion_cobyla_mod
                         % following IF: .NOT. ABS(ZDOTA(NACT)) > 0. Note that it is different from
                         % 'ABS(ZDOTA(NACT) <= 0)', as ZDOTA(NACT) can be NaN.
                         % N.B.: We cannot arrive here with NACT == 0, which should have triggered an exit above.
-                        if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= fortran.power(consts_obj.EPS_custom, 2)
+                        if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= fortran.power(consts_obj.EPS, 2)
                             break
                         end
                         vmultc([icon, nact]) = [consts_obj.ZERO, frac]; % VMULTC([ICON, NACT]) is valid as ICON > NACT.
@@ -385,7 +385,7 @@ classdef trustregion_cobyla_mod
 
                     % Powell's code does not have the following. It avoids subsequent floating point exceptions.
                     %------------------------------------------------------------------------------------------%
-                    if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= fortran.power(consts_obj.EPS_custom, 2)
+                    if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= fortran.power(consts_obj.EPS, 2)
                         break
                     end
                     %------------------------------------------------------------------------------------------%
@@ -426,7 +426,7 @@ classdef trustregion_cobyla_mod
 
                     end
                     if nact > 0
-                        if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= fortran.power(consts_obj.EPS_custom, 2)
+                        if infnan_obj.is_nan_sp(zdota(nact)) || abs(zdota(nact)) <= fortran.power(consts_obj.EPS, 2)
                             break
                         end
                     end
@@ -453,7 +453,7 @@ classdef trustregion_cobyla_mod
                 dd = fortran.power(delta, 2) - linalg_obj.inprod(d, d);
                 ss = linalg_obj.inprod(sdirn, sdirn);
                 sd = linalg_obj.inprod(sdirn, d);
-                if dd <= 0 || ss <= consts_obj.EPS_custom * fortran.power(delta, 2) || infnan_obj.is_nan_sp(sd)
+                if dd <= 0 || ss <= consts_obj.EPS * fortran.power(delta, 2) || infnan_obj.is_nan_sp(sd)
                     break
                 end
                 % SQRTD: square root of a discriminant. The MAXVAL avoids SQRTD < ABS(SD) due to underflow.
@@ -527,7 +527,7 @@ classdef trustregion_cobyla_mod
                 vmultd(nact + 1:mcon) = cvshift(nact + 1:mcon);
 
                 % Calculate the fraction of the step from D to DNEW that will be taken.
-                fracmult = repmat(consts_obj.REALMAX_custom, size(fracmult));
+                fracmult = repmat(consts_obj.REALMAX, size(fracmult));
                 fracmult(vmultd < 0) = vmultc(vmultd < 0) ./ (vmultc(vmultd < 0) - vmultd(vmultd < 0));
                 %%MATLAB: mask = (vmultd < 0); fracmult(mask) = vmultc(mask) / (vmultc(mask) - vmultd(mask));
                 % Only the places with VMULTD < 0 is relevant below, if any.

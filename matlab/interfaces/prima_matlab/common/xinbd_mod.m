@@ -38,7 +38,7 @@ classdef xinbd_mod
                 debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", srname);
                 debug_obj.assert(all(xbase >= xl & xbase <= xu, 'all'), "XL <= XBASE <= XU", srname);
                 debug_obj.assert(numel(sl) == n && numel(su) == n, "SIZE(SL) == N == SIZE(SU)", srname);
-                debug_obj.assert(all(step + 100.0 * consts_obj.EPS_custom * max(consts_obj.ONE, abs(step)) >= sl & step - 100.0 * consts_obj.EPS_custom * max(consts_obj.ONE, abs(step)) <= su, 'all'), "SL <= STEP <= SU", srname);
+                debug_obj.assert(all(step + 100.0 * consts_obj.EPS * max(consts_obj.ONE, abs(step)) >= sl & step - 100.0 * consts_obj.EPS * max(consts_obj.ONE, abs(step)) <= su, 'all'), "SL <= STEP <= SU", srname);
             end
 
             %====================%

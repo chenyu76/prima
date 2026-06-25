@@ -40,7 +40,7 @@ classdef ratio_mod
 
             if infnan_obj.is_nan_sp(ared)
                 % This should not happen in unconstrained problems due to the moderated extreme barrier.
-                ratio = -consts_obj.REALMAX_custom;
+                ratio = -consts_obj.REALMAX;
             elseif infnan_obj.is_nan_sp(pred) || pred <= 0
                 % The trust-region subproblem solver fails in this rare case. Instead of terminating as Powell's
                 % original code does, we set RATIO as follows so that the solver may continue to progress.
@@ -50,13 +50,13 @@ classdef ratio_mod
                 else
                     % Set ratio to a large negative number to signify a bad trust-region step, so that the
                     % solver will check whether to take a geometry step or reduce RHO.
-                    ratio = -consts_obj.REALMAX_custom;
+                    ratio = -consts_obj.REALMAX;
                 end
             elseif infnan_obj.is_posinf(pred) && infnan_obj.is_posinf(ared)
                 ratio = consts_obj.ONE; % ARED/PRED = NaN if calculated directly.
 
             elseif infnan_obj.is_posinf(pred) && infnan_obj.is_neginf(ared)
-                ratio = -consts_obj.REALMAX_custom; % ARED/PRED = NaN if calculated directly.
+                ratio = -consts_obj.REALMAX; % ARED/PRED = NaN if calculated directly.
 
             else
                 ratio = ared / pred;
