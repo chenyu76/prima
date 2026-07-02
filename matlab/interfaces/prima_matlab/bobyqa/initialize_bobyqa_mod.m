@@ -151,7 +151,7 @@ classdef initialize_bobyqa_mod
             % EVALUATED is a boolean array with EVALUATED(I) indicating whether the function value of the I-th
             % interpolation point has been evaluated. We need it for a portable counting of the number of
             % function evaluations, especially if the loop is conducted asynchronously.
-            evaluated = repmat(false, size(evaluated));
+            evaluated(:) = false;
 
             % Initialize XHIST, FHIST, and FVAL. Otherwise, compilers may complain that they are not
             % (completely) initialized if the initialization aborts due to abnormality (see CHECKEXIT).
@@ -159,8 +159,8 @@ classdef initialize_bobyqa_mod
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
             xhist = repmat(-consts_obj.REALMAX, size(xhist));
-            fhist = repmat(consts_obj.REALMAX, size(fhist));
-            fval = repmat(consts_obj.REALMAX, size(fval));
+            fhist(:) = consts_obj.REALMAX;
+            fval(:) = consts_obj.REALMAX;
 
             % Set XPT(:, 2 : N+1)
             xpt = repmat(consts_obj.ZERO, size(xpt));
@@ -395,7 +395,7 @@ classdef initialize_bobyqa_mod
                 gopt(:) = gopt + linalg_obj.matprod21(hq, xpt(:, kopt));
             end
 
-            pq = repmat(consts_obj.ZERO, size(pq));
+            pq(:) = consts_obj.ZERO;
 
             ipObj = inputParser();
             addParameter(ipObj, 'info', NaN);

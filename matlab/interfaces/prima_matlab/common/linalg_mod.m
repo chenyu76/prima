@@ -397,7 +397,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            z = repmat(consts_obj.ZERO, size(z));
+            z(:) = consts_obj.ZERO;
             for j = 1:size(x, 2)
                 z(:) = z + x(:, j) * y(j);
             end
@@ -1005,7 +1005,7 @@ classdef linalg_mod
                 pivot = false;
             end
 
-            x = repmat(consts_obj.ZERO, size(x));
+            x(:) = consts_obj.ZERO;
             y(:) = b; % Local copy of B; B is INTENT(IN) and should not be modified.
 
             for i = rank:-1:1
@@ -1386,12 +1386,12 @@ classdef linalg_mod
             %====================%
 
             if all(abs(x) <= 0, 'all') || all(abs(v) <= 0, 'all')
-                y = repmat(consts_obj.ZERO, size(y));
+                y(:) = consts_obj.ZERO;
             elseif any(infnan_obj.is_nan(x), 'all') || any(infnan_obj.is_nan(v), 'all')
-                y = repmat(sum(x, 'all') + sum(v, 'all'), size(y)); % Set Y to NaN
+                y(:) = sum(x, 'all') + sum(v, 'all'); % Set Y to NaN
 
             elseif any(infnan_obj.is_inf(v), 'all')
-                u = repmat(consts_obj.ZERO, size(u));
+                u(:) = consts_obj.ZERO;
                 u(obj.trueloc(infnan_obj.is_inf(v))) = fortran.sign(consts_obj.ONE, v(obj.trueloc(infnan_obj.is_inf(v))));
                 %%MATLAB: u = 0; u(isinf(v)) = sign(v(isinf(v)))
                 u(:) = u ./ obj.p_norm(u);
@@ -1447,9 +1447,9 @@ classdef linalg_mod
             if size(V, 2) == 1
                 y(:) = obj.project1(x, V(:, 1));
             elseif all(abs(x) <= 0, 'all') || all(abs(V) <= 0, 'all')
-                y = repmat(consts_obj.ZERO, size(y));
+                y(:) = consts_obj.ZERO;
             elseif any(infnan_obj.is_nan(x), 'all') || any(infnan_obj.is_nan(V), 'all')
-                y = repmat(sum(x, 'all') + sum(V, 'all'), size(y)); % Set Y to NaN
+                y(:) = sum(x, 'all') + sum(V, 'all'); % Set Y to NaN
 
             elseif any(infnan_obj.is_inf(V), 'all')
                 mask00 = infnan_obj.is_inf(V); %Unsupported statement inside WHERE block: StmtLineBreak 1
@@ -2448,7 +2448,7 @@ classdef linalg_mod
             nm = n - 1;
 
             if n == 1 || (xstart <= xstop && xstop <= xstart)
-                x = repmat(xstop, size(x));
+                x(:) = xstop;
             elseif abs(xstart) <= abs(xstop) && abs(xstop) <= abs(xstart)
                 xunit = xstop / double(nm);
                 x(:) = xunit * double(reshape((-nm:2:nm), [], 1));
@@ -2562,8 +2562,8 @@ classdef linalg_mod
             scaling = max(abs(A), [], 'all');
             scaled = false;
             if scaling <= 0
-                tdiag = repmat(consts_obj.ZERO, size(tdiag));
-                tsubdiag = repmat(consts_obj.ZERO, size(tsubdiag));
+                tdiag(:) = consts_obj.ZERO;
+                tsubdiag(:) = consts_obj.ZERO;
                 return
             elseif scaling > 1.0e8 || scaling < 1.0e-4
                 % The thresholds are empirical.
@@ -2833,7 +2833,7 @@ classdef linalg_mod
             % pivots of the Cholesky factorization of the matrix (i.e., the square of the diagonal of L in LL^T,
             % or the diagonal of D in LDL^T). All the pivots are positive iff there exists a Cholesky
             % factorization with a positive diagonal, i.e., the matrix is positive definite.
-            piv = repmat(-consts_obj.ONE, size(piv));
+            piv(:) = -consts_obj.ONE;
             piv(1) = td(1);
             for k = 1:n - 1
                 if piv(k) > 0
@@ -2866,7 +2866,7 @@ classdef linalg_mod
                 % Cholesky factorization of the matrix minus EIG_MIN*I (i.e., the square of the diagonal of L in
                 % LL^T, or the diagonal of D in LDL^T). All the pivots are positive iff there exists a Cholesky
                 % factorization with a positive diagonal, i.e., the matrix minus LAMBDA*I is positive definite.
-                pivnew = repmat(-consts_obj.ONE, size(pivnew));
+                pivnew(:) = -consts_obj.ONE;
                 pivnew(1) = td(1) - eig_min;
                 for k = 1:n - 1
                     if pivnew(k) > 0

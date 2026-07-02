@@ -396,7 +396,7 @@ classdef geometry_lincoa_mod
             % RSTAT identifies the constraints that need evaluation. RSTAT(J) is -1, 0, or 1 respectively means
             % constraint J is irrelevant, active, or inactive and relevant. Do NOT change the order of the lines
             % that set RSTAT, as the later lines override the earlier.
-            rstat = repmat(1, size(rstat)); % Inactive and relevant
+            rstat(:) = 1; % Inactive and relevant
             rstat(linalg_obj.trueloc(abs(rescon) >= delbar)) = -1; % Irrelevant
             rstat(iact(1:nact)) = 0; % Active
 

@@ -331,10 +331,10 @@ classdef lincob_mod
             rho = rhobeg;
             delta = rho;
             ratio = -consts_obj.ONE;
-            dnorm_rec = repmat(consts_obj.REALMAX, size(dnorm_rec));
+            dnorm_rec(:) = consts_obj.REALMAX;
             shortd = false;
             trfail = false;
-            qalt_better = repmat(false, size(qalt_better));
+            qalt_better(:) = false;
             knew_tr = 0;
             knew_geo = 0;
             qfac(:, :) = linalg_obj.eye1(n);
@@ -401,7 +401,7 @@ classdef lincob_mod
                 % Zaikun 20230609: This does not exist in NEWUOA/BOBYQA/UOBYQA. Try it!
                 if delta > rho || ~shortd
                     % Another possibility: IF (DELTA > RHO) THEN
-                    dnorm_rec = repmat(consts_obj.REALMAX, size(dnorm_rec));
+                    dnorm_rec(:) = consts_obj.REALMAX;
                 end
 
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
@@ -653,7 +653,7 @@ classdef lincob_mod
                     message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, xbase + xpt(:, kopt), 'cstrv', cstrv, 'constr', constr);
                     % DNORM_REC is corresponding to the latest function evaluations with the current RHO.
                     % Update it after reducing RHO.
-                    dnorm_rec = repmat(consts_obj.REALMAX, size(dnorm_rec));
+                    dnorm_rec(:) = consts_obj.REALMAX;
                 end % End of IF (REDUCE_RHO). The procedure of reducing RHO ends.
 
                 % Shift XBASE if XOPT may be too far from XBASE.

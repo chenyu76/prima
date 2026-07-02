@@ -179,13 +179,13 @@ classdef trustregion_bobyqa_mod
             % The sign of GOPT(I) gives the sign of the change to the I-th variable that will reduce Q from its
             % value at XOPT. Thus XBDI(I) shows whether or not to fix the I-th variable at one of its bounds
             % initially, with NACT being set to the number of fixed variables.
-            xbdi = repmat(0, size(xbdi));
+            xbdi(:) = 0;
             xbdi(linalg_obj.trueloc(xopt >= su & gopt <= 0)) = 1;
             xbdi(linalg_obj.trueloc(xopt <= sl & gopt >= 0)) = -1;
             nact = fix(nnz(xbdi ~= 0));
 
             % Initialized D and CRVMIN.
-            d = repmat(consts_obj.ZERO, size(d));
+            d(:) = consts_obj.ZERO;
             crvmin = -consts_obj.REALMAX;
 
             % GNEW is the gradient at the current iterate.
@@ -296,7 +296,7 @@ classdef trustregion_bobyqa_mod
                 % overflow and makes little sense.
                 xnew(:) = xopt + d;
                 xtest(:) = xnew + stplen * s;
-                sbound = repmat(stplen, size(sbound));
+                sbound(:) = stplen;
                 sbound(s > 0 & xtest > su) = (su(s > 0 & xtest > su) - xnew(s > 0 & xtest > su)) ./ s(s > 0 & xtest > su);
                 sbound(s < 0 & xtest < sl) = (sl(s < 0 & xtest < sl) - xnew(s < 0 & xtest < sl)) ./ s(s < 0 & xtest < sl);
                 %%MATLAB:
@@ -468,11 +468,11 @@ classdef trustregion_bobyqa_mod
                 % bounds. It is not a problem in MATLAB/Python/Julia/R.
                 % 2. Even if XOPT - SL < SQRT(SSQ), rounding errors may render SSQ - (XOPT - SL)**2) < 0.
                 ssq(:) = fortran.power(d, 2) + fortran.power(s, 2); % Indeed, only SSQ(TRUELOC(XBDI == 0)) is needed.
-                tanbd = repmat(consts_obj.ONE, size(tanbd));
-                sqdscr = repmat(-consts_obj.REALMAX, size(sqdscr));
+                tanbd(:) = consts_obj.ONE;
+                sqdscr(:) = -consts_obj.REALMAX;
                 sqdscr(xbdi == 0 & xopt - sl < sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - fortran.power((xopt(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - sl(xbdi == 0 & xopt - sl < fortran.sqrt(ssq))), 2)));
                 tanbd(sqdscr - s > 0) = min(tanbd(sqdscr - s > 0), (xnew(sqdscr - s > 0) - sl(sqdscr - s > 0)) ./ (sqdscr(sqdscr - s > 0) - s(sqdscr - s > 0)));
-                sqdscr = repmat(-consts_obj.REALMAX, size(sqdscr));
+                sqdscr(:) = -consts_obj.REALMAX;
                 sqdscr(xbdi == 0 & su - xopt < sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - fortran.power((su(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - xopt(xbdi == 0 & su - xopt < fortran.sqrt(ssq))), 2)));
                 tanbd(sqdscr + s > 0) = min(tanbd(sqdscr + s > 0), (su(sqdscr + s > 0) - xnew(sqdscr + s > 0)) ./ (sqdscr(sqdscr + s > 0) + s(sqdscr + s > 0)));
                 tanbd(linalg_obj.trueloc(infnan_obj.is_nan(tanbd))) = consts_obj.ZERO;
@@ -522,7 +522,7 @@ classdef trustregion_bobyqa_mod
                 %grid_size = nint(17.0_RP * hangt_bd + 4.1_RP, kind(grid_size))  ! Powell's version
                 grid_size = 2 * round(17.0 * hangt_bd + 4.1);
                 %%MATLAB: grid_size = 2 * round(17 * hangt_bd + 4.1_RP)
-                hangt = univar_obj.interval_max(@obj.interval_fun_trsbox, consts_obj.ZERO, hangt_bd, args, grid_size);
+                hangt = univar_obj.interval_max(@(varargin) obj.interval_fun_trsbox(varargin{:}), consts_obj.ZERO, hangt_bd, args, grid_size);
                 sdec = obj.interval_fun_trsbox(hangt, args);
                 if ~(sdec > 0)
                     break

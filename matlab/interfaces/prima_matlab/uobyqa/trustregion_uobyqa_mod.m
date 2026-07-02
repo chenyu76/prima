@@ -152,7 +152,7 @@ classdef trustregion_uobyqa_mod
             end
 
             % Initialize D and CRVMIN.
-            d = repmat(consts_obj.ZERO, size(d));
+            d(:) = consts_obj.ZERO;
             crvmin = consts_obj.ZERO;
 
             gsq = sum(fortran.power(gg, 2), 'all');
@@ -224,7 +224,7 @@ classdef trustregion_uobyqa_mod
             paru = consts_obj.ZERO; % Upper bound for the optimal PAR ??? The initial value is less than PARL. Why?
             paruest = consts_obj.ZERO; % Estimation for PARU
             posdef = false;
-            dold = repmat(consts_obj.ZERO, size(dold));
+            dold(:) = consts_obj.ZERO;
             iter = 0;
             maxiter = min(1000, 100 * n); % Unlikely to be reached.
             % Zaikun 26-06-2019: Powell's original code can encounter infinite cycling, which did happen when
@@ -248,7 +248,7 @@ classdef trustregion_uobyqa_mod
                 % H + PAR*I easily: it is L*diag(PIV)*L^T, where diag(PIV) is the diagonal matrix with PIV being
                 % the diagonal, and L is the lower triangular matrix with all the diagonal entries being 1, the
                 % subdiagonal being the vector TN/PIV(1:N-1) (entrywise), and all the other entries being 0.
-                piv = repmat(consts_obj.ZERO, size(piv)); % Initialize PIV, so that we know that any NaN in PIV is due to the loop below.
+                piv(:) = consts_obj.ZERO; % Initialize PIV, so that we know that any NaN in PIV is due to the loop below.
                 piv(1) = td(1) + par;
                 % Powell implemented the loop by a GOTO, and K = N when the loop exits. It may not be true here.
                 for k = 1:n - 1
@@ -303,7 +303,7 @@ classdef trustregion_uobyqa_mod
                     % Zaikun 20220512: Powell's code does not include the following initialization. Consequently,
                     % D(KSAV+1:N) or D(KSAV+2:N) will not be initialized but inherit values from the previous
                     % iteration. Is this intended?
-                    d = repmat(consts_obj.ZERO, size(d));
+                    d(:) = consts_obj.ZERO;
                     %------------------------------------------------------------------------------------------%
 
                     d(k) = consts_obj.ONE; % Zaikun 20220512: D(K+1:N) = ?

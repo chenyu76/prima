@@ -146,7 +146,7 @@ classdef initialize_lincoa_mod
             % interpolation point has been evaluated. We need it for a portable counting of the number of
             % function evaluations, especially if the loop is conducted asynchronously. However, the loop here
             % is not fully parallelizable if NPT>2N+1, as the definition XPT(;, 2N+2:end) involves FVAL(1:2N+1).
-            evaluated = repmat(false, size(evaluated));
+            evaluated(:) = false;
 
             % Initialize XHIST, FHIST, CHIST, FVAL, and CVAL. Otherwise, compilers may complain that they are
             % not (completely) initialized if the initialization aborts due to abnormality (see CHECKEXIT).
@@ -154,10 +154,10 @@ classdef initialize_lincoa_mod
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
             xhist = repmat(-consts_obj.REALMAX, size(xhist));
-            fhist = repmat(consts_obj.REALMAX, size(fhist));
-            chist = repmat(consts_obj.REALMAX, size(chist));
-            fval = repmat(consts_obj.REALMAX, size(fval));
-            cval = repmat(consts_obj.REALMAX, size(cval));
+            fhist(:) = consts_obj.REALMAX;
+            chist(:) = consts_obj.REALMAX;
+            fval(:) = consts_obj.REALMAX;
+            cval(:) = consts_obj.REALMAX;
 
             % Set the nonzero coordinates of XPT(K,.), K=1,2,...,min[2*N+1,NPT], but they may be altered
             % later to make a constraint violation sufficiently large.

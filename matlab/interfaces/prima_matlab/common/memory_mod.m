@@ -111,7 +111,7 @@ classdef memory_mod
             % %if (allocated(x)) deallocate (x)
             % Allocate memory for X. Initialize X to a compiler-independent strange value.
             x = NaN(n, 1); alloc_status = 0;
-            x = repmat(-realmax, size(x)); % Costly if X is of a large size.
+            x(:) = -realmax; % Costly if X is of a large size.
             % N.B.: Do not write ALLOCATE (X(1:N), STAT=ALLOC_STATUS, SOURCE=-HUGE(X)), because
             % 1. It is invalid to put X in the SOURCE specifier when it is being allocated;
             % 2. Absoft does not support the SOURCE keyword as of 2022.
@@ -180,7 +180,7 @@ classdef memory_mod
             % %if (allocated(x)) deallocate (x)
             % Allocate memory for X. Initialize X to a compiler-independent strange value.
             x = NaN(n, 1); alloc_status = 0; % Absoft does not support the SOURCE keyword as of 2022.
-            x = repmat(-realmax, size(x)); % Costly if X is of a large size.
+            x(:) = -realmax; % Costly if X is of a large size.
 
             % Postconditions (checked even not debugging)
             debug_obj.validate(alloc_status == 0, "Memory allocation succeeds (ALLOC_STATUS == 0)", srname);
@@ -246,7 +246,7 @@ classdef memory_mod
             % %if (allocated(x)) deallocate (x)
             % Allocate memory for X. Initialize X to a compiler-independent strange value.
             x = NaN(n, 1); alloc_status = 0; % Absoft does not support the SOURCE keyword as of 2022.
-            x = repmat(-realmax, size(x)); % Costly if X is of a large size.
+            x(:) = -realmax; % Costly if X is of a large size.
 
             % Postconditions (checked even not debugging)
             debug_obj.validate(alloc_status == 0, "Memory allocation succeeds (ALLOC_STATUS == 0)", srname);
@@ -309,7 +309,7 @@ classdef memory_mod
             % %if (allocated(x)) deallocate (x)  ! Unnecessary in F03 since X is INTENT(OUT)
             % Allocate memory for X. Initialize X to a compiler-independent value.
             x = false(n, 1); alloc_status = 0; % Absoft does not support the SOURCE keyword as of 2022.
-            x = repmat(false, size(x)); % Costly if X is of a large size.
+            x(:) = false; % Costly if X is of a large size.
 
             % Postconditions (checked even not debugging)
             debug_obj.validate(alloc_status == 0, "Memory allocation succeeds (ALLOC_STATUS == 0)", srname);
@@ -340,7 +340,7 @@ classdef memory_mod
             % %if (allocated(x)) deallocate (x)  ! Unnecessary in F03 since X is INTENT(OUT)
             % Allocate memory for X. Initialize X to a compiler-independent strange value.
             x = NaN(n, 1); alloc_status = 0; % Absoft does not support the SOURCE keyword as of 2022.
-            x = repmat(-intmax('int32'), size(x)); % Costly if X is of a large size.
+            x(:) = -intmax('int32'); % Costly if X is of a large size.
 
             % Postconditions (checked even not debugging)
             debug_obj.validate(alloc_status == 0, "Memory allocation succeeds (ALLOC_STATUS == 0)", srname);

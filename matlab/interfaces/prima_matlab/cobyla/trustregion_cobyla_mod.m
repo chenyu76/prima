@@ -234,7 +234,7 @@ classdef trustregion_cobyla_mod
                 % N.B.: 1. The MATLAB version of LINSPACE returns a row vector. Take a transpose if needed.
                 % 2. In MATLAB, linspace(1, mcon, mcon) can also be written as (1:mcon).
                 nact = 0;
-                d = repmat(consts_obj.ZERO, size(d));
+                d(:) = consts_obj.ZERO;
                 cviol = linalg_obj.maximum1([consts_obj.ZERO; reshape(-b, [], 1)]);
                 vmultc(:) = cviol + b;
                 z(:, :) = linalg_obj.eye1(n);
@@ -250,7 +250,7 @@ classdef trustregion_cobyla_mod
                     %%MATLAB: [~, icon] = max(b, [], 'omitnan');
                 end
                 m = mcon;
-                sdirn = repmat(consts_obj.ZERO, size(sdirn));
+                sdirn(:) = consts_obj.ZERO;
             else
                 if linalg_obj.inprod(d, d) >= fortran.power(delta, 2)
                     % Check whether a quick return is possible.
@@ -345,7 +345,7 @@ classdef trustregion_cobyla_mod
                         vmultd(nact + 1:mcon) = -consts_obj.ONE; % SIZE(VMULTD) = MCON
 
                         % Revise the Lagrange multipliers. The revision is not applicable to VMULTC(NACT + 1:M).
-                        fracmult = repmat(consts_obj.REALMAX, size(fracmult));
+                        fracmult(:) = consts_obj.REALMAX;
                         fracmult(vmultd > 0 & iact <= m) = vmultc(vmultd > 0 & iact <= m) ./ vmultd(vmultd > 0 & iact <= m);
                         %%MATLAB: mask = (vmultd > 0 & iact <= m); fracmult(mask) = vmultc(mask) / vmultd(mask);
                         % Only the places with VMULTD > 0 and IACT <= M is relevant blow, if any.
@@ -527,7 +527,7 @@ classdef trustregion_cobyla_mod
                 vmultd(nact + 1:mcon) = cvshift(nact + 1:mcon);
 
                 % Calculate the fraction of the step from D to DNEW that will be taken.
-                fracmult = repmat(consts_obj.REALMAX, size(fracmult));
+                fracmult(:) = consts_obj.REALMAX;
                 fracmult(vmultd < 0) = vmultc(vmultd < 0) ./ (vmultc(vmultd < 0) - vmultd(vmultd < 0));
                 %%MATLAB: mask = (vmultd < 0); fracmult(mask) = vmultc(mask) / (vmultc(mask) - vmultd(mask));
                 % Only the places with VMULTD < 0 is relevant below, if any.

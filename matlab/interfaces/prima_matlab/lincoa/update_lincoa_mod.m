@@ -260,7 +260,7 @@ classdef update_lincoa_mod
                 pq(:) = pqalt;
                 hq = repmat(consts_obj.ZERO, size(hq));
                 gopt(:) = galt;
-                qalt_better = repmat(false, size(qalt_better));
+                qalt_better(:) = false;
             end
 
             %====================%

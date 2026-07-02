@@ -123,7 +123,7 @@ classdef initialize_cobyla_mod
             simi(:, :) = linalg_obj.eye1(n) ./ rhobeg;
 
             % EVALUATED(J) = TRUE iff the function/constraint of SIM(:, J) has been evaluated.
-            evaluated = repmat(false, size(evaluated));
+            evaluated(:) = false;
 
             % Initialize XHIST, FHIST, CHIST, CONHIST, FVAL, CVAL, and CONMAT. Otherwise, compilers may complain
             %that they are not (completely) initialized if the initialization aborts due to abnormality (see
@@ -132,11 +132,11 @@ classdef initialize_cobyla_mod
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
             xhist = repmat(-consts_obj.REALMAX, size(xhist));
-            fhist = repmat(consts_obj.REALMAX, size(fhist));
-            chist = repmat(consts_obj.REALMAX, size(chist));
+            fhist(:) = consts_obj.REALMAX;
+            chist(:) = consts_obj.REALMAX;
             conhist = repmat(consts_obj.REALMAX, size(conhist));
-            fval = repmat(consts_obj.REALMAX, size(fval));
-            cval = repmat(consts_obj.REALMAX, size(cval));
+            fval(:) = consts_obj.REALMAX;
+            cval(:) = consts_obj.REALMAX;
             conmat = repmat(consts_obj.REALMAX, size(conmat));
 
             for k = 1:n + 1

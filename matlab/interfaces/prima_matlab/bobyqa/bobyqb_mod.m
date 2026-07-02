@@ -271,8 +271,8 @@ classdef bobyqb_mod
             shortd = false;
             trfail = false;
             ratio = -consts_obj.ONE;
-            dnorm_rec = repmat(consts_obj.REALMAX, size(dnorm_rec));
-            moderr_rec = repmat(consts_obj.REALMAX, size(moderr_rec));
+            dnorm_rec(:) = consts_obj.REALMAX;
+            moderr_rec(:) = consts_obj.REALMAX;
             knew_tr = 0;
             knew_geo = 0;
             itest = 0;
@@ -397,8 +397,8 @@ classdef bobyqb_mod
                             break
                         end
                         rescued = true;
-                        dnorm_rec = repmat(consts_obj.REALMAX, size(dnorm_rec));
-                        moderr_rec = repmat(consts_obj.REALMAX, size(moderr_rec));
+                        dnorm_rec(:) = consts_obj.REALMAX;
+                        moderr_rec(:) = consts_obj.REALMAX;
 
                         % RESCUE shifts XBASE to the best point before RESCUE. Update D, MODERR, and XIMPROVED.
                         % Do NOT calculate QRED according to this D, as it is not really a trust region step.
@@ -541,8 +541,8 @@ classdef bobyqb_mod
                             break
                         end
                         rescued = true;
-                        dnorm_rec = repmat(consts_obj.REALMAX, size(dnorm_rec));
-                        moderr_rec = repmat(consts_obj.REALMAX, size(moderr_rec));
+                        dnorm_rec(:) = consts_obj.REALMAX;
+                        moderr_rec(:) = consts_obj.REALMAX;
                     else
                         % Calculate the next value of the objective function.
                         x(:) = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % X = XBASE + XOPT + D without rounding.
@@ -603,8 +603,8 @@ classdef bobyqb_mod
                     message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, xbase + xpt(:, kopt));
                     % DNORM_REC and MODERR_REC are corresponding to the recent function evaluations with
                     % the current RHO. Update them after reducing RHO.
-                    dnorm_rec = repmat(consts_obj.REALMAX, size(dnorm_rec));
-                    moderr_rec = repmat(consts_obj.REALMAX, size(moderr_rec));
+                    dnorm_rec(:) = consts_obj.REALMAX;
+                    moderr_rec(:) = consts_obj.REALMAX;
                 end % End of IF (REDUCE_RHO). The procedure of reducing RHO ends.
 
                 % Shift XBASE if XOPT may be too far from XBASE.
@@ -734,7 +734,7 @@ classdef bobyqb_mod
 
             xnew(:) = xopt + d;
             gnew(:) = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
-            bfirst = repmat(max(abs(moderr_rec), [], 'all'), size(bfirst));
+            bfirst(:) = max(abs(moderr_rec), [], 'all');
             bfirst(linalg_obj.trueloc(xnew <= sl)) = gnew(linalg_obj.trueloc(xnew <= sl)) * rho;
             bfirst(linalg_obj.trueloc(xnew >= su)) = -gnew(linalg_obj.trueloc(xnew >= su)) * rho;
             bsecond(:) = consts_obj.HALF * (linalg_obj.diag(hq) + linalg_obj.matprod21(fortran.power(xpt, 2), pq)) * fortran.power(rho, 2);

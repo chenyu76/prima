@@ -167,7 +167,7 @@ classdef evaluate_mod
                 % Although this should not happen unless there is a bug, we include this case for robustness.
                 % Set F, CONSTR, and CSTRV to NaN.
                 f = sum(x, 'all');
-                constr = repmat(f, size(constr));
+                constr(:) = f;
             else
                 [f, constr] = calcfc(obj.moderatex(x), constr); % Evaluate F and CONSTR; We moderate X before doing so.
 

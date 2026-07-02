@@ -164,7 +164,7 @@ classdef trustregion_lincoa_mod
             parse(ipObj, varargin{:});
             ngetact = ipObj.Results.ngetact;
             if ~infnan_obj.is_finite(sum(abs(gopt), 'all'))
-                s = repmat(consts_obj.ZERO, size(s));
+                s(:) = consts_obj.ZERO;
                 if nargout >= 6
                     ngetact = 0;
                 end
@@ -199,7 +199,7 @@ classdef trustregion_lincoa_mod
 
             g(:) = gopt;
             delsq = delta * delta;
-            s = repmat(consts_obj.ZERO, size(s));
+            s(:) = consts_obj.ZERO;
             ss = consts_obj.ZERO;
             reduct = consts_obj.ZERO;
             ngetact_loc = 0;
@@ -279,9 +279,9 @@ classdef trustregion_lincoa_mod
                             end
 
                             % Reduce GAMMA so that the move along DPROJ also satisfies the linear constraints.
-                            ad = repmat(-consts_obj.ONE, size(ad));
+                            ad(:) = -consts_obj.ONE;
                             ad(linalg_obj.trueloc(resnew > 0)) = linalg_obj.matprod12(dproj, amat(:, linalg_obj.trueloc(resnew > 0)));
-                            frac = repmat(consts_obj.ONE, size(frac));
+                            frac(:) = consts_obj.ONE;
                             restmp(linalg_obj.trueloc(ad > 0)) = resnew(linalg_obj.trueloc(ad > 0)) - linalg_obj.matprod12(psd, amat(:, linalg_obj.trueloc(ad > 0)));
                             frac(linalg_obj.trueloc(ad > 0)) = restmp(linalg_obj.trueloc(ad > 0)) ./ ad(linalg_obj.trueloc(ad > 0));
                             gamma = min([gamma; consts_obj.ONE; reshape(frac, [], 1)], [], 'all'); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
@@ -348,9 +348,9 @@ classdef trustregion_lincoa_mod
 
                 % Make a further reduction in ALPHA if necessary to preserve feasibility.
                 alphm = alpha;
-                ad = repmat(-consts_obj.ONE, size(ad));
+                ad(:) = -consts_obj.ONE;
                 ad(linalg_obj.trueloc(resnew > 0)) = linalg_obj.matprod12(d, amat(:, linalg_obj.trueloc(resnew > 0)));
-                frac = repmat(alpha, size(frac));
+                frac(:) = alpha;
                 frac(linalg_obj.trueloc(ad > 0)) = resnew(linalg_obj.trueloc(ad > 0)) ./ ad(linalg_obj.trueloc(ad > 0));
                 frac(linalg_obj.trueloc(infnan_obj.is_nan(frac))) = alpha;
                 jsav = 0;

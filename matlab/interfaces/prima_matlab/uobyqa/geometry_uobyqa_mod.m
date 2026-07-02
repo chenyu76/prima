@@ -294,9 +294,9 @@ classdef geometry_uobyqa_mod
             % code does not contain this part.
             if n == 1
                 if g(1) * h(1, 1) > 0
-                    d = repmat(delbar, size(d));
+                    d(:) = delbar;
                 else
-                    d = repmat(-delbar, size(d));
+                    d(:) = -delbar;
                 end
                 return
             end

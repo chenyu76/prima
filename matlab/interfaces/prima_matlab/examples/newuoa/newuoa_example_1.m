@@ -13,15 +13,15 @@ nf = NaN; info = NaN;
 f = NaN; x = NaN(n, 1); x0 = NaN(n, 1);
 
 % Define the starting point.
-x0 = zeros(size(x0));
+x0(:) = 0.0;
 
 % The following lines illustrates how to call the solver.
 x(:) = x0;
-[x, f] = newuoa_obj.newuoa(@calfun_obj.calfun, x); % This call will not print anything.
+[x, f] = newuoa_obj.newuoa(@(varargin) calfun_obj.calfun(varargin{:}), x); % This call will not print anything.
 
 % In addition to the compulsory arguments, the following illustration specifies also RHOBEG and
 % IPRINT, which are optional. All the unspecified optional arguments (RHOEND, MAXFUN, etc.) will
 % take their default values coded in the solver.
 x(:) = x0;
-[x, f, nf, ~, ~, info] = newuoa_obj.newuoa(@calfun_obj.calfun, x, 'rhobeg', 1.0, 'iprint', 1, 'callback_fcn', @calfun_obj.callback_fcn);
+[x, f, nf, ~, ~, info] = newuoa_obj.newuoa(@(varargin) calfun_obj.calfun(varargin{:}), x, 'rhobeg', 1.0, 'iprint', 1, 'callback_fcn', @(varargin) calfun_obj.callback_fcn(varargin{:}));
 

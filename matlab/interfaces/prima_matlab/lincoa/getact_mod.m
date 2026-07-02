@@ -162,7 +162,7 @@ classdef getact_mod
 
             % Remove any constraints from the initial active set whose residuals exceed TDEL.
             % Compilers may complain if VLAM is not set. The value does not matter, as it will be overwritten.
-            vlam = repmat(consts_obj.ZERO, size(vlam));
+            vlam(:) = consts_obj.ZERO;
             for icon = nact:-1:1
                 if resact(icon) > tdel
                     % Delete constraint IACT(ICON) from the active set, and set NACT = NACT - 1.
@@ -188,7 +188,7 @@ classdef getact_mod
             % NACT=N holds. The situation NACT=N occurs for sufficiently large DELTA if the origin is in the
             % convex hull of the constraint gradients.
             % Start with initialization of PSDSAV and DDSAV.
-            psdsav = repmat(consts_obj.ZERO, size(psdsav)); % Must be set, in case the loop exits due to abnormality at iteration 1.
+            psdsav(:) = consts_obj.ZERO; % Must be set, in case the loop exits due to abnormality at iteration 1.
             ddsav = consts_obj.TWO * gg; % By Powell. This value is used at iteration 1 to test whether DD >= DDSAV. Why?
 
             % What is the theoretical maximal number of iterations in the following procedure? Powell's code for
@@ -204,7 +204,7 @@ classdef getact_mod
                 % lines below this IF should render DD = 0 and trigger an exit. We make it explicit for clarity.
                 if nact >= n
                     % Indeed, NACT > N should never happen.
-                    psd = repmat(consts_obj.ZERO, size(psd));
+                    psd(:) = consts_obj.ZERO;
                     break
                 end
 
@@ -234,7 +234,7 @@ classdef getact_mod
                 end
 
                 if dd >= ddsav
-                    psd = repmat(consts_obj.ZERO, size(psd)); % Zaikun 20220329: Powell wrote this. Why?
+                    psd(:) = consts_obj.ZERO; % Zaikun 20220329: Powell wrote this. Why?
                     %psd = psdsav  ! This does not seem to improve the performance.
                     break
                 end
@@ -310,7 +310,7 @@ classdef getact_mod
                     % Calculate the multiple of VMU to subtract from VLAM, and update VLAM.
                     % N.B.: 1. VLAM(1:NACT-1) < 0 and VLAM(NACT) <= 0 by the updates of VLAM. 2. VMU(NACT) > 0.
                     % 3. Only the places where VMU(1:NACT) < 0 is relevant below, if any.
-                    frac = repmat(consts_obj.REALMAX, size(frac));
+                    frac(:) = consts_obj.REALMAX;
                     frac(vmu(1:nact) < 0 & vlam(1:nact) < 0) = vlam(vmu(1:nact) < 0 & vlam(1:nact) < 0) ./ vmu(vmu(1:nact) < 0 & vlam(1:nact) < 0);
                     %%MATLAB: frac = vlam / vmu; frac(vmu >= 0 | vlam >= 0) = Inf;
                     vmult = min([violmx; reshape(frac(1:nact), [], 1)], [], 'all');

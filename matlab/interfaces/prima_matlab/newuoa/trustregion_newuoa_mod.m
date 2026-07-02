@@ -141,7 +141,7 @@ classdef trustregion_newuoa_mod
                 scaled = false;
             end
 
-            s = repmat(consts_obj.ZERO, size(s));
+            s(:) = consts_obj.ZERO;
             crvmin = consts_obj.ZERO;
             qred = consts_obj.ZERO;
             info_loc = 2; % Default exit flag is 2, i.e., MAXITER is attained
@@ -159,7 +159,7 @@ classdef trustregion_newuoa_mod
             dd = gg;
             ds = consts_obj.ZERO;
             ss = consts_obj.ZERO;
-            hs = repmat(consts_obj.ZERO, size(hs));
+            hs(:) = consts_obj.ZERO;
             delsq = delta * delta;
             maxiter = n;
 
@@ -373,7 +373,7 @@ classdef trustregion_newuoa_mod
                 args(:) = [sg, consts_obj.HALF * (shs - dhd), dg, dhs];
                 % The 50 in the line below was chosen by Powell. It works the best in tests, MAGICALLY. Larger
                 % (e.g., 60, 100) or smaller (e.g., 20, 40) values will worsen the performance of NEWUOA. Why??
-                angle = univar_obj.circle_min(@obj.circle_fun_trsapp, args, 50);
+                angle = univar_obj.circle_min(@(varargin) obj.circle_fun_trsapp(varargin{:}), args, 50);
 
                 % Calculate the new S.
                 cth = fortran.cos(angle);

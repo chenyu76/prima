@@ -365,7 +365,7 @@ classdef geometry_bobyqa_mod
                 %%ufrac = (su - xopt) / xdiff;
 
                 % First, revise SLBD. Note that SLBD_TEST <= 0 unless the input violates XOPT >= SL.
-                slbd_test = repmat(slbd, size(slbd_test));
+                slbd_test(:) = slbd;
                 slbd_test(linalg_obj.trueloc(xdiff > 0)) = lfrac(linalg_obj.trueloc(xdiff > 0));
                 slbd_test(linalg_obj.trueloc(xdiff < 0)) = ufrac(linalg_obj.trueloc(xdiff < 0));
                 if any(slbd_test > slbd, 'all')
@@ -379,7 +379,7 @@ classdef geometry_bobyqa_mod
                 end
 
                 % Second, revise SUBD. Note that SUBD_TEST >= 0 unless the input violates XOPT <= SU.
-                subd_test = repmat(subd, size(subd_test));
+                subd_test(:) = subd;
                 subd_test(linalg_obj.trueloc(xdiff > 0)) = ufrac(linalg_obj.trueloc(xdiff > 0));
                 subd_test(linalg_obj.trueloc(xdiff < 0)) = lfrac(linalg_obj.trueloc(xdiff < 0));
                 if any(subd_test < subd, 'all')
@@ -450,7 +450,7 @@ classdef geometry_bobyqa_mod
             %---------------------------------------------------------------------%
             % 2. Recall that we have set the NaN entries of PREDSQ to zero, if there is any. Thus the KSQS below
             % is a well defined integer array, all the three entries lying between 1 and NPT.
-            ksqs = repmat(fix(fortran.maxloc(predsq, 'dim', 2)), size(ksqs));
+            ksqs(:) = fix(fortran.maxloc(predsq, 'dim', 2));
             isq = fix(fortran.maxloc([predsq(1, ksqs(1)), predsq(2, ksqs(2)), predsq(3, ksqs(3))], 'dim', 1));
             ksq = ksqs(isq);
             %%MATLAB:
@@ -504,7 +504,7 @@ classdef geometry_bobyqa_mod
                 if uphill == 1
                     glag(:) = -glag;
                 end
-                s = repmat(consts_obj.ZERO, size(s));
+                s(:) = consts_obj.ZERO;
                 mask_free(:) = (min(xopt - sl, glag) > 0 | max(xopt - su, glag) < 0);
                 s(linalg_obj.trueloc(mask_free)) = bigstp;
                 ggfree = sum(fortran.power(glag(linalg_obj.trueloc(mask_free)), 2), 'all');

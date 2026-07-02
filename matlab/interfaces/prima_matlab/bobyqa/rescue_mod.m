@@ -380,7 +380,7 @@ classdef rescue_mod
 
                 % For all K with PTSID(K) > 0, calculate the denominator DEN(K) = SIGMA in the updating formula
                 % of H for XPT(:, KORIG) to replace XPT_PROV(:, K).
-                den = repmat(consts_obj.ZERO, size(den));
+                den(:) = consts_obj.ZERO;
                 hdiag(linalg_obj.trueloc(ptsid > 0)) = sum(fortran.power(zmat(linalg_obj.trueloc(ptsid > 0), :), 2), 2);
                 den(linalg_obj.trueloc(ptsid > 0)) = hdiag(linalg_obj.trueloc(ptsid > 0)) * beta + fortran.power(vlag(linalg_obj.trueloc(ptsid > 0)), 2);
 
@@ -463,7 +463,7 @@ classdef rescue_mod
                     % and IQ entries.
                     xp = consts_obj.ZERO;
                     xq = consts_obj.ZERO;
-                    xnew = repmat(consts_obj.ZERO, size(xnew));
+                    xnew(:) = consts_obj.ZERO;
                     if ip > 0 && iq > 0
                         xp = ptsaux(1, ip);
                         xnew(ip) = xp;

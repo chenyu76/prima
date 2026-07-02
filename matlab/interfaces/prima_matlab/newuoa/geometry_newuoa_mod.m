@@ -440,7 +440,7 @@ classdef geometry_newuoa_mod
                 cf(5) = linalg_obj.inprod(s, gd);
                 % The 50 in the line below was chosen by Powell. It works the best in tests, MAGICALLY. Larger
                 % (e.g., 60, 100) or smaller (e.g., 20, 40) values will worsen the performance of NEWUOA. Why??
-                angle = univar_obj.circle_maxabs(@obj.circle_fun_biglag, cf, 50);
+                angle = univar_obj.circle_maxabs(@(varargin) obj.circle_fun_biglag(varargin{:}), cf, 50);
 
                 % Calculate the new D and GD.
                 cth = fortran.cos(angle);
@@ -742,7 +742,7 @@ classdef geometry_newuoa_mod
                 denex(9) = alpha * den(9) + prod_custom(knew, 4) * prod_custom(knew, 5);
 
                 % Seek the value of the angle that maximizes the |DENOM|.
-                angle = univar_obj.circle_maxabs(@obj.circle_fun_bigden, denex, 50);
+                angle = univar_obj.circle_maxabs(@(varargin) obj.circle_fun_bigden(varargin{:}), denex, 50);
 
                 % Calculate the new D.
                 dold(:) = d;

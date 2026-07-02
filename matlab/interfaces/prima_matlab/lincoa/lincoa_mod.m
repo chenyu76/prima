@@ -411,7 +411,7 @@ classdef lincoa_mod
                 beq_loc = beq;
             end
 
-            xl_loc = repmat(-consts_obj.BOUNDMAX, size(xl_loc));
+            xl_loc(:) = -consts_obj.BOUNDMAX;
             if ~ismember('xl', ipObj.UsingDefaults)
                 if numel(xl) > 0
                     xl_loc(:) = xl;
@@ -419,7 +419,7 @@ classdef lincoa_mod
             end
             xl_loc(linalg_obj.trueloc(infnan_obj.is_nan(xl_loc) | xl_loc < -consts_obj.BOUNDMAX)) = -consts_obj.BOUNDMAX;
 
-            xu_loc = repmat(consts_obj.BOUNDMAX, size(xu_loc));
+            xu_loc(:) = consts_obj.BOUNDMAX;
             if ~ismember('xu', ipObj.UsingDefaults)
                 if numel(xu) > 0
                     xu_loc(:) = xu;
