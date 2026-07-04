@@ -91,7 +91,7 @@ def extract_source_files(src_dir):
 
 
 def translate_sources(
-    src_dir, preprocessed_files, output_dir, translator_exec="4ft2pm"
+    src_dir, preprocessed_files, output_dir, pkg_name, translator_exec="4ft2pm"
 ):
     project_dir = Path("/home/yuchen/Syncthing/graduationThesis/4ft2pm")
     cmd = [
@@ -103,8 +103,9 @@ def translate_sources(
         str(src_dir),
         "-o",
         str(output_dir),
-        "--create-setup-m",
         "--try-full-consistency",
+        "--as-package",
+        pkg_name,
     ]
     return subprocess.run(
         cmd,
@@ -116,16 +117,14 @@ if __name__ == "__main__":
     current_dir = Path(__file__).parent
     src_dir = (current_dir / "fortran").resolve()
     preprocess_dir = (current_dir / "preprocessed_fortran/").resolve()
-    output_dir = (current_dir / "matlab/interfaces/prima_matlab/").resolve()
+    output_dir = (current_dir / "matlab/interfaces/").resolve()
+    pkg_name = "prima_mat"
+
     src_files = extract_source_files(src_dir)
-    src_files.append(
-        (
-            current_dir / "fortran/examples/newuoa/newuoa_example_1.f90"
-        ).resolve()
-    )
     preprocessed_files = preprocess_sources(src_dir, src_files, preprocess_dir)
-    if output_dir.exists():
-        shutil.rmtree(output_dir)
-    translate_sources(preprocess_dir, preprocessed_files, output_dir)
+    for p in [output_dir / "+fortran", output_dir / f"+{pkg_name}"]:
+        if p.exists():
+            shutil.rmtree(p)
+    translate_sources(preprocess_dir, preprocessed_files, output_dir, pkg_name)
     if preprocess_dir.exists():
         shutil.rmtree(preprocess_dir)

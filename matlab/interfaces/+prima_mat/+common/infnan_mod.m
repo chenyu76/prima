@@ -1,0 +1,150 @@
+classdef infnan_mod
+    %--------------------------------------------------------------------------------------------------%
+    % This module provides functions that check whether a real number X is infinite, NaN, or finite.
+    %
+    % N.B.:
+    %
+    % 1. We implement all the procedures for single, double, and quadruple precisions (when available).
+    % When we interface the Fortran code with other languages (e.g., MATLAB), the procedures may be
+    % invoked in both the Fortran code and the gateway (e.g., MEX gateway), which may use different real
+    % precisions (e.g., the Fortran code may use single, but the MEX gateway uses double by default).
+    %
+    % 2. We decide not to use IEEE_IS_NAN and IEEE_IS_FINITE provided by the intrinsic IEEE_ARITHMETIC
+    % available since Fortran 2003. The reason is as follows. The Fortran standards require these two
+    % procedures to return default logical values. However, if the code is compiled by gfortran 9.3.0
+    % with the option -fdefault-integer-8 (which is adopted by MEX and cannot be changed easily), then
+    % the compiler will enforce the default logical value to be 64-bit, but the returned kinds of
+    % IEEE_IS_NAN and IEEE_IS_FINITE will not be changed accordingly, and they will remain 32-bit if
+    % that is the default logical kind. Therefore, the returned kinds of IEEE_IS_NAN and IEEE_IS_FINITE
+    % may actually differ from the default logical kind due to this compiler option and hence violate
+    % the Fortran standard! This is fatal, because a piece of perfectly standard-compliant code may fail
+    % to be compiled due to type mismatches. It is similar with ifort 2021.2.0 and nagfor 7.0. See more
+    % discussions at https://stackoverflow.com/questions/69060408.
+    %
+    % 3. The functions aim to work even when compilers are invoked with aggressive optimization flags,
+    % such as `gfortran -Ofast`.
+    %
+    % 4. There are many ways to implement functions like IS_NAN. However, not all of them work with
+    % aggressive optimization flags. For example, for gfortran 9.3.0, the IEEE_IS_NAN included in
+    % IEEE_ARITHMETIC does not work with `gfortran -Ofast`. Another example, when X is NaN, (X == X) and
+    % (X >= X) are evaluated as TRUE by Flang 7.1.0 and nvfortran 21.3-0, even if they are invoked
+    % without any explicit optimization flag. See the following for discussions
+    % https://stackoverflow.com/questions/15944614
+    %
+    % 5. The most naive implementation for IS_NAN is (X /= X). However, compilers (e.g., gfortran) may
+    % complain about inequality comparison between floating-point numbers. In addition, it is likely to
+    % fail when compilers are invoked with aggressive optimization flags.
+    %
+    % 6. The implementation below is totally empirical, in the sense that I have not studied in-depth
+    % what the aggressive optimization flags really do, but only made some tests and found the
+    % implementation that worked correctly. The story may change when compilers are changed/updated.
+    %
+    % 7. N.B.: Do NOT change the functions without thorough testing. Their implementations are delicate.
+    % For example, when compilers are invoked with aggressive optimization flags,
+    % (X <= HUGE(X) .AND. X >= -HUGE(X)) may differ from (ABS(X) <= HUGE(X)) ,
+    % (X > HUGE(X) .OR. X < -HUGE(X)) may differ from (ABS(X) > HUGE(X)) , and
+    % (ABS(X) > HUGE(X) .AND. X > 0) may differ from (X > HUGE(X)) .
+    %
+    % 8. IS_NAN must be implemented in a file separated from IS_INF and IS_FINITE (a separated module is
+    % not enough). Otherwise, IS_NAN may not work with some compilers invoked with aggressive
+    % optimization flags e.g., ifx -fast with ifx 2022.1.0 or flang -Ofast with flang 15.0.3.
+    % Similarly, the intrinsic HUGE must be wrapped by HUGE_VALUE in a file separated from IS_INF and
+    % IS_FINITE. Otherwise, IS_INF and IS_FINITE do not work with `gfortran-13 -Ofast`.
+    %
+    % 9. The implementation of IS_NAN may seem unnecessarily complicated and redundant. However, it is
+    % the only way that I have found to work with all the compilers that I have tested.
+    %
+    % 10. Even though the functions involve invocation of ABS and HUGE, their performance (in terms of
+    % CPU time) turns out comparable to or even better than the functions in IEEE_ARITHMETIC.
+    %
+    % Coded by Zaikun ZHANG (www.zhangzk.net).
+    %
+    % Started: July 2020.
+    %
+    % Last Modified: Tuesday, February 27, 2024 PM10:56:47
+    %--------------------------------------------------------------------------------------------------%
+    properties
+        huge_obj;
+        inf_obj;
+    end
+
+    methods
+        function obj = infnan_mod()
+            obj.huge_obj = prima_mat.common.huge_mod();
+            obj.inf_obj = prima_mat.common.inf_mod();
+        end
+        function varargout = is_nan(obj, varargin)
+            if numel(varargin) == 1
+                [varargout{1:nargout}] = obj.is_nan_sp(varargin{:});
+            elseif numel(varargin) == 1
+                [varargout{1:nargout}] = obj.is_nan_dp(varargin{:});
+            else
+                [varargout{1:nargout}] = obj.is_nan_qp(varargin{:});
+            end
+        end
+        function varargout = is_finite(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_finite(varargin{:});
+        end
+        function varargout = is_posinf(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_posinf(varargin{:});
+        end
+        function varargout = is_neginf(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_neginf(varargin{:});
+        end
+        function varargout = is_inf(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_inf(varargin{:});
+        end
+        function varargout = is_finite_sp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_finite_sp(varargin{:});
+        end
+        function varargout = is_finite_dp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_finite_dp(varargin{:});
+        end
+        function varargout = is_posinf_sp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_posinf_sp(varargin{:});
+        end
+        function varargout = is_posinf_dp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_posinf_dp(varargin{:});
+        end
+        function varargout = is_neginf_sp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_neginf_sp(varargin{:});
+        end
+        function varargout = is_neginf_dp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_neginf_dp(varargin{:});
+        end
+        function varargout = is_inf_sp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_inf_sp(varargin{:});
+        end
+        function varargout = is_inf_dp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_inf_dp(varargin{:});
+        end
+        function y = is_nan_sp(obj, x)
+            consts_obj = prima_mat.common.consts_mod();
+
+
+            %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
+            %y = (.not. is_finite(x) .and. .not. (abs(x) > huge_value(x))) .or. y
+            y = ((~obj.inf_obj.is_finite(x)) & (~obj.inf_obj.is_inf(x)));
+            y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value(x) & x >= -obj.huge_obj.huge_value(x)))) | y;
+        end
+        function y = is_nan_dp(obj, x)
+            consts_obj = prima_mat.common.consts_mod();
+
+
+            %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
+            %y = (.not. is_finite(x) .and. .not. (abs(x) > huge_value(x))) .or. y
+            y = ((~obj.inf_obj.is_finite(x)) & (~obj.inf_obj.is_inf(x)));
+            y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value(x) & x >= -obj.huge_obj.huge_value(x)))) | y;
+        end
+        function y = is_nan_qp(obj, x)
+            consts_obj = prima_mat.common.consts_mod();
+
+
+            %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
+            %y = (.not. is_finite(x) .and. .not. (abs(x) > huge_value(x))) .or. y
+            y = ((~obj.inf_obj.is_finite(x)) & (~obj.inf_obj.is_inf(x)));
+            y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value(x) & x >= -obj.huge_obj.huge_value(x)))) | y;
+        end
+
+    end
+end
