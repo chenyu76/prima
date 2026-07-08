@@ -154,7 +154,7 @@ classdef uobyqa_mod
             history_obj = prima_mat.common.history_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             memory_obj = prima_mat.common.memory_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             preproc_obj = prima_mat.common.preproc_mod();
             string_obj = prima_mat.common.string_mod();
 
@@ -181,23 +181,18 @@ classdef uobyqa_mod
             solver = "UOBYQA";
             srname = "UOBYQA";
             info_loc = NaN;
-            iprint_loc = NaN;
-            maxfun_loc = NaN;
-            maxhist_loc = NaN;
-            n = NaN;
+
+
             nf_loc = NaN;
-            nhist = NaN;
-            npt = NaN;
+
+
             eta1_loc = NaN;
-            eta2_loc = NaN;
+
             f_loc = NaN;
-            ftarget_loc = NaN;
-            gamma1_loc = NaN;
-            gamma2_loc = NaN;
-            rhobeg_loc = NaN;
-            rhoend_loc = NaN;
-            fhist_loc = NaN(1); % FHIST_LOC(MAXFHIST)
-            xhist_loc = NaN(1); % XHIST_LOC(N, MAXXHIST)
+
+
+            fhist_loc = NaN; % FHIST_LOC(MAXFHIST)
+            xhist_loc = NaN; % XHIST_LOC(N, MAXXHIST)
 
 
             % Sizes
@@ -231,8 +226,8 @@ classdef uobyqa_mod
             addParameter(ipObj, 'callback_fcn', struct());
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-            f = ipObj.Results.f;
-            nf = ipObj.Results.nf;
+
+
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
             ftarget = ipObj.Results.ftarget;
@@ -246,7 +241,7 @@ classdef uobyqa_mod
             fhist = ipObj.Results.fhist;
             maxhist = ipObj.Results.maxhist;
             callback_fcn = ipObj.Results.callback_fcn;
-            info = ipObj.Results.info;
+
             if ~ismember('rhobeg', ipObj.UsingDefaults)
                 rhobeg_loc = rhobeg;
             elseif ~ismember('rhoend', ipObj.UsingDefaults)
@@ -370,7 +365,7 @@ classdef uobyqa_mod
             end
             % F2003 automatically deallocate local ALLOCATABLE variables at exit, yet we prefer to deallocate
             % them immediately when they finish their jobs.
-            xhist_loc = [];
+
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 5
@@ -381,7 +376,7 @@ classdef uobyqa_mod
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
-            fhist_loc = [];
+
 
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
             if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc

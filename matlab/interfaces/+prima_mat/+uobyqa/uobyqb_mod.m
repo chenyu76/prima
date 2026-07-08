@@ -46,7 +46,7 @@ classdef uobyqb_mod
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();
@@ -78,50 +78,40 @@ classdef uobyqb_mod
             solver = "UOBYQA";
             srname = "UOBYQB";
             k = NaN;
-            knew_geo = NaN;
-            knew_tr = NaN;
-            kopt = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxtr = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            npt = NaN;
-            subinfo = NaN;
-            tr = NaN;
+
+
             accurate_mod = false;
             adequate_geo = false;
             bad_trstep = false;
-            close_itpset = false;
+
             improve_geo = false;
             reduce_rho = false;
-            shortd = false;
+
             small_trrad = false;
-            terminate = false;
-            trfail = false;
+
+
             ximproved = false;
-            crvmin = NaN;
+
             d = NaN(numel(x), 1);
-            ddmove = NaN;
+
             delbar = NaN;
-            delta = NaN;
+
             distsq = NaN((numel(x) + 1) * (numel(x) + 2) / 2, 1);
-            dnorm = NaN;
+
             dnorm_rec = NaN(2, 1); % Powell's implementation: DNORM_REC(3)
             fval = NaN(numel(distsq), 1);
             g = NaN(numel(x), 1);
-            gamma3 = NaN;
+
             h = NaN(numel(x));
             moderr = NaN;
             moderr_rec = NaN(numel(dnorm_rec), 1);
             pq = NaN(numel(distsq) + -1, 1);
-            qred = NaN;
-            ratio = NaN;
-            rho = NaN;
+
+
             xbase = NaN(numel(x), 1);
             xdrop = NaN(numel(x), 1);
             xpt = NaN(numel(x), numel(distsq));
-            pl = NaN(1);
+            pl = NaN;
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
             % Sizes.
@@ -219,7 +209,7 @@ classdef uobyqb_mod
             rho = rhobeg;
             delta = rho;
             shortd = false;
-            trfail = false;
+
             ratio = -consts_obj.ONE;
             ddmove = -consts_obj.ONE;
             dnorm_rec(:) = consts_obj.REALMAX;
@@ -535,7 +525,7 @@ classdef uobyqb_mod
 
             % Deallocate PL. F2003 automatically deallocate local ALLOCATABLE variables at exit, yet we prefer
             % to deallocate them immediately when they finish their jobs.
-            pl = [];
+
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             % Ensure that D has not been updated after SHORTD == TRUE occurred, or the code below is incorrect.

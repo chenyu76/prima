@@ -51,8 +51,8 @@ classdef geometry_uobyqa_mod
 
             % Local variables
             srname = "SETDROP_TR";
-            n = NaN;
-            npt = NaN;
+
+
             distsq = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
             vlag = NaN(size(xpt, 2), 1);
@@ -205,37 +205,24 @@ classdef geometry_uobyqa_mod
 
             % Local variables
             srname = "GEOSTEP";
-            n = NaN; npt = NaN;
+
             dcauchy = NaN(size(xpt, 1), 1);
-            dd = NaN;
-            dhd = NaN;
-            dlin = NaN;
+
+
             g = NaN(size(xpt, 1), 1);
-            gd = NaN;
-            gg = NaN;
-            ghg = NaN;
-            gnorm = NaN;
+
+
             h = NaN(size(xpt, 1));
             hv = NaN(size(xpt, 1), 1);
-            scaling = NaN;
-            temp = NaN;
-            tempa = NaN;
-            tempb = NaN;
-            tempc = NaN;
-            tempd = NaN;
-            tempv = NaN;
+
+
             v = NaN(size(xpt, 1), 1);
-            vhd = NaN;
-            vhg = NaN;
-            vhv = NaN;
-            vlin = NaN;
+
+
             vlag = NaN(size(xpt, 2), 1);
             vlagc = NaN(size(xpt, 2), 1);
-            vmu = NaN;
-            vnorm = NaN;
-            vv = NaN;
-            wcos = NaN;
-            wsin = NaN;
+
+
             xopt = NaN(size(xpt, 1), 1);
 
             % Sizes.

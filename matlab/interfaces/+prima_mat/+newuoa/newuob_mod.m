@@ -52,7 +52,7 @@ classdef newuob_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();
@@ -85,47 +85,38 @@ classdef newuob_mod
             srname = "NEWUOB";
             idz = NaN;
             ij = NaN(2, max(0, fix(npt - 2 * numel(x) - 1)));
-            itest = NaN;
+
             k = NaN;
-            knew_geo = NaN;
-            knew_tr = NaN;
-            kopt = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxtr = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            subinfo = NaN;
-            tr = NaN;
+
+
             accurate_mod = false;
             adequate_geo = false;
             bad_trstep = false;
             close_itpset = false;
             improve_geo = false;
             reduce_rho = false;
-            shortd = false;
+
             small_trrad = false;
-            terminate = false;
-            trfail = false;
+
+
             ximproved = false;
             bmat = NaN(numel(x), npt + numel(x));
-            crvmin = NaN;
+
             d = NaN(numel(x), 1);
             delbar = NaN;
-            delta = NaN;
+
             distsq = NaN(npt, 1);
-            dnorm = NaN;
+
             dnorm_rec = NaN(2, 1); % Powell's implementation: DNORM_REC(3)
             fval = NaN(npt, 1);
-            gamma3 = NaN;
+
             gopt = NaN(numel(x), 1);
             hq = NaN(numel(x));
             moderr = NaN;
             moderr_rec = NaN(numel(dnorm_rec), 1);
             pq = NaN(npt, 1);
-            qred = NaN;
-            ratio = NaN;
-            rho = NaN;
+
+
             xbase = NaN(numel(x), 1);
             xdrop = NaN(numel(x), 1);
             xosav = NaN(numel(x), 1);
@@ -223,7 +214,7 @@ classdef newuob_mod
             rho = rhobeg;
             delta = rho;
             shortd = false;
-            trfail = false;
+
             ratio = -consts_obj.ONE;
             dnorm_rec(:) = consts_obj.REALMAX;
             moderr_rec(:) = consts_obj.REALMAX;

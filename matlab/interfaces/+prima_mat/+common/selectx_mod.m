@@ -54,16 +54,14 @@ classdef selectx_mod
             % Local variables
             srname = "SAVEFILT";
             index_to_keep = NaN(numel(ffilt), 1);
-            kworst = NaN;
-            m = NaN;
-            maxfilt = NaN;
-            n = NaN;
+
+
             keep = false(nfilt, 1);
             cfilt_shifted = NaN(numel(ffilt), 1);
-            cref = NaN;
-            fref = NaN;
+
+
             phi = NaN(numel(ffilt), 1);
-            phimax = NaN;
+
 
             % Sizes
             ipObj = inputParser();
@@ -231,13 +229,12 @@ classdef selectx_mod
 
             % Local variables
             srname = "SELECTX";
-            nhist = NaN;
+
             chist_shifted = NaN(numel(fhist), 1);
-            cmin = NaN;
-            cref = NaN;
-            fref = NaN;
+
+
             phi = NaN(numel(fhist), 1);
-            phimin = NaN;
+
 
             % Sizes
             nhist = fix(numel(fhist));
@@ -346,7 +343,7 @@ classdef selectx_mod
 
             % Local variables
             srname = "ISBETTER";
-            cref = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -403,8 +400,7 @@ classdef selectx_mod
 
             % Local variables
             srname = "ISBETTER10";
-            i = NaN;
-            nfc = NaN;
+
 
             % Sizes
             nfc = fix(numel(f1));
@@ -453,8 +449,7 @@ classdef selectx_mod
 
             % Local variables
             srname = "ISBETTER01";
-            i = NaN;
-            nfc = NaN;
+
 
             % Sizes
             nfc = fix(numel(f2));

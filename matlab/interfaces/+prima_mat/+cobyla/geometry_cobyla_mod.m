@@ -43,7 +43,7 @@ classdef geometry_cobyla_mod
 
             % Local variables
             srname = "SETDROP_TR";
-            n = NaN;
+
             distsq = NaN(size(sim, 2), 1);
             weight = NaN(size(sim, 2), 1);
             score = NaN(size(sim, 2), 1);
@@ -222,12 +222,11 @@ classdef geometry_cobyla_mod
 
             % Local variables
             srname = "GEOSTEP";
-            m = NaN;
-            m_lcon = NaN;
-            n = NaN;
+
+
             A = NaN(size(simi, 1), size(conmat, 1));
-            cvnd = NaN;
-            cvpd = NaN;
+
+
             g = NaN(size(simi, 1), 1);
 
             % Sizes

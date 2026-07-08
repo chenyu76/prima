@@ -41,7 +41,7 @@ classdef string_mod
             y = pad(" ", strlength(x));
 
             dist = 'A' - 'a';
-            i = NaN;
+
 
             y = x;
             for i = 1:strlength(y)
@@ -60,7 +60,7 @@ classdef string_mod
             y = pad(" ", strlength(x));
 
             dist = 'A' - 'a';
-            i = NaN;
+
 
             y = x;
             for i = 1:strlength(y)
@@ -84,11 +84,10 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
             % This function converts a string to an integer array.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
+            prima_mat.common.consts_mod();
 
             y = NaN(strlength(x), 1);
 
-            i = NaN;
 
             y(:) = reshape(cell2mat(arrayfun(@(i) fix(double(unicode2native(extract(x, i)))), (1:fix(strlength(x))), "UniformOutput", false)), [], 1);
 
@@ -109,11 +108,11 @@ classdef string_mod
             s = "";
             % Local variables
             srname = "REAL2STR_SCALAR";
-            sformat = "";
-            str = pad(" ", obj.MAX_NUM_STR_LEN);
-            ndgt_loc = NaN; % The number of decimal digits to print
-            nexp_loc = NaN; % The number of digits in the exponent
-            wx = NaN; % The width of the printed X
+
+
+            % The number of decimal digits to print
+            % The number of digits in the exponent
+            % The width of the printed X
 
             % Preconditions
             ipObj = inputParser();
@@ -152,7 +151,7 @@ classdef string_mod
             if infnan_obj.is_finite(x)
                 wx = ndgt_loc + nexp_loc + 5;
                 debug_obj.validate(wx <= obj.MAX_NUM_STR_LEN, "The width of the printed number is at most " + obj.int2str(fix(obj.MAX_NUM_STR_LEN)), srname);
-                sformat = "(1PE" + obj.int2str(fix(wx)) + "." + obj.int2str(fix(ndgt_loc)) + "E" + obj.int2str(fix(nexp_loc)) + ")";
+                "(1PE" + obj.int2str(fix(wx)) + "." + obj.int2str(fix(ndgt_loc)) + "E" + obj.int2str(fix(nexp_loc)) + ")";
                 str = sprintf('%s \n', num2str(x));
                 s = strtrim(str); % Remove the trailing spaces, but keep the leading ones, if any.
             else
@@ -198,15 +197,15 @@ classdef string_mod
             % Local variables
             srname = "REAL2STR_VECTOR";
             spaces = "  "; % The spaces between two entries in a row
-            i = NaN;
-            j = NaN;
-            m = NaN; % The number of rows
-            n = NaN; % N = SIZE(X)
-            ndgt_loc = NaN; % The number of decimal digits to print
-            nexp_loc = NaN; % The number of digits in the exponent
-            nx_loc = NaN; % The number of entries printed per row
-            slen = NaN; % The length of the string
-            wx = NaN; % The width of each entry in X
+
+
+            % The number of rows
+            % N = SIZE(X)
+            % The number of decimal digits to print
+            % The number of digits in the exponent
+            % The number of entries printed per row
+            % The length of the string
+            % The width of each entry in X
 
             % Preconditions
             ipObj = inputParser();
@@ -314,7 +313,7 @@ classdef string_mod
 
             srname = "INT2STR";
             s = "";
-            str = pad(" ", obj.MAX_NUM_STR_LEN);
+
             % In the following, 'I0' means to use the minimum number of digits needed to print.
             % It should work also if we use * instead of I0. However, this sometimes lead to a segmentation
             % fault on Windows Server 2022 with gcc/gfortran 13.

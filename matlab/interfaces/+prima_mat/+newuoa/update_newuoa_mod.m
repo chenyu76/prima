@@ -36,8 +36,7 @@ classdef update_newuoa_mod
 
             % Local variables
             srname = "UPDATEXF";
-            n = NaN;
-            npt = NaN;
+
 
             % Sizes
             n = size(xpt, 1);
@@ -130,8 +129,8 @@ classdef update_newuoa_mod
 
             % Local variables
             srname = "UPDATEQ";
-            n = NaN;
-            npt = NaN;
+
+
             pqinc = NaN(numel(pq), 1);
 
             % Sizes
@@ -234,8 +233,8 @@ classdef update_newuoa_mod
 
             % Local variables
             srname = "TRYQALT";
-            n = NaN;
-            npt = NaN;
+
+
             galt = NaN(numel(gopt), 1);
             pqalt = NaN(numel(pq), 1);
 

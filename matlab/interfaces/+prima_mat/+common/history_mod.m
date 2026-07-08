@@ -36,8 +36,8 @@ classdef history_mod
 
             % Local variables
             srname = "PREHIST";
-            unit_memo = NaN; % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
-            maxhist_in = NaN;
+            % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
+
 
             % Preconditions
             ipObj = inputParser();
@@ -142,14 +142,9 @@ classdef history_mod
 
 
             % Local variables
-            i = NaN;
-            maxchist = NaN;
-            maxconhist = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            nhist = NaN;
+
+
+
             srname = "SAVEHIST";
 
             % Sizes
@@ -320,14 +315,9 @@ classdef history_mod
 
 
             % Local variables
-            khist = NaN;
-            maxchist = NaN;
-            maxconhist = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxxhist = NaN;
-            m = NaN;
-            n = NaN;
+
+
+
             srname = "RANGEHIST";
 
             % Sizes

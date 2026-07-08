@@ -36,8 +36,7 @@ classdef update_lincoa_mod
 
             % Local variables
             srname = "UPDATEXF";
-            n = NaN;
-            npt = NaN;
+
 
             % Sizes
             n = size(xpt, 1);
@@ -121,8 +120,8 @@ classdef update_lincoa_mod
 
             % Local variables
             srname = "UPDATEQ";
-            n = NaN;
-            npt = NaN;
+
+
             pqinc = NaN(numel(pq), 1);
 
             % Sizes
@@ -222,8 +221,7 @@ classdef update_lincoa_mod
 
             % Local variables
             srname = "TRYQALT";
-            n = NaN;
-            npt = NaN;
+
 
             % Sizes
             n = size(xpt, 1);
@@ -308,8 +306,8 @@ classdef update_lincoa_mod
 
             % Local variables
             srname = "UPDATERES";
-            m = NaN;
-            n = NaN;
+
+
             mask = false(numel(b), 1);
             ax = NaN(numel(b), 1);
 

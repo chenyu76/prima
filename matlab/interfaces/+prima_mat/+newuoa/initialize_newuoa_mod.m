@@ -44,7 +44,7 @@ classdef initialize_newuoa_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
 
@@ -69,15 +69,10 @@ classdef initialize_newuoa_mod
             % Local variables
             solver = "NEWUOA";
             srname = "INITXF";
-            k = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            npt = NaN;
-            subinfo = NaN;
+
+
             evaluated = false(numel(fval), 1);
-            f = NaN;
+
             x = NaN(numel(x0), 1);
 
             % Sizes
@@ -262,17 +257,7 @@ classdef initialize_newuoa_mod
 
             % Local variables
             srname = "INITQ";
-            i = NaN;
-            j = NaN;
-            k = NaN;
-            kopt = NaN;
-            n = NaN;
-            ndiag = NaN;
-            npt = NaN;
-            fbase = NaN;
-            rhobeg = NaN;
-            xi = NaN;
-            xj = NaN;
+
 
             % Sizes
             n = size(xpt, 1);
@@ -399,13 +384,7 @@ classdef initialize_newuoa_mod
 
             % Local variables
             srname = "INITH";
-            k = NaN;
-            n = NaN;
-            npt = NaN;
-            recip = NaN;
-            reciq = NaN;
-            rhobeg = NaN;
-            rhosq = NaN;
+
 
             % Sizes
             n = size(xpt, 1);

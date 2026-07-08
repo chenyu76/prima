@@ -168,7 +168,7 @@ classdef linalg_mod
             % A(SIZE(X), SIZE(X))
             % Local variables
             srname = "R1_SYM";
-            n = NaN; j = NaN;
+
 
             % Sizes
             n = fix(numel(x));
@@ -256,7 +256,7 @@ classdef linalg_mod
             % A(SIZE(X), SIZE(X))
             % Local variables
             srname = "R2_SYM";
-            n = NaN; j = NaN;
+
 
             % Sizes
             n = fix(numel(x));
@@ -344,7 +344,7 @@ classdef linalg_mod
             z = NaN(size(y, 2), 1);
             % Local variables
             srname = "MATPROD12";
-            j = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -386,7 +386,7 @@ classdef linalg_mod
             z = NaN(size(x, 1), 1);
             % Local variables
             srname = "MATPROD21";
-            j = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -426,7 +426,7 @@ classdef linalg_mod
             z = NaN(size(x, 1), size(y, 2));
             % Local variables
             srname = "MATPROD22";
-            i = NaN; j = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -467,7 +467,7 @@ classdef linalg_mod
             z = NaN;
             % Local variables
             srname = "INPROD";
-            i = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -501,7 +501,7 @@ classdef linalg_mod
             z = NaN(numel(x), numel(y));
             % Local variables
             srname = "OUTPROD";
-            i = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -533,7 +533,7 @@ classdef linalg_mod
             x = NaN(max(n, 0));
             % Local variables
             srname = "EYE1";
-            i = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -569,7 +569,7 @@ classdef linalg_mod
             x = NaN(max(m, 0), max(n, 0));
             % Local variables
             srname = "EYE2";
-            i = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -608,12 +608,7 @@ classdef linalg_mod
             x = NaN(size(A, 2), 1);
             % Local variables
             srname = "SOLVE";
-            P = NaN(size(A, 1), 1);
-            i = NaN;
-            n = NaN;
-            Q = NaN(size(A, 1));
-            R = NaN(size(A, 1), size(A, 2));
-            tol = NaN;
+
 
             % Sizes
             n = size(A, 1);
@@ -686,13 +681,12 @@ classdef linalg_mod
             B = NaN(size(A, 1));
             % Local variables
             srname = "INV";
-            P = NaN(size(A, 1), 1);
+
             InvP = NaN(size(A, 1), 1);
-            i = NaN;
-            n = NaN;
-            Q = NaN(size(A, 1));
+
+
             R = NaN(size(A, 1));
-            tol = NaN;
+
 
             % Sizes
             n = size(A, 1);
@@ -766,8 +760,7 @@ classdef linalg_mod
             is_inv = false;
             % Local variables
             srname = "ISINV";
-            tol_loc = NaN;
-            n = NaN;
+
 
             % Sizes
             n = size(A, 1);
@@ -819,16 +812,12 @@ classdef linalg_mod
 
             % Local variables
             srname = "QR";
-            pivot = false;
-            i = NaN;
-            j = NaN;
-            k = NaN;
-            m = NaN;
-            n = NaN;
+
+
             G = NaN(2);
             Q_loc = NaN(size(A, 1));
             T = NaN(size(A, 2), size(A, 1));
-            tol = NaN;
+
 
             ipObj = inputParser();
             addParameter(ipObj, 'Q', NaN);
@@ -940,19 +929,15 @@ classdef linalg_mod
             x = NaN(size(A, 2), 1);
             % Local variables
             srname = "LSQR_RDIAG";
-            pivot = false;
-            i = NaN;
-            j = NaN;
-            m = NaN;
-            n = NaN;
+
+
             P = NaN(size(A, 2), 1);
-            rank = NaN;
+
             Q_loc = NaN(size(A, 1), min(size(A, 1), size(A, 2)));
             Rdiag_loc = NaN(min(size(A, 1), size(A, 2)), 1);
-            tol = NaN;
+
             y = NaN(numel(b), 1);
-            yq = NaN;
-            yqa = NaN;
+
 
             % Sizes
             m = size(A, 1);
@@ -1055,11 +1040,7 @@ classdef linalg_mod
             x = NaN(size(R, 2), 1);
             % Local variables
             srname = "LSQR_RFULL";
-            i = NaN;
-            j = NaN;
-            m = NaN;
-            n = NaN;
-            tol = NaN;
+
 
             % Sizes
             m = size(Q, 1);
@@ -1117,12 +1098,10 @@ classdef linalg_mod
 
 
             % Outputs
-            D = NaN(1);
+            D = NaN;
             % Local variables
             srname = "DIAG";
-            dlen = NaN;
-            i = NaN;
-            k_loc = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -1169,10 +1148,7 @@ classdef linalg_mod
             is_banded = false;
             % Local variables
             srname = "ISBANDED";
-            i = NaN;
-            m = NaN;
-            n = NaN;
-            tol_loc = NaN;
+
 
             % Preconditions
             ipObj = inputParser();
@@ -1227,8 +1203,7 @@ classdef linalg_mod
             is_tril = false;
             % Local variables
             srname = "ISTRIL";
-            width = NaN;
-            tol_loc = NaN;
+
 
             % Preconditions
             ipObj = inputParser();
@@ -1271,8 +1246,7 @@ classdef linalg_mod
             is_triu = false;
             % Local variables
             srname = "ISTRIU";
-            width = NaN;
-            tol_loc = NaN;
+
 
             % Preconditions
             ipObj = inputParser();
@@ -1316,8 +1290,7 @@ classdef linalg_mod
             is_orth = false;
             % Local variables
             srname = "ISORTH";
-            n = NaN;
-            tol_loc = NaN;
+
 
             % Preconditions
             ipObj = inputParser();
@@ -1374,7 +1347,7 @@ classdef linalg_mod
             % Local variables
             srname = "PROJECT1";
             u = NaN(numel(v), 1);
-            tol = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -1431,9 +1404,9 @@ classdef linalg_mod
             y = NaN(numel(x), 1);
             % Local variables
             srname = "PROJECT2";
-            U = NaN(size(V, 1), min(size(V, 1), size(V, 2)));
+
             V_loc = NaN(size(V, 1), size(V, 2));
-            tol = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -1554,12 +1527,7 @@ classdef linalg_mod
             G = NaN(2);
             % Local variables
             srname = "PLANEROT";
-            c = NaN;
-            s = NaN;
-            r = NaN;
-            t = NaN;
-            u = NaN;
-            tol = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -1655,7 +1623,7 @@ classdef linalg_mod
             % In-outputs
 
             % Local variables
-            j = NaN;
+
             srname = "SYMMETRIZE";
 
             % Preconditions
@@ -1699,8 +1667,7 @@ classdef linalg_mod
             is_minor = false;
             % Local variables
             sensitivity = consts_obj.TENTH;
-            refa = NaN;
-            refb = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -1729,7 +1696,7 @@ classdef linalg_mod
             is_minor = false(numel(x), 1);
             % Local variables
             srname = "ISMINOR1";
-            i = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -1766,7 +1733,7 @@ classdef linalg_mod
             is_symmetric = false;
             % Local variables
             srname = "ISSYMMETRIC";
-            tol_loc = NaN;
+
 
             % Preconditions
             ipObj = inputParser();
@@ -1830,11 +1797,7 @@ classdef linalg_mod
             y = NaN;
             % Local variables
             srname = "P_NORM";
-            maxabs = NaN;
-            p_loc = NaN;
-            scaling = NaN;
-            scalmax = NaN;
-            scalmin = NaN;
+
 
             % Preconditions
             ipObj = inputParser();
@@ -2041,10 +2004,6 @@ classdef linalg_mod
             % Local variables
             srname = "SORT_I1";
 
-            i = NaN;
-            n = NaN;
-            newn = NaN;
-            ascending = false;
 
             %====================%
             % Calculation starts %
@@ -2103,10 +2062,7 @@ classdef linalg_mod
             y = NaN(size(x, 1), size(x, 2));
             % Local variables
             srname = "SORT_I2";
-            direction_loc = "";
-            dim_loc = NaN;
-            i = NaN;
-            n = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -2166,7 +2122,7 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % LOGICAL_TO_INT(.TRUE.) = 1, LOGICAL_TO_INT(.FALSE.) = 0
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
+            prima_mat.common.consts_mod();
 
             % Inputs
 
@@ -2193,10 +2149,10 @@ classdef linalg_mod
             % Inputs
 
             % Outputs
-            loc = NaN(1); % INTEGER(IK) :: LOC(COUNT(X)) does not work with Absoft 22.0
+            loc = NaN; % INTEGER(IK) :: LOC(COUNT(X)) does not work with Absoft 22.0
             % Local variables
             srname = "TRUELOC";
-            n = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -2229,7 +2185,7 @@ classdef linalg_mod
             % Inputs
 
             % Outputs
-            loc = NaN(1); % INTEGER(IK) :: LOC(COUNT(.NOT.X)) does not work with Absoft 22.0
+            loc = NaN; % INTEGER(IK) :: LOC(COUNT(.NOT.X)) does not work with Absoft 22.0
             % Local variables
             srname = "FALSELOC";
 
@@ -2272,7 +2228,7 @@ classdef linalg_mod
             y = NaN;
             % Local variables
             srname = "MINIMUM1";
-            nan_test = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -2313,7 +2269,7 @@ classdef linalg_mod
             y = NaN;
             % Local variables
             srname = "MINIMUM2";
-            nan_test = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -2354,7 +2310,7 @@ classdef linalg_mod
             y = NaN;
             % Local variables
             srname = "MAXIMUM1";
-            nan_test = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -2395,7 +2351,7 @@ classdef linalg_mod
             y = NaN;
             % Local variables
             srname = "MAXIMUM2";
-            nan_test = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -2432,9 +2388,7 @@ classdef linalg_mod
             x = NaN(max(n, 0), 1);
             % Local variables
             srname = "LINSPACE_R";
-            i = NaN;
-            nm = NaN;
-            xunit = NaN;
+
 
             %====================%
             % Calculation starts %
@@ -2526,15 +2480,15 @@ classdef linalg_mod
             srname = "HESSENBERG_HHD_TRID";
             i = NaN;
             j = NaN;
-            k = NaN;
-            n = NaN;
+
+
             Asubd = NaN;
-            colsq = NaN;
-            scaling = NaN;
+
+
             w = NaN(size(A, 1), 1);
             wz = NaN;
             z = NaN(size(A, 1), 1);
-            scaled = false;
+
 
             % Sizes
             n = size(A, 1);
@@ -2639,17 +2593,15 @@ classdef linalg_mod
             % Local variables
             srname = "HESSENBERG_FULL";
             i = NaN;
-            j = NaN;
-            n = NaN;
-            colsq = NaN;
+
+
             subd = NaN;
             v = NaN(size(A, 1), 1);
             w = NaN(size(A, 1), 1);
-            scaling = NaN;
-            scaled = false;
+
 
             % Debugging variables
-            tol = NaN;
+
 
             % Sizes
             n = size(A, 1);
@@ -2791,17 +2743,14 @@ classdef linalg_mod
             eig_min = NaN;
             % Local variables
             srname = "EIGMIN";
-            iter = NaN;
+
             k = NaN;
-            ksav = NaN;
-            maxiter = NaN;
-            n = NaN;
-            eminlb = NaN;
-            eminub = NaN;
+
+
             piv = NaN(numel(td), 1);
-            pivksv = NaN;
+
             pivnew = NaN(numel(td), 1);
-            tol_loc = NaN;
+
 
             % Sizes
             n = fix(numel(td));
@@ -2923,9 +2872,7 @@ classdef linalg_mod
             smat = NaN((round(fortran.sqrt(double(8 * numel(vec) + 1))) - 1) / 2);
             % Local variables
             srname = "SMAT2VEC";
-            ih = NaN;
-            j = NaN;
-            n = NaN;
+
 
             % Sizes
             n = size(smat, 1);
@@ -2967,9 +2914,7 @@ classdef linalg_mod
             vec = NaN((size(smat, 1) * (size(smat, 1) + 1)) / 2, 1);
             % Local variables
             srname = "SMAT2VEC";
-            ih = NaN;
-            n = NaN;
-            j = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -3005,9 +2950,7 @@ classdef linalg_mod
             y = NaN(numel(x), 1);
             % Local variables
             srname = "SMAT_MUL_VEC";
-            ih = NaN;
-            n = NaN;
-            j = NaN;
+
 
             % Sizes
             n = fix(numel(x));

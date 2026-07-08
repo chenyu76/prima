@@ -27,7 +27,7 @@ classdef initialize_cobyla_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
 
 
             % Inputs
@@ -59,20 +59,11 @@ classdef initialize_cobyla_mod
             % Local variables
             solver = "COBYLA";
             srname = "INITIALIZE";
-            j = NaN;
-            k = NaN;
-            m = NaN;
-            m_lcon = NaN;
-            maxchist = NaN;
-            maxconhist = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            subinfo = NaN;
+
+
             constr = NaN(size(conmat, 1), 1);
-            cstrv = NaN;
-            f = NaN;
+
+
             x = NaN(numel(x0), 1);
             itol = consts_obj.TENTH;
 
@@ -251,10 +242,8 @@ classdef initialize_cobyla_mod
 
             % Local variables
             srname = "INITFILT";
-            i = NaN;
-            m = NaN;
-            maxfilt = NaN;
-            n = NaN;
+
+
             x = NaN(size(sim, 1), 1);
 
             % Sizes

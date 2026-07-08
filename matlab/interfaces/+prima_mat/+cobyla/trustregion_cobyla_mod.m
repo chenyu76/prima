@@ -72,14 +72,14 @@ classdef trustregion_cobyla_mod
 
             % Local variables
             srname = "TRSTLP";
-            i = NaN;
+
             iact = NaN(numel(b) + 1, 1);
-            m = NaN;
-            n = NaN;
+
+
             nact = NaN;
             A_aug = NaN(size(A, 1), size(A, 2) + 1);
             b_aug = NaN(numel(b) + 1, 1);
-            modscal = NaN;
+
             vmultc = NaN(numel(b) + 1, 1);
             z = NaN(numel(d));
 
@@ -170,17 +170,11 @@ classdef trustregion_cobyla_mod
 
             % Local variables
             srname = "TRSTLP_SUB";
-            icon = NaN;
-            iter = NaN;
-            k = NaN;
-            m = NaN;
-            maxiter = NaN;
-            mcon = NaN;
-            n = NaN;
-            nactold = NaN;
+
+
             nactsav = NaN;
-            nfail = NaN;
-            cviol = NaN;
+
+
             %real(RP) :: cvold
             cvsabs = NaN(numel(b), 1);
             cvshift = NaN(numel(b), 1);
@@ -189,8 +183,8 @@ classdef trustregion_cobyla_mod
             dold = NaN(numel(d), 1);
             frac = NaN;
             fracmult = NaN(numel(vmultc), 1);
-            optnew = NaN;
-            optold = NaN;
+
+
             sd = NaN;
             sdirn = NaN(numel(d), 1);
             sqrtd = NaN;

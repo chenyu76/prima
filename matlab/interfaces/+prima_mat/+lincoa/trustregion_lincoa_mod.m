@@ -71,23 +71,19 @@ classdef trustregion_lincoa_mod
 
             % Local variables
             srname = "TRSTEP";
-            iter = NaN;
-            itercg = NaN;
+
+
             jsav = NaN;
-            m = NaN;
-            maxiter = NaN;
-            n = NaN;
-            ngetact_loc = NaN;
-            npt = NaN;
-            newact = false;
+
+
             ad = NaN(size(amat, 2), 1);
             alpha = NaN;
             alphm = NaN;
             alpht = NaN;
             beta = NaN;
             d = NaN(numel(gopt_in), 1);
-            dd = NaN;
-            delsq = NaN;
+
+
             dg = NaN;
             dhd = NaN;
             dproj = NaN(numel(gopt_in), 1);
@@ -98,19 +94,19 @@ classdef trustregion_lincoa_mod
             gopt = NaN(numel(gopt_in), 1);
             hd = NaN(numel(gopt_in), 1);
             hq = NaN(size(hq_in, 1), size(hq_in, 2));
-            modscal = NaN;
+
             orthtol = NaN;
             pg = NaN(numel(gopt_in), 1);
             pq = NaN(numel(pq_in), 1);
             psd = NaN(numel(gopt_in), 1);
-            reduct = NaN;
+
             resact = NaN(size(amat, 2), 1);
             resid = NaN;
             resnew = NaN(size(amat, 2), 1);
             restmp = NaN(size(amat, 2), 1);
             sold = NaN(numel(s), 1);
             sqrtd = NaN;
-            ss = NaN;
+
 
             % Sizes.
             m = size(amat, 2);

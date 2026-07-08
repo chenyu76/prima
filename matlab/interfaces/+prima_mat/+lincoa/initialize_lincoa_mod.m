@@ -43,7 +43,7 @@ classdef initialize_lincoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
 
@@ -83,22 +83,15 @@ classdef initialize_lincoa_mod
             % Local variables
             solver = "LINCOA";
             srname = "INITXF";
-            k = NaN;
-            m = NaN;
-            maxchist = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            npt = NaN;
-            subinfo = NaN;
-            ixl = NaN(1);
-            ixu = NaN(1);
+
+
+            ixl = NaN;
+            ixu = NaN;
             feasible = false(size(xpt, 2), 1);
             constr = NaN(nnz(xl > -consts_obj.BOUNDMAX) + nnz(xu < consts_obj.BOUNDMAX) + 2 * numel(beq) + numel(bineq), 1);
             constr_leq = NaN(numel(beq), 1);
-            cstrv = NaN;
-            f = NaN;
+
+
             x = NaN(numel(x0), 1);
 
             % Sizes.
@@ -204,8 +197,8 @@ classdef initialize_lincoa_mod
 
             % Set FVAL by evaluating F. Totally parallelizable except for FMSG.
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
-            ixl = memory_obj.alloc_ivector(ixl, fix(nnz(xl > -consts_obj.BOUNDMAX))); % Removable in F2003.
-            ixu = memory_obj.alloc_ivector(ixu, fix(nnz(xu < consts_obj.BOUNDMAX))); % Removable in F2003.
+            memory_obj.alloc_ivector(ixl, fix(nnz(xl > -consts_obj.BOUNDMAX))); % Removable in F2003.
+            memory_obj.alloc_ivector(ixu, fix(nnz(xu < consts_obj.BOUNDMAX))); % Removable in F2003.
             ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
             ixu = linalg_obj.trueloc(xu < consts_obj.BOUNDMAX);
             for k = 1:npt
@@ -234,7 +227,7 @@ classdef initialize_lincoa_mod
             end
 
             % Deallocate IXL and IXU as they have finished their job.
-            ixl = []; ixu = [];
+
 
             nf = fix(nnz(evaluated));
             % Since the starting point is supposed to be feasible, there should be at least one feasible point.
@@ -301,13 +294,7 @@ classdef initialize_lincoa_mod
 
             % Local variables
             srname = "INITH";
-            k = NaN;
-            n = NaN;
-            npt = NaN;
-            recip = NaN;
-            reciq = NaN;
-            rhobeg = NaN;
-            rhosq = NaN;
+
 
             % Sizes
             n = size(xpt, 1);

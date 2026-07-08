@@ -65,42 +65,39 @@ classdef trustregion_newuoa_mod
             srname = "TRSAPP";
             info_loc = NaN;
             iter = NaN;
-            maxiter = NaN;
-            n = NaN;
-            npt = NaN;
-            scaled = false;
-            twod_search = false;
+
+
             alpha = NaN;
             angle = NaN;
             args = NaN(4, 1);
             bstep = NaN;
             cth = NaN;
             d = NaN(numel(gopt_in), 1);
-            dd = NaN;
-            delsq = NaN;
+
+
             dg = NaN;
             dhd = NaN;
             dhs = NaN;
-            ds = NaN;
+
             g = NaN(numel(gopt_in), 1);
-            gg = NaN;
-            gg0 = NaN;
+
+
             ggsav = NaN;
             gopt = NaN(numel(gopt_in), 1);
             hd = NaN(numel(gopt_in), 1);
             hq = NaN(size(hq_in, 1), size(hq_in, 2));
             hs = NaN(numel(gopt_in), 1);
-            modscal = NaN;
+
             pq = NaN(numel(pq_in), 1);
             qadd = NaN;
-            qred = NaN;
+
             reduc = NaN;
             resid = NaN;
             sg = NaN;
             shs = NaN;
             sold = NaN(numel(gopt_in), 1);
             sqrtd = NaN;
-            ss = NaN;
+
             sth = NaN;
 
             % Sizes
@@ -414,7 +411,6 @@ classdef trustregion_newuoa_mod
             ipObj = inputParser();
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
 
 
             %====================%
@@ -445,8 +441,7 @@ classdef trustregion_newuoa_mod
 
             % Local variables
             srname = "CIRCLE_FUN_TRSAPP";
-            cth = NaN;
-            sth = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING

@@ -40,8 +40,8 @@ classdef update_uobyqa_mod
 
             % Local variables
             srname = "UPDATE";
-            n = NaN;
-            npt = NaN;
+
+
             plnew = NaN(size(pl, 1), 1);
             vlag = NaN(size(xpt, 2), 1);
 

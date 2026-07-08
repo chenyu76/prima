@@ -48,28 +48,16 @@ classdef preproc_mod
 
             % Local variables
             srname = "PREPROC";
-            min_maxfun_str = "";
-            min_maxfun = NaN; % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
-            unit_memo = NaN; % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
-            iprint_in = NaN;
-            m_loc = NaN;
-            maxfilt_in = NaN;
-            maxfun_in = NaN;
-            maxhist_in = NaN;
-            npt_in = NaN;
-            is_constrained_loc = false;
+
+            % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
+            % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
+
+
+
             lbx = false(n, 1);
             ubx = false(n, 1);
-            ctol_in = NaN;
-            cweight_in = NaN;
-            eta1_in = NaN;
-            eta2_in = NaN;
-            gamma1_in = NaN;
-            gamma2_in = NaN;
-            rhobeg_default = NaN;
-            rhobeg_in = NaN;
-            rhoend_default = NaN;
-            rhoend_in = NaN;
+
+
             x0_in = NaN(n, 1);
 
             % Preconditions

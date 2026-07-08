@@ -28,14 +28,8 @@ classdef fprint_mod
             % Local variables
             newline_custom = newline;
             srname = "FPRINT";
-            fname_loc = "";
-            fstat = "";
-            position = "";
-            funit_loc = NaN;
-            i = NaN;
-            iostat = NaN;
-            j = NaN;
-            slen = NaN;
+
+
             fexist = false;
 
             % Preconditions
@@ -92,13 +86,13 @@ classdef fprint_mod
             iostat = 0;
             if strlength(fname_loc) > 0
                 % Decide the position for OPEN. This is the only place where FACTION is used.
-                position = "append";
+
                 if ~ismember('faction', ipObj.UsingDefaults)
                     switch faction
                     case {"write", "w"}
-                        position = "rewind";
+
                     case {"append", "a"}
-                        position = "append";
+
                     otherwise
                         debug_obj.warning(srname, "Unknown file action """ + faction + """");
                     end
@@ -106,7 +100,7 @@ classdef fprint_mod
                 % Check whether the file is already existing.
                 %Unsupported Statement: StmtExpr (CallFunction "inquire" [KeywordArg "file" (Variable "fname_loc"),KeywordArg "exist" (Variable "fexist")])
 
-                fstat = fortran.merge('tsource', "old", 'fsource', "new", 'mask', fexist);
+                fortran.merge('tsource', "old", 'fsource', "new", 'mask', fexist);
                 % Open the file.
 
                 funit_loc = fopen(fname_loc, 'w');

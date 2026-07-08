@@ -45,15 +45,13 @@ classdef univar_mod
 
             % Local variables
             srname = "CIRCLE_MIN";
-            k = NaN;
-            kopt = NaN;
+
+
             agrid = NaN(grid_size + 1, 1);
-            fprev = NaN;
-            fnext = NaN;
-            fopt = NaN;
+
+
             fgrid = NaN(grid_size, 1);
-            step = NaN;
-            unit_angle = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -129,15 +127,13 @@ classdef univar_mod
 
             % Local variables
             srname = "CIRCLE_MAXABS";
-            k = NaN;
-            kopt = NaN;
+
+
             agrid = NaN(grid_size + 1, 1);
-            fprev = NaN;
-            fnext = NaN;
-            fopt = NaN;
+
+
             fgrid = NaN(grid_size, 1);
-            step = NaN;
-            unit_angle = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -207,13 +203,11 @@ classdef univar_mod
 
             % Local variables
             srname = "INTERVAL_MAX";
-            k = NaN;
-            kopt = NaN;
+
+
             fgrid = NaN(grid_size, 1);
-            fopt = NaN;
-            fnext = NaN;
-            fprev = NaN;
-            step = NaN;
+
+
             xgrid = NaN(grid_size, 1);
 
             % Preconditions

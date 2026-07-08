@@ -45,10 +45,8 @@ classdef update_cobyla_mod
 
             % Local variables
             srname = "UPDATEXFC";
-            m = NaN;
-            n = NaN;
-            erri = NaN;
-            erri_test = NaN;
+
+
             sim_old = NaN(size(sim, 1), size(sim, 2));
             simi_jdrop = NaN(size(simi, 2), 1);
             simi_old = NaN(size(simi, 1), size(simi, 2));
@@ -203,11 +201,8 @@ classdef update_cobyla_mod
 
             % Local variables
             srname = "UPDATEPOLE";
-            jopt = NaN;
-            m = NaN;
-            n = NaN;
-            erri = NaN;
-            erri_test = NaN;
+
+
             sim_jopt = NaN(size(sim, 1), 1);
             sim_old = NaN(size(sim, 1), size(sim, 2));
             simi_old = NaN(size(simi, 1), size(simi, 2));
@@ -337,9 +332,9 @@ classdef update_cobyla_mod
 
             % Local variables
             srname = "FINDPOLE";
-            n = NaN;
+
             phi = NaN(numel(cval), 1);
-            phimin = NaN;
+
 
             % Size
             n = fix(numel(fval) - 1);

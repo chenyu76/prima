@@ -218,7 +218,7 @@ classdef lincoa_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             preproc_obj = prima_mat.common.preproc_mod();
             selectx_obj = prima_mat.common.selectx_mod();
             string_obj = prima_mat.common.string_mod();
@@ -257,38 +257,30 @@ classdef lincoa_mod
             solver = "LINCOA";
             srname = "LINCOA";
             info_loc = NaN;
-            iprint_loc = NaN;
-            maxfilt_loc = NaN;
-            maxfun_loc = NaN;
-            maxhist_loc = NaN;
-            meq = NaN;
-            mineq = NaN;
-            n = NaN;
+
+
             nf_loc = NaN;
-            nhist = NaN;
-            npt_loc = NaN;
+
+
             cstrv_loc = NaN;
-            ctol_loc = NaN;
-            cweight_loc = NaN;
+
+
             eta1_loc = NaN;
-            eta2_loc = NaN;
+
             f_loc = NaN;
-            ftarget_loc = NaN;
-            gamma1_loc = NaN;
-            gamma2_loc = NaN;
-            rhobeg_loc = NaN;
-            rhoend_loc = NaN;
+
+
             xl_loc = NaN(numel(x), 1);
             xu_loc = NaN(numel(x), 1);
-            Aeq_loc = NaN(1); % Aeq_LOC(Meq, N)
-            Aineq_loc = NaN(1); % Aineq_LOC(Mineq, N)
-            amat = NaN(1); % AMAT(N, M); each column corresponds to a constraint
-            beq_loc = NaN(1); % Beq_LOC(Meq)
-            bineq_loc = NaN(1); % Bineq_LOC(Mineq)
-            bvec = NaN(1); % BVEC(M)
-            chist_loc = NaN(1); % CHIST_LOC(MAXCHIST)
-            fhist_loc = NaN(1); % FHIST_LOC(MAXFHIST)
-            xhist_loc = NaN(1); % XHIST_LOC(N, MAXXHIST)
+            Aeq_loc = NaN; % Aeq_LOC(Meq, N)
+            Aineq_loc = NaN; % Aineq_LOC(Mineq, N)
+            amat = NaN; % AMAT(N, M); each column corresponds to a constraint
+            beq_loc = NaN; % Beq_LOC(Meq)
+            bineq_loc = NaN; % Bineq_LOC(Mineq)
+            bvec = NaN; % BVEC(M)
+            % CHIST_LOC(MAXCHIST)
+            fhist_loc = NaN; % FHIST_LOC(MAXFHIST)
+            xhist_loc = NaN; % XHIST_LOC(N, MAXXHIST)
 
             % Sizes
             ipObj = inputParser();
@@ -321,15 +313,15 @@ classdef lincoa_mod
             addParameter(ipObj, 'callback_fcn', struct());
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-            f = ipObj.Results.f;
-            cstrv = ipObj.Results.cstrv;
+
+
             Aineq = ipObj.Results.Aineq;
             bineq = ipObj.Results.bineq;
             Aeq = ipObj.Results.Aeq;
             beq = ipObj.Results.beq;
             xl = ipObj.Results.xl;
             xu = ipObj.Results.xu;
-            nf = ipObj.Results.nf;
+
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
             ftarget = ipObj.Results.ftarget;
@@ -348,7 +340,7 @@ classdef lincoa_mod
             maxhist = ipObj.Results.maxhist;
             maxfilt = ipObj.Results.maxfilt;
             callback_fcn = ipObj.Results.callback_fcn;
-            info = ipObj.Results.info;
+
             if ismember('bineq', ipObj.UsingDefaults)
                 mineq = 0;
             else
@@ -556,7 +548,7 @@ classdef lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Deallocate variables not needed any more. We prefer explicit deallocation to the automatic one.
-            Aineq_loc = []; Aeq_loc = []; amat = []; bineq_loc = []; beq_loc = []; bvec = [];
+
 
 
             % Write the outputs.
@@ -585,7 +577,7 @@ classdef lincoa_mod
             end
             % F2003 automatically deallocate local ALLOCATABLE variables at exit, yet we prefer to deallocate
             % them immediately when they finish their jobs.
-            xhist_loc = [];
+
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 6
@@ -596,7 +588,7 @@ classdef lincoa_mod
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
-            fhist_loc = [];
+
 
             % Copy CHIST_LOC to CHIST if needed.
             if nargout >= 7
@@ -607,7 +599,7 @@ classdef lincoa_mod
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
             end
-            chist_loc = [];
+
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if (nargout >= 5 || nargout >= 6 || nargout >= 7) && maxhist_loc < nf_loc
@@ -672,24 +664,20 @@ classdef lincoa_mod
             % Local variables
             solver = "LINCOA";
             srname = "GET_LINCON";
-            m = NaN;
-            meq = NaN;
-            mineq = NaN;
-            mxl = NaN;
-            mxu = NaN;
-            n = NaN;
-            ieq = NaN(1);
-            iineq = NaN(1);
-            ixl = NaN(1);
-            ixu = NaN(1);
-            constr_modified = false;
+
+
+            ieq = NaN;
+            iineq = NaN;
+            ixl = NaN;
+            ixu = NaN;
+
             Aeq_norm = NaN(size(Aeq, 1), 1);
             Aeqx0 = NaN(size(Aeq, 1), 1);
             Aineq_norm = NaN(size(Aineq, 1), 1);
             Aineqx0 = NaN(size(Aineq, 1), 1);
             idmat = NaN(numel(x0));
-            smallx = NaN;
-            Anorm = NaN(1);
+
+            Anorm = NaN;
 
             % Sizes
             n = fix(numel(x0));
@@ -720,13 +708,13 @@ classdef lincoa_mod
             end
 
             % Allocate memory. Removable in F2003.
-            ixl = memory_obj.alloc_ivector(ixl, mxl);
-            ixu = memory_obj.alloc_ivector(ixu, mxu);
-            ieq = memory_obj.alloc_ivector(ieq, meq);
-            iineq = memory_obj.alloc_ivector(iineq, mineq);
+            memory_obj.alloc_ivector(ixl, mxl);
+            memory_obj.alloc_ivector(ixu, mxu);
+            memory_obj.alloc_ivector(ieq, meq);
+            memory_obj.alloc_ivector(iineq, mineq);
             amat = memory_obj.alloc_rmatrix_sp(amat, n, m);
             bvec = memory_obj.alloc_rvector_sp(bvec, m);
-            Anorm = memory_obj.alloc_rvector_sp(Anorm, 2 * meq + mineq);
+            memory_obj.alloc_rvector_sp(Anorm, 2 * meq + mineq);
 
             % Define the indices of the valid and nontrivial constraints.
             ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
@@ -758,7 +746,7 @@ classdef lincoa_mod
             bvec(mxl + mxu + 1:m) = bvec(mxl + mxu + 1:m) ./ Anorm;
 
             % Deallocate memory.
-            ixl = []; ixu = []; ieq = []; iineq = []; Anorm = [];
+
 
             % Print a warning if the starting point is sufficiently infeasible and the constraints are modified.
             smallx = fortran.power(consts_obj.TEN, max(-6, -consts_obj.MAXPOW10)) * rhoend;

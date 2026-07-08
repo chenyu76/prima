@@ -27,7 +27,7 @@ classdef redrho_mod
             % Outputs
             rho = NaN;
 
-            rho_ratio = NaN;
+
             srname = "REDRHO";
 
             % Preconditions

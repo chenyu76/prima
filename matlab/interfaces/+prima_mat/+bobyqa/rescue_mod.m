@@ -92,7 +92,7 @@ classdef rescue_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             string_obj = prima_mat.common.string_mod();
             xinbd_obj = prima_mat.common.xinbd_mod();
@@ -129,27 +129,21 @@ classdef rescue_mod
             ij = NaN(2, max(0, size(xpt, 2) - 2 * size(xpt, 1) - 1));
             ip = NaN;
             iq = NaN;
-            iter = NaN;
-            j = NaN;
+
+
             k = NaN;
-            kbase = NaN;
+
             korig = NaN;
             kprov = NaN;
-            kpt = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxiter = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            nprov = NaN;
-            npt = NaN;
+
+
             subinfo = NaN;
             mask = false(size(xpt, 1), 1);
             beta = NaN;
             bsum = NaN;
             den = NaN(size(xpt, 2), 1);
             f = NaN;
-            fbase = NaN;
+
             hcol = NaN(size(bmat, 2), 1);
             hdiag = NaN(size(xpt, 2), 1);
             moderr = NaN;
@@ -157,9 +151,8 @@ classdef rescue_mod
             ptsaux = NaN(2, size(xpt, 1));
             ptsid = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
-            scoreinc = NaN;
-            sfrac = NaN;
-            temp = NaN;
+
+
             v = NaN(size(xpt, 1), 1);
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
             vquad = NaN;
@@ -658,19 +651,16 @@ classdef rescue_mod
 
             % Local variables
             srname = "UPDATEH_RSC";
-            j = NaN;
-            n = NaN;
-            npt = NaN;
-            alpha = NaN;
-            denom = NaN;
+
+
             grot = NaN(2);
             hcol = NaN(size(bmat, 2), 1);
-            sqrtdn = NaN;
-            tau = NaN;
+
+
             v1 = NaN(size(bmat, 1), 1);
             v2 = NaN(size(bmat, 1), 1);
             vlag = NaN(numel(vlag_in), 1);
-            zknew1 = NaN;
+
 
             % Sizes.
             n = size(bmat, 1);

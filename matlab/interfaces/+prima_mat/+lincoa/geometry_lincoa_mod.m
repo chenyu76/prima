@@ -51,8 +51,8 @@ classdef geometry_lincoa_mod
 
             % Local variables
             srname = "SETDROP_TR";
-            n = NaN;
-            npt = NaN;
+
+
             den = NaN(size(xpt, 2), 1);
             distsq = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
@@ -277,27 +277,24 @@ classdef geometry_lincoa_mod
 
             % Local variables
             srname = "GEOSTEP";
-            k = NaN;
-            m = NaN;
-            n = NaN;
-            npt = NaN;
+
+
             rstat = NaN(size(amat, 2), 1);
-            take_pgstp = false;
-            cstrv = NaN;
-            cvtol = NaN;
+
+
             dderiv = NaN(size(xpt, 2), 1);
             den = NaN(size(xpt, 2), 1);
-            denabs = NaN;
+
             distsq = NaN(size(xpt, 2), 1);
             glag = NaN(size(xpt, 1), 1);
             gstp = NaN(size(xpt, 1), 1);
-            gnorm = NaN;
+
             pglag = NaN(size(xpt, 1), 1);
             pgstp = NaN(size(xpt, 1), 1);
             pqlag = NaN(size(xpt, 2), 1);
-            scaling = NaN;
+
             stplen = NaN(size(xpt, 2), 1);
-            tol = NaN;
+
             vlagabs = NaN(size(xpt, 2), 1);
             xopt = NaN(size(xpt, 1), 1);
 

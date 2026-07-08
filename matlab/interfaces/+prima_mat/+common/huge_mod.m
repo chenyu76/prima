@@ -20,19 +20,19 @@ classdef huge_mod
             end
         end
         function y = huge_value_sp(~, x)
-            consts_obj = prima_mat.common.consts_mod();
+            prima_mat.common.consts_mod();
 
 
             y = realmax;
         end
         function y = huge_value_dp(~, x)
-            consts_obj = prima_mat.common.consts_mod();
+            prima_mat.common.consts_mod();
 
 
             y = realmax;
         end
         function y = huge_value_qp(~, x)
-            consts_obj = prima_mat.common.consts_mod();
+            prima_mat.common.consts_mod();
 
 
             y = realmax;

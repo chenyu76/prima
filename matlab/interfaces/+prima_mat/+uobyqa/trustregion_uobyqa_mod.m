@@ -69,37 +69,33 @@ classdef trustregion_uobyqa_mod
             % Local variables
             srname = "TRSTEP";
             i = NaN;
-            iter = NaN;
+
             k = NaN;
-            maxiter = NaN;
-            n = NaN;
+
+
             negcrv = false;
-            posdef = false;
-            scaled = false;
-            delsq = NaN;
+
+
             dhd = NaN;
             dnewton = NaN(numel(g), 1); % Newton-Raphson step; only calculated when N = 1.
             dnorm = NaN;
             dold = NaN(numel(g), 1);
-            dsq = NaN;
+
             dtg = NaN;
             dtz = NaN;
             gam = NaN;
             gg = NaN(numel(g), 1);
-            gnorm = NaN;
-            gsq = NaN;
+
+
             hh = NaN(numel(g));
-            hnorm = NaN;
-            modscal = NaN;
-            par = NaN;
-            parl = NaN;
-            parlest = NaN;
+
+
             partmp = NaN;
-            paru = NaN;
-            paruest = NaN;
+
+
             phi = NaN;
-            phil = NaN;
-            phiu = NaN;
+
+
             piv = NaN(numel(g), 1);
             slope = NaN;
             td = NaN(numel(g), 1);
@@ -225,7 +221,7 @@ classdef trustregion_uobyqa_mod
             paruest = consts_obj.ZERO; % Estimation for PARU
             posdef = false;
             dold(:) = consts_obj.ZERO;
-            iter = 0;
+
             maxiter = min(1000, 100 * n); % Unlikely to be reached.
             % Zaikun 26-06-2019: Powell's original code can encounter infinite cycling, which did happen when
             % testing the CUTEst problems GAUSS1LS, GAUSS2LS, and GAUSS3LS. Indeed, in all these cases, Inf

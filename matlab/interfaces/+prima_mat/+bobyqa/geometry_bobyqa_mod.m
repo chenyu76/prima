@@ -53,8 +53,8 @@ classdef geometry_bobyqa_mod
 
             % Local variables
             srname = "SETDROP_TR";
-            n = NaN;
-            npt = NaN;
+
+
             den = NaN(size(xpt, 2), 1);
             distsq = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
@@ -211,29 +211,28 @@ classdef geometry_bobyqa_mod
 
             % Local variables
             srname = "GEOSTEP";
-            ibd = NaN;
+
             ilbd = NaN;
             isbd = NaN(3, size(xpt, 2));
-            isq = NaN;
+
             iubd = NaN;
             k = NaN;
-            ksq = NaN;
+
             ksqs = NaN(3, 1);
-            n = NaN;
-            npt = NaN;
-            uphill = NaN;
+
+
             mask_fixl = false(size(xpt, 1), 1);
             mask_fixu = false(size(xpt, 1), 1);
             mask_free = false(size(xpt, 1), 1);
-            alpha = NaN; stpsiz = NaN;
+
             betabd = NaN(3, size(xpt, 2));
-            bigstp = NaN;
+
             curv = NaN;
             dderiv = NaN(size(xpt, 2), 1);
             den_cauchy = NaN(size(xpt, 2), 1);
             den_line = NaN(size(xpt, 2), 1);
             distsq = NaN(size(xpt, 2), 1);
-            ggfree = NaN;
+
             glag = NaN(size(xpt, 1), 1);
             grdstp = NaN;
             gs = NaN;
@@ -256,7 +255,7 @@ classdef geometry_bobyqa_mod
             ufrac = NaN(size(xpt, 1), 1);
             vlag = NaN(3, size(xpt, 2));
             vlagsq = NaN;
-            vlagsq_cauchy = NaN;
+
             x = NaN(size(xpt, 1), 1);
             xcauchy = NaN(size(xpt, 1), 1);
             xdiff = NaN(size(xpt, 1), 1);

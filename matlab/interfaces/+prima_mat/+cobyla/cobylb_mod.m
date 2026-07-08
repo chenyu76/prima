@@ -40,7 +40,7 @@ classdef cobylb_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();
             selectx_obj = prima_mat.common.selectx_mod();
@@ -81,52 +81,40 @@ classdef cobylb_mod
             solver = "COBYLA";
             srname = "COBYLB";
             j = NaN;
-            jdrop_geo = NaN;
-            jdrop_tr = NaN;
-            kopt = NaN;
-            m = NaN;
-            m_lcon = NaN;
-            maxchist = NaN;
-            maxconhist = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxtr = NaN;
-            maxxhist = NaN;
-            n = NaN;
+
+
             nfilt = NaN;
-            nhist = NaN;
-            subinfo = NaN;
-            tr = NaN;
+
+
             bad_trstep = false;
             adequate_geo = false;
             evaluated = false(numel(x) + 1, 1);
             improve_geo = false;
             reduce_rho = false;
-            shortd = false;
-            terminate = false;
-            trfail = false;
+
+
             ximproved = false;
             A = NaN(numel(x), numel(constr)); % A contains the approximate gradient for the constraints
-            actrem = NaN;
+
             cfilt = NaN(min(max(maxfilt, 1), maxfun), 1);
             confilt = NaN(numel(constr), numel(cfilt));
             conmat = NaN(numel(constr), numel(x) + 1);
-            cpen = NaN; % Penalty parameter for constraint in merit function (PARMU in Powell's code)
+            % Penalty parameter for constraint in merit function (PARMU in Powell's code)
             cval = NaN(numel(x) + 1, 1);
             d = NaN(numel(x), 1);
             delbar = NaN;
-            delta = NaN;
+
             distsq = NaN(numel(x) + 1, 1);
             dnorm = NaN;
             ffilt = NaN(numel(cfilt), 1);
             fval = NaN(numel(x) + 1, 1);
             g = NaN(numel(x), 1);
-            gamma3 = NaN;
-            prerec = NaN; % Predicted reduction in constraint violation
-            preref = NaN; % Predicted reduction in objective Function
-            prerem = NaN; % Predicted reduction in merit function
-            ratio = NaN; % Reduction ratio: ACTREM/PREREM
-            rho = NaN;
+
+            % Predicted reduction in constraint violation
+            % Predicted reduction in objective Function
+            % Predicted reduction in merit function
+            % Reduction ratio: ACTREM/PREREM
+
             sim = NaN(numel(x), numel(x) + 1);
             simi = NaN(numel(x));
             xfilt = NaN(numel(x), numel(cfilt));
@@ -718,19 +706,16 @@ classdef cobylb_mod
 
             % Local variables
             srname = "getcpen";
-            info = NaN;
-            iter = NaN;
-            m = NaN;
-            m_lcon = NaN;
-            n = NaN;
+
+
             A = NaN(size(sim_in, 1), size(conmat_in, 1));
             conmat = NaN(size(conmat_in, 1), size(conmat_in, 2));
             cval = NaN(numel(cval_in), 1);
             d = NaN(size(sim_in, 1), 1);
             fval = NaN(numel(fval_in), 1);
             g = NaN(size(sim_in, 1), 1);
-            prerec = NaN;
-            preref = NaN;
+
+
             sim = NaN(size(sim_in, 1), size(sim_in, 2));
             simi = NaN(size(simi_in, 1), size(simi_in, 2));
             itol = consts_obj.ONE;
@@ -854,9 +839,8 @@ classdef cobylb_mod
             % Local variables
             cmax = NaN(size(conmat, 1), 1);
             cmin = NaN(size(conmat, 1), 1);
-            denom = NaN;
-            fmax = NaN;
-            fmin = NaN;
+
+
             srname = "FCRATIO";
 
             % Preconditions

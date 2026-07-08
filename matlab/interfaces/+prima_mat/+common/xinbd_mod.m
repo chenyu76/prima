@@ -26,7 +26,7 @@ classdef xinbd_mod
 
             % Local variables
             srname = "XINBD";
-            n = NaN;
+
             s = NaN(numel(xbase), 1);
 
             % Sizes

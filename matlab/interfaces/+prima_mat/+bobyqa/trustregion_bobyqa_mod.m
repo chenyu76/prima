@@ -71,37 +71,30 @@ classdef trustregion_bobyqa_mod
 
             % Local variables
             srname = "TRSBOX";
-            iact = NaN;
-            n = NaN;
-            npt = NaN;
+
+
             xbdi = NaN(numel(gopt_in), 1);
             grid_size = NaN;
-            iter = NaN;
-            itercg = NaN;
-            maxiter = NaN;
-            nact = NaN;
-            nactsav = NaN;
-            scaled = false;
-            twod_search = false;
-            beta = NaN;
+
+
             bstep = NaN;
             cth = NaN;
-            delsq = NaN;
+
             dhd = NaN;
             dhs = NaN;
             dold = NaN(numel(d), 1);
             dredg = NaN;
-            dredsq = NaN;
+
             ds = NaN;
-            ggsav = NaN;
-            gredsq = NaN;
+
+
             hangt = NaN;
             hangt_bd = NaN;
             hq = NaN(size(hq_in, 1), size(hq_in, 2));
             pq = NaN(numel(pq_in), 1);
-            qred = NaN;
+
             rayleighq = NaN;
-            resid = NaN;
+
             sbound = NaN(numel(gopt_in), 1);
             sdec = NaN;
             shs = NaN;
@@ -118,7 +111,7 @@ classdef trustregion_bobyqa_mod
             gopt = NaN(numel(gopt_in), 1);
             hdred = NaN(numel(gopt_in), 1);
             hs = NaN(numel(gopt_in), 1);
-            modscal = NaN;
+
             s = NaN(numel(gopt_in), 1);
             sqdscr = NaN(numel(gopt_in), 1);
             ssq = NaN(numel(gopt_in), 1);
@@ -604,7 +597,7 @@ classdef trustregion_bobyqa_mod
 
             % Local variables
             srname = "INTERVAL_FUN_TRSBOX";
-            sth = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING

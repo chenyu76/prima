@@ -44,17 +44,11 @@ classdef message_mod
             % Local variables
             newline_custom = newline;
             srname = "RETMSG";
-            constr_message = "";
-            fname = "";
-            message = "";
-            nf_message = "";
-            reason = "";
-            ret_message = "";
-            x_message = "";
+
+
             funit = NaN; % File storage unit for the writing. Should be an integer of default kind.
             valid_exit_flags = [infos_obj.FTARGET_ACHIEVED, infos_obj.MAXFUN_REACHED, infos_obj.MAXTR_REACHED, infos_obj.SMALL_TR_RADIUS, infos_obj.TRSUBP_FAILED, infos_obj.NAN_INF_F, infos_obj.NAN_INF_X, infos_obj.NAN_INF_MODEL, infos_obj.DAMAGING_ROUNDING, infos_obj.NO_SPACE_BETWEEN_BOUNDS, infos_obj.ZERO_LINEAR_CONSTRAINT];
-            is_constrained = false;
-            cstrv_loc = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -189,15 +183,11 @@ classdef message_mod
 
             % Local variables
             newline_custom = newline;
-            constr_message = "";
-            fname = "";
-            message = "";
-            nf_message = "";
-            rho_message = "";
-            x_message = "";
+
+
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
-            is_constrained = false;
-            cstrv_loc = NaN;
+
+
 
             %====================%
             % Calculation starts %
@@ -302,8 +292,8 @@ classdef message_mod
 
             % Local variables
             newline_custom = newline;
-            fname = "";
-            message = "";
+
+
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
 
             %====================%
@@ -363,15 +353,11 @@ classdef message_mod
 
             % Local variables
             newline_custom = newline;
-            constr_message = "";
-            delta_message = "";
-            fname = "";
-            message = "";
-            nf_message = "";
-            x_message = "";
+
+
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
-            is_constrained = false;
-            cstrv_loc = NaN;
+
+
 
             %====================%
             % Calculation starts %

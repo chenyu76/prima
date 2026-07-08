@@ -40,7 +40,7 @@ classdef initialize_bobyqa_mod
             infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             xinbd_obj = prima_mat.common.xinbd_mod();
 
@@ -71,15 +71,10 @@ classdef initialize_bobyqa_mod
             % Local variables
             solver = "BOBYQA";
             srname = "INITIALIZE";
-            k = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            npt = NaN;
-            subinfo = NaN;
+
+
             evaluated = false(size(xpt, 2), 1);
-            f = NaN;
+
             x = NaN(size(xpt, 1), 1);
 
             % Sizes.
@@ -320,18 +315,11 @@ classdef initialize_bobyqa_mod
 
             % Local variables
             srname = "INITQ";
-            i = NaN;
-            j = NaN;
-            k = NaN;
-            kopt = NaN;
-            n = NaN;
-            ndiag = NaN;
-            npt = NaN;
-            fbase = NaN;
+
+
             xa = NaN(min(size(xpt, 1), size(xpt, 2) - size(xpt, 1) - 1), 1);
             xb = NaN(numel(xa), 1);
-            xi = NaN;
-            xj = NaN;
+
 
             % Sizes
             n = size(xpt, 1);
@@ -447,12 +435,8 @@ classdef initialize_bobyqa_mod
 
             % Local variables
             srname = "INITH";
-            k = NaN;
-            n = NaN;
-            ndiag = NaN;
-            npt = NaN;
-            rhobeg = NaN;
-            rhosq = NaN;
+
+
             xa = NaN(min(size(xpt, 1), size(xpt, 2) - size(xpt, 1) - 1), 1);
             xb = NaN(numel(xa), 1);
 

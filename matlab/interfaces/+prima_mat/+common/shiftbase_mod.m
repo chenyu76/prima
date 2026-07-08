@@ -59,18 +59,16 @@ classdef shiftbase_mod
 
             % Local variables
             srname = "SHIFTBASE_LFQINT";
-            idz_loc = NaN;
-            k = NaN;
-            n = NaN;
-            npt = NaN;
+
+
             bymat = NaN(numel(xbase));
             %real(RP) :: htol
-            qxoptq = NaN;
+
             sxpt = NaN(size(xpt, 2), 1);
             v = NaN(numel(xbase), 1);
             vxopt = NaN(numel(xbase));
             xopt = NaN(numel(xbase), 1);
-            xoptsq = NaN;
+
             xptxav = NaN(size(xpt, 1), size(xpt, 2));
             ymat = NaN(size(xpt, 1), size(xpt, 2));
             yzmat = NaN(numel(xbase), size(zmat, 2));
@@ -196,9 +194,8 @@ classdef shiftbase_mod
 
             % Local variables
             srname = "SHIFTBASE_QINT";
-            k = NaN;
-            n = NaN;
-            npt = NaN;
+
+
             xopt = NaN(numel(xbase), 1);
 
             % Sizes

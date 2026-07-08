@@ -53,8 +53,8 @@ classdef geometry_newuoa_mod
 
             % Local variables
             srname = "SETDROP_TR";
-            n = NaN;
-            npt = NaN;
+
+
             den = NaN(size(xpt, 2), 1);
             distsq = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
@@ -192,15 +192,13 @@ classdef geometry_newuoa_mod
 
             % Local variables
             srname = "GEOSTEP";
-            n = NaN;
-            npt = NaN;
-            alpha = NaN;
-            beta = NaN;
+
+
             dden = NaN(size(xpt, 1), 1);
-            denom = NaN;
-            denrat = NaN;
+
+
             pqlag = NaN(size(xpt, 2), 1);
-            scaling = NaN;
+
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
 
             % Sizes
@@ -312,28 +310,25 @@ classdef geometry_newuoa_mod
 
             % Local variables
             srname = "BIGLAG";
-            iter = NaN;
-            maxiter = NaN;
-            n = NaN;
-            npt = NaN;
+
+
             angle = NaN;
             cf = NaN(5, 1);
             cth = NaN;
-            dd = NaN;
-            dhd = NaN;
+
+
             dold = NaN(numel(x), 1);
             gc = NaN(numel(x), 1);
             gd = NaN(numel(x), 1);
-            gg = NaN;
+
             pqlag = NaN(size(xpt, 2), 1);
             s = NaN(numel(x), 1);
-            scaling = NaN;
-            sp = NaN;
-            ss = NaN;
+
+
             sth = NaN;
-            t = NaN;
-            tau = NaN; % LFUNC(X)
-            tol = NaN;
+
+            % LFUNC(X)
+
             w = NaN(numel(x), 1);
 
             % Sizes
@@ -516,35 +511,35 @@ classdef geometry_newuoa_mod
 
             % Local variable
             srname = "BIGDEN";
-            iter = NaN;
+
             j = NaN;
             k = NaN;
-            n = NaN;
-            npt = NaN;
+
+
             nw = NaN;
-            alpha = NaN;
+
             angle = NaN;
-            dd = NaN;
-            delbar = NaN;
+
+
             den = NaN(9, 1);
             denex = NaN(9, 1);
             denmax = NaN;
-            densav = NaN;
+
             dold = NaN(size(xpt, 1), 1);
-            ds = NaN;
+
             dstemp = NaN(size(xpt, 2), 1);
-            dtest = NaN;
+
             par = NaN(5, 1);
             pqlag = NaN(size(xpt, 2), 1);
             prod_custom = NaN(size(xpt, 1) + size(xpt, 2), 5);
             s = NaN(size(xpt, 1), 1);
-            ss = NaN;
+
             sstemp = NaN(size(xpt, 2), 1);
             tau = NaN;
             tempa = NaN;
             tempb = NaN;
             tempc = NaN;
-            tol = NaN;
+
             v = NaN(size(xpt, 2), 1);
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
             w = NaN(size(xpt, 1) + size(xpt, 2), 5);
@@ -552,7 +547,7 @@ classdef geometry_newuoa_mod
             xd = NaN;
             xptemp = NaN(size(xpt, 1), size(xpt, 2));
             xs = NaN;
-            xsq = NaN;
+
             y = NaN(size(xpt, 1), 1);
             yd = NaN;
             ysq = NaN;
@@ -804,8 +799,7 @@ classdef geometry_newuoa_mod
 
             % Local variables
             srname = "CIRCLE_FUN_BIGLAG";
-            cth = NaN;
-            sth = NaN;
+
 
             % Preconditions
             if consts_obj.DEBUGGING

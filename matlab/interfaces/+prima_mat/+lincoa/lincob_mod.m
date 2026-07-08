@@ -73,7 +73,7 @@ classdef lincob_mod
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();
@@ -119,25 +119,10 @@ classdef lincob_mod
             iact = NaN(numel(bvec), 1);
             idz = NaN;
             ij = NaN(2, max(0, fix(npt - 2 * numel(x) - 1)));
-            k = NaN;
-            knew_geo = NaN;
-            knew_tr = NaN;
-            kopt = NaN;
-            m = NaN;
-            maxchist = NaN;
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxtr = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            nact = NaN;
-            nfilt = NaN;
-            ngetact = NaN;
-            nhist = NaN;
-            subinfo = NaN;
-            tr = NaN;
-            ixl = NaN(1);
-            ixu = NaN(1);
+
+
+            ixl = NaN;
+            ixu = NaN;
             accurate_mod = false;
             adequate_geo = false;
             bad_trstep = false;
@@ -147,10 +132,10 @@ classdef lincob_mod
             improve_geo = false;
             qalt_better = false(3, 1);
             reduce_rho = false;
-            shortd = false;
+
             small_trrad = false;
-            terminate = false;
-            trfail = false;
+
+
             ximproved = false;
             b = NaN(numel(bvec), 1);
             bmat = NaN(numel(x), npt + numel(x));
@@ -160,14 +145,14 @@ classdef lincob_mod
             cval = NaN(npt, 1);
             d = NaN(numel(x), 1);
             delbar = NaN;
-            delta = NaN;
+
             distsq = NaN(npt, 1);
             dnorm = NaN;
             dnorm_rec = NaN(3, 1); % Powell's implementation: DNORM_REC(5)
             ffilt = NaN(maxfilt, 1);
             fval = NaN(npt, 1);
             galt = NaN(numel(x), 1);
-            gamma3 = NaN;
+
             gopt = NaN(numel(x), 1);
             hq = NaN(numel(x));
             moderr = NaN;
@@ -175,11 +160,11 @@ classdef lincob_mod
             pq = NaN(npt, 1);
             pqalt = NaN(npt, 1);
             qfac = NaN(numel(x));
-            qred = NaN;
-            ratio = NaN;
+
+
             rescon = NaN(numel(bvec), 1);
             rfac = NaN(numel(x));
-            rho = NaN;
+
             xbase = NaN(numel(x), 1);
             xdrop = NaN(numel(x), 1);
             xfilt = NaN(numel(x), maxfilt);
@@ -223,8 +208,8 @@ classdef lincob_mod
             %====================%
 
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
-            ixl = memory_obj.alloc_ivector(ixl, fix(nnz(xl > -consts_obj.BOUNDMAX))); % Removable in F2003.
-            ixu = memory_obj.alloc_ivector(ixu, fix(nnz(xu < consts_obj.BOUNDMAX))); % Removable in F2003.
+            memory_obj.alloc_ivector(ixl, fix(nnz(xl > -consts_obj.BOUNDMAX))); % Removable in F2003.
+            memory_obj.alloc_ivector(ixu, fix(nnz(xu < consts_obj.BOUNDMAX))); % Removable in F2003.
             ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
             ixu = linalg_obj.trueloc(xu < consts_obj.BOUNDMAX);
 
@@ -333,7 +318,7 @@ classdef lincob_mod
             ratio = -consts_obj.ONE;
             dnorm_rec(:) = consts_obj.REALMAX;
             shortd = false;
-            trfail = false;
+
             qalt_better(:) = false;
             knew_tr = 0;
             knew_geo = 0;
@@ -706,7 +691,7 @@ classdef lincob_mod
             cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr, [], 1)]);
 
             % Deallocate IXL and IXU as they have finished their job.
-            ixl = []; ixu = [];
+
 
             % Arrange CHIST, FHIST, and XHIST so that they are in the chronological order.
             [xhist, fhist, chist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist);

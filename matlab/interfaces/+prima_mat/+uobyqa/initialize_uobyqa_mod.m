@@ -28,7 +28,7 @@ classdef initialize_uobyqa_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
 
 
             % Inputs
@@ -51,18 +51,13 @@ classdef initialize_uobyqa_mod
             % Local variables
             solver = "UOBYQA";
             srname = "INITXF";
-            ip = NaN;
-            iq = NaN;
-            k = NaN;
+
+
             kk = NaN(numel(x0), 1);
-            maxfhist = NaN;
-            maxhist = NaN;
-            maxxhist = NaN;
-            n = NaN;
-            npt = NaN;
-            subinfo = NaN;
+
+
             evaluated = false(size(xpt, 2), 1);
-            f = NaN;
+
             x = NaN(numel(x0), 1);
             xw = NaN(numel(x0), 1);
 
@@ -234,18 +229,10 @@ classdef initialize_uobyqa_mod
 
             % Local variables
             srname = "INITQ";
-            k1 = NaN;
-            ih = NaN;
-            ip = NaN;
-            iq = NaN;
-            k = NaN;
-            k0 = NaN;
-            n = NaN;
-            npt = NaN;
+
+
             deriv = NaN(size(xpt, 1), 1);
-            fbase = NaN;
-            rhobeg = NaN;
-            rhosq = NaN;
+
 
             % Sizes
             n = size(xpt, 1);
@@ -343,17 +330,7 @@ classdef initialize_uobyqa_mod
 
             % Local variables
             srname = "INITL";
-            ih = NaN;
-            ip = NaN;
-            iq = NaN;
-            k = NaN;
-            k0 = NaN;
-            k1 = NaN;
-            n = NaN;
-            npt = NaN;
-            rhobeg = NaN;
-            rhosq = NaN;
-            temp = NaN;
+
 
             % Sizes
             n = size(xpt, 1);

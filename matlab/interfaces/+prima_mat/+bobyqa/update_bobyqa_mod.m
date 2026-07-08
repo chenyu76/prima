@@ -48,16 +48,12 @@ classdef update_bobyqa_mod
 
             % Local variables
             srname = "UPDATEH";
-            j = NaN;
-            n = NaN;
-            npt = NaN;
-            alpha = NaN;
-            beta = NaN;
-            denom = NaN;
+
+
             grot = NaN(2);
             hcol = NaN(size(bmat, 2), 1);
-            sqrtdn = NaN;
-            tau = NaN;
+
+
             v1 = NaN(size(bmat, 1), 1);
             v2 = NaN(size(bmat, 1), 1);
             vlag = NaN(size(bmat, 2), 1);
@@ -216,8 +212,7 @@ classdef update_bobyqa_mod
 
             % Local variables
             srname = "UPDATEXF";
-            n = NaN;
-            npt = NaN;
+
 
             % Sizes
             n = size(xpt, 1);
@@ -304,8 +299,8 @@ classdef update_bobyqa_mod
 
             % Local variables
             srname = "UPDATEQ";
-            n = NaN;
-            npt = NaN;
+
+
             pqinc = NaN(numel(pq), 1);
 
             % Sizes
@@ -408,8 +403,8 @@ classdef update_bobyqa_mod
 
             % Local variables
             srname = "TRYQALT";
-            n = NaN;
-            npt = NaN;
+
+
             galt = NaN(numel(gopt), 1);
             pgalt = NaN(numel(gopt), 1);
             pgopt = NaN(numel(gopt), 1);

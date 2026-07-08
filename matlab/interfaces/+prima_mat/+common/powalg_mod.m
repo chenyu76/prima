@@ -102,9 +102,8 @@ classdef powalg_mod
 
             % Local variables
             srname = "QRADD_RDIAG";
-            k = NaN;
-            m = NaN;
-            nsave = NaN;
+
+
             cq = NaN(size(Q, 2), 1);
             cqa = NaN(size(Q, 2), 1);
             G = NaN(2);
@@ -220,8 +219,8 @@ classdef powalg_mod
 
             % Local variables
             srname = "QRADD_RFULL";
-            k = NaN;
-            m = NaN;
+
+
             cq = NaN(size(Q, 2), 1);
             G = NaN(2);
             %------------------------------------------------------------%
@@ -319,9 +318,8 @@ classdef powalg_mod
 
             % Local variables
             srname = "QREXC_RDIAG";
-            k = NaN;
-            m = NaN;
-            n = NaN;
+
+
             G = NaN(2);
             %------------------------------------------------------------%
             Anew = NaN(size(A, 1), size(A, 2)); % Debugging only
@@ -434,11 +432,10 @@ classdef powalg_mod
 
             % Local variables
             srname = "QREXC_RFULL";
-            k = NaN;
-            m = NaN;
-            n = NaN;
+
+
             G = NaN(2);
-            hypt = NaN;
+
             %------------------------------------------------------------%
             Anew = NaN(size(Q, 1), size(R, 2)); % Debugging only
             Qsave = NaN(size(Q, 1), size(Q, 2)); % Debugging only
@@ -571,8 +568,8 @@ classdef powalg_mod
 
             % Local variable
             srname = "QUADINC_D0";
-            n = NaN;
-            npt = NaN;
+
+
             dxpt = NaN(numel(pq), 1);
 
             % Sizes
@@ -664,9 +661,8 @@ classdef powalg_mod
             qinc = NaN;
             % Local variables
             srname = "QUADINC_GHV";
-            ih = NaN;
-            n = NaN;
-            j = NaN;
+
+
             s = NaN(numel(x), 1);
             w = NaN(numel(ghv), 1);
 
@@ -727,9 +723,8 @@ classdef powalg_mod
 
             % Local variables
             srname = "ERRQUAD";
-            k = NaN;
-            n = NaN;
-            npt = NaN;
+
+
             fmq = NaN(size(xpt, 2), 1);
             qval = NaN(size(xpt, 2), 1);
 
@@ -804,9 +799,7 @@ classdef powalg_mod
 
             % Local variables
             srname = "HESS_MUL";
-            j = NaN;
-            n = NaN;
-            npt = NaN;
+
 
             % Sizes
             n = size(xpt, 1);
@@ -991,11 +984,11 @@ classdef powalg_mod
 
             % Local variables
             srname = "ERRH";
-            n = NaN;
-            npt = NaN;
+
+
             A = NaN(size(xpt, 2));
             e = NaN(3);
-            maxabs = NaN;
+
             Omega = NaN(size(xpt, 2));
             U = NaN(size(xpt, 2));
             V = NaN(size(xpt, 1), size(xpt, 2));
@@ -1105,24 +1098,12 @@ classdef powalg_mod
 
             % Local variables
             srname = "UPDATEH";
-            j = NaN;
-            ja = NaN;
-            jb = NaN;
-            jl = NaN;
-            n = NaN;
-            npt = NaN;
-            alpha = NaN;
-            beta = NaN;
-            denom = NaN;
+
+
             grot = NaN(2);
             hcol = NaN(size(bmat, 2), 1);
-            scala = NaN;
-            scalb = NaN;
-            sqrtdn = NaN;
-            tau = NaN;
-            temp = NaN;
-            tempa = NaN;
-            tempb = NaN;
+
+
             v1 = NaN(size(bmat, 1), 1);
             v2 = NaN(size(bmat, 1), 1);
             vlag = NaN(size(bmat, 2), 1);
@@ -1333,7 +1314,7 @@ classdef powalg_mod
                     jb = jl;
                 end
                 % Now update ZMAT(:, [ja, jb]) according to (4.19)--(4.20) of the NEWUOA paper.
-                temp = zmat(knew, jb) / denom;
+
                 %tempa = temp * beta
                 %tempb = temp * tau
                 tempa = (beta / denom) * zmat(knew, jb);
@@ -1515,10 +1496,9 @@ classdef powalg_mod
 
             % Local variables
             srname = "CALVLAG";
-            idz_loc = NaN;
-            n = NaN;
-            npt = NaN;
-            tol = NaN; % For debugging only
+
+
+            % For debugging only
             wcheck = NaN(size(zmat, 1), 1);
             xref = NaN(size(xpt, 1), 1);
 
@@ -1606,18 +1586,14 @@ classdef powalg_mod
 
             % Local variables
             srname = "CALBETA";
-            idz_loc = NaN;
-            n = NaN;
-            npt = NaN;
-            dsq = NaN;
-            dvlag = NaN;
-            dxref = NaN;
+
+
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
             wcheck = NaN(size(zmat, 1), 1);
             wmv = NaN(size(xpt, 1) + size(xpt, 2), 1);
-            wvlag = NaN;
+
             xref = NaN(size(xpt, 1), 1);
-            xrefsq = NaN;
+
 
             % Sizes
             n = size(xpt, 1);
@@ -1731,10 +1707,8 @@ classdef powalg_mod
 
             % Local variables
             srname = "CALDEN";
-            idz_loc = NaN;
-            n = NaN;
-            npt = NaN;
-            beta = NaN;
+
+
             hdiag = NaN(size(xpt, 2), 1);
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
 
@@ -1803,9 +1777,8 @@ classdef powalg_mod
             vlag = NaN(size(pl, 2), 1);
             % Local variables
             srname = "CALVLAG_QINT";
-            ih = NaN;
-            n = NaN;
-            j = NaN;
+
+
             s = NaN(numel(xref), 1);
             w = NaN(size(pl, 1), 1);
 
@@ -1866,7 +1839,7 @@ classdef powalg_mod
             ij = NaN(2, max(0, npt - 2 * n - 1));
             % Local variables
             srname = "SETIJ";
-            k = NaN;
+
             ell = NaN(max(0, npt - 2 * n - 1), 1);
 
             % Preconditions

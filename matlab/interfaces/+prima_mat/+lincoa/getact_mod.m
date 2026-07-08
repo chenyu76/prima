@@ -97,18 +97,17 @@ classdef getact_mod
             icon = NaN;
             iter = NaN;
             l = NaN;
-            m = NaN;
-            maxiter = NaN;
-            n = NaN;
+
+
             mask = false(size(amat, 2), 1);
             apsd = NaN(size(amat, 2), 1);
             dd = NaN;
-            ddsav = NaN;
+
             dnorm = NaN;
-            gg = NaN;
+
             frac = NaN(numel(g), 1);
             psdsav = NaN(numel(psd), 1);
-            tdel = NaN;
+
             tol = NaN;
             v = NaN(numel(g), 1);
             violmx = NaN;
@@ -417,8 +416,8 @@ classdef getact_mod
 
             % Local variables (debugging only)
             srname = "ADD_ACT";
-            m = NaN;
-            n = NaN;
+
+
             nsave = NaN;
             tol = NaN;
 
@@ -508,8 +507,8 @@ classdef getact_mod
             % Local variables (debugging only)
             srname = "DELACT";
             l = NaN;
-            m = NaN;
-            n = NaN;
+
+
             nsave = NaN;
             tol = NaN;
 

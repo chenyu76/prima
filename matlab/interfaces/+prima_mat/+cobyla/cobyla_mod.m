@@ -256,7 +256,7 @@ classdef cobyla_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
-            pintrf_obj = prima_mat.common.pintrf_mod();
+            prima_mat.common.pintrf_mod();
             selectx_obj = prima_mat.common.selectx_mod();
             preproc_obj = prima_mat.common.preproc_mod();
             string_obj = prima_mat.common.string_mod();
@@ -299,44 +299,33 @@ classdef cobyla_mod
             solver = "COBYLA";
             srname = "COBYLA";
             info_loc = NaN;
-            iprint_loc = NaN;
-            m = NaN;
-            maxfilt_loc = NaN;
-            maxfun_loc = NaN;
-            maxhist_loc = NaN;
-            meq = NaN;
-            mineq = NaN;
-            mxl = NaN;
-            mxu = NaN;
-            n = NaN;
+
+
             nf_loc = NaN;
-            nhist = NaN;
-            ixl = NaN(1);
-            ixu = NaN(1);
+
+            ixl = NaN;
+            ixu = NaN;
             cstrv_loc = NaN;
-            ctol_loc = NaN;
-            cweight_loc = NaN;
+
+
             eta1_loc = NaN;
-            eta2_loc = NaN;
+
             f_loc = NaN;
-            ftarget_loc = NaN;
-            gamma1_loc = NaN;
-            gamma2_loc = NaN;
-            rhobeg_loc = NaN;
-            rhoend_loc = NaN;
+
+
             xl_loc = NaN(numel(x), 1);
             xu_loc = NaN(numel(x), 1);
-            Aeq_loc = NaN(1); % Aeq_LOC(Meq, N)
-            Aineq_loc = NaN(1); % Aineq_LOC(Mineq, N)
-            amat = NaN(1); % AMAT(N, M_LCON); each column corresponds to a linear constraint
-            beq_loc = NaN(1); % Beq_LOC(Meq)
-            bineq_loc = NaN(1); % Bineq_LOC(Mineq)
-            bvec = NaN(1); % BVEC(M_LCON)
-            chist_loc = NaN(1); % CHIST_LOC(MAXCHIST)
-            conhist_loc = NaN(1); % CONHIST_LOC(M, MAXCONHIST)
-            constr_loc = NaN(1); % CONSTR_LOC(M)
-            fhist_loc = NaN(1); % FHIST_LOC(MAXFHIST)
-            xhist_loc = NaN(1); % XHIST_LOC(N, MAXXHIST)
+            Aeq_loc = NaN; % Aeq_LOC(Meq, N)
+            Aineq_loc = NaN; % Aineq_LOC(Mineq, N)
+            amat = NaN; % AMAT(N, M_LCON); each column corresponds to a linear constraint
+            beq_loc = NaN; % Beq_LOC(Meq)
+            bineq_loc = NaN; % Bineq_LOC(Mineq)
+            bvec = NaN; % BVEC(M_LCON)
+            % CHIST_LOC(MAXCHIST)
+            % CONHIST_LOC(M, MAXCONHIST)
+            constr_loc = NaN; % CONSTR_LOC(M)
+            fhist_loc = NaN; % FHIST_LOC(MAXFHIST)
+            xhist_loc = NaN; % XHIST_LOC(N, MAXXHIST)
 
             % Sizes
             ipObj = inputParser();
@@ -372,8 +361,8 @@ classdef cobyla_mod
             addParameter(ipObj, 'callback_fcn', struct());
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-            f = ipObj.Results.f;
-            cstrv = ipObj.Results.cstrv;
+
+
             nlconstr = ipObj.Results.nlconstr;
             Aineq = ipObj.Results.Aineq;
             bineq = ipObj.Results.bineq;
@@ -383,7 +372,7 @@ classdef cobyla_mod
             xu = ipObj.Results.xu;
             f0 = ipObj.Results.f0;
             nlconstr0 = ipObj.Results.nlconstr0;
-            nf = ipObj.Results.nf;
+
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
             ftarget = ipObj.Results.ftarget;
@@ -402,7 +391,7 @@ classdef cobyla_mod
             maxhist = ipObj.Results.maxhist;
             maxfilt = ipObj.Results.maxfilt;
             callback_fcn = ipObj.Results.callback_fcn;
-            info = ipObj.Results.info;
+
             if ismember('bineq', ipObj.UsingDefaults)
                 mineq = 0;
             else
@@ -508,8 +497,8 @@ classdef cobyla_mod
                 end
             end
             xl_loc(linalg_obj.trueloc(infnan_obj.is_nan(xl_loc) | xl_loc < -consts_obj.BOUNDMAX)) = -consts_obj.BOUNDMAX;
-            ixl = memory_obj.alloc_ivector(ixl, mxl);
-            ixl = linalg_obj.trueloc(xl_loc > -consts_obj.BOUNDMAX);
+            memory_obj.alloc_ivector(ixl, mxl);
+            linalg_obj.trueloc(xl_loc > -consts_obj.BOUNDMAX);
 
             xu_loc(:) = consts_obj.BOUNDMAX;
             if ~ismember('xu', ipObj.UsingDefaults)
@@ -518,8 +507,8 @@ classdef cobyla_mod
                 end
             end
             xu_loc(linalg_obj.trueloc(infnan_obj.is_nan(xu_loc) | xu_loc > consts_obj.BOUNDMAX)) = consts_obj.BOUNDMAX;
-            ixu = memory_obj.alloc_ivector(ixu, mxu);
-            ixu = linalg_obj.trueloc(xu_loc < consts_obj.BOUNDMAX);
+            memory_obj.alloc_ivector(ixu, mxu);
+            linalg_obj.trueloc(xu_loc < consts_obj.BOUNDMAX);
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
             [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, xl_loc, xu_loc, amat, bvec);
@@ -665,7 +654,7 @@ classdef cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Deallocate variables not needed any more. We prefer explicit deallocation to the automatic one.
-            Aineq_loc = []; Aeq_loc = []; amat = []; bineq_loc = []; beq_loc = []; bvec = [];
+
 
 
             % Write the outputs.
@@ -675,7 +664,6 @@ classdef cobyla_mod
             if nargout >= 4
                 nlconstr = constr_loc(m - m_nlcon + 1:m);
             end
-            constr_loc = [];
 
 
             % Copy XHIST_LOC to XHIST if needed.
@@ -700,7 +688,7 @@ classdef cobyla_mod
             end
             % F2003 automatically deallocate local ALLOCATABLE variables at exit, yet we prefer to deallocate
             % them immediately when they finish their jobs.
-            xhist_loc = [];
+
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 7
@@ -711,7 +699,7 @@ classdef cobyla_mod
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
-            fhist_loc = [];
+
 
             % Copy CHIST_LOC to CHIST if needed.
             if nargout >= 8
@@ -722,7 +710,7 @@ classdef cobyla_mod
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
             end
-            chist_loc = [];
+
 
             % Copy CONHIST_LOC to NLCHIST if needed.
             % N.B.: We need only the nonlinear part of the history. Therefore, one may modify COBYLB so that it
@@ -739,7 +727,7 @@ classdef cobyla_mod
                 nlchist = conhist_loc(m - m_nlcon + 1:m, 1:nhist); % The same as XHIST, we must cap NLCHIST at NF_LOC.
 
             end
-            conhist_loc = [];
+
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if (nargout >= 6 || nargout >= 7 || nargout >= 8 || nargout >= 9) && maxhist_loc < nf_loc
@@ -803,14 +791,10 @@ classdef cobyla_mod
 
             % Local variables
             srname = "GET_LINCON";
-            m_lcon = NaN;
-            meq = NaN;
-            mineq = NaN;
-            mxl = NaN;
-            mxu = NaN;
-            n = NaN;
-            ixl = NaN(1);
-            ixu = NaN(1);
+
+
+            ixl = NaN;
+            ixu = NaN;
             idmat = NaN(numel(xl));
 
             % Sizes
@@ -835,8 +819,8 @@ classdef cobyla_mod
             m_lcon = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
 
             % Allocate memory. Removable in F2003.
-            ixl = memory_obj.alloc_ivector(ixl, mxl);
-            ixu = memory_obj.alloc_ivector(ixu, mxu);
+            memory_obj.alloc_ivector(ixl, mxl);
+            memory_obj.alloc_ivector(ixu, mxu);
             amat = memory_obj.alloc_rmatrix_sp(amat, n, m_lcon);
             bvec = memory_obj.alloc_rvector_sp(bvec, m_lcon);
 
@@ -858,7 +842,7 @@ classdef cobyla_mod
             %%bvec = [-xl(ixl); xu(ixu); -beq; beq; bineq];
 
             % Deallocate memory.
-            ixl = []; ixu = [];
+
 
             %====================%
             %  Calculation ends  %
