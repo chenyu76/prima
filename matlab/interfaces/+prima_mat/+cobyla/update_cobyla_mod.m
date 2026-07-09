@@ -74,7 +74,7 @@ classdef update_cobyla_mod
                 debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
-                debug_obj.assert(all(sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, "SIZE(SIMI) == [N, N]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
                 debug_obj.assert(linalg_obj.isinv(sim(:, 1:n), simi, 'tol', itol), "SIMI = SIM(:, 1:N)^{-1}", srname);
@@ -103,8 +103,8 @@ classdef update_cobyla_mod
                 sim(:, n + 1) = sim(:, n + 1) + d;
                 sim(:, 1:n) = sim(:, 1:n) - fortran.spread(d, 'dim', 2, 'ncopies', n);
                 simid(:) = linalg_obj.matprod21(simi, d);
-                sum_simi(:) = sum(simi, 1);
-                simi(:, :) = simi + linalg_obj.outprod(simid, sum_simi ./ (consts_obj.ONE - sum(simid, 'all')));
+                sum_simi(:) = fortran.sum(simi, 1);
+                simi(:, :) = simi + linalg_obj.outprod(simid, sum_simi ./ (consts_obj.ONE - fortran.sum(simid, 'all')));
             end
 
             % Check whether SIMI is a poor approximation to the inverse of SIM(:, 1:N).
@@ -145,7 +145,7 @@ classdef update_cobyla_mod
                 debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
-                debug_obj.assert(all(sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, "SIZE(SIMI) == [N, N]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
                 debug_obj.assert(linalg_obj.isinv(sim(:, 1:n), simi, 'tol', itol) || info == infos_obj.DAMAGING_ROUNDING, "SIMI = SIM(:, 1:N)^{-1} unless the rounding is damaging", srname);
@@ -224,7 +224,7 @@ classdef update_cobyla_mod
                 debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
-                debug_obj.assert(all(sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, "SIZE(SIMI) == [N, N]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
                 debug_obj.assert(linalg_obj.isinv(sim(:, 1:n), simi, 'tol', itol), "SIMI = SIM(:, 1:N)^{-1}", srname);
@@ -259,7 +259,7 @@ classdef update_cobyla_mod
                 % SIMI should be updated by a multiplication with this matrix (i.e., its inverse) from the left
                 % side, as is done in the following line. The JOPT-th row of the updated SIMI is minus the sum
                 % of all rows of the original SIMI, whereas all the other rows remain unchanged.
-                simi(jopt, :) = -sum(simi, 1); % Must ensure that 1 <= JOPT <= N!
+                simi(jopt, :) = -fortran.sum(simi, 1); % Must ensure that 1 <= JOPT <= N!
 
             end
 
@@ -302,7 +302,7 @@ classdef update_cobyla_mod
                 debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
-                debug_obj.assert(all(sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, "SIZE(SIMI) == [N, N]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
                 % Do not check SIMI = SIM(:, 1:N)^{-1}, as it may not be true due to damaging rounding.

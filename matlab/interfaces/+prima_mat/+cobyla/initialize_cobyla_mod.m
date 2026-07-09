@@ -209,7 +209,7 @@ classdef initialize_cobyla_mod
                 debug_obj.assert(~any(infnan_obj.is_nan(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
-                debug_obj.assert(all(sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, "SIZE(SIMI) == [N, N]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
                 debug_obj.assert(linalg_obj.isinv(sim(:, 1:n), simi, 'tol', itol) || any(~evaluated, 'all'), "SIMI = SIM(:, 1:N)^{-1}", srname);
@@ -266,7 +266,7 @@ classdef initialize_cobyla_mod
                 debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
-                debug_obj.assert(all(sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(numel(evaluated) == n + 1, "SIZE(EVALUATED) == N + 1", srname);
             end
 

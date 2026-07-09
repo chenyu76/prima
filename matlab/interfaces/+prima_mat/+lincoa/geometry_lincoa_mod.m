@@ -94,11 +94,11 @@ classdef geometry_lincoa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column!! Implicit expansion
 
             else
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
             %distsq = sum((xpt - spread(xpt(:, kopt), dim=2, ncopies=npt))**2, dim=1)  ! Powell's code
@@ -343,7 +343,7 @@ classdef geometry_lincoa_mod
             % without considering the linear constraints. In the following, VLAGABS(K) is set to the maximum of
             % |PHI_K(t)| subject to the trust-region constraint with PHI_K(t) = LFUNC((1-t)*XOPT + t*XPT(:, K)).
             dderiv(:) = linalg_obj.matprod12(glag, xpt) - linalg_obj.inprod(glag, xopt); % The derivatives PHI_K'(0).
-            distsq(:) = sum(fortran.power((xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt)), 2), 1);
+            distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt)), 2), 1);
             % Set DISTSQ(KOPT) to a positive artificial value. Otherwise, the calculation of STPLEN will raise a
             % floating point exception. This artificial value will NOT be used.
             distsq(kopt) = consts_obj.ONE;
@@ -441,7 +441,7 @@ classdef geometry_lincoa_mod
 
             % In case S is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to
             % XOPT. Powell's code does not have this.
-            if sum(abs(s), 'all') <= 0 || ~infnan_obj.is_finite(sum(abs(s), 'all'))
+            if fortran.sum(abs(s), 'all') <= 0 || ~infnan_obj.is_finite(fortran.sum(abs(s), 'all'))
                 s(:) = xpt(:, knew) - xopt;
                 scaling = delbar / linalg_obj.p_norm(s);
                 s(:) = max(0.6 * scaling, min(consts_obj.HALF, scaling)) * s; % 0.6: ensure |D| > DELBAR/2

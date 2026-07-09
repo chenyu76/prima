@@ -657,7 +657,7 @@ classdef linalg_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(numel(x) == size(A, 2), "SIZE(X) == SIZE(A, 2)", srname);
-                if infnan_obj.is_finite(sum(abs(A), 'all') + sum(abs(b), 'all'))
+                if infnan_obj.is_finite(fortran.sum(abs(A), 'all') + fortran.sum(abs(b), 'all'))
                     tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n + 1)));
                     debug_obj.assert(obj.p_norm(obj.matprod21(A, x) - b) <= tol * max([consts_obj.ONE, obj.p_norm(b), obj.p_norm(x)], [], 'all'), "A*X == B", srname);
                 end
@@ -864,7 +864,7 @@ classdef linalg_mod
 
             for j = 1:n
                 if pivot
-                    k = fix(fortran.maxloc(sum(fortran.power(T(j:n, j:m), 2), 2), 'dim', 1));
+                    k = fix(fortran.maxloc(fortran.sum(fortran.power(T(j:n, j:m), 2), 2), 'dim', 1));
                     if k > 1 && k <= n - j + 1
                         k = k + j - 1;
                         P([j, k]) = P([k, j]);
@@ -901,7 +901,7 @@ classdef linalg_mod
                         % The following test cannot be passed on ill-conditioned problems.
                         %call assert(abs(T(j, j)) + max(tol, tol * abs(T(j, j))) >= &
                         % & abs(T(j + 1, j + 1)), '|R(J, J)| >= |R(J + 1, J + 1)|', srname)
-                        debug_obj.assert(all(fortran.power(T(j, j), 2) + max(tol, tol * fortran.power(T(j, j), 2)) >= sum(fortran.power(T(j + 1:n, j:min(m, n)), 2), 2), 'all'), "R(J, J)^2 >= SUM(R(J : MIN(M, N), J + 1 : N).^2", srname);
+                        debug_obj.assert(all(fortran.power(T(j, j), 2) + max(tol, tol * fortran.power(T(j, j), 2)) >= fortran.sum(fortran.power(T(j + 1:n, j:min(m, n)), 2), 2), 'all'), "R(J, J)^2 >= SUM(R(J : MIN(M, N), J + 1 : N).^2", srname);
                     end
                 else
                     debug_obj.assert(all(abs(obj.matprod22(Q_loc, T') - A) <= max(tol, tol * max(abs(A), [], 'all')), 'all'), "A == Q*R", srname);
@@ -1361,7 +1361,7 @@ classdef linalg_mod
             if all(abs(x) <= 0, 'all') || all(abs(v) <= 0, 'all')
                 y(:) = consts_obj.ZERO;
             elseif any(infnan_obj.is_nan(x), 'all') || any(infnan_obj.is_nan(v), 'all')
-                y(:) = sum(x, 'all') + sum(v, 'all'); % Set Y to NaN
+                y(:) = fortran.sum(x, 'all') + fortran.sum(v, 'all'); % Set Y to NaN
 
             elseif any(infnan_obj.is_inf(v), 'all')
                 u(:) = consts_obj.ZERO;
@@ -1422,7 +1422,7 @@ classdef linalg_mod
             elseif all(abs(x) <= 0, 'all') || all(abs(V) <= 0, 'all')
                 y(:) = consts_obj.ZERO;
             elseif any(infnan_obj.is_nan(x), 'all') || any(infnan_obj.is_nan(V), 'all')
-                y(:) = sum(x, 'all') + sum(V, 'all'); % Set Y to NaN
+                y(:) = fortran.sum(x, 'all') + fortran.sum(V, 'all'); % Set Y to NaN
 
             elseif any(infnan_obj.is_inf(V), 'all')
                 mask00 = infnan_obj.is_inf(V); %Unsupported statement inside WHERE block: StmtLineBreak 1
@@ -1444,7 +1444,7 @@ classdef linalg_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                if infnan_obj.is_finite(obj.p_norm(x)) && infnan_obj.is_finite(sum(fortran.power(V, 2), 'all'))
+                if infnan_obj.is_finite(obj.p_norm(x)) && infnan_obj.is_finite(fortran.sum(fortran.power(V, 2), 'all'))
                     tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(6, consts_obj.MAXPOW10)) * consts_obj.EPS));
                     debug_obj.assert(obj.p_norm(y) <= (consts_obj.ONE + tol) * obj.p_norm(x), "NORM(Y) <= NORM(X)", srname);
                     debug_obj.assert(obj.p_norm(x - y) <= (consts_obj.ONE + tol) * obj.p_norm(x), "NORM(X - Y) <= NORM(X)", srname);
@@ -1482,14 +1482,14 @@ classdef linalg_mod
                 y(:) = abs([x1, x2]);
                 y(:) = [min(y, [], 'all'), max(y, [], 'all')];
                 if y(1) > fortran.sqrt(consts_obj.REALMIN) && y(2) < fortran.sqrt(consts_obj.REALMAX / 2.1)
-                    r = fortran.sqrt(sum(fortran.power(y, 2), 'all'));
+                    r = fortran.sqrt(fortran.sum(fortran.power(y, 2), 'all'));
                 elseif y(2) > 0
                     r = y(2) * fortran.sqrt(fortran.power((y(1) / y(2)), 2) + consts_obj.ONE);
                 else
                     r = consts_obj.ZERO;
                 end
                 % Without the following line, R > Y(1) + Y(2) or R < Y(2) may happen due to rounding errors.
-                r = min(sum(y, 'all'), max(y(2), r));
+                r = min(fortran.sum(y, 'all'), max(y(2), r));
             end
 
             %====================%
@@ -1828,7 +1828,7 @@ classdef linalg_mod
                 y = double(nnz(abs(x) > 0));
             elseif ~all(infnan_obj.is_finite(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf unless P = 0.
-                y = sum(abs(x), 'all');
+                y = fortran.sum(abs(x), 'all');
             elseif maxabs <= 0
                 % If MAXABS is zero, then Y is zero. Note that we do this only when X does not contain NaN.
                 % Otherwise, MAXABS = 0 does not necessarily guarantee that X is all zero.
@@ -1837,7 +1837,7 @@ classdef linalg_mod
                 if infnan_obj.is_posinf(p_loc)
                     y = maxabs;
                 elseif abs(p_loc - consts_obj.ONE) <= 0
-                    y = sum(abs(x), 'all');
+                    y = fortran.sum(abs(x), 'all');
                 elseif abs(p_loc - consts_obj.TWO) <= 0
                     % N.B.: We may use the intrinsic NORM2. Here, we use the following naive implementation
                     % to get full control on the computation in a way similar to MATPROD and INPROD.
@@ -1860,22 +1860,22 @@ classdef linalg_mod
                     % IEEE 754 has d = 113, emin = -16382, and emax = 16383 for binary128. See
                     % http://fortran-lang.discourse.group/t/ieee-754-binary-interchange-floating-point-formats-versus-iso-fortran-env-real-kinds
 
-                    y = fortran.sqrt(sum(fortran.power(x, 2), 'all'));
+                    y = fortran.sqrt(fortran.sum(fortran.power(x, 2), 'all'));
                     % The following code handles over/underflow naively.
                     if infnan_obj.is_posinf(y) || y <= 0
                         scalmin = fortran.power(double(radix(consts_obj.ZERO)), max(minexponent(consts_obj.ZERO) - 1, 1 - maxexponent(consts_obj.ZERO)));
                         scalmax = fortran.power(double(radix(consts_obj.ZERO)), min(maxexponent(consts_obj.ZERO) - 1, 1 - minexponent(consts_obj.ZERO)));
                         scaling = min(max(maxabs, scalmin), scalmax);
-                        y = scaling * fortran.sqrt(sum(fortran.power((x ./ scaling), 2), 'all'));
+                        y = scaling * fortran.sqrt(fortran.sum(fortran.power((x ./ scaling), 2), 'all'));
                     end
                 else
-                    y = fortran.power(sum(fortran.power(abs(x), p_loc), 'all'), (consts_obj.ONE / p_loc));
+                    y = fortran.power(fortran.sum(fortran.power(abs(x), p_loc), 'all'), (consts_obj.ONE / p_loc));
                     % The following code handles over/underflow naively.
                     if infnan_obj.is_posinf(y) || y <= 0
                         scalmin = fortran.power(double(radix(consts_obj.ZERO)), max(minexponent(consts_obj.ZERO) - 1, 1 - maxexponent(consts_obj.ZERO)));
                         scalmax = fortran.power(double(radix(consts_obj.ZERO)), min(maxexponent(consts_obj.ZERO) - 1, 1 - minexponent(consts_obj.ZERO)));
                         scaling = min(max(maxabs, scalmin), scalmax);
-                        y = scaling * fortran.power(sum(fortran.power(abs(x ./ scaling), p_loc), 'all'), (consts_obj.ONE / p_loc));
+                        y = scaling * fortran.power(fortran.sum(fortran.power(abs(x ./ scaling), p_loc), 'all'), (consts_obj.ONE / p_loc));
                     end
                 end
             end
@@ -1917,7 +1917,7 @@ classdef linalg_mod
                 y = consts_obj.ZERO;
             elseif ~all(infnan_obj.is_finite(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf.
-                y = sum(abs(x), 'all');
+                y = fortran.sum(abs(x), 'all');
             elseif ~any(abs(x) > 0, 'all')
                 % The following is incorrect without checking the last case, as X may be all NaN.
                 y = consts_obj.ZERO;
@@ -1966,22 +1966,22 @@ classdef linalg_mod
                 y = consts_obj.ZERO;
             elseif ~all(infnan_obj.is_finite(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf.
-                y = sum(abs(x), 'all');
+                y = fortran.sum(abs(x), 'all');
             elseif ~any(abs(x) > 0, 'all')
                 % The following is incorrect without checking the last case, as X may be all NaN.
                 y = consts_obj.ZERO;
             else
                 switch string_obj.lower(string_obj.strip(nname))
                 case "fro"
-                    y = fortran.sqrt(sum(fortran.power(x, 2), 'all'));
+                    y = fortran.sqrt(fortran.sum(fortran.power(x, 2), 'all'));
                 case "inf"
                     % If SIZE(X) = 0, then MAXVAL(SUM(ABS(X), DIM=2)) = -HUGE(X); since we have handled such a
                     % case in the above, it is OK to write Y = MAXVAL(SUM(ABS(X), DIM=2)) below, but we append
                     % a 0 for robustness.
-                    y = max([reshape(sum(abs(x), 2), 1, []), consts_obj.ZERO], [], 'all');
+                    y = max([reshape(fortran.sum(abs(x), 2), 1, []), consts_obj.ZERO], [], 'all');
                 otherwise
                     debug_obj.warning(srname, "Unknown name of norm: " + string_obj.strip(nname) + "; default to the Frobenius norm");
-                    y = fortran.sqrt(sum(fortran.power(x, 2), 'all'));
+                    y = fortran.sqrt(fortran.sum(fortran.power(x, 2), 'all'));
                 end
             end
 
@@ -2235,7 +2235,7 @@ classdef linalg_mod
             %====================%
 
             %y = merge(tsource=sum(x), fsource=minval(x), mask=any(is_nan(x)))
-            nan_test = sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
+            nan_test = fortran.sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
             y = fortran.merge('tsource', nan_test, 'fsource', min(x, [], 'all'), 'mask', infnan_obj.is_nan_sp(nan_test));
 
             %====================%
@@ -2276,7 +2276,7 @@ classdef linalg_mod
             %====================%
 
             %y = merge(tsource=sum(x), fsource=minval(x), mask=any(is_nan(x)))
-            nan_test = sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
+            nan_test = fortran.sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
             y = fortran.merge('tsource', nan_test, 'fsource', min(x, [], 'all'), 'mask', infnan_obj.is_nan_sp(nan_test));
 
             %====================%
@@ -2317,7 +2317,7 @@ classdef linalg_mod
             %====================%
 
             %y = merge(tsource=sum(x), fsource=maxval(x), mask=any(is_nan(x)))
-            nan_test = sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
+            nan_test = fortran.sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
             y = fortran.merge('tsource', nan_test, 'fsource', max(x, [], 'all'), 'mask', infnan_obj.is_nan_sp(nan_test));
 
             %====================%
@@ -2358,7 +2358,7 @@ classdef linalg_mod
             %====================%
 
             %y = merge(tsource=sum(x), fsource=maxval(x), mask=any(is_nan(x)))
-            nan_test = sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
+            nan_test = fortran.sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
             y = fortran.merge('tsource', nan_test, 'fsource', max(x, [], 'all'), 'mask', infnan_obj.is_nan_sp(nan_test));
 
             %====================%
@@ -2528,7 +2528,7 @@ classdef linalg_mod
             tdiag(:) = obj.diag(A);
 
             for k = 1:n - 1
-                colsq = sum(fortran.power(A(k + 2:n, k), 2), 'all');
+                colsq = fortran.sum(fortran.power(A(k + 2:n, k), 2), 'all');
                 if colsq <= 0
                     tsubdiag(k) = A(k + 1, k); % A(K+1, K) may have been updated in previous loops.
                     A(k + 1, k) = consts_obj.ZERO;
@@ -2646,7 +2646,7 @@ classdef linalg_mod
             end
 
             for j = 1:n - 1
-                colsq = sum(fortran.power(H(j + 2:n, j), 2), 'all');
+                colsq = fortran.sum(fortran.power(H(j + 2:n, j), 2), 'all');
                 if colsq <= 0
                     continue
                 end

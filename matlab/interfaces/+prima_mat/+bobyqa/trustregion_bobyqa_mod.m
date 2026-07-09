@@ -183,7 +183,7 @@ classdef trustregion_bobyqa_mod
 
             % GNEW is the gradient at the current iterate.
             gnew(:) = gopt;
-            gredsq = sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+            gredsq = fortran.sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
             % DELSQ is the upper bound on the sum of squares of the free variables.
             delsq = delta * delta;
             % QRED is the reduction in Q so far.
@@ -205,7 +205,7 @@ classdef trustregion_bobyqa_mod
             % approximate solution to the subproblem (1.8), even if there are hundreds of variables."
             maxiter = fix(min(fortran.power(10, min(4, floor(log10(double(intmax('int64')))))), fortran.power(fix(n - nact), 2)));
             for iter = 1:maxiter
-                resid = delsq - sum(fortran.power(d(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+                resid = delsq - fortran.sum(fortran.power(d(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
                 if resid <= 0
                     twod_search = true;
                     break
@@ -222,7 +222,7 @@ classdef trustregion_bobyqa_mod
                     s(:) = beta * s - gnew;
                 end
                 s(linalg_obj.trueloc(xbdi ~= 0)) = consts_obj.ZERO;
-                stepsq = sum(fortran.power(s, 2), 'all');
+                stepsq = fortran.sum(fortran.power(s, 2), 'all');
                 ds = linalg_obj.inprod(d(linalg_obj.trueloc(xbdi == 0)), s(linalg_obj.trueloc(xbdi == 0)));
 
                 if ~(stepsq > consts_obj.EPS * delsq && gredsq * delsq > fortran.power((tol * qred), 2) && ~infnan_obj.is_nan_sp(ds))
@@ -334,12 +334,12 @@ classdef trustregion_bobyqa_mod
                     end
                     ggsav = gredsq;
                     gnew(:) = gnew + stplen * hs;
-                    gredsq = sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+                    gredsq = fortran.sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
                     dold(:) = d;
                     d(:) = d + stplen * s;
 
                     % Exit in case of Inf/NaN in D.
-                    if ~infnan_obj.is_finite(sum(abs(d), 'all'))
+                    if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                         d(:) = dold;
                         break
                     end
@@ -367,7 +367,7 @@ classdef trustregion_bobyqa_mod
                     end
                     beta = consts_obj.ZERO;
                     itercg = 0;
-                    gredsq = sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+                    gredsq = fortran.sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
                 elseif stplen < bstep
                     % Either apply another conjugate gradient iteration or exit.
                     % N.B. ITERCG > N - NACT is impossible.
@@ -422,10 +422,10 @@ classdef trustregion_bobyqa_mod
                 end
 
                 % Update GREDSQ, DREDG, DREDSQ.
-                gredsq = sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+                gredsq = fortran.sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
                 dredg = linalg_obj.inprod(d(linalg_obj.trueloc(xbdi == 0)), gnew(linalg_obj.trueloc(xbdi == 0)));
                 if iter == 1 || nact > nactsav
-                    dredsq = sum(fortran.power(d(linalg_obj.trueloc(xbdi == 0)), 2), 'all'); % In theory, DREDSQ changes only when NACT increases.
+                    dredsq = fortran.sum(fortran.power(d(linalg_obj.trueloc(xbdi == 0)), 2), 'all'); % In theory, DREDSQ changes only when NACT increases.
                     dred(:) = d;
                     dred(linalg_obj.trueloc(xbdi ~= 0)) = consts_obj.ZERO;
                     hdred(:) = powalg_obj.hess_mul(dred, xpt, pq, 'hq', hq);
@@ -531,7 +531,7 @@ classdef trustregion_bobyqa_mod
                 d(linalg_obj.trueloc(xbdi == 0)) = cth * d(linalg_obj.trueloc(xbdi == 0)) + sth * s(linalg_obj.trueloc(xbdi == 0));
 
                 % Exit in case of Inf/NaN in D.
-                if ~infnan_obj.is_finite(sum(abs(d), 'all'))
+                if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                     d(:) = dold;
                     break
                 end

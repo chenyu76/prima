@@ -159,7 +159,7 @@ classdef trustregion_lincoa_mod
             addParameter(ipObj, 'ngetact', NaN);
             parse(ipObj, varargin{:});
             ngetact = ipObj.Results.ngetact;
-            if ~infnan_obj.is_finite(sum(abs(gopt), 'all'))
+            if ~infnan_obj.is_finite(fortran.sum(abs(gopt), 'all'))
                 s(:) = consts_obj.ZERO;
                 if nargout >= 6
                     ngetact = 0;
@@ -255,8 +255,8 @@ classdef trustregion_lincoa_mod
                         % constraints). Set GAMMA to the greatest steplength of this move that satisfies both
                         % the trust region bound and the linear constraints.
                         ds = linalg_obj.inprod(dproj, s + psd);
-                        dd = sum(fortran.power(dproj, 2), 'all');
-                        resid = delsq - sum(fortran.power((s + psd), 2), 'all');
+                        dd = fortran.sum(fortran.power(dproj, 2), 'all');
+                        resid = delsq - fortran.sum(fortran.power((s + psd), 2), 'all');
                         % Powell's condition for the following IF: RESID > 0.
                         if resid > 0 && dd > consts_obj.EPS * delsq && ~infnan_obj.is_nan_sp(ds)
                             % Set GAMMA to the greatest value so that S + PSD + GAMMA*DPROJ satisfies the trust
@@ -389,13 +389,13 @@ classdef trustregion_lincoa_mod
                 % Update S, G.
                 sold(:) = s;
                 s(:) = s + alpha * d;
-                ss = sum(fortran.power(s, 2), 'all');
+                ss = fortran.sum(fortran.power(s, 2), 'all');
                 if ~infnan_obj.is_finite(ss)
                     s(:) = sold;
                     break
                 end
                 g(:) = g + alpha * hd;
-                if ~infnan_obj.is_finite(sum(abs(g), 'all'))
+                if ~infnan_obj.is_finite(fortran.sum(abs(g), 'all'))
                     break
                 end
 

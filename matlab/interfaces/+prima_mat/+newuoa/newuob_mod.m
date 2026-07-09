@@ -279,7 +279,7 @@ classdef newuob_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
+                    distsq(:) = reshape(fortran.sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(k) <= fortran.power((1.0e-3 * rhoend), 2)
@@ -382,7 +382,7 @@ classdef newuob_mod
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
                 accurate_mod = all(abs(moderr_rec) <= 0.125 * crvmin * fortran.power(rho, 2), 'all') && all(dnorm_rec <= rho, 'all');
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT? It affects IMPROVE_GEO, REDUCE_RHO.
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                 close_itpset = all(distsq <= 4.0 * fortran.power(delta, 2), 'all'); % Powell's code.
                 % Below are some alternative definitions of CLOSE_ITPSET.
@@ -527,7 +527,7 @@ classdef newuob_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
+                    distsq(:) = reshape(fortran.sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(k) <= fortran.power((1.0e-3 * rhoend), 2)
@@ -605,7 +605,7 @@ classdef newuob_mod
                 % 2. Before a geometry step, shift XBASE if SUM(XOPT**2) >= 1.0E3*DELBAR**2.
                 % 3. 1.0E2 works better than 1.0E3 on 20230227. In addition, 1.0E2 works better than 2.0E2,
                 % 5.0E2, and 1.0E3 on 20240406, especially if RP = REAL32.
-                if sum(fortran.power(xpt(:, kopt), 2), 'all') >= 100.0 * fortran.power(delta, 2)
+                if fortran.sum(fortran.power(xpt(:, kopt), 2), 'all') >= 100.0 * fortran.power(delta, 2)
                     [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq, 'idz', idz);
                 end
 

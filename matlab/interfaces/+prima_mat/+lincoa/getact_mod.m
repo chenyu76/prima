@@ -240,7 +240,7 @@ classdef getact_mod
 
                 %---------------------------------------------------------------------------------------%
                 % Powell's code does not handle the following pathological cases.
-                if linalg_obj.inprod(psd, g) > 0 || ~infnan_obj.is_finite(sum(abs(psd), 'all'))
+                if linalg_obj.inprod(psd, g) > 0 || ~infnan_obj.is_finite(fortran.sum(abs(psd), 'all'))
                     psd(:) = psdsav;
                     break
                 end

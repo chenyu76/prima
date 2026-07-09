@@ -95,11 +95,11 @@ classdef geometry_bobyqa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
@@ -302,7 +302,7 @@ classdef geometry_bobyqa_mod
             % In case GLAG contains NaN, set D to a displacement from XOPT to XPT(:, KNEW) and return. Powell's
             % code does not have this, and D may be NaN in the end. Note that it is crucial to ensure that a
             % geometry step is nonzero.
-            if ~infnan_obj.is_finite(sum(abs(glag), 'all'))
+            if ~infnan_obj.is_finite(fortran.sum(abs(glag), 'all'))
                 d(:) = xpt(:, knew) - xopt;
                 d(:) = min(consts_obj.HALF, delbar / linalg_obj.p_norm(d)) * d; % Since XPT respects the bounds, so does XOPT + D.
                 return
@@ -326,7 +326,7 @@ classdef geometry_bobyqa_mod
             % point on the K-th line attains the J-th upper bound, SBDI(I, K) = -J < 0 indicates reaching the
             % J-th lower bound, and SBDI(I, K) = 0 means not touching any bound.
             dderiv(:) = linalg_obj.matprod12(glag, xpt) - linalg_obj.inprod(glag, xopt); % The derivatives PHI_K'(0).
-            distsq(:) = sum(fortran.power((xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt)), 2), 1);
+            distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt)), 2), 1);
             for k = 1:npt
                 % It does not make sense to consider "straight line through XOPT and XPT(:, KOPT)". Hence set
                 % STPLEN(:, KOPT) = 0 and ISBD(:, KOPT) = 0 so that VLAG(:, K) and PREDSQ(:, K) obtained after
@@ -506,7 +506,7 @@ classdef geometry_bobyqa_mod
                 s(:) = consts_obj.ZERO;
                 mask_free(:) = (min(xopt - sl, glag) > 0 | max(xopt - su, glag) < 0);
                 s(linalg_obj.trueloc(mask_free)) = bigstp;
-                ggfree = sum(fortran.power(glag(linalg_obj.trueloc(mask_free)), 2), 'all');
+                ggfree = fortran.sum(fortran.power(glag(linalg_obj.trueloc(mask_free)), 2), 'all');
                 % In Powell's code, the subroutine returns immediately if GGFREE is 0. However, GGFREE depends
                 % on GLAG, which in turn depends on UPHILL. It can happen that GGFREE is 0 when UPHILL = 0 but
                 % not so when UPHILL= 1. Thus we skip the iteration for the current UPHILL but do not return.
@@ -533,8 +533,8 @@ classdef geometry_bobyqa_mod
                     mask_free(:) = (s >= bigstp & ~(mask_fixl | mask_fixu));
                     s(linalg_obj.trueloc(mask_fixl)) = sl(linalg_obj.trueloc(mask_fixl)) - xopt(linalg_obj.trueloc(mask_fixl));
                     s(linalg_obj.trueloc(mask_fixu)) = su(linalg_obj.trueloc(mask_fixu)) - xopt(linalg_obj.trueloc(mask_fixu));
-                    sfixsq = sfixsq + sum(fortran.power(s(linalg_obj.trueloc(mask_fixl | mask_fixu)), 2), 'all');
-                    ggfree = sum(fortran.power(glag(linalg_obj.trueloc(mask_free)), 2), 'all');
+                    sfixsq = sfixsq + fortran.sum(fortran.power(s(linalg_obj.trueloc(mask_fixl | mask_fixu)), 2), 'all');
+                    ggfree = fortran.sum(fortran.power(glag(linalg_obj.trueloc(mask_free)), 2), 'all');
                     if ~(sfixsq > ssqsav && ggfree > 0)
                         break
                     end
@@ -584,7 +584,7 @@ classdef geometry_bobyqa_mod
 
             % In case D is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to XOPT.
             % Powell's code does not have this. Note that it is crucial to ensure that a geometry step is nonzero.
-            if sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(sum(abs(d), 'all'))
+            if fortran.sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                 d(:) = xpt(:, knew) - xopt;
                 d(:) = min(consts_obj.HALF, delbar / linalg_obj.p_norm(d)) * d; % Since XPT respects the bounds, so does XOPT + D.
 

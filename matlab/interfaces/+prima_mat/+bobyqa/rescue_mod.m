@@ -226,7 +226,7 @@ classdef rescue_mod
 
             % Update HQ so that HQ and PQ define the second derivatives of the model after XBASE has been
             % shifted to the trust region centre.
-            v(:) = linalg_obj.matprod21(xpt, pq) + consts_obj.HALF * sum(pq, 'all') * xopt;
+            v(:) = linalg_obj.matprod21(xpt, pq) + consts_obj.HALF * fortran.sum(pq, 'all') * xopt;
             hq = linalg_obj.r2_sym(hq, consts_obj.ONE, xopt, v);
 
             % Set the elements of PTSAUX.
@@ -289,7 +289,7 @@ classdef rescue_mod
             % but there is no square in the BOBYQA paper (see the paragraph between (5.9) and (5.10) of the
             % BOBYQA paper). The latter seem to work better in a test on 20221125.
             %score = sum(xpt**2, dim=1)  ! Powell's BOBYQA code
-            score(:) = fortran.sqrt(sum(fortran.power(xpt, 2), 1)); % Powell's BOBYQA paper
+            score(:) = fortran.sqrt(fortran.sum(fortran.power(xpt, 2), 1)); % Powell's BOBYQA paper
             % In theory, SCORE(KOPT) = 0. Make sure this so that KOPT will be skipped when we choose KORIG below.
             score(kopt) = consts_obj.ZERO;
             scoreinc = max(score, [], 'all');
@@ -366,7 +366,7 @@ classdef rescue_mod
                 % B2 = BMAT(:, NPT+1:NPT+N). Denoting W1 = WMV(1:NPT) and W2 = WMV(NPT+1:NPT+N), we then have
                 % WMV'*H*WMV = ||W1'*Z||^2 + 2*W1'*B1*W2 + W1'*B2*W2 = ||W1'*Z||^2 + W1'(B1*W2 + [B1, B2]*WMV).
                 bsum = linalg_obj.inprod(wmv(1:n), linalg_obj.matprod21(bmat(:, 1:npt), wmv(1:npt)) + linalg_obj.matprod21(bmat, wmv));
-                beta = consts_obj.HALF * fortran.power(sum(fortran.power(xpt(:, korig), 2), 'all'), 2) - sum(fortran.power(linalg_obj.matprod12(wmv(1:npt), zmat), 2), 'all') - bsum;
+                beta = consts_obj.HALF * fortran.power(fortran.sum(fortran.power(xpt(:, korig), 2), 'all'), 2) - fortran.sum(fortran.power(linalg_obj.matprod12(wmv(1:npt), zmat), 2), 'all') - bsum;
 
                 % Finally, set VLAG(KOPT) to the correct value.
                 vlag(kopt) = vlag(kopt) + consts_obj.ONE;
@@ -374,7 +374,7 @@ classdef rescue_mod
                 % For all K with PTSID(K) > 0, calculate the denominator DEN(K) = SIGMA in the updating formula
                 % of H for XPT(:, KORIG) to replace XPT_PROV(:, K).
                 den(:) = consts_obj.ZERO;
-                hdiag(linalg_obj.trueloc(ptsid > 0)) = sum(fortran.power(zmat(linalg_obj.trueloc(ptsid > 0), :), 2), 2);
+                hdiag(linalg_obj.trueloc(ptsid > 0)) = fortran.sum(fortran.power(zmat(linalg_obj.trueloc(ptsid > 0), :), 2), 2);
                 den(linalg_obj.trueloc(ptsid > 0)) = hdiag(linalg_obj.trueloc(ptsid > 0)) * beta + fortran.power(vlag(linalg_obj.trueloc(ptsid > 0)), 2);
 
                 % Attempt setting KPROV to the index of the provisional point to be replaced with the KORIG-th
@@ -395,7 +395,7 @@ classdef rescue_mod
                 % point will be ranked lower if it fails to fulfill MAXVAL(DEN) > C*MAXVAL(VLAG(1:NPT)**2).
                 % Even if KORIG cannot satisfy this condition for now, it may validate the inequality in future
                 % attempts, as BMAT and ZMAT will be updated.
-                if ~(infnan_obj.is_finite(sum(abs(vlag), 'all')) && any(den > 5.0e-2 * max(fortran.power(vlag(1:npt), 2), [], 'all'), 'all'))
+                if ~(infnan_obj.is_finite(fortran.sum(abs(vlag), 'all')) && any(den > 5.0e-2 * max(fortran.power(vlag(1:npt), 2), [], 'all'), 'all'))
                     % The above condition works a bit better than Powell's version below due to the factor 0.05.
                     % %IF (.NOT. (ANY(DEN > 1.0E-2_RP * MAXVAL(VLAG(1:NPT)**2)))) THEN  ! Powell' code
                     score(korig) = -score(korig) - scoreinc;
@@ -481,7 +481,7 @@ classdef rescue_mod
                     % Skipping an XNEW that is close but not identical to XPT(:, KPT) will cause discrepancy
                     % between [BMAT, ZMAT] and XPT, since the former has been updated, but it is not severe as
                     % the difference between XNEW and XPT(:, KPT) is tiny.
-                    if sum(abs(xnew - xpt(:, kpt)), 'all') <= 1.0e-2 * delta || ~infnan_obj.is_finite(sum(abs(xnew), 'all'))
+                    if fortran.sum(abs(xnew - xpt(:, kpt)), 'all') <= 1.0e-2 * delta || ~infnan_obj.is_finite(fortran.sum(abs(xnew), 'all'))
                         continue
                     end
                     xpt(:, kpt) = xnew;
@@ -612,7 +612,7 @@ classdef rescue_mod
                 for j = 1:npt
                     hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
                     hcol(npt + 1:npt + n) = bmat(:, j);
-                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
+                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || fortran.sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
             end
 
@@ -679,7 +679,7 @@ classdef rescue_mod
                 for j = 1:npt
                     hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
                     hcol(npt + 1:npt + n) = bmat(:, j);
-                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
+                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || fortran.sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
 
                 % The following is too expensive to check.
@@ -712,12 +712,12 @@ classdef rescue_mod
             tau = vlag(knew);
             % In theory, DENOM can also be calculated after ZMAT is rotated below. However, this worsened the
             % performance of BOBYQA in a test on 20220413.
-            denom = sum(fortran.power(zmat(knew, :), 2), 'all') * beta + fortran.power(tau, 2);
+            denom = fortran.sum(fortran.power(zmat(knew, :), 2), 'all') * beta + fortran.power(tau, 2);
 
             % Quite rarely, due to rounding errors, VLAG or BETA may not be finite, or DENOM may not be
             % positive. In such cases, [BMAT, ZMAT] would be destroyed by the update, and hence we would rather
             % not update them at all. Or should we simply terminate the algorithm?
-            if ~(infnan_obj.is_finite(sum(abs(vlag), 'all') + abs(beta)) && denom > 0)
+            if ~(infnan_obj.is_finite(fortran.sum(abs(vlag), 'all') + abs(beta)) && denom > 0)
                 if nargout >= 3
                     info = infos_obj.DAMAGING_ROUNDING;
                 end
@@ -770,7 +770,7 @@ classdef rescue_mod
                 for j = 1:npt
                     hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
                     hcol(npt + 1:npt + n) = bmat(:, j);
-                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
+                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || fortran.sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
 
                 % The following is too expensive to check.

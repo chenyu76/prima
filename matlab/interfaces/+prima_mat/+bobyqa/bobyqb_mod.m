@@ -368,7 +368,7 @@ classdef bobyqb_mod
                     % improve the performance, especially when pursing high-precision solutions.
                     vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat);
                     den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
-                    to_rescue = (ximproved && ~(infnan_obj.is_finite(sum(abs(vlag), 'all')) && any(den > max(fortran.power(vlag(1:npt), 2), [], 'all'), 'all')));
+                    to_rescue = (ximproved && ~(infnan_obj.is_finite(fortran.sum(abs(vlag), 'all')) && any(den > max(fortran.power(vlag(1:npt), 2), [], 'all'), 'all')));
                     % Below are some alternatives conditions for calling RESCUE. They perform fairly well.
                     % %to_rescue = .false.  ! Do not call RESCUE at all.
                     % %to_rescue = (ximproved .and. .not. any(den > 0.25_RP * maxval(vlag(1:npt)**2)))
@@ -435,7 +435,7 @@ classdef bobyqb_mod
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
                 accurate_mod = all(abs(moderr_rec) <= ebound, 'all') && all(dnorm_rec <= rho, 'all');
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                 close_itpset = all(distsq <= max(fortran.power(delta, 2), fortran.power((consts_obj.TEN * rho), 2)), 'all');
                 % Below are some alternative definitions of CLOSE_ITPSET.
@@ -518,7 +518,7 @@ classdef bobyqb_mod
                     % KNEW_GEO, the step D will become improper as it was chosen according to the old KNEW_GEO.
                     vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat);
                     den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
-                    to_rescue = (~(infnan_obj.is_finite(sum(abs(vlag), 'all')) && den(knew_geo) > consts_obj.HALF * fortran.power(vlag(knew_geo), 2)));
+                    to_rescue = (~(infnan_obj.is_finite(fortran.sum(abs(vlag), 'all')) && den(knew_geo) > consts_obj.HALF * fortran.power(vlag(knew_geo), 2)));
                     if to_rescue
                         if rescued
                             info = infos_obj.DAMAGING_ROUNDING; % The last RESCUE did not improve the situation.
@@ -601,7 +601,7 @@ classdef bobyqb_mod
                 % 1. After a trust region step that is not short, shift XBASE if SUM(XOPT**2) >= 1.0E3*DNORM**2.
                 % In this case, it seems quite important for the performance to recalculate QRED.
                 % 2. Before a geometry step, shift XBASE if SUM(XOPT**2) >= 1.0E3*DELBAR**2.
-                if sum(fortran.power(xpt(:, kopt), 2), 'all') >= 1000.0 * fortran.power(delta, 2)
+                if fortran.sum(fortran.power(xpt(:, kopt), 2), 'all') >= 1000.0 * fortran.power(delta, 2)
                     % Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E4*RHO**2.
                     sl(:) = min(sl - xpt(:, kopt), consts_obj.ZERO);
                     su(:) = max(su - xpt(:, kopt), consts_obj.ZERO);

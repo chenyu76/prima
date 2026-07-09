@@ -1020,15 +1020,15 @@ classdef powalg_mod
             maxabs = max([consts_obj.ONE, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), max(abs(bmat), [], 'all')], [], 'all');
             U(:, :) = linalg_obj.eye1(npt) - linalg_obj.matprod22(A, Omega) - linalg_obj.matprod22(xpt', bmat(:, 1:npt));
             V(:, :) = -linalg_obj.matprod22(bmat(:, 1:npt), A) - linalg_obj.matprod22(bmat(:, npt + 1:npt + n), xpt);
-            r(:) = sum(U, 1) ./ double(npt);
-            s(:) = sum(V, 2) ./ double(npt);
+            r(:) = fortran.sum(U, 1) ./ double(npt);
+            s(:) = fortran.sum(V, 2) ./ double(npt);
             t(:) = -linalg_obj.matprod21(A, r) - linalg_obj.matprod12(s, xpt);
             e(1, 1) = max(max(U, [], 1) - min(U, [], 1), [], 'all');
             e(1, 2) = max(t, [], 'all') - min(t, [], 'all');
             e(1, 3) = max(max(V, [], 2) - min(V, [], 2), [], 'all');
-            e(2, 1) = max(abs(sum(Omega, 1)), [], 'all');
-            e(2, 2) = abs(sum(r, 'all') - consts_obj.ONE);
-            e(2, 3) = max(abs(sum(bmat(:, 1:npt), 2)), [], 'all');
+            e(2, 1) = max(abs(fortran.sum(Omega, 1)), [], 'all');
+            e(2, 2) = abs(fortran.sum(r, 'all') - consts_obj.ONE);
+            e(2, 3) = max(abs(fortran.sum(bmat(:, 1:npt), 2)), [], 'all');
             e(3, 1) = max(abs(linalg_obj.matprod22(xpt, Omega)), [], 'all');
             e(3, 2) = max(abs(linalg_obj.matprod21(xpt, r)), [], 'all');
             e(3, 3) = max(abs(linalg_obj.matprod22(xpt, bmat(:, 1:npt)') - linalg_obj.eye1(n)), [], 'all');
@@ -1132,7 +1132,7 @@ classdef powalg_mod
                 for j = 1:npt
                     hcol(1:npt) = obj.omega_col(idz, zmat, j);
                     hcol(npt + 1:npt + n) = bmat(:, j);
-                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
+                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || fortran.sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
 
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
@@ -1201,7 +1201,7 @@ classdef powalg_mod
             % Quite rarely, due to rounding errors, VLAG or BETA may not be finite, and ABS(DENOM) may not be
             % positive. In such cases, [BMAT, ZMAT] would be destroyed by the update, and hence we would rather
             % not update them at all. Or should we simply terminate the algorithm?
-            if ~(infnan_obj.is_finite(sum(abs(hcol), 'all') + sum(abs(vlag), 'all') + abs(beta)) && abs(denom) > 0)
+            if ~(infnan_obj.is_finite(fortran.sum(abs(hcol), 'all') + fortran.sum(abs(vlag), 'all') + abs(beta)) && abs(denom) > 0)
                 if nargout >= 4
                     info = infos_obj.DAMAGING_ROUNDING;
                 end
@@ -1388,7 +1388,7 @@ classdef powalg_mod
                 for j = 1:npt
                     hcol(1:npt) = obj.omega_col(idz, zmat, j);
                     hcol(npt + 1:npt + n) = bmat(:, j);
-                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
+                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || fortran.sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
 
                 % The following is too expensive to check.
@@ -1555,7 +1555,7 @@ classdef powalg_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(numel(vlag) == npt + n, "SIZE(VLAG) == NPT + N", srname);
                 tol = max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(12, consts_obj.MAXPOW10)) * consts_obj.EPS * double(npt + n)));
-                debug_obj.wassert(abs(sum(vlag(1:npt), 'all') - consts_obj.ONE) / double(npt) <= tol || floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))), "SUM(VLAG(1:NPT)) == 1", srname);
+                debug_obj.wassert(abs(fortran.sum(vlag(1:npt), 'all') - consts_obj.ONE) / double(npt) <= tol || floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))), "SUM(VLAG(1:NPT)) == 1", srname);
             end
 
         end
@@ -1742,7 +1742,7 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            hdiag(:) = -sum(fortran.power(zmat(:, 1:idz_loc - 1), 2), 2) + sum(fortran.power(zmat(:, idz_loc:size(zmat, 2)), 2), 2);
+            hdiag(:) = -fortran.sum(fortran.power(zmat(:, 1:idz_loc - 1), 2), 2) + fortran.sum(fortran.power(zmat(:, idz_loc:size(zmat, 2)), 2), 2);
             vlag(:) = obj.calvlag_lfqint(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             beta = obj.calbeta(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             den(:) = hdiag * beta + fortran.power(vlag(1:npt), 2);

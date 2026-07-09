@@ -151,7 +151,7 @@ classdef trustregion_uobyqa_mod
             d(:) = consts_obj.ZERO;
             crvmin = consts_obj.ZERO;
 
-            gsq = sum(fortran.power(gg, 2), 'all');
+            gsq = fortran.sum(fortran.power(gg, 2), 'all');
             gnorm = fortran.sqrt(gsq);
 
             if infnan_obj.is_nan_sp(gsq)
@@ -201,7 +201,7 @@ classdef trustregion_uobyqa_mod
             % This is probably because the behavior of MAX is undefined if it receives NaN (if GNORM and HNORM
             % are both Inf, then GNORM/DELTA - HNORM = NaN).
             %--------------------------------------------------------------------------------------------------%
-            if ~infnan_obj.is_finite(sum(abs(gg), 'all') + sum(abs(hh), 'all') + sum(abs(td), 'all') + sum(abs(tn), 'all'))
+            if ~infnan_obj.is_finite(fortran.sum(abs(gg), 'all') + fortran.sum(abs(hh), 'all') + fortran.sum(abs(td), 'all') + fortran.sum(abs(tn), 'all'))
                 return
             end
 
@@ -228,7 +228,7 @@ classdef trustregion_uobyqa_mod
             % and NaN appear in D due to extremely large values in the Hessian matrix (up to 10^219).
 
             for iter = 1:maxiter
-                if infnan_obj.is_finite(sum(abs(d), 'all'))
+                if infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                     dold(:) = d;
                 else
                     d(:) = dold;
@@ -344,7 +344,7 @@ classdef trustregion_uobyqa_mod
                         end
                     end
 
-                    dsq = sum(fortran.power(d, 2), 'all');
+                    dsq = fortran.sum(fortran.power(d, 2), 'all');
                     parl = par;
                     parlest = par - dhd / dsq;
                 end
@@ -401,12 +401,12 @@ classdef trustregion_uobyqa_mod
                         d(k) = d(k) - tn(k) * d(k + 1) / piv(k);
                     end
 
-                    if ~infnan_obj.is_finite(sum(abs(d), 'all'))
+                    if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                         d(:) = dold;
                         break
                     end
 
-                    dsq = sum(fortran.power(d, 2), 'all');
+                    dsq = fortran.sum(fortran.power(d, 2), 'all');
 
                     % Return if the Newton-Raphson step is feasible, setting CRVMIN to the least eigenvalue of H.
                     if par <= 0 && dsq <= delsq
@@ -481,7 +481,7 @@ classdef trustregion_uobyqa_mod
                                 z(k) = z(k) - tn(k) * z(k + 1) / piv(k);
                             end
 
-                            zsq = sum(fortran.power(z, 2), 'all');
+                            zsq = fortran.sum(fortran.power(z, 2), 'all');
                             dtz = linalg_obj.inprod(d, z);
 
                             % Apply the alternative test for convergence.

@@ -108,7 +108,7 @@ classdef evaluate_mod
 
             if any(infnan_obj.is_nan(x), 'all')
                 % Although this should not happen unless there is a bug, we include this case for robustness.
-                f = sum(x, 'all'); % Set F to NaN
+                f = fortran.sum(x, 'all'); % Set F to NaN
 
             else
                 f = calfun(obj.moderatex(x)); % Evaluate F; We moderate X before doing so.
@@ -166,7 +166,7 @@ classdef evaluate_mod
             if any(infnan_obj.is_nan(x), 'all')
                 % Although this should not happen unless there is a bug, we include this case for robustness.
                 % Set F, CONSTR, and CSTRV to NaN.
-                f = sum(x, 'all');
+                f = fortran.sum(x, 'all');
                 constr(:) = f;
             else
                 [f, constr] = calcfc(obj.moderatex(x), constr); % Evaluate F and CONSTR; We moderate X before doing so.

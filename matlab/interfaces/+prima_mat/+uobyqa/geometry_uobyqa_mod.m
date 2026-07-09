@@ -90,11 +90,11 @@ classdef geometry_uobyqa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
@@ -253,7 +253,7 @@ classdef geometry_uobyqa_mod
             h(:, :) = linalg_obj.vec2smat(pl(n + 1:npt - 1, knew));
 
             % Evaluate GG = G^T*G and GHG = G^T*H*G. They will be used later.
-            gg = sum(fortran.power(g, 2), 'all');
+            gg = fortran.sum(fortran.power(g, 2), 'all');
             ghg = linalg_obj.inprod(g, linalg_obj.matprod21(h, g));
 
             % Calculate the Cauchy step as a backup. Powell's code does not have this, and D may be 0 or NaN.
@@ -289,19 +289,19 @@ classdef geometry_uobyqa_mod
             end
 
             % Pick V such that ||HV|| / ||V|| is large.
-            v(:) = h(:, fortran.maxloc(sum(fortran.power(h, 2), 1), 'dim', 1));
+            v(:) = h(:, fortran.maxloc(fortran.sum(fortran.power(h, 2), 1), 'dim', 1));
             % Normalize V. Powell's code does not do this. It does not change the algorithm as only its
             % direction matters. It slightly improves the performance in the noiseless case.
             v(:) = v ./ linalg_obj.p_norm(v);
 
             % Set D to a vector in the subspace span{V, HV} that maximizes |(D, HD)|/(D, D), except that we set
             % D = HV if V and HV are nearly parallel.
-            vv = sum(fortran.power(v, 2), 'all');
+            vv = fortran.sum(fortran.power(v, 2), 'all');
             d(:) = linalg_obj.matprod21(h, v);
             vhv = linalg_obj.inprod(v, d);
-            if vhv * vhv <= 0.9999 * sum(fortran.power(d, 2), 'all') * vv
+            if vhv * vhv <= 0.9999 * fortran.sum(fortran.power(d, 2), 'all') * vv
                 d(:) = d - (vhv / vv) * v;
-                dd = sum(fortran.power(d, 2), 'all');
+                dd = fortran.sum(fortran.power(d, 2), 'all');
                 scaling = fortran.sqrt(dd / vv);
                 dhd = linalg_obj.inprod(d, linalg_obj.matprod21(h, d));
                 v(:) = scaling * v;
@@ -317,7 +317,7 @@ classdef geometry_uobyqa_mod
 
             % We now turn our attention to the subspace span{G, D}. A multiple of the current D is returned if
             % that choice seems to be adequate.
-            dd = sum(fortran.power(d, 2), 'all');
+            dd = fortran.sum(fortran.power(d, 2), 'all');
             gd = linalg_obj.inprod(g, d);
             dhd = linalg_obj.inprod(d, linalg_obj.matprod21(h, d));
 
@@ -328,7 +328,7 @@ classdef geometry_uobyqa_mod
             end
 
             v(:) = d - (gd / gg) * g;
-            vv = sum(fortran.power(v, 2), 'all');
+            vv = fortran.sum(fortran.power(v, 2), 'all');
             if gd * dhd < 0
                 scaling = -delbar / fortran.sqrt(dd);
             else
@@ -339,7 +339,7 @@ classdef geometry_uobyqa_mod
 
             if ~(gnorm * dd > 5.0e-3 * delbar * abs(dhd) && vv > 1.0e-4 * dd)
                 % It may happen that D = 0 due to overflow in DD, which is used to define SCALING.
-                if sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(sum(abs(d), 'all'))
+                if fortran.sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                     d(:) = dcauchy;
                 end
                 return

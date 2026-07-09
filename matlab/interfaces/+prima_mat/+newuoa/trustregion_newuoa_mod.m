@@ -264,7 +264,7 @@ classdef trustregion_newuoa_mod
                 % the 2-dimensional minimization if any.
                 % Exit in case of Inf/NaN in S. This should come the first! Otherwise, we may return an S that
                 % contains NaN and fulfills other exit conditions.
-                if ~infnan_obj.is_finite(sum(abs(s), 'all'))
+                if ~infnan_obj.is_finite(fortran.sum(abs(s), 'all'))
                     s(:) = sold;
                     info_loc = -1;
                     break
@@ -379,7 +379,7 @@ classdef trustregion_newuoa_mod
                 s(:) = cth * s + sth * d;
 
                 % Exit in case of Inf/NaN in S.
-                if ~infnan_obj.is_finite(sum(abs(s), 'all'))
+                if ~infnan_obj.is_finite(fortran.sum(abs(s), 'all'))
                     s(:) = sold;
                     info_loc = -1;
                     break

@@ -248,7 +248,7 @@ classdef uobyqb_mod
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT? It affects IMPROVE_GEO, REDUCE_RHO.
                 % N.B. (Zaikun 20240331): In Powell's algorithms, CLOSE_ITPSET is defined after XPT is updated
                 % according to the trust-region trial step.
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                 close_itpset = all(distsq <= 4.0 * fortran.power(delta, 2), 'all'); % Powell's NEWUOA code.
                 % Below are some alternative definitions of CLOSE_ITPSET.
@@ -283,7 +283,7 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
+                    distsq(:) = reshape(fortran.sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(k) <= fortran.power((1.0e-4 * rhoend), 2)
@@ -333,7 +333,7 @@ classdef uobyqb_mod
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
-                        ddmove = sum(fortran.power((xdrop - xpt(:, kopt)), 2), 'all'); % KOPT is updated.
+                        ddmove = fortran.sum(fortran.power((xdrop - xpt(:, kopt)), 2), 'all'); % KOPT is updated.
 
                     end
 
@@ -431,7 +431,7 @@ classdef uobyqb_mod
                 % Improve the geometry of the interpolation set by removing a point and adding a new one.
                 if improve_geo
                     % XPT(:, KNEW_GEO) will become XOPT + D below. KNEW_GEO /= KOPT unless there is a bug.
-                    distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                    distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                     %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                     knew_geo = fix(fortran.maxloc(distsq, 'dim', 1));
 
@@ -449,7 +449,7 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = reshape(sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
+                    distsq(:) = reshape(fortran.sum(fortran.power((x - (xbase + xpt(:, 1:npt))), 2), 1), [], 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(k) <= fortran.power((1.0e-4 * rhoend), 2)
@@ -509,7 +509,7 @@ classdef uobyqb_mod
                 % Shifting XBASE to the best point so far, and make the corresponding changes to the gradients
                 % of the Lagrange functions and the quadratic model. Powell's implementation does this each time
                 % after RHO is reduced. Our implementation aligns with NEWUOA/BOBYQA/LINCOA.
-                if sum(fortran.power(xpt(:, kopt), 2), 'all') >= 1000.0 * fortran.power(delta, 2)
+                if fortran.sum(fortran.power(xpt(:, kopt), 2), 'all') >= 1000.0 * fortran.power(delta, 2)
                     [pl, pq, xbase, xpt] = shiftbase_obj.shiftbase_qint(kopt, pl, pq, xbase, xpt);
                 end
 

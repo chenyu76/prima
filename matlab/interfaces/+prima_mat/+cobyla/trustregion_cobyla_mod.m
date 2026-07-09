@@ -534,7 +534,7 @@ classdef trustregion_cobyla_mod
                 d(:) = (consts_obj.ONE - frac) * d + frac * dnew;
                 vmultc(:) = max(consts_obj.ZERO, (consts_obj.ONE - frac) * vmultc + frac * vmultd);
                 % Exit in case of Inf/NaN in D or VMULTC.
-                if ~(infnan_obj.is_finite(sum(abs(d), 'all')) && infnan_obj.is_finite(sum(abs(vmultc), 'all')))
+                if ~(infnan_obj.is_finite(fortran.sum(abs(d), 'all')) && infnan_obj.is_finite(fortran.sum(abs(vmultc), 'all')))
                     d(:) = dold; % Should we restore also IACT, NACT, VMULTC, and Z?
                     break
                 end

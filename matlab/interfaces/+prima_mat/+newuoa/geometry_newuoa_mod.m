@@ -96,11 +96,11 @@ classdef geometry_newuoa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
@@ -258,7 +258,7 @@ classdef geometry_newuoa_mod
 
             % In case D is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to
             % XOPT. Powell's code does not have this.
-            if sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(sum(abs(d), 'all'))
+            if fortran.sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                 d(:) = xpt(:, knew) - xpt(:, kopt);
                 scaling = delbar / linalg_obj.p_norm(d);
                 d(:) = max(0.6 * scaling, min(consts_obj.HALF, scaling)) * d; % 0.6: ensure |D| > DELBAR/2
@@ -379,7 +379,7 @@ classdef geometry_newuoa_mod
             if gg * fortran.power(delbar, 2) < 1.0e-2 * fortran.power(tau, 2)
                 t = consts_obj.ONE;
             end
-            if infnan_obj.is_finite(sum(abs(scaling * d), 'all'))
+            if infnan_obj.is_finite(fortran.sum(abs(scaling * d), 'all'))
                 d(:) = scaling * d;
                 gd(:) = scaling * gd;
                 s(:) = gc + t * gd;
@@ -444,7 +444,7 @@ classdef geometry_newuoa_mod
                 d(:) = cth * d + sth * s;
 
                 % Exit in case of Inf/NaN in D.
-                if ~infnan_obj.is_finite(sum(abs(d), 'all'))
+                if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                     d(:) = dold;
                     break
                 end
@@ -602,7 +602,7 @@ classdef geometry_newuoa_mod
                 %---------!dstemp = matprod(d, xpt) - inprod(x, d) !-------------%
                 dstemp(:) = linalg_obj.matprod12(d, xptemp);
                 %----------------------------------------------------------------%
-                sstemp(:) = sum(fortran.power((xptemp), 2), 1);
+                sstemp(:) = fortran.sum(fortran.power((xptemp), 2), 1);
 
                 dstemp(kopt) = consts_obj.TWO * ds + consts_obj.ONE;
                 sstemp(kopt) = ss;
@@ -696,7 +696,7 @@ classdef geometry_newuoa_mod
                 % Include in DEN the part of BETA that depends on THETA.
                 for k = 1:npt + n
                     par(1:5) = consts_obj.HALF * prod_custom(k, 1:5) .* w(k, 1:5);
-                    den(1) = den(1) - par(1) - sum(par(1:5), 'all');
+                    den(1) = den(1) - par(1) - fortran.sum(par(1:5), 'all');
                     tempa = prod_custom(k, 1) * w(k, 2) + prod_custom(k, 2) * w(k, 1);
                     tempb = prod_custom(k, 2) * w(k, 4) + prod_custom(k, 4) * w(k, 2);
                     tempc = prod_custom(k, 3) * w(k, 5) + prod_custom(k, 5) * w(k, 3);
@@ -718,7 +718,7 @@ classdef geometry_newuoa_mod
                 end
 
                 par(1:5) = consts_obj.HALF * fortran.power(prod_custom(knew, 1:5), 2);
-                denex(1) = alpha * den(1) + par(1) + sum(par(1:5), 'all');
+                denex(1) = alpha * den(1) + par(1) + fortran.sum(par(1:5), 'all');
                 tempa = consts_obj.TWO * prod_custom(knew, 1) * prod_custom(knew, 2);
                 tempb = prod_custom(knew, 2) * prod_custom(knew, 4);
                 tempc = prod_custom(knew, 3) * prod_custom(knew, 5);
@@ -744,7 +744,7 @@ classdef geometry_newuoa_mod
                 d(:) = fortran.cos(angle) * d + fortran.sin(angle) * s;
 
                 % Exit in case of Inf/NaN in D.
-                if ~infnan_obj.is_finite(sum(abs(d), 'all'))
+                if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                     d(:) = dold;
                     break
                 end

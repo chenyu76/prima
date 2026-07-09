@@ -63,7 +63,7 @@ classdef geometry_cobyla_mod
                 debug_obj.assert(delta >= rho && rho > 0, "DELTA >= RHO > 0", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
-                debug_obj.assert(all(sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, "SIZE(SIMI) == [N, N]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
                 debug_obj.assert(linalg_obj.isinv(sim(:, 1:n), simi, 'tol', itol), "SIMI = SIM(:, 1:N)^{-1}", srname);
@@ -133,11 +133,11 @@ classdef geometry_cobyla_mod
             % DISTQ(J) is the square of the distance from the J-th vertex of the simplex to the "best" point so
             % far, taking the trial point SIM(:, N+1) + D into account.
             if ximproved
-                distsq(1:n) = sum(fortran.power((sim(:, 1:n) - fortran.spread(d, 'dim', 2, 'ncopies', n)), 2), 1);
+                distsq(1:n) = fortran.sum(fortran.power((sim(:, 1:n) - fortran.spread(d, 'dim', 2, 'ncopies', n)), 2), 1);
                 %%MATLAB: distsq = sum((sim(:, 1:n) - d).^2);  % d should be a column! Implicit expansion
-                distsq(n + 1) = sum(fortran.power(d, 2), 'all');
+                distsq(n + 1) = fortran.sum(fortran.power(d, 2), 'all');
             else
-                distsq(1:n) = sum(fortran.power(sim(:, 1:n), 2), 1);
+                distsq(1:n) = fortran.sum(fortran.power(sim(:, 1:n), 2), 1);
                 distsq(n + 1) = consts_obj.ZERO;
             end
 
@@ -153,7 +153,7 @@ classdef geometry_cobyla_mod
             % (N+1)-th Lagrange function is 1 - SUM(SIMID). [SIMID, 1 - SUM(SIMID)] is the counterpart of
             % VLAG in UOBYQA and DEN in NEWUOA/BOBYQA/LINCOA.
             simid(:) = linalg_obj.matprod21(simi, d);
-            score(:) = weight .* abs([reshape(simid, [], 1); consts_obj.ONE - sum(simid, 'all')]);
+            score(:) = weight .* abs([reshape(simid, [], 1); consts_obj.ONE - fortran.sum(simid, 'all')]);
 
             % If XIMPROVED = FALSE (D does not render a better X), set SCORE(N+1) = -1 to avoid JDROP = N+1.
             if ~ximproved
