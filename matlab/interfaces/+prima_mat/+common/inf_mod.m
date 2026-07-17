@@ -57,73 +57,73 @@ classdef inf_mod
             prima_mat.common.consts_mod();
 
 
-            y = (x <= obj.huge_obj.huge_value(x) & x >= -obj.huge_obj.huge_value(x));
+            y = (x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp());
         end
         function y = is_finite_dp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (x <= obj.huge_obj.huge_value(x) & x >= -obj.huge_obj.huge_value(x));
+            y = (x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp());
         end
         function y = is_posinf_sp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (abs(x) > obj.huge_obj.huge_value(x)) & (x > 0);
+            y = (abs(x) > obj.huge_obj.huge_value_sp()) & (x > 0);
         end
         function y = is_posinf_dp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (abs(x) > obj.huge_obj.huge_value(x)) & (x > 0);
+            y = (abs(x) > obj.huge_obj.huge_value_sp()) & (x > 0);
         end
         function y = is_neginf_sp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (abs(x) > obj.huge_obj.huge_value(x)) & (x < 0);
+            y = (abs(x) > obj.huge_obj.huge_value_sp()) & (x < 0);
         end
         function y = is_neginf_dp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (abs(x) > obj.huge_obj.huge_value(x)) & (x < 0);
+            y = (abs(x) > obj.huge_obj.huge_value_sp()) & (x < 0);
         end
         function y = is_inf_sp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (abs(x) > obj.huge_obj.huge_value(x));
+            y = (abs(x) > obj.huge_obj.huge_value_sp());
         end
         function y = is_inf_dp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (abs(x) > obj.huge_obj.huge_value(x));
+            y = (abs(x) > obj.huge_obj.huge_value_sp());
         end
         function y = is_finite_qp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (x <= obj.huge_obj.huge_value(x) & x >= -obj.huge_obj.huge_value(x));
+            y = (x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp());
         end
         function y = is_posinf_qp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (abs(x) > obj.huge_obj.huge_value(x)) & (x > 0);
+            y = (abs(x) > obj.huge_obj.huge_value_sp()) & (x > 0);
         end
         function y = is_neginf_qp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (abs(x) > obj.huge_obj.huge_value(x)) & (x < 0);
+            y = (abs(x) > obj.huge_obj.huge_value_sp()) & (x < 0);
         end
         function y = is_inf_qp(obj, x)
             prima_mat.common.consts_mod();
 
 
-            y = (abs(x) > obj.huge_obj.huge_value(x));
+            y = (abs(x) > obj.huge_obj.huge_value_sp());
         end
 
     end

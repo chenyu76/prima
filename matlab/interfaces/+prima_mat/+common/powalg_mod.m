@@ -149,7 +149,7 @@ classdef powalg_mod
                     % Powell wrote CQ(K+1) /= 0 instead of ABS(CQ(K+1)) > 0. The two differ if CQ(K+1) is NaN.
                     % If we apply the rotation below when CQ(K+1) = 0, then CQ(K) will get updated to |CQ(K)|.
                     G(:, :) = linalg_obj.planerot(cq([k, k + 1]));
-                    Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k, k + 1]), G');
+                    Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k, k + 1]), G.');
                     cq(k) = linalg_obj.hypotenuse(cq(k), cq(k + 1)); %cq(k) = sqrt(cq(k)**2 + cq(k + 1)**2)
 
                 end
@@ -258,7 +258,7 @@ classdef powalg_mod
                 if abs(cq(k + 1)) > 0
                     % Powell: IF (ABS(CQ(K + 1)) > 1.0D-20 * ABS(CQ(K))) THEN
                     G(:, :) = linalg_obj.planerot(cq([k, k + 1]));
-                    Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k, k + 1]), G');
+                    Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k, k + 1]), G.');
                     cq(k) = fortran.sqrt(fortran.power(cq(k), 2) + fortran.power(cq(k + 1), 2));
                 end
             end
@@ -370,7 +370,7 @@ classdef powalg_mod
             % positive (see QRADD_RDIAG), and hence the updated RDIAG may contain negative values.
             for k = i:n - 1
                 G(:, :) = linalg_obj.planerot([Rdiag(k + 1), linalg_obj.inprod(Q(:, k), A(:, k + 1))]);
-                Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k + 1, k]), G');
+                Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k + 1, k]), G.');
                 % Powell's code updates RDIAG in the following way:
                 % %HYPT = SQRT(RDIAG(K + 1)**2 + INPROD(Q(:, K), A(:, K + 1))**2)
                 % %RDIAG([K, K + 1_IK]) = [HYPT, (RDIAG(K + 1) / HYPT) * RDIAG(K)]
@@ -381,7 +381,7 @@ classdef powalg_mod
             end
 
             % Calculate RDIAG(I:N) from scratch.
-            Rdiag(i:n - 1) = reshape(cell2mat(arrayfun(@(k) linalg_obj.inprod(Q(:, k), A(:, k + 1)), (i:n - 1), "UniformOutput", false)), [], 1);
+            Rdiag(i:n - 1) = reshape(arrayfun(@(k) linalg_obj.inprod(Q(:, k), A(:, k + 1)), i:n - 1), [], 1);
             %%MATLAB: Rdiag(i:n-1) = sum(Q(:, i:n-1) .* A(:, i+1:n), 1);  % Row vector
             Rdiag(n) = linalg_obj.inprod(Q(:, n), A(:, i)); % Calculate RDIAG(N) from scratch. See the comments above.
 
@@ -400,10 +400,10 @@ classdef powalg_mod
                 debug_obj.assert(all(abs(Rdiag(1:i - 1) - Rdsave(1:i - 1)) <= 0, 'all'), "Rdiag(1:I-1) is unchanged", srname);
 
                 Anew(:, :) = reshape([reshape(A(:, 1:i - 1), 1, []), reshape(A(:, i + 1:n), 1, []), reshape(A(:, i), 1, [])], size(Anew));
-                QtAnew(:, :) = linalg_obj.matprod22(Q', Anew);
+                QtAnew(:, :) = linalg_obj.matprod22(Q.', Anew);
                 debug_obj.assert(linalg_obj.istriu(QtAnew, 'tol', tol), "Q^T*Anew is upper triangular", srname);
                 % The following test may fail if RDIAG is not calculated from scratch.
-                debug_obj.assert(linalg_obj.p_norm(linalg_obj.diag(QtAnew) - Rdiag) <= max(tol, tol * linalg_obj.p_norm(reshape(cell2mat(arrayfun(@(k) linalg_obj.inprod(abs(Q(:, k)), abs(Anew(:, k))), (1:n), "UniformOutput", false)), [], 1))), "Rdiag == diag(Q^T*Anew)", srname);
+                debug_obj.assert(linalg_obj.p_norm(linalg_obj.diag(QtAnew) - Rdiag) <= max(tol, tol * linalg_obj.p_norm(reshape(arrayfun(@(k) linalg_obj.inprod(abs(Q(:, k)), abs(Anew(:, k))), 1:n), [], 1))), "Rdiag == diag(Q^T*Anew)", srname);
                 %%MATLAB: norm(diag(QtAnew) - Rdiag) <= max(tol, tol * norm(sum(abs(Q(:, 1:n)) .* abs(Anew), 1)))
 
             end
@@ -489,7 +489,7 @@ classdef powalg_mod
                 hypt = linalg_obj.hypotenuse(R(k + 1, k + 1), R(k, k + 1)); %hypt = sqrt(R(k, k + 1)**2 + R(k + 1, k + 1)**2)
 
                 % Update Q(:, [K, K+1]).
-                Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k + 1, k]), G');
+                Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k + 1, k]), G.');
 
                 % Update R([K, K+1], :).
                 R([k, k + 1], k:n) = linalg_obj.matprod22(G, R([k + 1, k], k:n));
@@ -740,7 +740,7 @@ classdef powalg_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(n >= 1, "N >= 1", srname);
                 debug_obj.assert(numel(fval) == npt, "SIZE(FVAL) == NPT", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(gq) == n, "SIZE(GQ) == N", srname);
                 debug_obj.assert(numel(pq) == npt, "SIZE(PQ) == NPT", srname);
@@ -755,9 +755,9 @@ classdef powalg_mod
             %====================%
 
             if ismember('kref', ipObj.UsingDefaults)
-                qval(:) = reshape(cell2mat(arrayfun(@(k) obj.quadinc_d0(xpt(:, k), xpt, gq, pq, 'hq', hq), (1:npt), "UniformOutput", false)), [], 1);
+                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k), xpt, gq, pq, 'hq', hq), 1:npt);
             else
-                qval(:) = reshape(cell2mat(arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, 'hq', hq), (1:npt), "UniformOutput", false)), [], 1);
+                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, 'hq', hq), 1:npt);
             end
             %%MATLAB:
             %%if nargin >= 5
@@ -1015,10 +1015,10 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            A(:, :) = consts_obj.HALF * fortran.power(linalg_obj.matprod22(xpt', xpt), 2);
-            Omega(:, :) = -linalg_obj.matprod22(zmat(:, 1:idz - 1), zmat(:, 1:idz - 1)') + linalg_obj.matprod22(zmat(:, idz:npt - n - 1), zmat(:, idz:npt - n - 1)');
+            A(:, :) = consts_obj.HALF * fortran.power(linalg_obj.matprod22(xpt.', xpt), 2);
+            Omega(:, :) = -linalg_obj.matprod22(zmat(:, 1:idz - 1), zmat(:, 1:idz - 1).') + linalg_obj.matprod22(zmat(:, idz:npt - n - 1), zmat(:, idz:npt - n - 1).');
             maxabs = max([consts_obj.ONE, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), max(abs(bmat), [], 'all')], [], 'all');
-            U(:, :) = linalg_obj.eye1(npt) - linalg_obj.matprod22(A, Omega) - linalg_obj.matprod22(xpt', bmat(:, 1:npt));
+            U(:, :) = linalg_obj.eye1(npt) - linalg_obj.matprod22(A, Omega) - linalg_obj.matprod22(xpt.', bmat(:, 1:npt));
             V(:, :) = -linalg_obj.matprod22(bmat(:, 1:npt), A) - linalg_obj.matprod22(bmat(:, npt + 1:npt + n), xpt);
             r(:) = fortran.sum(U, 1) ./ double(npt);
             s(:) = fortran.sum(V, 2) ./ double(npt);
@@ -1031,7 +1031,7 @@ classdef powalg_mod
             e(2, 3) = max(abs(fortran.sum(bmat(:, 1:npt), 2)), [], 'all');
             e(3, 1) = max(abs(linalg_obj.matprod22(xpt, Omega)), [], 'all');
             e(3, 2) = max(abs(linalg_obj.matprod21(xpt, r)), [], 'all');
-            e(3, 3) = max(abs(linalg_obj.matprod22(xpt, bmat(:, 1:npt)') - linalg_obj.eye1(n)), [], 'all');
+            e(3, 3) = max(abs(linalg_obj.matprod22(xpt, bmat(:, 1:npt).') - linalg_obj.eye1(n)), [], 'all');
             err = max(e, [], 'all') / (maxabs * double(n + npt));
 
             %====================%
@@ -1238,7 +1238,7 @@ classdef powalg_mod
                     % Threshold comes from Powell's BOBYQA
                     % Multiply a Givens rotation to ZMAT from the right so that ZMAT(KNEW, [JL,J]) becomes [*,0].
                     grot(:, :) = linalg_obj.planerot(zmat(knew, [jl, j])); %%MATLAB: grot = planerot(zmat(knew, [jl, j])')
-                    zmat(:, [jl, j]) = linalg_obj.matprod22(zmat(:, [jl, j]), grot');
+                    zmat(:, [jl, j]) = linalg_obj.matprod22(zmat(:, [jl, j]), grot.');
                 end
                 zmat(knew, j) = consts_obj.ZERO;
             end
@@ -1851,8 +1851,8 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            ell(:) = fix(reshape((n:npt - n - 2), [], 1) ./ n); % The ell below (2.4) of the BOBYQA paper.
-            ij(1, :) = reshape((n:npt - n - 2), [], 1) - n * ell + 1;
+            ell(:) = fix(reshape(n:npt - n - 2, [], 1) ./ n); % The ell below (2.4) of the BOBYQA paper.
+            ij(1, :) = reshape(n:npt - n - 2, [], 1) - n * ell + 1;
             ij(2, :) = mod(ij(1, :) + ell - 1, n) + 1; % MODULO(K-1, N) + 1 = K-N for K in [N+1, 2N]
             ipObj = inputParser();
             addParameter(ipObj, 'sorting_direction', "");

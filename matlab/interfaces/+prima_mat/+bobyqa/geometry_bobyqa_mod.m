@@ -95,11 +95,11 @@ classdef geometry_bobyqa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - (xpt(:, kopt) + d)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - xpt(:, kopt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
@@ -132,7 +132,7 @@ classdef geometry_bobyqa_mod
             end
 
             % SCORE(K) = NaN implies DEN(K) = NaN. We exclude such K as we want DEN to be big.
-            score(linalg_obj.trueloc(infnan_obj.is_nan(score))) = -consts_obj.ONE;
+            score(linalg_obj.trueloc(infnan_obj.is_nan_sp(score))) = -consts_obj.ONE;
 
             knew = 0;
             % The following IF works slightly better than `IF (ANY(SCORE > 0))` from Powell's BOBYQA/LINCOA code.
@@ -277,7 +277,7 @@ classdef geometry_bobyqa_mod
                 debug_obj.assert(numel(sl) == n && all(sl <= 0, 'all'), "SIZE(SL) == N, SL <= 0", srname);
                 debug_obj.assert(numel(su) == n && all(su >= 0, 'all'), "SIZE(SU) == N, SU >= 0", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= fortran.spread(sl, 'dim', 2, 'ncopies', npt), 'all') && all(xpt <= fortran.spread(su, 'dim', 2, 'ncopies', npt), 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
@@ -326,7 +326,7 @@ classdef geometry_bobyqa_mod
             % point on the K-th line attains the J-th upper bound, SBDI(I, K) = -J < 0 indicates reaching the
             % J-th lower bound, and SBDI(I, K) = 0 means not touching any bound.
             dderiv(:) = linalg_obj.matprod12(glag, xpt) - linalg_obj.inprod(glag, xopt); % The derivatives PHI_K'(0).
-            distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt)), 2), 1);
+            distsq(:) = fortran.sum(fortran.power((xpt - xopt), 2), 1);
             for k = 1:npt
                 % It does not make sense to consider "straight line through XOPT and XPT(:, KOPT)". Hence set
                 % STPLEN(:, KOPT) = 0 and ISBD(:, KOPT) = 0 so that VLAG(:, K) and PREDSQ(:, K) obtained after
@@ -368,7 +368,7 @@ classdef geometry_bobyqa_mod
                 slbd_test(linalg_obj.trueloc(xdiff > 0)) = lfrac(linalg_obj.trueloc(xdiff > 0));
                 slbd_test(linalg_obj.trueloc(xdiff < 0)) = ufrac(linalg_obj.trueloc(xdiff < 0));
                 if any(slbd_test > slbd, 'all')
-                    ilbd = fix(fortran.maxloc(slbd_test, 'mask', (~infnan_obj.is_nan(slbd_test)), 'dim', 1));
+                    ilbd = fix(fortran.maxloc(slbd_test, 'mask', (~infnan_obj.is_nan_sp(slbd_test)), 'dim', 1));
                     slbd = slbd_test(ilbd);
                     ilbd = -ilbd * round(fortran.sign(consts_obj.ONE, xdiff(ilbd)));
                     %%MATLAB:
@@ -382,7 +382,7 @@ classdef geometry_bobyqa_mod
                 subd_test(linalg_obj.trueloc(xdiff > 0)) = ufrac(linalg_obj.trueloc(xdiff > 0));
                 subd_test(linalg_obj.trueloc(xdiff < 0)) = lfrac(linalg_obj.trueloc(xdiff < 0));
                 if any(subd_test < subd, 'all')
-                    iubd = fix(fortran.minloc(subd_test, 'mask', (~infnan_obj.is_nan(subd_test)), 'dim', 1));
+                    iubd = fix(fortran.minloc(subd_test, 'mask', (~infnan_obj.is_nan_sp(subd_test)), 'dim', 1));
                     subd = max(sumin, subd_test(iubd));
                     iubd = iubd * round(fortran.sign(consts_obj.ONE, xdiff(iubd)));
                     %%MATLAB:
@@ -418,22 +418,22 @@ classdef geometry_bobyqa_mod
             % First, compute VLAG = PHI(STPLEN). Using the fact that PHI_K(0) = 0, PHI_K(1) = delta_{K, KNEW}
             % (Kronecker delta), and recalling the PHI_K is quadratic, we can find that
             % PHI_K(t) = t*(1-t)*PHI_K'(0) for K /= KNEW, and PHI_KNEW = t*[t*(1-PHI_K'(0)) + PHI_K'(0)].
-            vlag(:, :) = stplen .* (consts_obj.ONE - stplen) .* fortran.spread(dderiv, 'dim', 1, 'ncopies', 3);
+            vlag(:, :) = stplen .* (consts_obj.ONE - stplen) .* dderiv.';
             %%MATLAB: vlag = stplen .* (1 - stplen) .* dderiv; % Implicit expansion; dderiv is a row!
             vlag(:, knew) = stplen(:, knew) .* (stplen(:, knew) * (consts_obj.ONE - dderiv(knew)) + dderiv(knew));
             % Set NaNs in VLAG to 0 so that the behavior of MAXVAL(ABS(VLAG)) is predictable. VLAG does not have
             % NaN unless XPT does, which would be a bug. MAXVAL(ABS(VLAG)) appears in Powell's code, not here.
-            vlag(infnan_obj.is_nan(vlag)) = consts_obj.ZERO; %%MATLAB: vlag(isnan(vlag)) = 0;
+            vlag(infnan_obj.is_nan_sp(vlag)) = consts_obj.ZERO; %%MATLAB: vlag(isnan(vlag)) = 0;
             %
             % Second, BETABD is the upper bound of BETA given in (3.10) of the BOBYQA paper.
-            betabd(:, :) = consts_obj.HALF * fortran.power((stplen .* (consts_obj.ONE - stplen) .* fortran.spread(distsq, 'dim', 1, 'ncopies', 3)), 2);
+            betabd(:, :) = consts_obj.HALF * fortran.power((stplen .* (consts_obj.ONE - stplen) .* distsq.'), 2);
             %%MATLAB: betabd = 0.5 * (stplen .* (1-stplen) .* distsq).^2 % Implicit expansion; distsq is a row!
             %
             % Finally, PREDSQ is the quantity defined in (3.11) of the BOBYQA paper.
             predsq(:, :) = vlag .* vlag .* (vlag .* vlag + alpha * betabd);
             % Set NaNs in PREDSQ to 0 so that the behavior of MAXLOC(PREDSQ) is predictable. PREDSQ does not
             % have NaN unless XPT does, which would be a bug.
-            predsq(infnan_obj.is_nan(predsq)) = consts_obj.ZERO; %%MATLAB: predsq(isnan(predsq)) = 0
+            predsq(infnan_obj.is_nan_sp(predsq)) = consts_obj.ZERO; %%MATLAB: predsq(isnan(predsq)) = 0
 
             % Locate the trial point the renders the maximum of PREDSQ. It is the ISQ-th trial point on the
             % straight line through XOPT and XPT(:, KSQ).

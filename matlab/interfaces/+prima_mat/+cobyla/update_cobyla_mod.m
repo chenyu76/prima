@@ -64,14 +64,14 @@ classdef update_cobyla_mod
                 debug_obj.assert(m >= 0, "M >= 0", srname);
                 debug_obj.assert(n >= 1, "N >= 1", srname);
                 debug_obj.assert(jdrop >= 0 && jdrop <= n + 1, "1 <= JDROP <= N+1", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(constr) | infnan_obj.is_posinf(constr), 'all'), "CONSTR does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(constr) | infnan_obj.is_posinf(constr), 'all'), "CONSTR does not contain NaN/+Inf", srname);
                 debug_obj.assert(~(infnan_obj.is_nan_sp(cstrv) || infnan_obj.is_posinf(cstrv)), "CSTRV is not NaN/+Inf", srname);
                 debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), "SIZE(D) == N, D is finite", srname);
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
                 debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, "SIZE(CONMAT) = [M, N+1]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
-                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
                 debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
@@ -101,7 +101,7 @@ classdef update_cobyla_mod
                 simi(jdrop, :) = simi_jdrop;
             else                % JDROP = N+1
                 sim(:, n + 1) = sim(:, n + 1) + d;
-                sim(:, 1:n) = sim(:, 1:n) - fortran.spread(d, 'dim', 2, 'ncopies', n);
+                sim(:, 1:n) = sim(:, 1:n) - d;
                 simid(:) = linalg_obj.matprod21(simi, d);
                 sum_simi(:) = fortran.sum(simi, 1);
                 simi(:, :) = simi + linalg_obj.outprod(simid, sum_simi ./ (consts_obj.ONE - fortran.sum(simid, 'all')));
@@ -140,9 +140,9 @@ classdef update_cobyla_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, "SIZE(CONMAT) = [M, N+1]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
-                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
                 debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
@@ -219,9 +219,9 @@ classdef update_cobyla_mod
                 debug_obj.assert(n >= 1, "N >= 1", srname);
                 debug_obj.assert(cpen > 0, "CPEN > 0", srname);
                 debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, "SIZE(CONMAT) = [M, N+1]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
-                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
                 debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
@@ -251,7 +251,7 @@ classdef update_cobyla_mod
                 sim(:, n + 1) = sim(:, n + 1) + sim(:, jopt);
                 sim_jopt(:) = sim(:, jopt);
                 sim(:, jopt) = consts_obj.ZERO;
-                sim(:, 1:n) = sim(:, 1:n) - fortran.spread(sim_jopt, 'dim', 2, 'ncopies', n);
+                sim(:, 1:n) = sim(:, 1:n) - sim_jopt;
                 %%MATLAB: sim(:, 1:n) = sim(:, 1:n) - sim_jopt; % sim_jopt should be a column! Implicit expansion
                 % The above update is equivalent to multiply SIM(:, 1:N) from the right side by a matrix whose
                 % JOPT-th row is [-1, -1, ..., -1], while all the other rows are the same as those of the
@@ -297,9 +297,9 @@ classdef update_cobyla_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(obj.findpole(cpen, cval, fval) == n + 1 || info == infos_obj.DAMAGING_ROUNDING, "The best point is SIM(:, N+1) unless the rounding is damaging", srname);
                 debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, "SIZE(CONMAT) = [M, N+1]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
-                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
                 debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
@@ -342,8 +342,8 @@ classdef update_cobyla_mod
             % Preconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(cpen > 0, "CPEN > 0", srname);
-                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
-                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL is not NaN/+Inf", srname);
             end
 
             %====================%

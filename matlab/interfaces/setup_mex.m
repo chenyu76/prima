@@ -1,4 +1,4 @@
-% Compile Fortran MEX files for full numerical consistency
+% Compile Fortran MEX files for bit consistency
 original_dir = pwd;
 base_dir = fileparts(mfilename('fullpath'));
 mex_dir = fullfile(base_dir, '+fortran', 'private');

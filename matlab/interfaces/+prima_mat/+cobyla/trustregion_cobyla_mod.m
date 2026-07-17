@@ -237,10 +237,10 @@ classdef trustregion_cobyla_mod
                     return
                 end
 
-                if all(infnan_obj.is_nan(b), 'all')
+                if all(infnan_obj.is_nan_sp(b), 'all')
                     return
                 else
-                    icon = fix(fortran.maxloc(-b, 'mask', (~infnan_obj.is_nan(b)), 'dim', 1));
+                    icon = fix(fortran.maxloc(-b, 'mask', (~infnan_obj.is_nan_sp(b)), 'dim', 1));
                     %%MATLAB: [~, icon] = max(b, [], 'omitnan');
                 end
                 m = mcon;
@@ -260,7 +260,7 @@ classdef trustregion_cobyla_mod
                 % them so that they need not be passed from stage 1 to 2, and hence the coupling is reduced.
                 cviol = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(d, A(:, 1:m)) - b(1:m), [], 1)]);
             end
-            zdota(1:nact) = reshape(cell2mat(arrayfun(@(k) linalg_obj.inprod(z(:, k), A(:, iact(k))), (1:nact), "UniformOutput", false)), [], 1);
+            zdota(1:nact) = reshape(arrayfun(@(k) linalg_obj.inprod(z(:, k), A(:, iact(k))), 1:nact), [], 1);
             %%MATLAB: zdota(1:nact) = sum(z(:, 1:nact) .* A(:, iact(1:nact)), 1);  % Row vector
 
             % More initialization.

@@ -231,17 +231,17 @@ classdef bobyqb_mod
                 % Postconditions
                 if consts_obj.DEBUGGING
                     debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
-                    debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
+                    debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
                     debug_obj.assert(all(x >= xl, 'all') && all(x <= xu, 'all'), "XL <= X <= XU", srname);
                     debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
                     debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
                     % The last calculated X can be Inf (finite + finite can be Inf numerically).
                     for k = 1:min(nf, maxxhist)
                         debug_obj.assert(all(xhist(:, k) >= xl, 'all') && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
                     end
                     debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), "F is the smallest in FHIST", srname);
                 end
                 return
@@ -435,7 +435,7 @@ classdef bobyqb_mod
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
                 accurate_mod = all(abs(moderr_rec) <= ebound, 'all') && all(dnorm_rec <= rho, 'all');
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
-                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - xpt(:, kopt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
                 close_itpset = all(distsq <= max(fortran.power(delta, 2), fortran.power((consts_obj.TEN * rho), 2)), 'all');
                 % Below are some alternative definitions of CLOSE_ITPSET.
@@ -651,17 +651,17 @@ classdef bobyqb_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
-                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
+                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
                 debug_obj.assert(all(x >= xl, 'all') && all(x <= xu, 'all'), "XL <= X <= XU", srname);
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 for k = 1:min(nf, maxxhist)
                     debug_obj.assert(all(xhist(:, k) >= xl, 'all') && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
                 end
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
                 debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), "F is the smallest in FHIST", srname);
             end
 
@@ -714,7 +714,7 @@ classdef bobyqb_mod
                 debug_obj.assert(numel(xopt) == n && all(infnan_obj.is_finite(xopt), 'all'), "SIZE(XOPT) == N, XOPT is finite", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(all(xopt >= sl & xopt <= su, 'all'), "SL <= XOPT <= SU", srname);
-                debug_obj.assert(all(xpt >= fortran.spread(sl, 'dim', 2, 'ncopies', npt) & xpt <= fortran.spread(su, 'dim', 2, 'ncopies', npt), 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= sl & xpt <= su, 'all'), "SL <= XPT <= SU", srname);
             end
 
             %====================%

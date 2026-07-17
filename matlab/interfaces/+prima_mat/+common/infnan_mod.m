@@ -125,7 +125,7 @@ classdef infnan_mod
             %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
             %y = (.not. is_finite(x) .and. .not. (abs(x) > huge_value(x))) .or. y
             y = ((~obj.inf_obj.is_finite(x)) & (~obj.inf_obj.is_inf(x)));
-            y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value(x) & x >= -obj.huge_obj.huge_value(x)))) | y;
+            y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp()))) | y;
         end
         function y = is_nan_dp(obj, x)
             prima_mat.common.consts_mod();
@@ -134,7 +134,7 @@ classdef infnan_mod
             %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
             %y = (.not. is_finite(x) .and. .not. (abs(x) > huge_value(x))) .or. y
             y = ((~obj.inf_obj.is_finite(x)) & (~obj.inf_obj.is_inf(x)));
-            y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value(x) & x >= -obj.huge_obj.huge_value(x)))) | y;
+            y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp()))) | y;
         end
         function y = is_nan_qp(obj, x)
             prima_mat.common.consts_mod();
@@ -143,7 +143,7 @@ classdef infnan_mod
             %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
             %y = (.not. is_finite(x) .and. .not. (abs(x) > huge_value(x))) .or. y
             y = ((~obj.inf_obj.is_finite(x)) & (~obj.inf_obj.is_inf(x)));
-            y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value(x) & x >= -obj.huge_obj.huge_value(x)))) | y;
+            y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp()))) | y;
         end
 
     end

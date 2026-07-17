@@ -196,9 +196,6 @@ classdef newuoa_mod
             f_loc = NaN;
 
 
-            fhist_loc = NaN;
-            xhist_loc = NaN;
-
             % Sizes
             n = fix(numel(x));
 
@@ -340,7 +337,7 @@ classdef newuoa_mod
             % In MATLAB/Python/Julia/R implementation, we should simply set MAXHIST = MAXFUN and initialize
             % FHIST = NaN(1, MAXFUN), XHIST = NaN(N, MAXFUN) if they are requested; replace MAXFUN with 0 for
             % the history that is not requested.
-            [maxhist_loc, xhist_loc, fhist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 4, xhist_loc, nargout >= 5, fhist_loc);
+            [maxhist_loc, xhist_loc, fhist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 4, nargout >= 5);
 
 
             %-------------------- Call NEWUOB, which performs the real calculations. --------------------------%
@@ -360,7 +357,7 @@ classdef newuoa_mod
             if nargout >= 4
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                xhist = memory_obj.alloc_rmatrix_sp(xhist, n, nhist); % Removable in F2003.
+                xhist = memory_obj.alloc_rmatrix_sp(n, nhist); % Removable in F2003.
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -384,7 +381,7 @@ classdef newuoa_mod
             if nargout >= 5
                 nhist = min(nf_loc, fix(numel(fhist_loc)));
                 %--------------------------------------------------%
-                fhist = memory_obj.alloc_rvector_sp(fhist, nhist); % Removable in F2003.
+                fhist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
@@ -399,15 +396,15 @@ classdef newuoa_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(nf_loc <= maxfun_loc, "NF <= MAXFUN", srname);
-                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
+                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
                 nhist = min(nf_loc, maxhist_loc);
                 if nargout >= 4
                     debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == nhist, "SIZE(XHIST) == [N, NHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(xhist), 'all'), "XHIST does not contain NaN", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist), 'all'), "XHIST does not contain NaN", srname);
                 end
                 if nargout >= 5
                     debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(fhist) | infnan_obj.is_posinf(fhist), 'all'), "FHIST does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) | infnan_obj.is_posinf(fhist), 'all'), "FHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(~any(fhist < f_loc, 'all'), "F is the smallest in FHIST", srname);
                 end
             end

@@ -247,7 +247,7 @@ classdef trustregion_lincoa_mod
                     if any(resact(1:nact) > 1.0e-4 * delta, 'all')
                         % Set DPROJ to the shortest move (projection step) from S to the boundaries of the
                         % active constraints. We will use DPROJ to modify PSD.
-                        dproj(:) = linalg_obj.matprod21(qfac(:, 1:nact), linalg_obj.solve(rfac(1:nact, 1:nact)', resact(1:nact)));
+                        dproj(:) = linalg_obj.matprod21(qfac(:, 1:nact), linalg_obj.solve(rfac(1:nact, 1:nact).', resact(1:nact)));
                         %%MATLAB: dproj = qfac(:, 1:nact) * (rfac(1:nact, 1:nact)' \ resact(1:nact))
 
                         % The vector DPROJ is also the shortest move from S + PSD to the boundaries of the
@@ -348,7 +348,7 @@ classdef trustregion_lincoa_mod
                 ad(linalg_obj.trueloc(resnew > 0)) = linalg_obj.matprod12(d, amat(:, linalg_obj.trueloc(resnew > 0)));
                 frac(:) = alpha;
                 frac(linalg_obj.trueloc(ad > 0)) = resnew(linalg_obj.trueloc(ad > 0)) ./ ad(linalg_obj.trueloc(ad > 0));
-                frac(linalg_obj.trueloc(infnan_obj.is_nan(frac))) = alpha;
+                frac(linalg_obj.trueloc(infnan_obj.is_nan_sp(frac))) = alpha;
                 jsav = 0;
                 if any(frac < alpha, 'all')
                     jsav = fix(fortran.minloc(frac, 'dim', 1));

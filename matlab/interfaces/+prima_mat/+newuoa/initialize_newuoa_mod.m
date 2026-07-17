@@ -223,7 +223,7 @@ classdef initialize_newuoa_mod
                 debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", srname);
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -266,7 +266,7 @@ classdef initialize_newuoa_mod
             % Preconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
                 debug_obj.assert(all(ij >= 1 & ij <= 2 * n, 'all'), "1 <= IJ <= 2*N", srname);
                 debug_obj.assert(all(ij(1, :) ~= ij(2, :), 'all'), "IJ(1, :) /= IJ(2, :)", srname);
@@ -336,7 +336,7 @@ classdef initialize_newuoa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 4
-                if any(infnan_obj.is_nan(gopt), 'all') || any(infnan_obj.is_nan(hq), 'all')
+                if any(infnan_obj.is_nan_sp(gopt), 'all') || any(infnan_obj.is_nan_sp(hq), 'all')
                     info = infos_obj.NAN_INF_MODEL;
                 else
                     info = infos_obj.INFO_DFT;
@@ -454,7 +454,7 @@ classdef initialize_newuoa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 4
-                if any(infnan_obj.is_nan(bmat), 'all') || any(infnan_obj.is_nan(zmat), 'all')
+                if any(infnan_obj.is_nan_sp(bmat), 'all') || any(infnan_obj.is_nan_sp(zmat), 'all')
                     info = infos_obj.NAN_INF_MODEL;
                 else
                     info = infos_obj.INFO_DFT;

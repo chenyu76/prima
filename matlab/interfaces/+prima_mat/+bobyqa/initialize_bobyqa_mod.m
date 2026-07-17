@@ -116,19 +116,19 @@ classdef initialize_bobyqa_mod
             % than -RHOBEG, while SU >= 0 and the nonzeros of SU should be larger than RHOBEG. However, this may
             % not be true due to rounding. The following lines revise SL and SU to ensure it. X0 is also revised
             % accordingly. In precise arithmetic, the "revisions" do not change SL, SU, or X0.
-            mask00 = sl < 0; %Unsupported statement inside WHERE block: StmtLineBreak 1
-            sl(mask00) = min(sl(mask00), -rhobeg); %Unsupported statement inside WHERE block: StmtLineBreak 1
-            mask01 = ~mask00; %Unsupported statement inside WHERE block: StmtLineBreak 1
-            x0(mask01) = xl(mask01); %Unsupported statement inside WHERE block: StmtLineBreak 1
-            sl(mask01) = consts_obj.ZERO; %Unsupported statement inside WHERE block: StmtLineBreak 1
-            su(mask01) = xu(mask01) - xl(mask01); %Unsupported statement inside WHERE block: StmtLineBreak 1
+            mask00 = sl < 0; %Unsupported statement inside WHERE block: StatementLineBreak 1
+            sl(mask00) = min(sl(mask00), -rhobeg); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
+            x0(mask01) = xl(mask01); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            sl(mask01) = consts_obj.ZERO; %Unsupported statement inside WHERE block: StatementLineBreak 1
+            su(mask01) = xu(mask01) - xl(mask01); %Unsupported statement inside WHERE block: StatementLineBreak 1
 
-            mask00 = su > 0; %Unsupported statement inside WHERE block: StmtLineBreak 1
-            su(mask00) = max(su(mask00), rhobeg); %Unsupported statement inside WHERE block: StmtLineBreak 1
-            mask01 = ~mask00; %Unsupported statement inside WHERE block: StmtLineBreak 1
-            x0(mask01) = xu(mask01); %Unsupported statement inside WHERE block: StmtLineBreak 1
-            sl(mask01) = xl(mask01) - xu(mask01); %Unsupported statement inside WHERE block: StmtLineBreak 1
-            su(mask01) = consts_obj.ZERO; %Unsupported statement inside WHERE block: StmtLineBreak 1
+            mask00 = su > 0; %Unsupported statement inside WHERE block: StatementLineBreak 1
+            su(mask00) = max(su(mask00), rhobeg); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
+            x0(mask01) = xu(mask01); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            sl(mask01) = xl(mask01) - xu(mask01); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            su(mask01) = consts_obj.ZERO; %Unsupported statement inside WHERE block: StatementLineBreak 1
 
             %%MATLAB code for revising X, SL, and SU:
             %%sl(sl < 0) = min(sl(sl < 0), -rhobeg);
@@ -275,12 +275,12 @@ classdef initialize_bobyqa_mod
                 debug_obj.assert(all(xbase >= xl & xbase <= xu, 'all'), "XL <= XBASE <= XU", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= fortran.spread(sl, 'dim', 2, 'ncopies', npt), 'all') && all(xpt <= fortran.spread(su, 'dim', 2, 'ncopies', npt), 'all'), "SL <= XPT <= SU", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", srname);
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 for k = 1:min(nf, maxxhist)
                     debug_obj.assert(all(xhist(:, k) >= xl, 'all') && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
@@ -328,7 +328,7 @@ classdef initialize_bobyqa_mod
             % Preconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
                 debug_obj.assert(all(ij >= 1 & ij <= n, 'all'), "1 <= IJ <= N", srname);
                 debug_obj.assert(all(ij(1, :) ~= ij(2, :), 'all'), "IJ(1, :) /= IJ(2, :)", srname);
@@ -390,7 +390,7 @@ classdef initialize_bobyqa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 4
-                if any(infnan_obj.is_nan(gopt), 'all') || any(infnan_obj.is_nan(hq), 'all')
+                if any(infnan_obj.is_nan_sp(gopt), 'all') || any(infnan_obj.is_nan_sp(hq), 'all')
                     info = infos_obj.NAN_INF_MODEL;
                 else
                     info = infos_obj.INFO_DFT;
@@ -501,7 +501,7 @@ classdef initialize_bobyqa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 3
-                if any(infnan_obj.is_nan(bmat), 'all') || any(infnan_obj.is_nan(zmat), 'all')
+                if any(infnan_obj.is_nan_sp(bmat), 'all') || any(infnan_obj.is_nan_sp(zmat), 'all')
                     info = infos_obj.NAN_INF_MODEL;
                 else
                     info = infos_obj.INFO_DFT;

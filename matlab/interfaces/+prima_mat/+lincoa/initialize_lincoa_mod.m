@@ -85,8 +85,6 @@ classdef initialize_lincoa_mod
             srname = "INITXF";
 
 
-            ixl = NaN;
-            ixu = NaN;
             feasible = false(size(xpt, 2), 1);
             constr = NaN(nnz(xl > -consts_obj.BOUNDMAX) + nnz(xu < consts_obj.BOUNDMAX) + 2 * numel(beq) + numel(bineq), 1);
             constr_leq = NaN(numel(beq), 1);
@@ -197,8 +195,8 @@ classdef initialize_lincoa_mod
 
             % Set FVAL by evaluating F. Totally parallelizable except for FMSG.
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
-            memory_obj.alloc_ivector(ixl, fix(nnz(xl > -consts_obj.BOUNDMAX))); % Removable in F2003.
-            memory_obj.alloc_ivector(ixu, fix(nnz(xu < consts_obj.BOUNDMAX))); % Removable in F2003.
+            memory_obj.alloc_ivector(fix(nnz(xl > -consts_obj.BOUNDMAX))); % Removable in F2003.
+            memory_obj.alloc_ivector(fix(nnz(xu < consts_obj.BOUNDMAX))); % Removable in F2003.
             ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
             ixu = linalg_obj.trueloc(xu < consts_obj.BOUNDMAX);
             for k = 1:npt
@@ -253,8 +251,8 @@ classdef initialize_lincoa_mod
                 debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(cval) == npt && ~any(evaluated & (infnan_obj.is_nan(cval) | infnan_obj.is_posinf(cval)), 'all'), "SIZE(CVAL) == NPT and CVAL is not NaN or +Inf", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(numel(cval) == npt && ~any(evaluated & (infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval)), 'all'), "SIZE(CVAL) == NPT and CVAL is not NaN or +Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(evaluated & feasible & fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", srname);
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
@@ -364,7 +362,7 @@ classdef initialize_lincoa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 4
-                if any(infnan_obj.is_nan(bmat), 'all') || any(infnan_obj.is_nan(zmat), 'all')
+                if any(infnan_obj.is_nan_sp(bmat), 'all') || any(infnan_obj.is_nan_sp(zmat), 'all')
                     info = infos_obj.NAN_INF_MODEL;
                 else
                     info = infos_obj.INFO_DFT;

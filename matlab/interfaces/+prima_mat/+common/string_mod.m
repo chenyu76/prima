@@ -45,8 +45,8 @@ classdef string_mod
 
             y = x;
             for i = 1:strlength(y)
-                if extract(y, i) >= "A" && extract(y, i) <= "Z"
-                    y = replaceBetween(y, i, i, char(double(unicode2native(extract(y, i))) - dist));
+                if extractBetween(y, i, i) >= "A" && extractBetween(y, i, i) <= "Z"
+                    y = replaceBetween(y, i, i, char(double(unicode2native(extractBetween(y, i, i))) - dist));
                 end
             end
         end
@@ -64,8 +64,8 @@ classdef string_mod
 
             y = x;
             for i = 1:strlength(y)
-                if extract(y, i) >= "a" && extract(y, i) <= "z"
-                    y = replaceBetween(y, i, i, char(double(unicode2native(extract(y, i))) + dist));
+                if extractBetween(y, i, i) >= "a" && extractBetween(y, i, i) <= "z"
+                    y = replaceBetween(y, i, i, char(double(unicode2native(extractBetween(y, i, i))) + dist));
                 end
             end
         end
@@ -89,7 +89,7 @@ classdef string_mod
             y = NaN(strlength(x), 1);
 
 
-            y(:) = reshape(cell2mat(arrayfun(@(i) fix(double(unicode2native(extract(x, i)))), (1:fix(strlength(x))), "UniformOutput", false)), [], 1);
+            y(:) = arrayfun(@(i) fix(double(unicode2native(extractBetween(x, i, i)))), 1:fix(strlength(x)));
 
         end
         function s = real2str_scalar(obj, x, varargin)

@@ -133,7 +133,7 @@ classdef geometry_cobyla_mod
             % DISTQ(J) is the square of the distance from the J-th vertex of the simplex to the "best" point so
             % far, taking the trial point SIM(:, N+1) + D into account.
             if ximproved
-                distsq(1:n) = fortran.sum(fortran.power((sim(:, 1:n) - fortran.spread(d, 'dim', 2, 'ncopies', n)), 2), 1);
+                distsq(1:n) = fortran.sum(fortran.power((sim(:, 1:n) - d), 2), 1);
                 %%MATLAB: distsq = sum((sim(:, 1:n) - d).^2);  % d should be a column! Implicit expansion
                 distsq(n + 1) = fortran.sum(fortran.power(d, 2), 'all');
             else
@@ -161,7 +161,7 @@ classdef geometry_cobyla_mod
             end
 
             % SCORE(J) is NaN implies SIMID(J) is NaN, but we want ABS(SIMID) to be big. So we exclude such J.
-            score(linalg_obj.trueloc(infnan_obj.is_nan(score))) = -consts_obj.ONE;
+            score(linalg_obj.trueloc(infnan_obj.is_nan_sp(score))) = -consts_obj.ONE;
 
             jdrop = 0;
             % The following IF works a bit better than `IF (ANY(SCORE > 1) .OR. ANY(SCORE > 0) .AND. XIMPROVED)`
@@ -242,10 +242,10 @@ classdef geometry_cobyla_mod
                 debug_obj.assert(cpen > 0, "CPEN > 0", srname);
                 debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, "SIZE(SIMI) == [N, N]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
-                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, "SIZE(CONMAT) == [M, N+1]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == NPT and CVAL does not contain negative NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == NPT and CVAL does not contain negative NaN/+Inf", srname);
                 debug_obj.assert(jdrop >= 1 && jdrop <= n, "1 <= JDROP <= N", srname);
             end
 
@@ -266,7 +266,7 @@ classdef geometry_cobyla_mod
             % So we cannot pass G and A from outside.
             g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
             A(:, 1:m_lcon) = amat;
-            A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - fortran.spread(conmat(m_lcon + 1:m, n + 1), 'dim', 2, 'ncopies', n), simi)';
+            A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1), simi).';
             %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
             % CVPD and CVND are the predicted constraint violation of D and -D by the linear models.
             cvpd = linalg_obj.maximum1([consts_obj.ZERO; reshape(conmat(:, n + 1) + linalg_obj.matprod12(d, A), [], 1)]);

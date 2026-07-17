@@ -134,7 +134,7 @@ classdef trustregion_bobyqa_mod
                 debug_obj.assert(all(xopt >= sl & xopt <= su, 'all'), "SL <= XOPT <= SU", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= fortran.spread(sl, 'dim', 2, 'ncopies', npt), 'all') && all(xpt <= fortran.spread(su, 'dim', 2, 'ncopies', npt), 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
                 debug_obj.assert(numel(gnew) == n, "SIZE(GNEW) == N", srname);
                 debug_obj.assert(numel(xnew) == n, "SIZE(XNEW) == N", srname);
@@ -300,7 +300,7 @@ classdef trustregion_bobyqa_mod
                 %where (s > 0) sbound = min(stplen * s, su - xnew) / s
                 %where (s < 0) sbound = max(stplen * s, sl - xnew) / s
                 %----------------------------------------------------------------------------------------------%
-                sbound(linalg_obj.trueloc(infnan_obj.is_nan(sbound))) = stplen; % Needed? No if we are sure that D and S are finite.
+                sbound(linalg_obj.trueloc(infnan_obj.is_nan_sp(sbound))) = stplen; % Needed? No if we are sure that D and S are finite.
                 iact = 0;
                 if any(sbound < stplen, 'all')
                     iact = fix(fortran.minloc(sbound, 'dim', 1));
@@ -463,12 +463,12 @@ classdef trustregion_bobyqa_mod
                 ssq(:) = fortran.power(d, 2) + fortran.power(s, 2); % Indeed, only SSQ(TRUELOC(XBDI == 0)) is needed.
                 tanbd(:) = consts_obj.ONE;
                 sqdscr(:) = -consts_obj.REALMAX;
-                sqdscr(xbdi == 0 & xopt - sl < sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - fortran.power((xopt(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - sl(xbdi == 0 & xopt - sl < fortran.sqrt(ssq))), 2)));
+                sqdscr(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - fortran.power((xopt(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - sl(xbdi == 0 & xopt - sl < fortran.sqrt(ssq))), 2)));
                 tanbd(sqdscr - s > 0) = min(tanbd(sqdscr - s > 0), (xnew(sqdscr - s > 0) - sl(sqdscr - s > 0)) ./ (sqdscr(sqdscr - s > 0) - s(sqdscr - s > 0)));
                 sqdscr(:) = -consts_obj.REALMAX;
-                sqdscr(xbdi == 0 & su - xopt < sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - fortran.power((su(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - xopt(xbdi == 0 & su - xopt < fortran.sqrt(ssq))), 2)));
+                sqdscr(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - fortran.power((su(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - xopt(xbdi == 0 & su - xopt < fortran.sqrt(ssq))), 2)));
                 tanbd(sqdscr + s > 0) = min(tanbd(sqdscr + s > 0), (su(sqdscr + s > 0) - xnew(sqdscr + s > 0)) ./ (sqdscr(sqdscr + s > 0) + s(sqdscr + s > 0)));
-                tanbd(linalg_obj.trueloc(infnan_obj.is_nan(tanbd))) = consts_obj.ZERO;
+                tanbd(linalg_obj.trueloc(infnan_obj.is_nan_sp(tanbd))) = consts_obj.ZERO;
                 %----------------------------------------------------------------------------------------------%
                 %%MATLAB code for defining TANBD:
                 %%xfree = (xbdi == 0);
@@ -506,7 +506,7 @@ classdef trustregion_bobyqa_mod
                 % Seek the greatest reduction in Q for a range of equally spaced values of HANGT in [0, ANGBD],
                 % with HANGT being the TANGENT of HALF the angle of the alternative iteration.
                 args(:) = [shs, dhd, dhs, dredg, sredg];
-                if any(infnan_obj.is_nan(args), 'all')
+                if any(infnan_obj.is_nan_sp(args), 'all')
                     break
                 end
                 % Define the grid size of the search for HANGT. Powell defined the size to be 4 if hangt_bd is

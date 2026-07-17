@@ -178,7 +178,7 @@ classdef rescue_mod
                 debug_obj.assert(maxfun >= npt + 1, "MAXFUN >= NPT+1", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
                 debug_obj.assert(delta > 0, "DELTA > 0", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) is the smallest in FVAL", srname);
                 debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, "SIZE(FHIST) == 0 or MAXHIST", srname);
                 debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", srname);
@@ -195,7 +195,7 @@ classdef rescue_mod
                     debug_obj.assert(all(xhist(:, k) >= xl, 'all') && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
                 end
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= fortran.spread(sl, 'dim', 2, 'ncopies', npt), 'all') && all(xpt <= fortran.spread(su, 'dim', 2, 'ncopies', npt), 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
                 debug_obj.assert(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", srname);
@@ -221,7 +221,7 @@ classdef rescue_mod
             sl(:) = min(sl - xopt, consts_obj.ZERO);
             su(:) = max(su - xopt, consts_obj.ZERO);
             xbase(:) = min(max(xl, xbase + xopt), xu);
-            xpt(:, :) = xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt);
+            xpt(:, :) = xpt - xopt;
             xpt(:, kopt) = consts_obj.ZERO;
 
             % Update HQ so that HQ and PQ define the second derivatives of the model after XBASE has been
@@ -401,7 +401,7 @@ classdef rescue_mod
                     score(korig) = -score(korig) - scoreinc;
                     continue
                 end
-                kprov = fix(fortran.maxloc(den, 'mask', (~infnan_obj.is_nan(den)), 'dim', 1));
+                kprov = fix(fortran.maxloc(den, 'mask', (~infnan_obj.is_nan_sp(den)), 'dim', 1));
                 %%MATLAB: [~, kprov] = max(den, [], 'omitnan');
 
                 % Update BMAT, ZMAT, VLAG, and PTSID to exchange the KPROV-th and KORIG-th provisional points.
@@ -588,7 +588,7 @@ classdef rescue_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) is the smallest in FVAL", srname);
                 debug_obj.assert(numel(sl) == n && numel(su) == n, "SIZE(SL) == N == SIZE(SU)", srname);
                 debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) == N", srname);
@@ -597,14 +597,14 @@ classdef rescue_mod
                 debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(all(xbase >= xl & xbase <= xu, 'all'), "XL <= XBASE <= XU", srname);
                 debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 for k = 1:min(nf, maxxhist)
                     debug_obj.assert(all(xhist(:, k) >= xl, 'all') && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
                 end
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= fortran.spread(sl, 'dim', 2, 'ncopies', npt), 'all') && all(xpt <= fortran.spread(su, 'dim', 2, 'ncopies', npt), 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
@@ -733,7 +733,7 @@ classdef rescue_mod
                 if abs(zmat(knew, j)) > 1.0e-20 * max(abs(zmat), [], 'all')
                     % This threshold is by Powell
                     grot(:, :) = linalg_obj.planerot(zmat(knew, [1, j]));
-                    zmat(:, [1, j]) = linalg_obj.matprod22(zmat(:, [1, j]), grot');
+                    zmat(:, [1, j]) = linalg_obj.matprod22(zmat(:, [1, j]), grot.');
                 end
                 zmat(knew, j) = consts_obj.ZERO;
             end

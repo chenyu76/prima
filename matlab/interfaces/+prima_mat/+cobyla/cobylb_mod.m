@@ -83,9 +83,6 @@ classdef cobylb_mod
             j = NaN;
 
 
-            nfilt = NaN;
-
-
             bad_trstep = false;
             adequate_geo = false;
             evaluated = false(numel(x) + 1, 1);
@@ -190,7 +187,7 @@ classdef cobylb_mod
             % the iterations. COBYLA is NOT a filter method but a trust-region method based on an L-infinity
             % merit function. Powell's implementation does not use a filter to select the iterate, possibly
             % returning a suboptimal iterate.
-            [nfilt, cfilt, confilt, ffilt, xfilt] = initialize_cobyla_obj.initfilt(conmat, ctol, cweight, cval, fval, sim, evaluated, nfilt, cfilt, confilt, ffilt, xfilt);
+            [nfilt, cfilt, confilt, ffilt, xfilt] = initialize_cobyla_obj.initfilt(conmat, ctol, cweight, cval, fval, sim, evaluated, cfilt, confilt, ffilt, xfilt);
 
             % Check whether to return due to abnormal cases that may occur during the initialization.
             if subinfo ~= infos_obj.INFO_DFT
@@ -209,17 +206,17 @@ classdef cobylb_mod
                 % Postconditions
                 if consts_obj.DEBUGGING
                     debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
-                    debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
+                    debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
                     debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
                     debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
                     % The last calculated X can be Inf (finite + finite can be Inf numerically).
                     debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(size(conhist, 1) == m && size(conhist, 2) == maxconhist, "SIZE(CONHIST) == [M, MAXCONHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(conhist(:, 1:min(nf, maxconhist))) | infnan_obj.is_posinf(conhist(:, 1:min(nf, maxconhist))), 'all'), "CONHIST does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, 1:min(nf, maxconhist))) | infnan_obj.is_posinf(conhist(:, 1:min(nf, maxconhist))), 'all'), "CONHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
-                    debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 | infnan_obj.is_nan(chist(1:min(nf, maxchist))) | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), 'all'), "CHIST does not contain negative values or NaN/+Inf", srname);
+                    debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), 'all'), "CHIST does not contain negative values or NaN/+Inf", srname);
                     nhist = min([nf, maxfhist, maxchist], [], 'all');
                     debug_obj.assert(~any(selectx_obj.isbetter10(fhist(1:nhist), chist(1:nhist), f, cstrv, ctol), 'all'), "No point in the history is better than X", srname);
                 end
@@ -308,7 +305,7 @@ classdef cobylb_mod
                 % (not necessarily a good algorithm). No preconditioning or scaling was used.
                 g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
                 A(:, 1:m_lcon) = amat;
-                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - fortran.spread(conmat(m_lcon + 1:m, n + 1), 'dim', 2, 'ncopies', n), simi)';
+                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1), simi).';
                 %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
 
                 % Calculate the trust-region trial step D. Note that D does NOT depend on CPEN.
@@ -352,7 +349,7 @@ classdef cobylb_mod
                     % N.B.: If this happens, do NOT include X into the filter, as F and CONSTR are inaccurate.
                     x(:) = sim(:, n + 1) + d;
                     distsq(n + 1) = fortran.sum(fortran.power((x - sim(:, n + 1)), 2), 'all');
-                    distsq(1:n) = reshape(cell2mat(arrayfun(@(j) fortran.sum(fortran.power((x - (sim(:, n + 1) + sim(:, j))), 2), 'all'), (1:n), "UniformOutput", false)), [], 1); % Implied do-loop
+                    distsq(1:n) = reshape(arrayfun(@(j) fortran.sum(fortran.power((x - (sim(:, n + 1) + sim(:, j))), 2), 'all'), 1:n), [], 1); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     j = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(j) <= fortran.power((1.0e-4 * rhoend), 2)
@@ -549,7 +546,7 @@ classdef cobylb_mod
                     % rounding. In an experiment with single precision on 20240317, X = SIM(:, N+1) occurred.
                     x(:) = sim(:, n + 1) + d;
                     distsq(n + 1) = fortran.sum(fortran.power((x - sim(:, n + 1)), 2), 'all');
-                    distsq(1:n) = reshape(cell2mat(arrayfun(@(j) fortran.sum(fortran.power((x - (sim(:, n + 1) + sim(:, j))), 2), 'all'), (1:n), "UniformOutput", false)), [], 1); % Implied do-loop
+                    distsq(1:n) = reshape(arrayfun(@(j) fortran.sum(fortran.power((x - (sim(:, n + 1) + sim(:, j))), 2), 'all'), 1:n), [], 1); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     j = fix(fortran.minloc(distsq, 'dim', 1));
                     if distsq(j) <= fortran.power((1.0e-4 * rhoend), 2)
@@ -663,17 +660,17 @@ classdef cobylb_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
-                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
+                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
                 debug_obj.assert(size(conhist, 1) == m && size(conhist, 2) == maxconhist, "SIZE(CONHIST) == [M, MAXCONHIST]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conhist(:, 1:min(nf, maxconhist))) | infnan_obj.is_posinf(conhist(:, 1:min(nf, maxconhist))), 'all'), "CONHIST does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, 1:min(nf, maxconhist))) | infnan_obj.is_posinf(conhist(:, 1:min(nf, maxconhist))), 'all'), "CONHIST does not contain NaN/+Inf", srname);
                 debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
-                debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 | infnan_obj.is_nan(chist(1:min(nf, maxchist))) | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), 'all'), "CHIST does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), 'all'), "CHIST does not contain negative values or NaN/+Inf", srname);
                 nhist = min([nf, maxfhist, maxchist], [], 'all');
                 debug_obj.assert(~any(selectx_obj.isbetter10(fhist(1:nhist), chist(1:nhist), f, cstrv, ctol), 'all'), "No point in the history is better than X", srname);
             end
@@ -732,9 +729,9 @@ classdef cobylb_mod
                 debug_obj.assert(size(amat, 1) == n && size(amat, 2) == numel(bvec), "SIZE(AMAT) == [N, SIZE(BVEC)]", srname);
                 debug_obj.assert(cpen_in > 0, "CPEN > 0", srname);
                 debug_obj.assert(size(conmat_in, 1) == m && size(conmat_in, 2) == n + 1, "SIZE(CONMAT) = [M, N+1]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conmat_in) | infnan_obj.is_posinf(conmat_in), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(cval_in) == n + 1 && ~any(cval_in < 0 | infnan_obj.is_nan(cval_in) | infnan_obj.is_posinf(cval_in), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
-                debug_obj.assert(numel(fval_in) == n + 1 && ~any(infnan_obj.is_nan(fval_in) | infnan_obj.is_posinf(fval_in), 'all'), "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat_in) | infnan_obj.is_posinf(conmat_in), 'all'), "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval_in) == n + 1 && ~any(cval_in < 0 | infnan_obj.is_nan_sp(cval_in) | infnan_obj.is_posinf(cval_in), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(numel(fval_in) == n + 1 && ~any(infnan_obj.is_nan_sp(fval_in) | infnan_obj.is_posinf(fval_in), 'all'), "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
                 debug_obj.assert(size(sim_in, 1) == n && size(sim_in, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim_in), 'all'), "SIM is finite", srname);
                 debug_obj.assert(all(fortran.sum(abs(sim_in(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
@@ -783,7 +780,7 @@ classdef cobylb_mod
                 % Calculate the linear approximations to the objective and constraint functions.
                 g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
                 A(:, 1:m_lcon) = amat;
-                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - fortran.spread(conmat(m_lcon + 1:m, n + 1), 'dim', 2, 'ncopies', n), simi)';
+                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1), simi).';
                 %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
 
                 % Calculate the trust-region trial step D. Note that D does NOT depend on CPEN.
@@ -847,8 +844,8 @@ classdef cobylb_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(numel(fval) >= 1, "SIZE(FVAL) >= 1", srname);
                 debug_obj.assert(size(conmat, 2) == numel(fval), "SIZE(CONMAT, 2) == SIZE(FVAL)", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "FVAL does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "FVAL does not contain NaN/+Inf", srname);
             end
 
             %====================%

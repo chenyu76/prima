@@ -707,13 +707,13 @@ classdef linalg_mod
 
             if obj.istril(A)
                 % This case is invoked in COBYLA.
-                R(:, :) = A'; % Take transpose to work on columns.
+                R(:, :) = A.'; % Take transpose to work on columns.
                 B = repmat(consts_obj.ZERO, size(B));
                 for i = 1:n
                     B(i, i) = consts_obj.ONE / R(i, i);
                     B(1:i - 1, i) = -obj.matprod21(B(1:i - 1, 1:i - 1), R(1:i - 1, i) ./ R(i, i));
                 end
-                B(:, :) = B';
+                B(:, :) = B.';
             elseif obj.istriu(A)
                 B = repmat(consts_obj.ZERO, size(B));
                 for i = 1:n
@@ -723,13 +723,13 @@ classdef linalg_mod
             else
                 % This is NOT the best algorithm for the inverse, but since the QR subroutine is available ...
                 [Q, R, P] = obj.qr(A);
-                R(:, :) = R'; % Take transpose to work on columns.
+                R(:, :) = R.'; % Take transpose to work on columns.
                 B = repmat(consts_obj.ZERO, size(B));
                 for i = n:-1:1
                     B(:, i) = (Q(:, i) - obj.matprod21(B(:, i + 1:n), R(i + 1:n, i))) ./ R(i, i);
                 end
                 InvP(P) = obj.linspace_i(1, n, n); % The inverse permutation
-                B(:, :) = B(:, InvP)';
+                B(:, :) = B(:, InvP).';
             end
 
             %====================%
@@ -857,7 +857,7 @@ classdef linalg_mod
 
             pivot = (nargout >= 3);
             Q_loc(:, :) = obj.eye1(m);
-            T(:, :) = A'; % T is the transpose of R. We consider T in order to work on columns.
+            T(:, :) = A.'; % T is the transpose of R. We consider T in order to work on columns.
             if pivot
                 P = obj.linspace_i(1, n, n);
             end
@@ -872,7 +872,7 @@ classdef linalg_mod
                     end
                 end
                 for i = m:-1:j + 1
-                    G(:, :) = obj.planerot(T(j, [j, i]))';
+                    G(:, :) = obj.planerot(T(j, [j, i])).';
                     T(j, [j, i]) = [obj.hypotenuse(T(j, j), T(j, i)), consts_obj.ZERO]; %T(j, [j, i]) = [sqrt(T(j, j)**2 + T(j, i)**2), ZERO]
                     T(j + 1:n, [j, i]) = obj.matprod22(T(j + 1:n, [j, i]), G);
                     Q_loc(:, [j, i]) = obj.matprod22(Q_loc(:, [j, i]), G);
@@ -883,7 +883,7 @@ classdef linalg_mod
                 Q = Q_loc(:, 1:size(Q, 2));
             end
             if nargout >= 2
-                R = T(:, 1:size(R, 1))';
+                R = T(:, 1:size(R, 1)).';
             end
 
             %====================%
@@ -896,7 +896,7 @@ classdef linalg_mod
                 debug_obj.assert(obj.isorth(Q_loc, 'tol', tol), "The columns of Q are orthonormal", srname);
                 debug_obj.assert(obj.istril(T, 'tol', tol), "R is upper triangular", srname);
                 if pivot
-                    debug_obj.assert(all(abs(obj.matprod22(Q_loc, T') - A(:, P)) <= max(tol, tol * max(abs(A), [], 'all')), 'all'), "A(:, P) == Q*R", srname);
+                    debug_obj.assert(all(abs(obj.matprod22(Q_loc, T.') - A(:, P)) <= max(tol, tol * max(abs(A), [], 'all')), 'all'), "A(:, P) == Q*R", srname);
                     for j = 1:min(m, n) - 1
                         % The following test cannot be passed on ill-conditioned problems.
                         %call assert(abs(T(j, j)) + max(tol, tol * abs(T(j, j))) >= &
@@ -904,7 +904,7 @@ classdef linalg_mod
                         debug_obj.assert(all(fortran.power(T(j, j), 2) + max(tol, tol * fortran.power(T(j, j), 2)) >= fortran.sum(fortran.power(T(j + 1:n, j:min(m, n)), 2), 2), 'all'), "R(J, J)^2 >= SUM(R(J : MIN(M, N), J + 1 : N).^2", srname);
                     end
                 else
-                    debug_obj.assert(all(abs(obj.matprod22(Q_loc, T') - A) <= max(tol, tol * max(abs(A), [], 'all')), 'all'), "A == Q*R", srname);
+                    debug_obj.assert(all(abs(obj.matprod22(Q_loc, T.') - A) <= max(tol, tol * max(abs(A), [], 'all')), 'all'), "A == Q*R", srname);
                 end
             end
         end
@@ -974,14 +974,14 @@ classdef linalg_mod
 
             if ismember('Q', ipObj.UsingDefaults)
                 [Q_loc, ~, P] = obj.qr(A);
-                Rdiag_loc(:) = reshape(cell2mat(arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, P(i))), (1:min(m, n)), "UniformOutput", false)), [], 1);
+                Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, P(i))), 1:min(m, n));
                 %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, P(1:min(m,n))), 1); % Row vector
                 rank = max([0; reshape(obj.trueloc(abs(Rdiag_loc) > 0), [], 1)], [], 'all');
                 pivot = true;
             else
                 Q_loc(:, :) = Q(:, 1:size(Q_loc, 2));
                 if ismember('Rdiag', ipObj.UsingDefaults)
-                    Rdiag_loc(:) = reshape(cell2mat(arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, i)), (1:min(m, n)), "UniformOutput", false)), [], 1);
+                    Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, i)), 1:min(m, n));
                     %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, 1:min(m,n)), 1); % Row vector
                 else
                     Rdiag_loc(:) = Rdiag;
@@ -1115,11 +1115,11 @@ classdef linalg_mod
 
             % DLEN is the length of D. We allow |K| to exceed the number of rows/columns in A.
             dlen = max(0, fix(min(size(A, 1), size(A, 2)) - abs(k_loc)));
-            D = memory_obj.alloc_rvector_sp(D, dlen);
+            D = memory_obj.alloc_rvector_sp(dlen);
             if k_loc >= 0
-                D = reshape(cell2mat(arrayfun(@(i) A(i, i + k_loc), (1:dlen), "UniformOutput", false)), [], 1);
+                D = reshape(arrayfun(@(i) A(i, i + k_loc), 1:dlen), [], 1);
             else
-                D = reshape(cell2mat(arrayfun(@(i) A(i - k_loc, i), (1:dlen), "UniformOutput", false)), [], 1);
+                D = reshape(arrayfun(@(i) A(i - k_loc, i), 1:dlen), [], 1);
             end
 
             %====================%
@@ -1321,10 +1321,10 @@ classdef linalg_mod
             is_orth = true;
             if n > size(A, 1)
                 is_orth = false;
-            elseif any(infnan_obj.is_nan(A), 'all')
+            elseif any(infnan_obj.is_nan_sp(A), 'all')
                 is_orth = false;
             elseif consts_obj.ORTHTOL_DFT < consts_obj.REALMAX
-                is_orth = all(abs(obj.matprod22(A', A) - obj.eye1(n)) <= max(tol_loc, tol_loc * max(abs(A), [], 'all')), 'all');
+                is_orth = all(abs(obj.matprod22(A.', A) - obj.eye1(n)) <= max(tol_loc, tol_loc * max(abs(A), [], 'all')), 'all');
             end
 
             %====================%
@@ -1360,7 +1360,7 @@ classdef linalg_mod
 
             if all(abs(x) <= 0, 'all') || all(abs(v) <= 0, 'all')
                 y(:) = consts_obj.ZERO;
-            elseif any(infnan_obj.is_nan(x), 'all') || any(infnan_obj.is_nan(v), 'all')
+            elseif any(infnan_obj.is_nan_sp(x), 'all') || any(infnan_obj.is_nan_sp(v), 'all')
                 y(:) = fortran.sum(x, 'all') + fortran.sum(v, 'all'); % Set Y to NaN
 
             elseif any(infnan_obj.is_inf(v), 'all')
@@ -1421,14 +1421,14 @@ classdef linalg_mod
                 y(:) = obj.project1(x, V(:, 1));
             elseif all(abs(x) <= 0, 'all') || all(abs(V) <= 0, 'all')
                 y(:) = consts_obj.ZERO;
-            elseif any(infnan_obj.is_nan(x), 'all') || any(infnan_obj.is_nan(V), 'all')
+            elseif any(infnan_obj.is_nan_sp(x), 'all') || any(infnan_obj.is_nan_sp(V), 'all')
                 y(:) = fortran.sum(x, 'all') + fortran.sum(V, 'all'); % Set Y to NaN
 
             elseif any(infnan_obj.is_inf(V), 'all')
-                mask00 = infnan_obj.is_inf(V); %Unsupported statement inside WHERE block: StmtLineBreak 1
-                V_loc(mask00) = fortran.sign(consts_obj.ONE, V(mask00)); %Unsupported statement inside WHERE block: StmtLineBreak 1
-                mask01 = ~mask00; %Unsupported statement inside WHERE block: StmtLineBreak 1
-                V_loc(mask01) = consts_obj.ZERO; %Unsupported statement inside WHERE block: StmtLineBreak 1
+                mask00 = infnan_obj.is_inf(V); %Unsupported statement inside WHERE block: StatementLineBreak 1
+                V_loc(mask00) = fortran.sign(consts_obj.ONE, V(mask00)); %Unsupported statement inside WHERE block: StatementLineBreak 1
+                mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
+                V_loc(mask01) = consts_obj.ZERO; %Unsupported statement inside WHERE block: StatementLineBreak 1
 
                 %%MATLAB: V_loc = 0; V_loc(isinf(V)) = sign(V);
                 U = obj.qr(V_loc);
@@ -1539,7 +1539,7 @@ classdef linalg_mod
             %====================%
 
             % Define C = X(1) / R and S = X(2) / R with R = HYPOT(X(1), X(2)). Handle Inf/NaN, over/underflow.
-            if any(infnan_obj.is_nan(x), 'all')
+            if any(infnan_obj.is_nan_sp(x), 'all')
                 % In this case, MATLAB sets G to NaN(2, 2). We refrain from doing so to keep G orthogonal.
                 c = consts_obj.ONE;
                 s = consts_obj.ZERO;
@@ -1707,7 +1707,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            is_minor(:) = reshape(cell2mat(arrayfun(@(i) obj.isminor0(x(i), ref(i)), (1:fix(numel(x))), "UniformOutput", false)), [], 1);
+            is_minor(:) = arrayfun(@(i) obj.isminor0(x(i), ref(i)), 1:fix(numel(x)));
 
             %====================%
             %  Calculation ends  %
@@ -1775,7 +1775,7 @@ classdef linalg_mod
             if size(A, 1) ~= size(A, 2)
                 is_symmetric = false;
             elseif consts_obj.SYMTOL_DFT < 0.9 * consts_obj.REALMAX
-                is_symmetric = (~any(abs(A - A') > tol_loc * max(max(abs(A), [], 'all'), consts_obj.ONE), 'all')) && all(infnan_obj.is_nan(A) == infnan_obj.is_nan(A'), 'all');
+                is_symmetric = (~any(abs(A - A.') > tol_loc * max(max(abs(A), [], 'all'), consts_obj.ONE), 'all')) && all(infnan_obj.is_nan_sp(A) == infnan_obj.is_nan_sp(A.'), 'all');
             end
 
             %====================%
@@ -1824,7 +1824,7 @@ classdef linalg_mod
 
             if numel(x) == 0
                 y = consts_obj.ZERO;
-            elseif p_loc <= 0 && ~any(infnan_obj.is_nan(x), 'all')
+            elseif p_loc <= 0 && ~any(infnan_obj.is_nan_sp(x), 'all')
                 y = double(nnz(abs(x) > 0));
             elseif ~all(infnan_obj.is_finite(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf unless P = 0.
@@ -1885,10 +1885,10 @@ classdef linalg_mod
             %====================%
 
             if consts_obj.DEBUGGING
-                debug_obj.assert(y >= 0 || any(infnan_obj.is_nan(x), 'all'), "Y >= 0 unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) == any(infnan_obj.is_nan(x), 'all'), "Y is NaN if and only if X contains NaN", srname);
+                debug_obj.assert(y >= 0 || any(infnan_obj.is_nan_sp(x), 'all'), "Y >= 0 unless X contains NaN", srname);
+                debug_obj.assert(infnan_obj.is_nan_sp(y) == any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if and only if X contains NaN", srname);
                 % Even with scaling, Y may still be 0 if all entries of X are zero or subnormal.
-                debug_obj.assert(y > 0 || any(infnan_obj.is_nan(x), 'all') || all(abs(x) < consts_obj.REALMIN, 'all'), "Y > 0 unless X contains NaN or all its entries are below REALMIN", srname);
+                debug_obj.assert(y > 0 || any(infnan_obj.is_nan_sp(x), 'all') || all(abs(x) < consts_obj.REALMIN, 'all'), "Y > 0 unless X contains NaN or all its entries are below REALMIN", srname);
             end
 
         end
@@ -1978,7 +1978,7 @@ classdef linalg_mod
                     % If SIZE(X) = 0, then MAXVAL(SUM(ABS(X), DIM=2)) = -HUGE(X); since we have handled such a
                     % case in the above, it is OK to write Y = MAXVAL(SUM(ABS(X), DIM=2)) below, but we append
                     % a 0 for robustness.
-                    y = max([reshape(fortran.sum(abs(x), 2), 1, []), consts_obj.ZERO], [], 'all');
+                    y = max([reshape(fortran.sum(abs(x), 2), [], 1); consts_obj.ZERO], [], 'all');
                 otherwise
                     debug_obj.warning(srname, "Unknown name of norm: " + string_obj.strip(nname) + "; default to the Frobenius norm");
                     y = fortran.sqrt(fortran.sum(fortran.power(x, 2), 'all'));
@@ -2158,7 +2158,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            loc = memory_obj.alloc_ivector(loc, fix(nnz(x))); % Removable in F03.
+            loc = memory_obj.alloc_ivector(fix(nnz(x))); % Removable in F03.
             n = fix(numel(x));
             loc = feval(@(a, m) reshape(a(m & true(size(a))), [], 1), obj.linspace_i(1, n, n), x);
 
@@ -2193,7 +2193,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            loc = memory_obj.alloc_ivector(loc, fix(nnz(~x))); % Removable in F03.
+            loc = memory_obj.alloc_ivector(fix(nnz(~x))); % Removable in F03.
             loc = obj.trueloc(~x);
 
             %====================%
@@ -2245,8 +2245,8 @@ classdef linalg_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(~any(x < y, 'all'), "No entry of X is smaller than Y", srname);
-                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan(x), 'all'), "Y is not NaN unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan(x), 'all'), "Y is NaN if X contains NaN", srname);
+                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan_sp(x), 'all'), "Y is not NaN unless X contains NaN", srname);
+                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if X contains NaN", srname);
             end
         end
         function y = minimum2(~, x)
@@ -2286,8 +2286,8 @@ classdef linalg_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(~any(x < y, 'all'), "No entry of X is smaller than Y", srname);
-                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan(x), 'all'), "Y is not NaN unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan(x), 'all'), "Y is NaN if X contains NaN", srname);
+                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan_sp(x), 'all'), "Y is not NaN unless X contains NaN", srname);
+                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if X contains NaN", srname);
             end
         end
         function y = maximum1(~, x)
@@ -2327,8 +2327,8 @@ classdef linalg_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(~any(x > y, 'all'), "No entry of X is larger than Y", srname);
-                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan(x), 'all'), "Y is not NaN unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan(x), 'all'), "Y is NaN if X contains NaN", srname);
+                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan_sp(x), 'all'), "Y is not NaN unless X contains NaN", srname);
+                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if X contains NaN", srname);
             end
         end
         function y = maximum2(~, x)
@@ -2368,8 +2368,8 @@ classdef linalg_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(~any(x > y, 'all'), "No entry of X is larger than Y", srname);
-                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan(x), 'all'), "Y is not NaN unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan(x), 'all'), "Y is NaN if X contains NaN", srname);
+                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan_sp(x), 'all'), "Y is not NaN unless X contains NaN", srname);
+                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if X contains NaN", srname);
             end
         end
         function x = linspace_r(~, xstart, xstop, n)
@@ -2405,13 +2405,13 @@ classdef linalg_mod
                 x(:) = xstop;
             elseif abs(xstart) <= abs(xstop) && abs(xstop) <= abs(xstart)
                 xunit = xstop / double(nm);
-                x(:) = xunit * double(reshape((-nm:2:nm), [], 1));
+                x(:) = xunit * double(reshape(-nm:2:nm, [], 1));
                 if mod(nm, 2) == 0
                     x(1 + nm / 2) = consts_obj.ZERO;
                 end
             else
                 xunit = (xstop - xstart) / double(nm);
-                x(:) = xstart + xunit * double(reshape((0:nm), [], 1));
+                x(:) = xstart + xunit * double(reshape(0:nm, [], 1));
             end
 
             if n >= 1

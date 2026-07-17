@@ -92,23 +92,23 @@ classdef selectx_mod
                 debug_obj.assert(size(xfilt, 1) == n && size(xfilt, 2) == maxfilt, "SIZE(XFILT) == [N, MAXFILT]", srname);
                 debug_obj.assert(numel(cfilt) == maxfilt, "SIZE(CFILT) == MAXFILT", srname);
                 % Check the values of XFILT, FFILT, CFILT.
-                debug_obj.assert(~any(infnan_obj.is_nan(xfilt(:, 1:nfilt)), 'all'), "XFILT does not contain NaN", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(ffilt(1:nfilt)) | infnan_obj.is_posinf(ffilt(1:nfilt)), 'all'), "FFILT does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(cfilt(1:nfilt) < 0 | infnan_obj.is_nan(cfilt(1:nfilt)) | infnan_obj.is_posinf(cfilt(1:nfilt)), 'all'), "CFILT does not contain nonnegative values of NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xfilt(:, 1:nfilt)), 'all'), "XFILT does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(ffilt(1:nfilt)) | infnan_obj.is_posinf(ffilt(1:nfilt)), 'all'), "FFILT does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(cfilt(1:nfilt) < 0 | infnan_obj.is_nan_sp(cfilt(1:nfilt)) | infnan_obj.is_posinf(cfilt(1:nfilt)), 'all'), "CFILT does not contain nonnegative values of NaN/+Inf", srname);
                 % Check the values of X, F, CSTRV.
                 % X does not contain NaN if X0 does not and the trust-region/geometry steps are proper.
-                debug_obj.assert(~any(infnan_obj.is_nan(x), 'all'), "X does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", srname);
                 % F cannot be NaN/+Inf due to the moderated extreme barrier.
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
                 % CSTRV cannot be NaN/+Inf due to the moderated extreme barrier.
                 debug_obj.assert(~(cstrv < 0 || infnan_obj.is_nan_sp(cstrv) || infnan_obj.is_posinf(cstrv)), "CSTRV is nonnegative and not NaN/+Inf", srname);
                 % Check CONSTR and CONFILT.
-                debug_obj.assert(~ismember('constr', ipObj.UsingDefaults) == ((~ismember('confilt', ipObj.UsingDefaults)) || (nargout >= 5)), "CONSTR and CONFILT are both present or both absent", srname);
+                debug_obj.assert(~ismember('constr', ipObj.UsingDefaults) == (~ismember('confilt', ipObj.UsingDefaults) || nargout >= 5), "CONSTR and CONFILT are both present or both absent", srname);
                 if ~ismember('constr', ipObj.UsingDefaults)
                     % CONSTR cannot contain NaN/+Inf due to the moderated extreme barrier.
-                    debug_obj.assert(~any(infnan_obj.is_nan(constr) | infnan_obj.is_posinf(constr), 'all'), "CONSTR does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(constr) | infnan_obj.is_posinf(constr), 'all'), "CONSTR does not contain NaN/+Inf", srname);
                     debug_obj.assert(size(confilt, 1) == m && size(confilt, 2) == maxfilt, "SIZE(CONFILT) == [M, MAXFILT]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(confilt(:, 1:nfilt)) | infnan_obj.is_posinf(confilt(:, 1:nfilt)), 'all'), "CONFILT does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(confilt(:, 1:nfilt)) | infnan_obj.is_posinf(confilt(:, 1:nfilt)), 'all'), "CONFILT does not contain NaN/+Inf", srname);
                 end
             end
 
@@ -167,7 +167,7 @@ classdef selectx_mod
             xfilt(:, 1:nfilt) = xfilt(:, index_to_keep(1:nfilt));
             ffilt(1:nfilt) = ffilt(index_to_keep(1:nfilt));
             cfilt(1:nfilt) = cfilt(index_to_keep(1:nfilt));
-            if ((~ismember('confilt', ipObj.UsingDefaults)) || (nargout >= 5)) && ~ismember('constr', ipObj.UsingDefaults)
+            if (~ismember('confilt', ipObj.UsingDefaults) || nargout >= 5) && ~ismember('constr', ipObj.UsingDefaults)
                 confilt(:, 1:nfilt) = confilt(:, index_to_keep(1:nfilt));
             end
 
@@ -175,7 +175,7 @@ classdef selectx_mod
             xfilt(:, nfilt) = x;
             ffilt(nfilt) = f;
             cfilt(nfilt) = cstrv;
-            if ((~ismember('confilt', ipObj.UsingDefaults)) || (nargout >= 5)) && ~ismember('constr', ipObj.UsingDefaults)
+            if (~ismember('confilt', ipObj.UsingDefaults) || nargout >= 5) && ~ismember('constr', ipObj.UsingDefaults)
                 confilt(:, nfilt) = constr;
             end
 
@@ -191,16 +191,16 @@ classdef selectx_mod
                 debug_obj.assert(numel(ffilt) == maxfilt, "SIZE(FFILT) = MAXFILT", srname);
                 debug_obj.assert(numel(cfilt) == maxfilt, "SIZE(CFILT) = MAXFILT", srname);
                 % Check the values of XFILT, FFILT, CFILT.
-                debug_obj.assert(~any(infnan_obj.is_nan(xfilt(:, 1:nfilt)), 'all'), "XFILT does not contain NaN", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(ffilt(1:nfilt)) | infnan_obj.is_posinf(ffilt(1:nfilt)), 'all'), "FFILT does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(cfilt(1:nfilt) < 0 | infnan_obj.is_nan(cfilt(1:nfilt)) | infnan_obj.is_posinf(cfilt(1:nfilt)), 'all'), "CFILT does not contain nonnegative values of NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xfilt(:, 1:nfilt)), 'all'), "XFILT does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(ffilt(1:nfilt)) | infnan_obj.is_posinf(ffilt(1:nfilt)), 'all'), "FFILT does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(cfilt(1:nfilt) < 0 | infnan_obj.is_nan_sp(cfilt(1:nfilt)) | infnan_obj.is_posinf(cfilt(1:nfilt)), 'all'), "CFILT does not contain nonnegative values of NaN/+Inf", srname);
                 % Check that no point in the filter is better than X, and X is better than no point.
                 debug_obj.assert(~any(obj.isbetter10(ffilt(1:nfilt), cfilt(1:nfilt), f, cstrv, ctol), 'all'), "No point in the filter is better than X", srname);
                 debug_obj.assert(~any(obj.isbetter01(f, cstrv, ffilt(1:nfilt), cfilt(1:nfilt), ctol), 'all'), "X is better than no point in the filter", srname);
                 % Check CONFILT.
-                if (~ismember('confilt', ipObj.UsingDefaults)) || (nargout >= 5)
+                if ~ismember('confilt', ipObj.UsingDefaults) || nargout >= 5
                     debug_obj.assert(size(confilt, 1) == m && size(confilt, 2) == maxfilt, "SIZE(CONFILT) == [M, MAXFILT]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(confilt(:, 1:nfilt)) | infnan_obj.is_posinf(confilt(:, 1:nfilt)), 'all'), "CONFILT does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(confilt(:, 1:nfilt)) | infnan_obj.is_posinf(confilt(:, 1:nfilt)), 'all'), "CONFILT does not contain NaN/+Inf", srname);
                 end
             end
 
@@ -243,8 +243,8 @@ classdef selectx_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(nhist >= 1, "SIZE(FHIST) >= 1", srname);
                 debug_obj.assert(numel(chist) == nhist, "SIZE(FHIST) == SIZE(CHIST)", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(fhist) | infnan_obj.is_posinf(fhist), 'all'), "FHIST does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(chist < 0 | infnan_obj.is_nan(chist) | infnan_obj.is_posinf(chist), 'all'), "CHIST does not contain nonnegative values or NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) | infnan_obj.is_posinf(fhist), 'all'), "FHIST does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(chist < 0 | infnan_obj.is_nan_sp(chist) | infnan_obj.is_posinf(chist), 'all'), "CHIST does not contain nonnegative values or NaN/+Inf", srname);
                 debug_obj.assert(cweight >= 0, "CWEIGHT >= 0", srname);
                 debug_obj.assert(ctol >= 0, "CTOL >= 0", srname);
             end
@@ -347,8 +347,8 @@ classdef selectx_mod
 
             % Preconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(~any(infnan_obj.is_nan([f1, c1]) | infnan_obj.is_posinf([f2, c2]), 'all'), "FC1 does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan([f2, c2]) | infnan_obj.is_posinf([f2, c2]), 'all'), "FC2 does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp([f1, c1]) | infnan_obj.is_posinf([f2, c2]), 'all'), "FC1 does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp([f2, c2]) | infnan_obj.is_posinf([f2, c2]), 'all'), "FC2 does not contain NaN/+Inf", srname);
                 debug_obj.assert(c1 >= 0 && c2 >= 0, "C1 >= 0, C2 >= 0", srname);
                 debug_obj.assert(ctol >= 0, "CTOL >= 0", srname);
             end
@@ -360,7 +360,7 @@ classdef selectx_mod
             is_better = false;
             % Even though NaN/+Inf should not occur in FC1 or FC2 due to the moderated extreme barrier, for
             % security and robustness, the code below does not make this assumption.
-            is_better = is_better || (any(infnan_obj.is_nan([f2, c2]) | infnan_obj.is_posinf([f2, c2]), 'all') && ~any(infnan_obj.is_nan([f1, c1]) | infnan_obj.is_posinf([f1, c1]), 'all'));
+            is_better = is_better || (any(infnan_obj.is_nan_sp([f2, c2]) | infnan_obj.is_posinf([f2, c2]), 'all') && ~any(infnan_obj.is_nan_sp([f1, c1]) | infnan_obj.is_posinf([f1, c1]), 'all'));
             is_better = is_better || (f1 < f2 && c1 <= c2);
             is_better = is_better || (f1 <= f2 && c1 < c2);
             % If C1 <= CTOL and C2 is significantly larger/worse than CTOL, i.e., C2 > MAX(CTOL, CREF),
@@ -377,8 +377,8 @@ classdef selectx_mod
             if consts_obj.DEBUGGING
                 % Even though NaN/+Inf should not occur in FC1 due to moderated extreme barrier, for security
                 % and robustness, the code below does not make this assumption.
-                debug_obj.assert(~(is_better && any(infnan_obj.is_nan([f1, c1]) | infnan_obj.is_posinf([f1, c1]), 'all')), "IS_BETTER cannot be true if [F1, C1] contains NaN/+Inf", srname);
-                debug_obj.assert(is_better || any(infnan_obj.is_nan([f1, c1]) | infnan_obj.is_posinf([f1, c1]), 'all') || ~any(infnan_obj.is_nan([f2, c2]) | infnan_obj.is_posinf([f2, c2]), 'all'), "if [F2, C2] contains NaN/+Inf, then either IS_BETTER is true or [F1, C1] contains NaN/+Inf", srname);
+                debug_obj.assert(~(is_better && any(infnan_obj.is_nan_sp([f1, c1]) | infnan_obj.is_posinf([f1, c1]), 'all')), "IS_BETTER cannot be true if [F1, C1] contains NaN/+Inf", srname);
+                debug_obj.assert(is_better || any(infnan_obj.is_nan_sp([f1, c1]) | infnan_obj.is_posinf([f1, c1]), 'all') || ~any(infnan_obj.is_nan_sp([f2, c2]) | infnan_obj.is_posinf([f2, c2]), 'all'), "if [F2, C2] contains NaN/+Inf, then either IS_BETTER is true or [F1, C1] contains NaN/+Inf", srname);
                 debug_obj.assert(~(is_better && f1 >= f2 && c1 >= c2), "[F1, C1] >= [F2, C2] and IS_BETTER cannot be both true", srname);
                 debug_obj.assert(is_better || ~(f1 <= f2 && c1 < c2), "if [F1, C1] <= [F2, C2] but not equal, then IS_BETTER must be true", srname);
                 debug_obj.assert(is_better || ~(f1 < f2 && c1 <= c2), "if [F1, C1] <= [F2, C2] but not equal, then IS_BETTER must be true", srname);
@@ -409,8 +409,8 @@ classdef selectx_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(nfc >= 0, "NFC >= 0", srname);
                 debug_obj.assert(numel(f1) == numel(c1), "SIZE(F1) == SIZE(C1)", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(f1) | infnan_obj.is_posinf(f1), 'all'), "F1 does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(c1) | infnan_obj.is_posinf(c1), 'all'), "C1 does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(f1) | infnan_obj.is_posinf(f1), 'all'), "F1 does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(c1) | infnan_obj.is_posinf(c1), 'all'), "C1 does not contain NaN/+Inf", srname);
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f2) || infnan_obj.is_posinf(f2)), "F2 is not NaN/+Inf", srname);
                 debug_obj.assert(~(infnan_obj.is_nan_sp(c2) || infnan_obj.is_posinf(c2)), "C2 is not NaN/+Inf", srname);
                 debug_obj.assert(all(c1 >= 0, 'all') && c2 >= 0, "C1 >= 0, C2 >= 0", srname);
@@ -421,8 +421,8 @@ classdef selectx_mod
             % Calculation starts %
             %====================%
 
-            is_better = memory_obj.alloc_lvector(is_better, nfc);
-            is_better = reshape(cell2mat(arrayfun(@(i) obj.isbetter00(f1(i), c1(i), f2, c2, ctol), (1:nfc), "UniformOutput", false)), [], 1);
+            is_better = memory_obj.alloc_lvector(nfc);
+            is_better = reshape(arrayfun(@(i) obj.isbetter00(f1(i), c1(i), f2, c2, ctol), 1:nfc), [], 1);
 
             %====================%
             %  Calculation ends  %
@@ -460,8 +460,8 @@ classdef selectx_mod
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f1) || infnan_obj.is_posinf(f1)), "F1 is not NaN/+Inf", srname);
                 debug_obj.assert(~(infnan_obj.is_nan_sp(c1) || infnan_obj.is_posinf(c1)), "C1 is not NaN/+Inf", srname);
                 debug_obj.assert(numel(f2) == numel(c2), "SIZE(F2) == SIZE(C2)", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(f2) | infnan_obj.is_posinf(f2), 'all'), "F2 does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(c2) | infnan_obj.is_posinf(c2), 'all'), "C2 does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(f2) | infnan_obj.is_posinf(f2), 'all'), "F2 does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(c2) | infnan_obj.is_posinf(c2), 'all'), "C2 does not contain NaN/+Inf", srname);
                 debug_obj.assert(c1 >= 0 && all(c2 >= 0, 'all'), "C1 >= 0, C2 >= 0", srname);
                 debug_obj.assert(ctol >= 0, "CTOL >= 0", srname);
             end
@@ -470,8 +470,8 @@ classdef selectx_mod
             % Calculation starts %
             %====================%
 
-            is_better = memory_obj.alloc_lvector(is_better, nfc);
-            is_better = reshape(cell2mat(arrayfun(@(i) obj.isbetter00(f1, c1, f2(i), c2(i), ctol), (1:nfc), "UniformOutput", false)), [], 1);
+            is_better = memory_obj.alloc_lvector(nfc);
+            is_better = reshape(arrayfun(@(i) obj.isbetter00(f1, c1, f2(i), c2(i), ctol), 1:nfc), [], 1);
 
             %====================%
             %  Calculation ends  %

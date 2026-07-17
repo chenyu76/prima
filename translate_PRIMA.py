@@ -103,7 +103,9 @@ def translate_sources(
         str(src_dir),
         "-o",
         str(output_dir),
-        "--try-full-consistency",
+        "--try-bit-consistency",
+        # "--no-simplify",
+        # "--prima",
         "--as-package",
         pkg_name,
     ]

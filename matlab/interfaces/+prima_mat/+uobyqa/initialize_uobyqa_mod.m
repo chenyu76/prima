@@ -198,7 +198,7 @@ classdef initialize_uobyqa_mod
                 debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", srname);
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -243,7 +243,7 @@ classdef initialize_uobyqa_mod
                 debug_obj.assert(n >= 1 && npt == (n + 1) * (n + 2) / 2, "N >= 1, NPT == (N+1)*(N+2)/2", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any((infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any((infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
             end
 
             %====================%
@@ -290,7 +290,7 @@ classdef initialize_uobyqa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 2
-                if any(infnan_obj.is_nan(pq), 'all')
+                if any(infnan_obj.is_nan_sp(pq), 'all')
                     info = infos_obj.NAN_INF_MODEL;
                 else
                     info = infos_obj.INFO_DFT;
@@ -407,7 +407,7 @@ classdef initialize_uobyqa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 2
-                if any(infnan_obj.is_nan(pl), 'all')
+                if any(infnan_obj.is_nan_sp(pl), 'all')
                     info = infos_obj.NAN_INF_MODEL;
                 else
                     info = infos_obj.INFO_DFT;

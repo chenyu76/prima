@@ -95,7 +95,7 @@ classdef preproc_mod
             x0 = ipObj.Results.x0;
             if consts_obj.DEBUGGING
                 debug_obj.validate(n >= 1, "N >= 1", srname);
-                debug_obj.validate(((~ismember('npt', ipObj.UsingDefaults)) || (nargout >= 7)) == (string_obj.lower(solver) == "newuoa" || string_obj.lower(solver) == "bobyqa" || string_obj.lower(solver) == "lincoa"), "NPT is present if and only if SOLVER is NEWUOA, BOBYQA, or LINCOA", srname);
+                debug_obj.validate((~ismember('npt', ipObj.UsingDefaults) || nargout >= 7) == (string_obj.lower(solver) == "newuoa" || string_obj.lower(solver) == "bobyqa" || string_obj.lower(solver) == "lincoa"), "NPT is present if and only if SOLVER is NEWUOA, BOBYQA, or LINCOA", srname);
                 if ~ismember('m', ipObj.UsingDefaults)
                     debug_obj.validate(m >= 0, "M >= 0", srname);
                     debug_obj.validate(m == 0 || string_obj.lower(solver) == "cobyla", "M == 0 unless the solver is COBYLA", srname);
@@ -103,12 +103,12 @@ classdef preproc_mod
                 if string_obj.lower(solver) == "cobyla" && ~ismember('m', ipObj.UsingDefaults) && ~ismember('is_constrained', ipObj.UsingDefaults)
                     debug_obj.validate(m == 0 || is_constrained, "For COBYLA, M == 0 unless the problem is constrained", srname);
                 end
-                debug_obj.validate(((~ismember('maxfilt', ipObj.UsingDefaults)) || (nargout >= 8)) == (string_obj.lower(solver) == "lincoa" || string_obj.lower(solver) == "cobyla"), "MAXFILT is present if and only if the solver is LINCOA or COBYLA", srname);
+                debug_obj.validate((~ismember('maxfilt', ipObj.UsingDefaults) || nargout >= 8) == (string_obj.lower(solver) == "lincoa" || string_obj.lower(solver) == "cobyla"), "MAXFILT is present if and only if the solver is LINCOA or COBYLA", srname);
                 if string_obj.lower(solver) == "bobyqa"
                     debug_obj.validate(~ismember('xl', ipObj.UsingDefaults) && ~ismember('xu', ipObj.UsingDefaults), "XL and XU are present if the solver is BOBYQA", srname);
                     debug_obj.validate(all(xu - xl >= consts_obj.TWO * consts_obj.EPS, 'all'), "MINVAL(XU-XL) > 2*EPS", srname);
                 end
-                debug_obj.validate((~ismember('honour_x0', ipObj.UsingDefaults) == ((~ismember('x0', ipObj.UsingDefaults)) || (nargout >= 15))) && (~ismember('honour_x0', ipObj.UsingDefaults) == ~ismember('has_rhobeg', ipObj.UsingDefaults)), "HONOUR_X0, X0, and HAS_RHOBEG are present or absent simultaneously", srname);
+                debug_obj.validate((~ismember('honour_x0', ipObj.UsingDefaults) == (~ismember('x0', ipObj.UsingDefaults) || nargout >= 15)) && (~ismember('honour_x0', ipObj.UsingDefaults) == ~ismember('has_rhobeg', ipObj.UsingDefaults)), "HONOUR_X0, X0, and HAS_RHOBEG are present or absent simultaneously", srname);
                 debug_obj.validate(~ismember('honour_x0', ipObj.UsingDefaults) == (string_obj.lower(solver) == "bobyqa"), "HONOUR_X0 is present if and only if the solver is BOBYQA", srname);
                 % N.B.: LINCOA and COBYLA will have HONOUR_X0 as well if we intend to make them respect bounds.
                 % %call validate(present(honour_x0) .eqv. &
@@ -186,7 +186,7 @@ classdef preproc_mod
             end
 
             % Validate NPT
-            if (~ismember('npt', ipObj.UsingDefaults)) || (nargout >= 7)
+            if ~ismember('npt', ipObj.UsingDefaults) || nargout >= 7
                 if npt < n + 2 || npt >= maxfun || 2 * fix(npt) > fix(n + 2) * fix(n + 1)
                     %INT(*) avoids overflow when IK is 16-bit
                     npt_in = npt;
@@ -196,7 +196,7 @@ classdef preproc_mod
             end
 
             % Validate MAXFILT
-            if (~ismember('maxfilt', ipObj.UsingDefaults)) || (nargout >= 8)
+            if ~ismember('maxfilt', ipObj.UsingDefaults) || nargout >= 8
                 maxfilt_in = maxfilt;
                 if maxfilt <= 0
                     maxfilt = consts_obj.MAXFILT_DFT;
@@ -328,15 +328,15 @@ classdef preproc_mod
                     % N.B.: The following revision is valid only if XL <= X0 <= XU and RHOBEG <= MINVAL(XU-XL)/2,
                     % which should hold at this point due to the revision of RHOBEG and moderation of X0.
                     % The cases below are mutually exclusive in precise arithmetic as MINVAL(XU-XL) >= 2*RHOBEG.
-                    mask00 = x0 <= xl + consts_obj.HALF * rhobeg; %Unsupported statement inside WHERE block: StmtLineBreak 1
-                    x0(mask00) = xl(mask00); %Unsupported statement inside WHERE block: StmtLineBreak 1
-                    mask01 = ~mask00 & x0 < xl + rhobeg; %Unsupported statement inside WHERE block: StmtLineBreak 1
-                    x0(mask01) = xl(mask01) + rhobeg; %Unsupported statement inside WHERE block: StmtLineBreak 1
+                    mask00 = x0 <= xl + consts_obj.HALF * rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
+                    x0(mask00) = xl(mask00); %Unsupported statement inside WHERE block: StatementLineBreak 1
+                    mask01 = ~mask00 & x0 < xl + rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
+                    x0(mask01) = xl(mask01) + rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
 
-                    mask00 = x0 >= xu - consts_obj.HALF * rhobeg; %Unsupported statement inside WHERE block: StmtLineBreak 1
-                    x0(mask00) = xu(mask00); %Unsupported statement inside WHERE block: StmtLineBreak 1
-                    mask01 = ~mask00 & x0 > xu - rhobeg; %Unsupported statement inside WHERE block: StmtLineBreak 1
-                    x0(mask01) = xu(mask01) - rhobeg; %Unsupported statement inside WHERE block: StmtLineBreak 1
+                    mask00 = x0 >= xu - consts_obj.HALF * rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
+                    x0(mask00) = xu(mask00); %Unsupported statement inside WHERE block: StatementLineBreak 1
+                    mask01 = ~mask00 & x0 > xu - rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
+                    x0(mask01) = xu(mask01) - rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
 
                     %%MATLAB code:
                     %%lbx = (x0 <= xl + 0.5 * rhobeg);
@@ -375,7 +375,7 @@ classdef preproc_mod
             rhoend = min(max(rhoend, consts_obj.EPS), rhobeg);
 
             % Validate CTOL (it can be 0)
-            if (~ismember('ctol', ipObj.UsingDefaults)) || (nargout >= 9)
+            if ~ismember('ctol', ipObj.UsingDefaults) || nargout >= 9
                 if ~(ctol >= 0)
                     % CTOL = NaN falls into this case.
                     ctol_in = ctol;
@@ -387,7 +387,7 @@ classdef preproc_mod
             end
 
             % Validate CWEIGHT (it can be +Inf)
-            if (~ismember('cweight', ipObj.UsingDefaults)) || (nargout >= 10)
+            if ~ismember('cweight', ipObj.UsingDefaults) || nargout >= 10
                 if ~(cweight >= 0)
                     % CWEIGHT = NaN falls into this case.
                     cweight_in = cweight;
@@ -407,10 +407,10 @@ classdef preproc_mod
                 debug_obj.validate(abs(iprint) <= 3, "IPRINT is 0, 1, -1, 2, -2, 3, or -3", solver);
                 debug_obj.validate(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", solver);
                 debug_obj.validate(maxfun >= min_maxfun, "MAXFUN >= MIN_MAXFUN", solver);
-                if (~ismember('npt', ipObj.UsingDefaults)) || (nargout >= 7)
+                if ~ismember('npt', ipObj.UsingDefaults) || nargout >= 7
                     debug_obj.validate(npt >= n + 2 && npt < maxfun && 2 * fix(npt) <= fix(n + 2) * fix(n + 1), "N+2 <= NPT < MAXFUN and 2*NPT <= (N+1)(N+2)", solver);
                 end
-                if (~ismember('maxfilt', ipObj.UsingDefaults)) || (nargout >= 8)
+                if ~ismember('maxfilt', ipObj.UsingDefaults) || nargout >= 8
                     debug_obj.validate(maxfilt >= min(consts_obj.MIN_MAXFILT, maxfun) && maxfilt <= maxfun, "MIN(MIN_MAXFILT, MAXFUN) <= MAXFILT <= MAXFUN", solver);
                 end
                 debug_obj.validate(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", solver);
@@ -422,7 +422,7 @@ classdef preproc_mod
                     debug_obj.validate(all(x0 >= xl & (x0 <= xl | x0 - xl >= rhobeg), 'all'), "X0 == XL or X0 - XL >= RHOBEG", solver);
                     debug_obj.validate(all(x0 <= xu & (x0 >= xu | xu - x0 >= rhobeg), 'all'), "X0 == XU or XU - X0 >= RHOBEG", solver);
                 end
-                if (~ismember('ctol', ipObj.UsingDefaults)) || (nargout >= 9)
+                if ~ismember('ctol', ipObj.UsingDefaults) || nargout >= 9
                     debug_obj.validate(ctol >= 0, "CTOL >= 0", solver);
                 end
             end

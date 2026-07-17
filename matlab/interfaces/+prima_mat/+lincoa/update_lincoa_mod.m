@@ -52,7 +52,7 @@ classdef update_lincoa_mod
                 debug_obj.assert(numel(xnew) == n && all(infnan_obj.is_finite(xnew), 'all'), "SIZE(XNEW) == N, XNEW is finite", srname);
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN or +Inf", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
             end
 
             %====================%
@@ -233,7 +233,7 @@ classdef update_lincoa_mod
                 debug_obj.assert(idz >= 1 && idz <= size(zmat, 2) + 1, "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
                 debug_obj.assert(numel(xopt) == n && all(infnan_obj.is_finite(xopt), 'all'), "SIZE(XOPT) == N, XOPT is finite", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT)==[N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
@@ -341,10 +341,10 @@ classdef update_lincoa_mod
 
             mask(:) = (abs(rescon) < dnorm + delta);
             ax(linalg_obj.trueloc(mask)) = linalg_obj.matprod12(xopt, amat(:, linalg_obj.trueloc(mask)));
-            mask00 = mask; %Unsupported statement inside WHERE block: StmtLineBreak 1
-            rescon(mask00) = max(b(mask00) - ax(mask00), consts_obj.ZERO); %Unsupported statement inside WHERE block: StmtLineBreak 1
-            mask01 = ~mask00; %Unsupported statement inside WHERE block: StmtLineBreak 1
-            rescon(mask01) = min(-abs(rescon(mask01)) + dnorm, -delta); %Unsupported statement inside WHERE block: StmtLineBreak 1
+            mask00 = mask; %Unsupported statement inside WHERE block: StatementLineBreak 1
+            rescon(mask00) = max(b(mask00) - ax(mask00), consts_obj.ZERO); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
+            rescon(mask01) = min(-abs(rescon(mask01)) + dnorm, -delta); %Unsupported statement inside WHERE block: StatementLineBreak 1
 
             rescon(linalg_obj.trueloc(rescon >= delta)) = -rescon(linalg_obj.trueloc(rescon >= delta));
 

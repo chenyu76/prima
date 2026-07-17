@@ -12,26 +12,26 @@ classdef huge_mod
     methods
         function varargout = huge_value(obj, varargin)
             if numel(varargin) == 1
-                [varargout{1:nargout}] = obj.huge_value_sp(varargin{:});
+                [varargout{1:nargout}] = obj.huge_value_sp();
             elseif numel(varargin) == 1
-                [varargout{1:nargout}] = obj.huge_value_dp(varargin{:});
+                [varargout{1:nargout}] = obj.huge_value_dp();
             else
-                [varargout{1:nargout}] = obj.huge_value_qp(varargin{:});
+                [varargout{1:nargout}] = obj.huge_value_qp();
             end
         end
-        function y = huge_value_sp(~, x)
+        function y = huge_value_sp(~)
             prima_mat.common.consts_mod();
 
 
             y = realmax;
         end
-        function y = huge_value_dp(~, x)
+        function y = huge_value_dp(~)
             prima_mat.common.consts_mod();
 
 
             y = realmax;
         end
-        function y = huge_value_qp(~, x)
+        function y = huge_value_qp(~)
             prima_mat.common.consts_mod();
 
 

@@ -195,18 +195,18 @@ classdef initialize_cobyla_mod
                 debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
                 debug_obj.assert(numel(evaluated) == n + 1, "SIZE(EVALUATED) == N + 1", srname);
                 debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
-                debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 | infnan_obj.is_nan(chist(1:min(nf, maxchist))) | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), 'all'), "CHIST does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), 'all'), "CHIST does not contain negative values or NaN/+Inf", srname);
                 debug_obj.assert(size(conhist, 1) == m && size(conhist, 2) == maxconhist, "SIZE(CONHIST) == [M, MAXCONHIST]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conhist(:, 1:min(nf, maxconhist))) | infnan_obj.is_posinf(conhist(:, 1:min(nf, maxconhist))), 'all'), "CONHIST does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, 1:min(nf, maxconhist))) | infnan_obj.is_posinf(conhist(:, 1:min(nf, maxconhist))), 'all'), "CONHIST does not contain NaN/+Inf", srname);
                 debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, "SIZE(CONMAT) = [M, N+1]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, "SIZE(FHIST) == 0 or MAXHIST", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
                 debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
@@ -216,7 +216,7 @@ classdef initialize_cobyla_mod
             end
 
         end
-        function [nfilt, cfilt, confilt, ffilt, xfilt] = initfilt(~, conmat, ctol, cweight, cval, fval, sim, evaluated, nfilt, cfilt, confilt, ffilt, xfilt)
+        function [nfilt, cfilt, confilt, ffilt, xfilt] = initfilt(~, conmat, ctol, cweight, cval, fval, sim, evaluated, cfilt, confilt, ffilt, xfilt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the filters (XFILT, etc) that will be used when selecting X at the
             % end of the solver.
@@ -261,9 +261,9 @@ classdef initialize_cobyla_mod
                 debug_obj.assert(size(xfilt, 1) == n && size(xfilt, 2) == maxfilt, "SIZE(XFILT) == [N, MAXFILT]", srname);
                 debug_obj.assert(numel(ffilt) == maxfilt, "SIZE(FFILT) == MAXFILT", srname);
                 debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, "SIZE(CONMAT) = [M, N+1]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
-                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
                 debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
@@ -294,14 +294,14 @@ classdef initialize_cobyla_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(nfilt <= maxfilt, "NFILT <= MAXFILT", srname);
                 debug_obj.assert(size(confilt, 1) == m && size(confilt, 2) == maxfilt, "SIZE(CONFILT) == [M, MAXFILT]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(confilt(:, 1:nfilt)) | infnan_obj.is_posinf(confilt(:, 1:nfilt)), 'all'), "CONFILT does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(confilt(:, 1:nfilt)) | infnan_obj.is_posinf(confilt(:, 1:nfilt)), 'all'), "CONFILT does not contain NaN/+Inf", srname);
                 debug_obj.assert(numel(cfilt) == maxfilt, "SIZE(CFILT) == MAXFILT", srname);
-                debug_obj.assert(~any(cfilt(1:nfilt) < 0 | infnan_obj.is_nan(cfilt(1:nfilt)) | infnan_obj.is_posinf(cfilt(1:nfilt)), 'all'), "CFILT does not contain negative values or NaN/Inf", srname);
+                debug_obj.assert(~any(cfilt(1:nfilt) < 0 | infnan_obj.is_nan_sp(cfilt(1:nfilt)) | infnan_obj.is_posinf(cfilt(1:nfilt)), 'all'), "CFILT does not contain negative values or NaN/Inf", srname);
                 debug_obj.assert(size(xfilt, 1) == n && size(xfilt, 2) == maxfilt, "SIZE(XFILT) == [N, MAXFILT]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(xfilt(:, 1:nfilt)), 'all'), "XFILT does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xfilt(:, 1:nfilt)), 'all'), "XFILT does not contain NaN", srname);
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 debug_obj.assert(numel(ffilt) == maxfilt, "SIZE(FFILT) == MAXFILT", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(ffilt(1:nfilt)) | infnan_obj.is_posinf(ffilt(1:nfilt)), 'all'), "FFILT does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(ffilt(1:nfilt)) | infnan_obj.is_posinf(ffilt(1:nfilt)), 'all'), "FFILT does not contain NaN/+Inf", srname);
             end
         end
 

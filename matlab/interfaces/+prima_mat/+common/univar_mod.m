@@ -63,15 +63,15 @@ classdef univar_mod
             %====================%
 
             agrid(:) = linalg_obj.linspace_r(consts_obj.ZERO, consts_obj.TWO * consts_obj.PI, grid_size + 1); % Size: GRID_SIZE+1; the last entry will be unused
-            fgrid(:) = reshape(cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size), "UniformOutput", false)), [], 1);
+            fgrid(:) = arrayfun(@(k) fun(agrid(k), args), 1:grid_size);
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 
-            if all(infnan_obj.is_nan(fgrid), 'all')
+            if all(infnan_obj.is_nan_sp(fgrid), 'all')
                 angle = consts_obj.ZERO;
                 return
             end
 
-            kopt = fix(fortran.minloc(fgrid, 'mask', (~infnan_obj.is_nan(fgrid)), 'dim', 1));
+            kopt = fix(fortran.minloc(fgrid, 'mask', (~infnan_obj.is_nan_sp(fgrid)), 'dim', 1));
             fopt = fgrid(kopt);
             %%MATLAB: [fopt, kopt] = min(fgrid, [], 'omitnan');
             fprev = fgrid(mod(kopt - 2, grid_size) + 1); % Corresponds to KOPT - 1
@@ -145,15 +145,15 @@ classdef univar_mod
             %====================%
 
             agrid(:) = linalg_obj.linspace_r(consts_obj.ZERO, consts_obj.TWO * consts_obj.PI, grid_size + 1); % Size: GRID_SIZE+1; the last entry is not used
-            fgrid(:) = reshape(cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size), "UniformOutput", false)), [], 1);
+            fgrid(:) = arrayfun(@(k) fun(agrid(k), args), 1:grid_size);
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 
-            if all(infnan_obj.is_nan(fgrid), 'all')
+            if all(infnan_obj.is_nan_sp(fgrid), 'all')
                 angle = consts_obj.ZERO;
                 return
             end
 
-            kopt = fix(fortran.maxloc(abs(fgrid), 'mask', (~infnan_obj.is_nan(fgrid)), 'dim', 1));
+            kopt = fix(fortran.maxloc(abs(fgrid), 'mask', (~infnan_obj.is_nan_sp(fgrid)), 'dim', 1));
             %%MATLAB: [~, kopt] = max(abs(fgrid), [], 'omitnan');
             fopt = fgrid(kopt);
             fprev = fgrid(mod(kopt - 2, grid_size) + 1); % Corresponds to KOPT - 1
@@ -226,15 +226,15 @@ classdef univar_mod
             end
 
             xgrid(:) = linalg_obj.linspace_r(lb, ub, grid_size);
-            fgrid(:) = reshape(cell2mat(arrayfun(@(k) fun(xgrid(k), args), (1:grid_size), "UniformOutput", false)), [], 1);
+            fgrid(:) = arrayfun(@(k) fun(xgrid(k), args), 1:grid_size);
             %%MATLAB: fgrid = arrayfun(@(x) fun(x, args), xgrid(1:grid_size));  % Same shape as `xgrid`
 
-            if all(infnan_obj.is_nan(fgrid), 'all')
+            if all(infnan_obj.is_nan_sp(fgrid), 'all')
                 x = lb;
                 return
             end
 
-            kopt = fix(fortran.maxloc(fgrid, 'mask', (~infnan_obj.is_nan(fgrid)), 'dim', 1));
+            kopt = fix(fortran.maxloc(fgrid, 'mask', (~infnan_obj.is_nan_sp(fgrid)), 'dim', 1));
             fopt = fgrid(kopt);
             %%MATLAB: [fopt, kopt] = min(fgrid, [], 'omitnan');
 

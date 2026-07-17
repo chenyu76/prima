@@ -96,11 +96,11 @@ classdef geometry_newuoa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - (xpt(:, kopt) + d)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - xpt(:, kopt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
@@ -121,7 +121,7 @@ classdef geometry_newuoa_mod
             end
 
             % SCORE(K) is NaN implies ABS(DEN(K)) is NaN, but we want ABS(DEN) to be big. So we exclude such K.
-            score(linalg_obj.trueloc(infnan_obj.is_nan(score))) = -consts_obj.ONE;
+            score(linalg_obj.trueloc(infnan_obj.is_nan_sp(score))) = -consts_obj.ONE;
 
             knew = 0;
             % The following IF works a bit better than `IF (ANY(SCORE > 0))` from Powell's BOBYQA/LINCOA code.
@@ -596,7 +596,7 @@ classdef geometry_newuoa_mod
             if ~(fortran.power(ds, 2) <= 0.99 * dd * ss)
                 % `.NOT. (A <= B)` differs from `A > B`.  The former holds iff A > B or {A, B} contains NaN.
                 dtest = fortran.power(ds, 2) / ss;
-                xptemp(:, :) = xpt - fortran.spread(x, 'dim', 2, 'ncopies', npt);
+                xptemp(:, :) = xpt - x;
                 %%MATLAB: xptemp = xpt - x  % x should be a column! Implicit expansion
                 %----------------------------------------------------------------%
                 %---------!dstemp = matprod(d, xpt) - inprod(x, d) !-------------%

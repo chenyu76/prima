@@ -90,11 +90,11 @@ classdef geometry_uobyqa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt) + d, 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - (xpt(:, kopt) + d)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = fortran.sum(fortran.power((xpt - fortran.spread(xpt(:, kopt), 'dim', 2, 'ncopies', npt)), 2), 1);
+                distsq(:) = fortran.sum(fortran.power((xpt - xpt(:, kopt)), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
@@ -127,7 +127,7 @@ classdef geometry_uobyqa_mod
             end
 
             % SCORE(K) is NaN implies VLAG(K) is NaN, but we want ABS(VLAG) to be big. So we exclude such K.
-            score(linalg_obj.trueloc(infnan_obj.is_nan(score))) = -consts_obj.ONE;
+            score(linalg_obj.trueloc(infnan_obj.is_nan_sp(score))) = -consts_obj.ONE;
 
             knew = 0;
             % It makes almost no difference if we change the IF below to `IF (ANY(SCORE>0))`, which is used
@@ -272,7 +272,7 @@ classdef geometry_uobyqa_mod
             end
 
             % Return if H or G contains NaN or H is zero. Powell's code does not do this.
-            if any(infnan_obj.is_nan(h), 'all') || any(infnan_obj.is_nan(g), 'all') || all(abs(h) <= 0, 'all')
+            if any(infnan_obj.is_nan_sp(h), 'all') || any(infnan_obj.is_nan_sp(g), 'all') || all(abs(h) <= 0, 'all')
                 d(:) = dcauchy;
                 return
             end

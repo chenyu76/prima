@@ -45,7 +45,7 @@ classdef checkexit_mod
                 debug_obj.assert(~any([infos_obj.NAN_INF_X, infos_obj.NAN_INF_F, infos_obj.FTARGET_ACHIEVED, infos_obj.MAXFUN_REACHED] == infos_obj.INFO_DFT, 'all'), "NAN_INF_X, NAN_INF_F, FTARGET_ACHIEVED, and MAXFUN_REACHED differ from INFO_DFT", srname);
                 % X does not contain NaN if the initial X does not contain NaN and the subroutines generating
                 % trust-region/geometry steps work properly so that they never produce a step containing NaN/Inf.
-                debug_obj.assert(~any(infnan_obj.is_nan(x), 'all'), "X does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", srname);
                 % With the moderated extreme barrier, F cannot be NaN/+Inf.
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
             end
@@ -58,7 +58,7 @@ classdef checkexit_mod
 
             % Although X should not contain NaN unless there is a bug, we include the following for security.
             % X can be Inf, as finite + finite can be Inf numerically.
-            if any(infnan_obj.is_nan(x) | infnan_obj.is_inf(x), 'all')
+            if any(infnan_obj.is_nan_sp(x) | infnan_obj.is_inf(x), 'all')
                 info = infos_obj.NAN_INF_X;
             end
 
@@ -112,7 +112,7 @@ classdef checkexit_mod
                 debug_obj.assert(~any([infos_obj.NAN_INF_X, infos_obj.NAN_INF_F, infos_obj.FTARGET_ACHIEVED, infos_obj.MAXFUN_REACHED] == infos_obj.INFO_DFT, 'all'), "NAN_INF_X, NAN_INF_F, FTARGET_ACHIEVED, and MAXFUN_REACHED differ from INFO_DFT", srname);
                 % X does not contain NaN if the initial X does not contain NaN and the subroutines generating
                 % trust-region/geometry steps work properly so that they never produce a step containing NaN/Inf.
-                debug_obj.assert(~any(infnan_obj.is_nan(x), 'all'), "X does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", srname);
                 % With the moderated extreme barrier, F or CSTRV cannot be NaN/+Inf.
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f) || infnan_obj.is_nan_sp(cstrv) || infnan_obj.is_posinf(cstrv)), "F or CSTRV is not NaN/+Inf", srname);
             end
@@ -125,7 +125,7 @@ classdef checkexit_mod
 
             % Although X should not contain NaN unless there is a bug, we include the following for security.
             % X can be Inf, as finite + finite can be Inf numerically.
-            if any(infnan_obj.is_nan(x) | infnan_obj.is_inf(x), 'all')
+            if any(infnan_obj.is_nan_sp(x) | infnan_obj.is_inf(x), 'all')
                 info = infos_obj.NAN_INF_X;
             end
 

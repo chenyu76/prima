@@ -28,23 +28,23 @@ classdef memory_mod
             if numel(varargin) == 2 && ischar(varargin{1}) && isscalar(varargin{1})
                 [varargout{1:nargout}] = obj.alloc_character(varargin{:});
             elseif numel(varargin) == 2 && islogical(varargin{1}) && isvector(varargin{1})
-                [varargout{1:nargout}] = obj.alloc_lvector(varargin{:});
+                [varargout{1:nargout}] = obj.alloc_lvector(varargin{2});
             elseif numel(varargin) == 2 && isinteger(varargin{1}) && isvector(varargin{1})
-                [varargout{1:nargout}] = obj.alloc_ivector(varargin{:});
+                [varargout{1:nargout}] = obj.alloc_ivector(varargin{2});
             elseif numel(varargin) == 2 && isfloat(varargin{1}) && isvector(varargin{1})
-                [varargout{1:nargout}] = obj.alloc_rvector_sp(varargin{:});
+                [varargout{1:nargout}] = obj.alloc_rvector_sp(varargin{2});
             elseif numel(varargin) == 2 && isfloat(varargin{1}) && isvector(varargin{1})
-                [varargout{1:nargout}] = obj.alloc_rvector_dp(varargin{:});
+                [varargout{1:nargout}] = obj.alloc_rvector_dp(varargin{2});
             elseif numel(varargin) == 2 && isfloat(varargin{1}) && isvector(varargin{1})
-                [varargout{1:nargout}] = obj.alloc_rvector_qp(varargin{:});
+                [varargout{1:nargout}] = obj.alloc_rvector_qp(varargin{2});
             elseif numel(varargin) == 3 && isinteger(varargin{1}) && (~isvector(varargin{1}) && ~isscalar(varargin{1}))
-                [varargout{1:nargout}] = obj.alloc_imatrix(varargin{:});
+                [varargout{1:nargout}] = obj.alloc_imatrix(varargin{2}, varargin{3});
             elseif numel(varargin) == 3 && isfloat(varargin{1}) && (~isvector(varargin{1}) && ~isscalar(varargin{1}))
-                [varargout{1:nargout}] = obj.alloc_rmatrix_sp(varargin{:});
+                [varargout{1:nargout}] = obj.alloc_rmatrix_sp(varargin{2}, varargin{3});
             elseif numel(varargin) == 3 && isfloat(varargin{1}) && (~isvector(varargin{1}) && ~isscalar(varargin{1}))
-                [varargout{1:nargout}] = obj.alloc_rmatrix_dp(varargin{:});
+                [varargout{1:nargout}] = obj.alloc_rmatrix_dp(varargin{2}, varargin{3});
             else
-                [varargout{1:nargout}] = obj.alloc_rmatrix_qp(varargin{:});
+                [varargout{1:nargout}] = obj.alloc_rmatrix_qp(varargin{2}, varargin{3});
             end
         end
         function y = size_of_sp(~, x)
@@ -59,7 +59,7 @@ classdef memory_mod
 
             % We prefer STORAGE_SIZE to C_SIZEOF, because the former is intrinsic while the later requires the
             % intrinsic module ISO_C_BINDING.
-            y = fix(whos('x').bytes / numel(x) * 8 ./ 8); % Y = INT(C_SIZEOF(X), KIND(Y))
+            y = fix(whos('x').bytes / numel(x) * 8 / 8); % Y = INT(C_SIZEOF(X), KIND(Y))
         end
         function y = size_of_dp(~, x)
             %--------------------------------------------------------------------------------------------------%
@@ -71,7 +71,7 @@ classdef memory_mod
             % Outputs
             y = NaN;
 
-            y = fix(whos('x').bytes / numel(x) * 8 ./ 8);
+            y = fix(whos('x').bytes / numel(x) * 8 / 8);
         end
         function y = size_of_qp(~, x)
             %--------------------------------------------------------------------------------------------------%
@@ -83,9 +83,9 @@ classdef memory_mod
             % Outputs
             y = NaN;
 
-            y = fix(whos('x').bytes / numel(x) * 8 ./ 8);
+            y = fix(whos('x').bytes / numel(x) * 8 / 8);
         end
-        function x = alloc_rvector_sp(~, x, n)
+        function x = alloc_rvector_sp(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(SP) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
@@ -122,7 +122,7 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
-        function x = alloc_rmatrix_sp(~, x, m, n)
+        function x = alloc_rmatrix_sp(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(SP) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
@@ -154,7 +154,7 @@ classdef memory_mod
             debug_obj.validate(size(x, 1) == m, "LBOUND(X, 1) == 1, UBOUND(X, 1) == M", srname);
             debug_obj.validate(size(x, 2) == n, "LBOUND(X, 2) == 1, UBOUND(X, 2) == N", srname);
         end
-        function x = alloc_rvector_dp(~, x, n)
+        function x = alloc_rvector_dp(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(DP) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
@@ -188,7 +188,7 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
-        function x = alloc_rmatrix_dp(~, x, m, n)
+        function x = alloc_rmatrix_dp(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(DP) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
@@ -220,7 +220,7 @@ classdef memory_mod
             debug_obj.validate(size(x, 1) == m, "LBOUND(X, 1) == 1, UBOUND(X, 1) == M", srname);
             debug_obj.validate(size(x, 2) == n, "LBOUND(X, 2) == 1, UBOUND(X, 2) == N", srname);
         end
-        function x = alloc_rvector_qp(~, x, n)
+        function x = alloc_rvector_qp(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(QP) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
@@ -254,7 +254,7 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
-        function x = alloc_rmatrix_qp(~, x, m, n)
+        function x = alloc_rmatrix_qp(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(QP) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
@@ -286,7 +286,7 @@ classdef memory_mod
             debug_obj.validate(size(x, 1) == m, "LBOUND(X, 1) == 1, UBOUND(X, 1) == M", srname);
             debug_obj.validate(size(x, 2) == n, "LBOUND(X, 2) == 1, UBOUND(X, 2) == N", srname);
         end
-        function x = alloc_lvector(~, x, n)
+        function x = alloc_lvector(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable LOGICAL vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
@@ -317,7 +317,7 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
-        function x = alloc_ivector(~, x, n)
+        function x = alloc_ivector(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable INTEGER(IK) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
@@ -348,7 +348,7 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
-        function x = alloc_imatrix(~, x, m, n)
+        function x = alloc_imatrix(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for a INTEGER(IK) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%

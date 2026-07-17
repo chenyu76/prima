@@ -128,25 +128,25 @@ classdef shiftbase_mod
             end
             %%MATLAB: ymat = xptxav .* sxpt + qxoptq * xopt  % sxpt should be a row, xopt should be a column
             %ymat(:, kopt) = HALF * xoptsq * xopt ! This makes no difference according to a test on 20220406
-            bymat(:, :) = linalg_obj.matprod22(bmat(:, 1:npt), ymat'); % BMAT(:, 1:NPT) is not updated yet.
-            bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + (bymat + bymat');
+            bymat(:, :) = linalg_obj.matprod22(bmat(:, 1:npt), ymat.'); % BMAT(:, 1:NPT) is not updated yet.
+            bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + (bymat + bymat.');
             % Then the revisions of BMAT that depend on ZMAT are calculated.
             yzmat(:, :) = linalg_obj.matprod22(ymat, zmat);
             yzmat_c(:, :) = yzmat;
             yzmat_c(:, 1:idz_loc - 1) = -yzmat(:, 1:idz_loc - 1); % IDZ_LOC is usually small. So this assignment is cheap.
-            bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + linalg_obj.matprod22(yzmat, yzmat_c');
-            bmat(:, 1:npt) = bmat(:, 1:npt) + linalg_obj.matprod22(yzmat_c, zmat');
+            bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + linalg_obj.matprod22(yzmat, yzmat_c.');
+            bmat(:, 1:npt) = bmat(:, 1:npt) + linalg_obj.matprod22(yzmat_c, zmat.');
 
             % Update the quadratic model. Note that PQ remains unchanged. For HQ, see (7.14) of the NEWUOA paper.
             %v = matprod(xptxav, pq)  ! Vector V in (7.14) of the NEWUOA paper
             v(:) = linalg_obj.matprod21(xpt, pq) - consts_obj.HALF * fortran.sum(pq, 'all') * xopt; % This one seems to work better numerically.
             vxopt(:, :) = linalg_obj.outprod(v, xopt); %%MATLAB: vxopt = v * xopt';  % v and xopt should be both columns
-            hq(:, :) = (vxopt + vxopt') + hq; %call r2update(hq, ONE, xopt, v)
+            hq(:, :) = (vxopt + vxopt.') + hq; %call r2update(hq, ONE, xopt, v)
             %call symmetrize(hq)  ! Do this if the update above does not ensure symmetry.
 
             % The following instructions complete the shift of XBASE.
             xbase(:) = xbase + xopt;
-            xpt(:, :) = xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt);
+            xpt(:, :) = xpt - xopt;
             xpt(:, kopt) = consts_obj.ZERO;
             %%MATLAB: xpt = xpt - xopt; xpt(:, kopt) = 0;  % xopt should be a column! Implicit expansion
 
@@ -219,7 +219,7 @@ classdef shiftbase_mod
             % Shift the base point from XBASE to XBASE + XOPT.
             xopt(:) = xpt(:, kopt);
             xbase(:) = xbase + xopt;
-            xpt(:, :) = xpt - fortran.spread(xopt, 'dim', 2, 'ncopies', npt);
+            xpt(:, :) = xpt - xopt;
             xpt(:, kopt) = consts_obj.ZERO;
 
             % Update the gradient of the model

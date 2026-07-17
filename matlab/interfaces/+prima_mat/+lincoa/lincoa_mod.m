@@ -272,15 +272,15 @@ classdef lincoa_mod
 
             xl_loc = NaN(numel(x), 1);
             xu_loc = NaN(numel(x), 1);
-            Aeq_loc = NaN; % Aeq_LOC(Meq, N)
-            Aineq_loc = NaN; % Aineq_LOC(Mineq, N)
+            % Aeq_LOC(Meq, N)
+            % Aineq_LOC(Mineq, N)
             amat = NaN; % AMAT(N, M); each column corresponds to a constraint
-            beq_loc = NaN; % Beq_LOC(Meq)
-            bineq_loc = NaN; % Bineq_LOC(Mineq)
+            % Beq_LOC(Meq)
+            % Bineq_LOC(Mineq)
             bvec = NaN; % BVEC(M)
             % CHIST_LOC(MAXCHIST)
-            fhist_loc = NaN; % FHIST_LOC(MAXFHIST)
-            xhist_loc = NaN; % XHIST_LOC(N, MAXXHIST)
+            % FHIST_LOC(MAXFHIST)
+            % XHIST_LOC(N, MAXXHIST)
 
             % Sizes
             ipObj = inputParser();
@@ -377,7 +377,7 @@ classdef lincoa_mod
 
             x(:) = evaluate_obj.moderatex(x);
 
-            Aineq_loc = memory_obj.alloc_rmatrix_sp(Aineq_loc, mineq, n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
+            Aineq_loc = memory_obj.alloc_rmatrix_sp(mineq, n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
             if ~ismember('Aineq', ipObj.UsingDefaults) && mineq > 0
                 % We must check Mineq > 0. Otherwise, the size of Aineq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aineq; we allow Aineq to be 0-by-0, but
@@ -385,12 +385,12 @@ classdef lincoa_mod
                 Aineq_loc = Aineq;
             end
 
-            bineq_loc = memory_obj.alloc_rvector_sp(bineq_loc, mineq); % NOT removable even in F2003, as Bineq may be absent.
+            bineq_loc = memory_obj.alloc_rvector_sp(mineq); % NOT removable even in F2003, as Bineq may be absent.
             if ~ismember('bineq', ipObj.UsingDefaults)
                 bineq_loc = bineq;
             end
 
-            Aeq_loc = memory_obj.alloc_rmatrix_sp(Aeq_loc, meq, n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
+            Aeq_loc = memory_obj.alloc_rmatrix_sp(meq, n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
             if ~ismember('Aeq', ipObj.UsingDefaults) && meq > 0
                 % We must check Meq > 0. Otherwise, the size of Aeq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aeq; we allow Aeq to be 0-by-0, but
@@ -398,7 +398,7 @@ classdef lincoa_mod
                 Aeq_loc = Aeq;
             end
 
-            beq_loc = memory_obj.alloc_rvector_sp(beq_loc, meq); % NOT removable even in F2003, as Beq may be absent.
+            beq_loc = memory_obj.alloc_rvector_sp(meq); % NOT removable even in F2003, as Beq may be absent.
             if ~ismember('beq', ipObj.UsingDefaults)
                 beq_loc = beq;
             end
@@ -409,7 +409,7 @@ classdef lincoa_mod
                     xl_loc(:) = xl;
                 end
             end
-            xl_loc(linalg_obj.trueloc(infnan_obj.is_nan(xl_loc) | xl_loc < -consts_obj.BOUNDMAX)) = -consts_obj.BOUNDMAX;
+            xl_loc(linalg_obj.trueloc(infnan_obj.is_nan_sp(xl_loc) | xl_loc < -consts_obj.BOUNDMAX)) = -consts_obj.BOUNDMAX;
 
             xu_loc(:) = consts_obj.BOUNDMAX;
             if ~ismember('xu', ipObj.UsingDefaults)
@@ -417,7 +417,7 @@ classdef lincoa_mod
                     xu_loc(:) = xu;
                 end
             end
-            xu_loc(linalg_obj.trueloc(infnan_obj.is_nan(xu_loc) | xu_loc > consts_obj.BOUNDMAX)) = consts_obj.BOUNDMAX;
+            xu_loc(linalg_obj.trueloc(infnan_obj.is_nan_sp(xu_loc) | xu_loc > consts_obj.BOUNDMAX)) = consts_obj.BOUNDMAX;
 
             % If RHOBEG is present, then RHOBEG_LOC is a copy of RHOBEG; otherwise, RHOBEG_LOC takes the default
             % value for RHOBEG, taking the value of RHOEND into account. Note that RHOEND is considered only if
@@ -534,7 +534,7 @@ classdef lincoa_mod
             % In MATLAB/Python/Julia/R implementation, we should simply set MAXHIST = MAXFUN and initialize
             % CHIST = NaN(1, MAXFUN), FHIST = NaN(1, MAXFUN), XHIST = NaN(N, MAXFUN)
             % if they are requested; replace MAXFUN with 0 for the history that is not requested.
-            [maxhist_loc, xhist_loc, fhist_loc, chist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 5, xhist_loc, nargout >= 6, fhist_loc, 'output_chist', nargout >= 7);
+            [maxhist_loc, xhist_loc, fhist_loc, chist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 5, nargout >= 6, 'output_chist', nargout >= 7);
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
             [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, rhoend_loc, xl_loc, xu_loc, x, amat, bvec);
@@ -559,7 +559,7 @@ classdef lincoa_mod
             if nargout >= 5
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                xhist = memory_obj.alloc_rmatrix_sp(xhist, n, nhist); % Removable in F2003.
+                xhist = memory_obj.alloc_rmatrix_sp(n, nhist); % Removable in F2003.
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -583,7 +583,7 @@ classdef lincoa_mod
             if nargout >= 6
                 nhist = min(nf_loc, fix(numel(fhist_loc)));
                 %--------------------------------------------------%
-                fhist = memory_obj.alloc_rvector_sp(fhist, nhist); % Removable in F2003.
+                fhist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
@@ -594,7 +594,7 @@ classdef lincoa_mod
             if nargout >= 7
                 nhist = min(nf_loc, fix(numel(chist_loc)));
                 %--------------------------------------------------%
-                chist = memory_obj.alloc_rvector_sp(chist, nhist); % Removable in F2003.
+                chist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
@@ -609,19 +609,19 @@ classdef lincoa_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(nf_loc <= maxfun_loc, "NF <= MAXFUN", srname);
-                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
+                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
                 nhist = min(nf_loc, maxhist_loc);
                 if nargout >= 5
                     debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == nhist, "SIZE(XHIST) == [N, NHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(xhist), 'all'), "XHIST does not contain NaN", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist), 'all'), "XHIST does not contain NaN", srname);
                 end
                 if nargout >= 6
                     debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(fhist) | infnan_obj.is_posinf(fhist), 'all'), "FHIST does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) | infnan_obj.is_posinf(fhist), 'all'), "FHIST does not contain NaN/+Inf", srname);
                 end
                 if nargout >= 7
                     debug_obj.assert(numel(chist) == nhist, "SIZE(CHIST) == NHIST", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan(chist) | infnan_obj.is_posinf(chist), 'all'), "CHIST does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(chist) | infnan_obj.is_posinf(chist), 'all'), "CHIST does not contain NaN/+Inf", srname);
                 end
                 if nargout >= 6 && nargout >= 7
                     debug_obj.assert(~any(selectx_obj.isbetter10(fhist(1:nhist), chist(1:nhist), f_loc, cstrv_loc, ctol_loc), 'all'), "No point in the history is better than X", srname);
@@ -666,18 +666,12 @@ classdef lincoa_mod
             srname = "GET_LINCON";
 
 
-            ieq = NaN;
-            iineq = NaN;
-            ixl = NaN;
-            ixu = NaN;
-
             Aeq_norm = NaN(size(Aeq, 1), 1);
             Aeqx0 = NaN(size(Aeq, 1), 1);
             Aineq_norm = NaN(size(Aineq, 1), 1);
             Aineqx0 = NaN(size(Aineq, 1), 1);
             idmat = NaN(numel(x0));
 
-            Anorm = NaN;
 
             % Sizes
             n = fix(numel(x0));
@@ -708,13 +702,13 @@ classdef lincoa_mod
             end
 
             % Allocate memory. Removable in F2003.
-            memory_obj.alloc_ivector(ixl, mxl);
-            memory_obj.alloc_ivector(ixu, mxu);
-            memory_obj.alloc_ivector(ieq, meq);
-            memory_obj.alloc_ivector(iineq, mineq);
-            amat = memory_obj.alloc_rmatrix_sp(amat, n, m);
-            bvec = memory_obj.alloc_rvector_sp(bvec, m);
-            memory_obj.alloc_rvector_sp(Anorm, 2 * meq + mineq);
+            memory_obj.alloc_ivector(mxl);
+            memory_obj.alloc_ivector(mxu);
+            memory_obj.alloc_ivector(meq);
+            memory_obj.alloc_ivector(mineq);
+            amat = memory_obj.alloc_rmatrix_sp(n, m);
+            bvec = memory_obj.alloc_rvector_sp(m);
+            memory_obj.alloc_rvector_sp(2 * meq + mineq);
 
             % Define the indices of the valid and nontrivial constraints.
             ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
@@ -729,7 +723,7 @@ classdef lincoa_mod
             % 1. The treatment of the equality constraints is naive. One may choose to eliminate them instead.
             % 2. The code below is quite inefficient in terms of memory, but we prefer readability.
             idmat(:, :) = linalg_obj.eye2(n, n);
-            amat = reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), reshape(-Aeq(ieq, :)', 1, []), reshape(Aeq(ieq, :)', 1, []), reshape(Aineq(iineq, :)', 1, [])], size(amat));
+            amat = reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), reshape(-Aeq(ieq, :).', 1, []), reshape(Aeq(ieq, :).', 1, []), reshape(Aineq(iineq, :).', 1, [])], size(amat));
             bvec = [reshape(-xl(ixl), [], 1); reshape(xu(ixu), [], 1); reshape(-beq(ieq), [], 1); reshape(beq(ieq), [], 1); reshape(bineq(iineq), [], 1)];
             %%MATLAB code:
             %%amat = [-idmat(:, ixl), idmat(:, ixu), -Aeq(ieq, :)', Aeq(ieq, :)', Aineq(iineq, :)'];
@@ -742,7 +736,7 @@ classdef lincoa_mod
 
             % Normalize the linear constraints so that each constraint has a gradient of norm 1.
             Anorm = [reshape(Aeq_norm(ieq), [], 1); reshape(Aeq_norm(ieq), [], 1); reshape(Aineq_norm(iineq), [], 1)];
-            amat(:, mxl + mxu + 1:m) = amat(:, mxl + mxu + 1:m) ./ fortran.spread(Anorm, 'dim', 1, 'ncopies', n);
+            amat(:, mxl + mxu + 1:m) = amat(:, mxl + mxu + 1:m) ./ Anorm.';
             bvec(mxl + mxu + 1:m) = bvec(mxl + mxu + 1:m) ./ Anorm;
 
             % Deallocate memory.

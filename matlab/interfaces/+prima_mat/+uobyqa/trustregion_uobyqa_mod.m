@@ -259,7 +259,7 @@ classdef trustregion_uobyqa_mod
                 end
 
                 % Zaikun 20220509
-                if any(infnan_obj.is_nan(piv), 'all')
+                if any(infnan_obj.is_nan_sp(piv), 'all')
                     break % Better action to take???
 
                 end

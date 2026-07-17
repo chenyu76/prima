@@ -31,7 +31,7 @@ classdef evaluate_mod
             y = NaN(numel(x), 1);
 
             y(:) = x;
-            y(linalg_obj.trueloc(infnan_obj.is_nan(x))) = consts_obj.ZERO;
+            y(linalg_obj.trueloc(infnan_obj.is_nan_sp(x))) = consts_obj.ZERO;
             y(:) = max(-consts_obj.REALMAX, min(consts_obj.REALMAX, y));
         end
         function y = moderatef(~, f)
@@ -48,7 +48,7 @@ classdef evaluate_mod
 
 
             y = f;
-            if infnan_obj.is_nan(y)
+            if infnan_obj.is_nan_sp(y)
                 y = consts_obj.FUNCMAX;
             end
             y = max(-consts_obj.REALMAX, min(consts_obj.FUNCMAX, y));
@@ -71,7 +71,7 @@ classdef evaluate_mod
             y = NaN(numel(c), 1);
 
             y(:) = c;
-            y(linalg_obj.trueloc(infnan_obj.is_nan(c))) = consts_obj.CONSTRMAX;
+            y(linalg_obj.trueloc(infnan_obj.is_nan_sp(c))) = consts_obj.CONSTRMAX;
             y(:) = max(-consts_obj.CONSTRMAX, min(consts_obj.CONSTRMAX, y));
         end
         function f = evaluatef(obj, calfun, x)
@@ -99,14 +99,14 @@ classdef evaluate_mod
             if consts_obj.DEBUGGING
                 % X should not contain NaN if the initial X does not contain NaN and the subroutines generating
                 % trust-region/geometry steps work properly so that they never produce a step containing NaN/Inf.
-                debug_obj.assert(~any(infnan_obj.is_nan(x), 'all'), "X does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", srname);
             end
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if any(infnan_obj.is_nan(x), 'all')
+            if any(infnan_obj.is_nan_sp(x), 'all')
                 % Although this should not happen unless there is a bug, we include this case for robustness.
                 f = fortran.sum(x, 'all'); % Set F to NaN
 
@@ -156,14 +156,14 @@ classdef evaluate_mod
             if consts_obj.DEBUGGING
                 % X should not contain NaN if the initial X does not contain NaN and the subroutines generating
                 % trust-region/geometry steps work properly so that they never produce a step containing NaN/Inf.
-                debug_obj.assert(~any(infnan_obj.is_nan(x), 'all'), "X does not contain NaN", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", srname);
             end
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if any(infnan_obj.is_nan(x), 'all')
+            if any(infnan_obj.is_nan_sp(x), 'all')
                 % Although this should not happen unless there is a bug, we include this case for robustness.
                 % Set F, CONSTR, and CSTRV to NaN.
                 f = fortran.sum(x, 'all');
@@ -186,7 +186,7 @@ classdef evaluate_mod
                 % With X not containing NaN, and with the moderated extreme barrier, F cannot be NaN/+Inf, and
                 % CONSTR cannot be NaN/+Inf.
                 debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan(constr) | infnan_obj.is_posinf(constr), 'all'), "CONSTR does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(constr) | infnan_obj.is_posinf(constr), 'all'), "CONSTR does not contain NaN/+Inf", srname);
             end
 
         end
