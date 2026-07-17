@@ -76,7 +76,7 @@ classdef update_bobyqa_mod
                 for j = 1:npt
                     hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
                     hcol(npt + 1:npt + n) = bmat(:, j);
-                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || fortran.sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
+                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
 
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
@@ -120,7 +120,7 @@ classdef update_bobyqa_mod
             % performance of BOBYQA in a test on 20220413.
             alpha = hcol(knew);
             tau = vlag(knew);
-            denom = alpha * beta + fortran.power(tau, 2);
+            denom = alpha * beta + tau ^ 2;
 
             % After the following line, VLAG = H*w - e_KNEW in the NEWUOA paper (where t = KNEW).
             vlag(knew) = vlag(knew) - consts_obj.ONE;
@@ -128,7 +128,7 @@ classdef update_bobyqa_mod
             % Quite rarely, due to rounding errors, VLAG or BETA may not be finite, or DENOM may not be
             % positive. In such cases, [BMAT, ZMAT] would be destroyed by the update, and hence we would rather
             % not update them at all. Or should we simply terminate the algorithm?
-            if ~(infnan_obj.is_finite(fortran.sum(abs(hcol), 'all') + fortran.sum(abs(vlag), 'all') + abs(beta)) && denom > 0)
+            if ~(infnan_obj.is_finite(sum(abs(hcol), 'all') + sum(abs(vlag), 'all') + abs(beta)) && denom > 0)
                 if nargout >= 3
                     info = infos_obj.DAMAGING_ROUNDING;
                 end
@@ -155,7 +155,7 @@ classdef update_bobyqa_mod
             end
 
             % Complete the updating of ZMAT. See (4.14) of the BOBYQA paper.
-            sqrtdn = fortran.sqrt(denom);
+            sqrtdn = sqrt(denom);
             zmat(:, 1) = (tau / sqrtdn) * zmat(:, 1) - (zmat(knew, 1) / sqrtdn) * vlag(1:npt);
             % Zaikun 20231012: Either of the following two lines worsens the performance of BOBYQA when the
             % objective function is evaluated with 5 or less correct significance digits. Strange.
@@ -175,7 +175,7 @@ classdef update_bobyqa_mod
                 for j = 1:npt
                     hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
                     hcol(npt + 1:npt + n) = bmat(:, j);
-                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || fortran.sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
+                    debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
 
                 % The following is too expensive to check.

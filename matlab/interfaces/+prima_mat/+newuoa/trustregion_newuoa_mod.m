@@ -182,14 +182,14 @@ classdef trustregion_newuoa_mod
                 end
                 % Exit if GG is small. This must be done first; otherwise, DD can be 0 and BSTEP is not well
                 % defined. The inequality below must be non-strict so that GG = GG0 = 0 will trigger the exit.
-                if gg <= (fortran.power(tol, 2)) * gg0
+                if gg <= (tol ^ 2) * gg0
                     info_loc = 0;
                     break
                 end
 
                 % Set BSTEP to the step length such that ||S + BSTEP*D|| = DELTA.
                 if iter == 1
-                    bstep = delta / fortran.sqrt(dd);
+                    bstep = delta / sqrt(dd);
                 else
                     resid = delsq - ss;
                     if resid <= 0
@@ -210,7 +210,7 @@ classdef trustregion_newuoa_mod
                     %--------------------------------------------------%
 
                     % SQRTD: square root of a discriminant. The MAXVAL avoids SQRTD < ABS(DS) due to underflow.
-                    sqrtd = max([fortran.sqrt(fortran.power(ds, 2) + dd * resid), abs(ds), fortran.sqrt(dd * resid)], [], 'all');
+                    sqrtd = max([sqrt(ds ^ 2 + dd * resid), abs(ds), sqrt(dd * resid)], [], 'all');
                     % Powell's code does not distinguish the following two cases, which have no difference in
                     % precise arithmetic. The following scheme stabilizes the calculation. Copied from LINCOA.
                     if ds <= 0
@@ -264,7 +264,7 @@ classdef trustregion_newuoa_mod
                 % the 2-dimensional minimization if any.
                 % Exit in case of Inf/NaN in S. This should come the first! Otherwise, we may return an S that
                 % contains NaN and fulfills other exit conditions.
-                if ~infnan_obj.is_finite(fortran.sum(abs(s), 'all'))
+                if ~infnan_obj.is_finite(sum(abs(s), 'all'))
                     s(:) = sold;
                     info_loc = -1;
                     break
@@ -273,7 +273,7 @@ classdef trustregion_newuoa_mod
                 % Exit if CG path cuts the boundary. It is the only possibility that TWOD_SEARCH is true.
                 if alpha >= bstep || ss >= delsq
                     crvmin = consts_obj.ZERO;
-                    twod_search = (n >= 2 && gg > (fortran.power(tol, 2)) * gg0); % TWOD_SEARCH should be FALSE if N = 1.
+                    twod_search = (n >= 2 && gg > (tol ^ 2) * gg0); % TWOD_SEARCH should be FALSE if N = 1.
                     break
                 end
 
@@ -318,7 +318,7 @@ classdef trustregion_newuoa_mod
                     break
                 end
                 % Exit if GG is small. The inequality must be non-strict so that GG = GG0 = 0 triggers the exit.
-                if gg <= (fortran.power(tol, 2)) * gg0
+                if gg <= (tol ^ 2) * gg0
                     info_loc = 0;
                     break
                 end
@@ -349,7 +349,7 @@ classdef trustregion_newuoa_mod
                 % continue. Note that SGK is unlikely positive if everything goes well.
                 % 2. SQRT(TOL)*SQRT(GG) is less likely to encounter underflow than SQRT(TOL*GG).
                 % 3. The condition below should be non-strict so that ||D|| = 0 can trigger the exit.
-                if linalg_obj.p_norm(d) <= fortran.sqrt(tol) * fortran.sqrt(gg)
+                if linalg_obj.p_norm(d) <= sqrt(tol) * sqrt(gg)
                     info_loc = 0;
                     break
                 end
@@ -373,13 +373,13 @@ classdef trustregion_newuoa_mod
                 angle = univar_obj.circle_min(@(varargin) obj.circle_fun_trsapp(varargin{:}), args, 50);
 
                 % Calculate the new S.
-                cth = fortran.cos(angle);
-                sth = fortran.sin(angle);
+                cth = cos(angle);
+                sth = sin(angle);
                 sold(:) = s;
                 s(:) = cth * s + sth * d;
 
                 % Exit in case of Inf/NaN in S.
-                if ~infnan_obj.is_finite(fortran.sum(abs(s), 'all'))
+                if ~infnan_obj.is_finite(sum(abs(s), 'all'))
                     s(:) = sold;
                     info_loc = -1;
                     break
@@ -452,8 +452,8 @@ classdef trustregion_newuoa_mod
             % Calculation starts %
             %====================%
 
-            cth = fortran.cos(theta);
-            sth = fortran.sin(theta);
+            cth = cos(theta);
+            sth = sin(theta);
             f = (args(1) + args(2) * cth) * cth + (args(3) + args(4) * cth) * sth;
 
             %====================%

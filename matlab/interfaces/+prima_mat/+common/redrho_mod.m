@@ -46,7 +46,7 @@ classdef redrho_mod
             elseif rho_ratio <= 16.0
                 rho = rhoend;
             else
-                rho = fortran.sqrt(rho_ratio) * rhoend; %rho = sqrt(rho_in * rhoend)
+                rho = sqrt(rho_ratio) * rhoend; %rho = sqrt(rho_in * rhoend)
             end
 
             %====================%

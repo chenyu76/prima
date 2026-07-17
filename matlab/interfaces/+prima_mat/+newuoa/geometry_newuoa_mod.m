@@ -96,15 +96,15 @@ classdef geometry_newuoa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = fortran.sum(fortran.power((xpt - (xpt(:, kopt) + d)), 2), 1);
+                distsq(:) = sum((xpt - (xpt(:, kopt) + d)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = fortran.sum(fortran.power((xpt - xpt(:, kopt)), 2), 1);
+                distsq(:) = sum((xpt - xpt(:, kopt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
-            weight(:) = fortran.power(max(consts_obj.ONE, distsq ./ fortran.power(max(consts_obj.TENTH * delta, rho), 2)), 3); % Powell's code.
+            weight(:) = max(consts_obj.ONE, distsq ./ max(consts_obj.TENTH * delta, rho) ^ 2) .^ 3; % Powell's code.
             % Other possible definitions of WEIGHT.
             % %weight = max(ONE, distsq / max(TENTH * delta, rho)**2)**3.5  ! This sometimes works better
             % %weight = max(ONE, distsq / rho**2)**3  ! This works almost the same as Powell's code
@@ -233,7 +233,7 @@ classdef geometry_newuoa_mod
             % Calculate VLAG and BETA for D. Indeed, only VLAG(KNEW) is needed.
             vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat, 'idz', idz);
             beta = powalg_obj.calbeta(kopt, bmat, d, xpt, zmat, 'idz', idz);
-            denom = alpha * beta + fortran.power(vlag(knew), 2);
+            denom = alpha * beta + vlag(knew) ^ 2;
 
             % If the cancellation in DENOM is unacceptable, then BIGDEN calculates an alternative model step D.
             % As in (6.17) of the NEWUOA paper, DENRAT = |ALPHA*BETA + TAU^2| / TAU^2 with TAU = VLAG(KNEW).
@@ -243,22 +243,22 @@ classdef geometry_newuoa_mod
             % same reason, we check whether BETA is NaN. Why not check ALPHA? Because BIGDEN cannot improve ALPHA.
             % Powell's code takes DDEN once it is calculated. We take it only if it renders a bigger denominator.
             denrat = -consts_obj.ONE;
-            if fortran.power(vlag(knew), 2) > 0 && ~infnan_obj.is_nan_sp(beta)
-                denrat = abs(consts_obj.ONE + alpha * beta / fortran.power(vlag(knew), 2));
+            if vlag(knew) ^ 2 > 0 && ~infnan_obj.is_nan_sp(beta)
+                denrat = abs(consts_obj.ONE + alpha * beta / vlag(knew) ^ 2);
             end
             % If DENRAT is NaN at this point, then ALPHA is NaN, and there is no need to call BIGDEN.
             if denrat <= 0.8
                 dden(:) = obj.bigden(idz, knew, kopt, bmat, d, xpt, zmat);
                 vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, dden, xpt, zmat, 'idz', idz);
                 beta = powalg_obj.calbeta(kopt, bmat, dden, xpt, zmat, 'idz', idz);
-                if abs(alpha * beta + fortran.power(vlag(knew), 2)) >= abs(denom) || infnan_obj.is_nan_sp(denom)
+                if abs(alpha * beta + vlag(knew) ^ 2) >= abs(denom) || infnan_obj.is_nan_sp(denom)
                     d(:) = dden;
                 end
             end
 
             % In case D is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to
             % XOPT. Powell's code does not have this.
-            if fortran.sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+            if sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(sum(abs(d), 'all'))
                 d(:) = xpt(:, knew) - xpt(:, kopt);
                 scaling = delbar / linalg_obj.p_norm(d);
                 d(:) = max(0.6 * scaling, min(consts_obj.HALF, scaling)) * d; % 0.6: ensure |D| > DELBAR/2
@@ -367,19 +367,19 @@ classdef geometry_newuoa_mod
             gg = linalg_obj.inprod(gc, gc);
             sp = linalg_obj.inprod(d, gc);
             dhd = linalg_obj.inprod(d, gd);
-            scaling = delbar / fortran.sqrt(dd);
+            scaling = delbar / sqrt(dd);
             if sp * dhd < 0
                 scaling = -scaling;
             end
             t = consts_obj.ZERO;
-            if fortran.power(sp, 2) > 0.99 * dd * gg
+            if sp ^ 2 > 0.99 * dd * gg
                 t = consts_obj.ONE;
             end
             tau = scaling * (abs(sp) + consts_obj.HALF * scaling * abs(dhd));
-            if gg * fortran.power(delbar, 2) < 1.0e-2 * fortran.power(tau, 2)
+            if gg * delbar ^ 2 < 1.0e-2 * tau ^ 2
                 t = consts_obj.ONE;
             end
-            if infnan_obj.is_finite(fortran.sum(abs(scaling * d), 'all'))
+            if infnan_obj.is_finite(sum(abs(scaling * d), 'all'))
                 d(:) = scaling * d;
                 gd(:) = scaling * gd;
                 s(:) = gc + t * gd;
@@ -388,7 +388,7 @@ classdef geometry_newuoa_mod
                 maxiter = 0; % Return immediately to avoid producing a D containing NaN/Inf.
             end
 
-            tol = min(0.1, max(fortran.power(consts_obj.EPS, consts_obj.QUART), 1.0e-4));
+            tol = min(0.1, max(consts_obj.EPS ^ consts_obj.QUART, 1.0e-4));
             for iter = 1:maxiter
                 % Begin the iteration by overwriting S with a vector that has the required length and direction,
                 % except that termination occurs if the given D and S are nearly parallel.
@@ -414,7 +414,7 @@ classdef geometry_newuoa_mod
                 % As shown above, Powell's code triggers an exit if DS^2>=(1-1.0E-8)*DD*SS. So our condition is
                 % the same except that we take EPS into account in case single precision is in use.
                 % 2. The condition below should be non-strict so that ||S|| = 0 can trigger the exit.
-                if linalg_obj.p_norm(s) <= tol * fortran.sqrt(ss)
+                if linalg_obj.p_norm(s) <= tol * sqrt(ss)
                     break
                 end
                 s(:) = (linalg_obj.p_norm(d) / linalg_obj.p_norm(s)) * s;
@@ -438,13 +438,13 @@ classdef geometry_newuoa_mod
                 angle = univar_obj.circle_maxabs(@(varargin) obj.circle_fun_biglag(varargin{:}), cf, 50);
 
                 % Calculate the new D and GD.
-                cth = fortran.cos(angle);
-                sth = fortran.sin(angle);
+                cth = cos(angle);
+                sth = sin(angle);
                 dold(:) = d;
                 d(:) = cth * d + sth * s;
 
                 % Exit in case of Inf/NaN in D.
-                if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+                if ~infnan_obj.is_finite(sum(abs(d), 'all'))
                     d(:) = dold;
                     break
                 end
@@ -593,25 +593,25 @@ classdef geometry_newuoa_mod
             ss = linalg_obj.inprod(s, s);
             xsq = linalg_obj.inprod(x, x);
 
-            if ~(fortran.power(ds, 2) <= 0.99 * dd * ss)
+            if ~(ds ^ 2 <= 0.99 * dd * ss)
                 % `.NOT. (A <= B)` differs from `A > B`.  The former holds iff A > B or {A, B} contains NaN.
-                dtest = fortran.power(ds, 2) / ss;
+                dtest = ds ^ 2 / ss;
                 xptemp(:, :) = xpt - x;
                 %%MATLAB: xptemp = xpt - x  % x should be a column! Implicit expansion
                 %----------------------------------------------------------------%
                 %---------!dstemp = matprod(d, xpt) - inprod(x, d) !-------------%
                 dstemp(:) = linalg_obj.matprod12(d, xptemp);
                 %----------------------------------------------------------------%
-                sstemp(:) = fortran.sum(fortran.power((xptemp), 2), 1);
+                sstemp(:) = sum((xptemp) .^ 2, 1);
 
                 dstemp(kopt) = consts_obj.TWO * ds + consts_obj.ONE;
                 sstemp(kopt) = ss;
-                k = fix(fortran.minloc(fortran.power(dstemp, 2) ./ sstemp, 'dim', 1));
+                k = fix(fortran.minloc(dstemp .^ 2 ./ sstemp, 'dim', 1));
                 % K can be 0 due to NaN. In that case, set K = KNEW. Otherwise, memory errors will occur.
                 if k == 0
                     k = knew;
                 end
-                if (~(fortran.power(dstemp(k), 2) / sstemp(k) >= dtest)) && k ~= kopt
+                if (~(dstemp(k) ^ 2 / sstemp(k) >= dtest)) && k ~= kopt
                     % `.NOT. (A >= B)` differs from `A < B`.  The former holds iff A < B or {A, B} contains NaN.
                     % Although unlikely, if NaN occurs, it may happen that K = KOPT.
                     s(:) = xpt(:, k) - x;
@@ -620,7 +620,7 @@ classdef geometry_newuoa_mod
 
             densav = consts_obj.ZERO;
 
-            tol = min(0.1, max(fortran.power(consts_obj.EPS, consts_obj.QUART), 1.0e-4));
+            tol = min(0.1, max(consts_obj.EPS ^ consts_obj.QUART, 1.0e-4));
             for iter = 1:n
                 % Begin the iteration by overwriting S with a vector that has the required length and direction.
                 % TOL is the tolerance for telling whether S and D are nearly parallel. In Powell's code, the
@@ -645,7 +645,7 @@ classdef geometry_newuoa_mod
                 % As shown above, Powell's code triggers an exit if DS^2>=(1-1.0E-8)*DD*SS. So our condition is
                 % the same except that we take EPS into account in case single precision is in use.
                 % 2. The condition below should be non-strict so that ||S|| = 0 can trigger the exit.
-                if linalg_obj.p_norm(s) <= tol * fortran.sqrt(ss)
+                if linalg_obj.p_norm(s) <= tol * sqrt(ss)
                     break
                 end
                 s(:) = (s ./ linalg_obj.p_norm(s)) * linalg_obj.p_norm(d);
@@ -672,10 +672,10 @@ classdef geometry_newuoa_mod
                     tempa = linalg_obj.inprod(xpt(:, k), d);
                     tempb = linalg_obj.inprod(xpt(:, k), s);
                     tempc = linalg_obj.inprod(xpt(:, k), x);
-                    w(k, 1) = consts_obj.QUART * (fortran.power(tempa, 2) + fortran.power(tempb, 2));
+                    w(k, 1) = consts_obj.QUART * (tempa ^ 2 + tempb ^ 2);
                     w(k, 2) = tempa * tempc;
                     w(k, 3) = tempb * tempc;
-                    w(k, 4) = consts_obj.QUART * (fortran.power(tempa, 2) - fortran.power(tempb, 2));
+                    w(k, 4) = consts_obj.QUART * (tempa ^ 2 - tempb ^ 2);
                     w(k, 5) = consts_obj.HALF * tempa * tempb;
                 end
                 w(npt + 1:npt + n, 1:5) = consts_obj.ZERO;
@@ -696,7 +696,7 @@ classdef geometry_newuoa_mod
                 % Include in DEN the part of BETA that depends on THETA.
                 for k = 1:npt + n
                     par(1:5) = consts_obj.HALF * prod_custom(k, 1:5) .* w(k, 1:5);
-                    den(1) = den(1) - par(1) - fortran.sum(par(1:5), 'all');
+                    den(1) = den(1) - par(1) - sum(par(1:5), 'all');
                     tempa = prod_custom(k, 1) * w(k, 2) + prod_custom(k, 2) * w(k, 1);
                     tempb = prod_custom(k, 2) * w(k, 4) + prod_custom(k, 4) * w(k, 2);
                     tempc = prod_custom(k, 3) * w(k, 5) + prod_custom(k, 5) * w(k, 3);
@@ -717,8 +717,8 @@ classdef geometry_newuoa_mod
                     den(9) = den(9) - consts_obj.HALF * tempa;
                 end
 
-                par(1:5) = consts_obj.HALF * fortran.power(prod_custom(knew, 1:5), 2);
-                denex(1) = alpha * den(1) + par(1) + fortran.sum(par(1:5), 'all');
+                par(1:5) = consts_obj.HALF * prod_custom(knew, 1:5) .^ 2;
+                denex(1) = alpha * den(1) + par(1) + sum(par(1:5), 'all');
                 tempa = consts_obj.TWO * prod_custom(knew, 1) * prod_custom(knew, 2);
                 tempb = prod_custom(knew, 2) * prod_custom(knew, 4);
                 tempc = prod_custom(knew, 3) * prod_custom(knew, 5);
@@ -741,10 +741,10 @@ classdef geometry_newuoa_mod
 
                 % Calculate the new D.
                 dold(:) = d;
-                d(:) = fortran.cos(angle) * d + fortran.sin(angle) * s;
+                d(:) = cos(angle) * d + sin(angle) * s;
 
                 % Exit in case of Inf/NaN in D.
-                if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+                if ~infnan_obj.is_finite(sum(abs(d), 'all'))
                     d(:) = dold;
                     break
                 end
@@ -760,7 +760,7 @@ classdef geometry_newuoa_mod
                 densav = denmax;
 
                 % Set S to HALF the gradient of the denominator with respect to D. First, calculate the new VLAG.
-                par(:) = [consts_obj.ONE, fortran.cos(angle), fortran.sin(angle), fortran.cos(2.0 * angle), fortran.sin(2.0 * angle)];
+                par(:) = [consts_obj.ONE, cos(angle), sin(angle), cos(2.0 * angle), sin(2.0 * angle)];
                 vlag(:) = linalg_obj.matprod21(prod_custom, par);
                 tau = vlag(knew);
                 y(:) = x + d;
@@ -810,8 +810,8 @@ classdef geometry_newuoa_mod
             % Calculation starts %
             %====================%
 
-            cth = fortran.cos(theta);
-            sth = fortran.sin(theta);
+            cth = cos(theta);
+            sth = sin(theta);
             f = args(1) + (args(2) + args(4) * cth) * cth + (args(3) + args(5) * cth) * sth;
 
             %====================%
@@ -848,8 +848,8 @@ classdef geometry_newuoa_mod
             %====================%
 
             par(1) = consts_obj.ONE;
-            par(2:2:8) = fortran.cos(theta * [1.0, 2.0, 3.0, 4.0]);
-            par(3:2:9) = fortran.sin(theta * [1.0, 2.0, 3.0, 4.0]);
+            par(2:2:8) = cos(theta * [1.0, 2.0, 3.0, 4.0]);
+            par(3:2:9) = sin(theta * [1.0, 2.0, 3.0, 4.0]);
             f = linalg_obj.inprod(args, par);
 
             %====================%

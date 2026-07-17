@@ -127,7 +127,7 @@ classdef trustregion_lincoa_mod
                 debug_obj.assert(numel(iact) == m, "SIZE(IACT) == M", srname);
                 debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), "1 <= IACT <= M", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                orthtol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
+                orthtol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', orthtol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, "SIZE(RFAC) == [N, N]", srname);
                 debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
@@ -159,7 +159,7 @@ classdef trustregion_lincoa_mod
             addParameter(ipObj, 'ngetact', NaN);
             parse(ipObj, varargin{:});
             ngetact = ipObj.Results.ngetact;
-            if ~infnan_obj.is_finite(fortran.sum(abs(gopt), 'all'))
+            if ~infnan_obj.is_finite(sum(abs(gopt), 'all'))
                 s(:) = consts_obj.ZERO;
                 if nargout >= 6
                     ngetact = 0;
@@ -211,7 +211,7 @@ classdef trustregion_lincoa_mod
             % What is the THEORETICAL upper bound of ITER? For the moment, we set the following MAXITER.
             % The formulation of MAXITER below contains a precaution against overflow. In MATLAB/Python/Julia/R,
             % we can write maxiter = min(10000, 10*(m + n))
-            maxiter = fix(min(fortran.power(10, min(4, floor(log10(double(intmax('int64')))))), 10 * fix(m + n)));
+            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 10 * fix(m + n)));
             for iter = 1:maxiter                % Powell's code is essentially a DO WHILE loop. We impose an explicit MAXITER.
                 if newact
                     % GETACT picks the active set for the current S. It also sets PSD to the vector closest to
@@ -227,7 +227,7 @@ classdef trustregion_lincoa_mod
                         % Powell's code: IF (DD <= 0) THEN
                         break
                     end
-                    psd(:) = (0.2 * delta / fortran.sqrt(dd)) * psd;
+                    psd(:) = (0.2 * delta / sqrt(dd)) * psd;
 
                     % If the modulus of the residual of an "active constraint" is substantial (i.e., more than
                     % 1.0E-4*DELTA), then modify the searching direction PSD by a projection step to the
@@ -255,14 +255,14 @@ classdef trustregion_lincoa_mod
                         % constraints). Set GAMMA to the greatest steplength of this move that satisfies both
                         % the trust region bound and the linear constraints.
                         ds = linalg_obj.inprod(dproj, s + psd);
-                        dd = fortran.sum(fortran.power(dproj, 2), 'all');
-                        resid = delsq - fortran.sum(fortran.power((s + psd), 2), 'all');
+                        dd = sum(dproj .^ 2, 'all');
+                        resid = delsq - sum((s + psd) .^ 2, 'all');
                         % Powell's condition for the following IF: RESID > 0.
                         if resid > 0 && dd > consts_obj.EPS * delsq && ~infnan_obj.is_nan_sp(ds)
                             % Set GAMMA to the greatest value so that S + PSD + GAMMA*DPROJ satisfies the trust
                             % region bound. SQRTD: square root of a discriminant. Powell's code for SQRTD is
                             % SQRT(DS * DS + DD * RESID), which may be below ABS(DS) due to underflow in DS*DS.
-                            sqrtd = max([fortran.sqrt(ds * ds + dd * resid), abs(ds), fortran.sqrt(dd * resid)], [], 'all');
+                            sqrtd = max([sqrt(ds * ds + dd * resid), abs(ds), sqrt(dd * resid)], [], 'all');
                             if ds <= 0
                                 gamma = (sqrtd - ds) / dd;
                             else
@@ -315,7 +315,7 @@ classdef trustregion_lincoa_mod
                 end
                 % SQRTD: square root of a discriminant. Powell's code for SQRTD is SQRT(DS * DS + DD * RESID),
                 % which may be below ABS(DS) due to underflow in DS*DS.
-                sqrtd = max([fortran.sqrt(ds * ds + dd * resid), abs(ds), fortran.sqrt(dd * resid)], [], 'all');
+                sqrtd = max([sqrt(ds * ds + dd * resid), abs(ds), sqrt(dd * resid)], [], 'all');
                 if ds <= 0
                     alpha = (sqrtd - ds) / dd;
                 else
@@ -389,13 +389,13 @@ classdef trustregion_lincoa_mod
                 % Update S, G.
                 sold(:) = s;
                 s(:) = s + alpha * d;
-                ss = fortran.sum(fortran.power(s, 2), 'all');
+                ss = sum(s .^ 2, 'all');
                 if ~infnan_obj.is_finite(ss)
                     s(:) = sold;
                     break
                 end
                 g(:) = g + alpha * hd;
-                if ~infnan_obj.is_finite(fortran.sum(abs(g), 'all'))
+                if ~infnan_obj.is_finite(sum(abs(g), 'all'))
                     break
                 end
 

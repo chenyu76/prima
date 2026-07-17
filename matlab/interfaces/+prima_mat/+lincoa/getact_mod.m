@@ -131,7 +131,7 @@ classdef getact_mod
                 debug_obj.assert(numel(resact) == m, "SIZE(RESACT) == M", srname);
                 debug_obj.assert(numel(resnew) == m, "SIZE(RESNEW) == M", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
+                tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, "SIZE(RFAC) == [N, N]", srname);
                 debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
@@ -197,7 +197,7 @@ classdef getact_mod
             % MATLAB/Python/Julia/R, we can write maxiter = min(10000, 2*(m + n))
             % 2. The iteration counter ITER never appears in the code of the iterations, as its purpose is
             % merely to impose an upper bound on the number of iterations.
-            maxiter = fix(min(fortran.power(10, min(4, floor(log10(double(intmax('int64')))))), 2 * fix(m + n)));
+            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 2 * fix(m + n)));
             for iter = 1:maxiter
                 % When NACT == N, exit with PSD = 0. Indeed, with a correctly implemented matrix product, the
                 % lines below this IF should render DD = 0 and trigger an exit. We make it explicit for clarity.
@@ -226,7 +226,7 @@ classdef getact_mod
                 %----------------------------------------------------------------------------------------------%
 
                 dd = linalg_obj.inprod(psd, psd);
-                dnorm = fortran.sqrt(dd);
+                dnorm = sqrt(dd);
 
                 if dnorm <= consts_obj.EPS || infnan_obj.is_nan_sp(dnorm)
                     break
@@ -240,7 +240,7 @@ classdef getact_mod
 
                 %---------------------------------------------------------------------------------------%
                 % Powell's code does not handle the following pathological cases.
-                if linalg_obj.inprod(psd, g) > 0 || ~infnan_obj.is_finite(fortran.sum(abs(psd), 'all'))
+                if linalg_obj.inprod(psd, g) > 0 || ~infnan_obj.is_finite(sum(abs(psd), 'all'))
                     psd(:) = psdsav;
                     break
                 end
@@ -434,7 +434,7 @@ classdef getact_mod
                 debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), "1 <= IACT <= M", srname);
                 debug_obj.assert(~any(iact(1:nact) == l, 'all'), "L is not in IACT(1:NACT)", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
+                tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, "SIZE(RFAC) == [N, N]", srname);
                 debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
@@ -525,7 +525,7 @@ classdef getact_mod
                 debug_obj.assert(icon >= 1 && icon <= nact, "1 <= ICON <= NACT", srname);
                 debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), "1 <= IACT <= M", srname);
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), min(0.1, fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) * consts_obj.EPS * double(n)));
+                tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(n)));
                 debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
                 debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, "SIZE(RFAC) == [N, N]", srname);
                 debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);

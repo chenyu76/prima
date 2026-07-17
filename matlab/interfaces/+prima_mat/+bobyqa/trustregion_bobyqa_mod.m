@@ -183,7 +183,7 @@ classdef trustregion_bobyqa_mod
 
             % GNEW is the gradient at the current iterate.
             gnew(:) = gopt;
-            gredsq = fortran.sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+            gredsq = sum(gnew(linalg_obj.trueloc(xbdi == 0)) .^ 2, 'all');
             % DELSQ is the upper bound on the sum of squares of the free variables.
             delsq = delta * delta;
             % QRED is the reduction in Q so far.
@@ -203,9 +203,9 @@ classdef trustregion_bobyqa_mod
             % Powell commented in the BOBYQA paper (the paragraph above (3.7)) that "numerical experiments show
             % that it is very unusual for subroutine TRSBOX to make more than ten changes to d when seeking an
             % approximate solution to the subproblem (1.8), even if there are hundreds of variables."
-            maxiter = fix(min(fortran.power(10, min(4, floor(log10(double(intmax('int64')))))), fortran.power(fix(n - nact), 2)));
+            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), fix(n - nact) ^ 2));
             for iter = 1:maxiter
-                resid = delsq - fortran.sum(fortran.power(d(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+                resid = delsq - sum(d(linalg_obj.trueloc(xbdi == 0)) .^ 2, 'all');
                 if resid <= 0
                     twod_search = true;
                     break
@@ -222,10 +222,10 @@ classdef trustregion_bobyqa_mod
                     s(:) = beta * s - gnew;
                 end
                 s(linalg_obj.trueloc(xbdi ~= 0)) = consts_obj.ZERO;
-                stepsq = fortran.sum(fortran.power(s, 2), 'all');
+                stepsq = sum(s .^ 2, 'all');
                 ds = linalg_obj.inprod(d(linalg_obj.trueloc(xbdi == 0)), s(linalg_obj.trueloc(xbdi == 0)));
 
-                if ~(stepsq > consts_obj.EPS * delsq && gredsq * delsq > fortran.power((tol * qred), 2) && ~infnan_obj.is_nan_sp(ds))
+                if ~(stepsq > consts_obj.EPS * delsq && gredsq * delsq > (tol * qred) ^ 2 && ~infnan_obj.is_nan_sp(ds))
                     break
                 end
 
@@ -233,7 +233,7 @@ classdef trustregion_bobyqa_mod
                 % ignoring the simple bounds.
 
                 % SQRTD: square root of a discriminant. The MAXVAL avoids SQRTD < ABS(DS) due to underflow.
-                sqrtd = max([fortran.sqrt(stepsq * resid + ds * ds), fortran.sqrt(stepsq * resid), abs(ds)], [], 'all');
+                sqrtd = max([sqrt(stepsq * resid + ds * ds), sqrt(stepsq * resid), abs(ds)], [], 'all');
 
                 % Zaikun 20220210: For the IF ... ELSE ... END IF below, Powell's condition for the IF is DS>=0.
                 % In theory, switching the condition to DS > 0 changes nothing; indeed, the two formulations
@@ -334,12 +334,12 @@ classdef trustregion_bobyqa_mod
                     end
                     ggsav = gredsq;
                     gnew(:) = gnew + stplen * hs;
-                    gredsq = fortran.sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+                    gredsq = sum(gnew(linalg_obj.trueloc(xbdi == 0)) .^ 2, 'all');
                     dold(:) = d;
                     d(:) = d + stplen * s;
 
                     % Exit in case of Inf/NaN in D.
-                    if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+                    if ~infnan_obj.is_finite(sum(abs(d), 'all'))
                         d(:) = dold;
                         break
                     end
@@ -358,7 +358,7 @@ classdef trustregion_bobyqa_mod
                         break % This leads to a difference. Why?
 
                     end
-                    delsq = delsq - fortran.power(d(iact), 2);
+                    delsq = delsq - d(iact) ^ 2;
                     if delsq <= 0
                         twod_search = true;
                         % Why set TWOD_SEARCH to TRUE? Because DELSQ <= 0 just means that D reaches the trust
@@ -367,7 +367,7 @@ classdef trustregion_bobyqa_mod
                     end
                     beta = consts_obj.ZERO;
                     itercg = 0;
-                    gredsq = fortran.sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+                    gredsq = sum(gnew(linalg_obj.trueloc(xbdi == 0)) .^ 2, 'all');
                 elseif stplen < bstep
                     % Either apply another conjugate gradient iteration or exit.
                     % N.B. ITERCG > N - NACT is impossible.
@@ -422,10 +422,10 @@ classdef trustregion_bobyqa_mod
                 end
 
                 % Update GREDSQ, DREDG, DREDSQ.
-                gredsq = fortran.sum(fortran.power(gnew(linalg_obj.trueloc(xbdi == 0)), 2), 'all');
+                gredsq = sum(gnew(linalg_obj.trueloc(xbdi == 0)) .^ 2, 'all');
                 dredg = linalg_obj.inprod(d(linalg_obj.trueloc(xbdi == 0)), gnew(linalg_obj.trueloc(xbdi == 0)));
                 if iter == 1 || nact > nactsav
-                    dredsq = fortran.sum(fortran.power(d(linalg_obj.trueloc(xbdi == 0)), 2), 'all'); % In theory, DREDSQ changes only when NACT increases.
+                    dredsq = sum(d(linalg_obj.trueloc(xbdi == 0)) .^ 2, 'all'); % In theory, DREDSQ changes only when NACT increases.
                     dred(:) = d;
                     dred(linalg_obj.trueloc(xbdi ~= 0)) = consts_obj.ZERO;
                     hdred(:) = powalg_obj.hess_mul(dred, xpt, pq, 'hq', hq);
@@ -435,11 +435,11 @@ classdef trustregion_bobyqa_mod
                 % Let the search direction S be a linear combination of the reduced D and the reduced G that is
                 % orthogonal to the reduced D.
                 temp = gredsq * dredsq - dredg * dredg;
-                if ~(temp > fortran.power(tol, 2) * max(gredsq * dredsq, fortran.power(qred, 2)))
+                if ~(temp > tol ^ 2 * max(gredsq * dredsq, qred ^ 2))
                     % TEMP is tiny or NaN occurs
                     break
                 end
-                temp = fortran.sqrt(temp);
+                temp = sqrt(temp);
                 s(:) = (dredg * d - dredsq * gnew) ./ temp;
                 s(linalg_obj.trueloc(xbdi ~= 0)) = consts_obj.ZERO;
                 sredg = -temp;
@@ -460,13 +460,13 @@ classdef trustregion_bobyqa_mod
                 % positive. However, overflow will occur if SL contains large values that indicate absence of
                 % bounds. It is not a problem in MATLAB/Python/Julia/R.
                 % 2. Even if XOPT - SL < SQRT(SSQ), rounding errors may render SSQ - (XOPT - SL)**2) < 0.
-                ssq(:) = fortran.power(d, 2) + fortran.power(s, 2); % Indeed, only SSQ(TRUELOC(XBDI == 0)) is needed.
+                ssq(:) = d .^ 2 + s .^ 2; % Indeed, only SSQ(TRUELOC(XBDI == 0)) is needed.
                 tanbd(:) = consts_obj.ONE;
                 sqdscr(:) = -consts_obj.REALMAX;
-                sqdscr(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - fortran.power((xopt(xbdi == 0 & xopt - sl < fortran.sqrt(ssq)) - sl(xbdi == 0 & xopt - sl < fortran.sqrt(ssq))), 2)));
+                sqdscr(xbdi == 0 & xopt - sl < sqrt(ssq)) = sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & xopt - sl < sqrt(ssq)) - (xopt(xbdi == 0 & xopt - sl < sqrt(ssq)) - sl(xbdi == 0 & xopt - sl < sqrt(ssq))) .^ 2));
                 tanbd(sqdscr - s > 0) = min(tanbd(sqdscr - s > 0), (xnew(sqdscr - s > 0) - sl(sqdscr - s > 0)) ./ (sqdscr(sqdscr - s > 0) - s(sqdscr - s > 0)));
                 sqdscr(:) = -consts_obj.REALMAX;
-                sqdscr(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) = fortran.sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - fortran.power((su(xbdi == 0 & su - xopt < fortran.sqrt(ssq)) - xopt(xbdi == 0 & su - xopt < fortran.sqrt(ssq))), 2)));
+                sqdscr(xbdi == 0 & su - xopt < sqrt(ssq)) = sqrt(max(consts_obj.ZERO, ssq(xbdi == 0 & su - xopt < sqrt(ssq)) - (su(xbdi == 0 & su - xopt < sqrt(ssq)) - xopt(xbdi == 0 & su - xopt < sqrt(ssq))) .^ 2));
                 tanbd(sqdscr + s > 0) = min(tanbd(sqdscr + s > 0), (su(sqdscr + s > 0) - xnew(sqdscr + s > 0)) ./ (sqdscr(sqdscr + s > 0) + s(sqdscr + s > 0)));
                 tanbd(linalg_obj.trueloc(infnan_obj.is_nan_sp(tanbd))) = consts_obj.ZERO;
                 %----------------------------------------------------------------------------------------------%
@@ -524,14 +524,14 @@ classdef trustregion_bobyqa_mod
                 % Update GNEW, D and HDRED. If the angle of the alternative iteration is restricted by a bound
                 % on a free variable, that variable is fixed at the bound. The MIN below is a precaution against
                 % rounding errors.
-                cth = min((consts_obj.ONE - fortran.power(hangt, 2)) / (consts_obj.ONE + fortran.power(hangt, 2)), consts_obj.ONE - fortran.power(hangt, 2));
-                sth = min((hangt + hangt) / (consts_obj.ONE + fortran.power(hangt, 2)), hangt + hangt);
+                cth = min((consts_obj.ONE - hangt ^ 2) / (consts_obj.ONE + hangt ^ 2), consts_obj.ONE - hangt ^ 2);
+                sth = min((hangt + hangt) / (consts_obj.ONE + hangt ^ 2), hangt + hangt);
                 gnew(:) = gnew + (cth - consts_obj.ONE) * hdred + sth * hs;
                 dold(:) = d;
                 d(linalg_obj.trueloc(xbdi == 0)) = cth * d(linalg_obj.trueloc(xbdi == 0)) + sth * s(linalg_obj.trueloc(xbdi == 0));
 
                 % Exit in case of Inf/NaN in D.
-                if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+                if ~infnan_obj.is_finite(sum(abs(d), 'all'))
                     d(:) = dold;
                     break
                 end

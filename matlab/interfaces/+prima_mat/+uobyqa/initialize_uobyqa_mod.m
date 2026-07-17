@@ -251,7 +251,7 @@ classdef initialize_uobyqa_mod
             %====================%
 
             rhobeg = max(abs(xpt(:, 2)), [], 'all');
-            rhosq = fortran.power(rhobeg, 2);
+            rhosq = rhobeg ^ 2;
             fbase = fval(1);
 
             % Form the gradient and diagonal second derivatives of the quadratic model.
@@ -348,7 +348,7 @@ classdef initialize_uobyqa_mod
             %====================%
 
             rhobeg = max(abs(xpt(:, 2)), [], 'all');
-            rhosq = fortran.power(rhobeg, 2);
+            rhosq = rhobeg ^ 2;
 
             pl = repmat(consts_obj.ZERO, size(pl));
 

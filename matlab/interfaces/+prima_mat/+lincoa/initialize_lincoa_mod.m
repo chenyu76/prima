@@ -259,7 +259,7 @@ classdef initialize_lincoa_mod
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
                 % LINCOA always starts with a feasible point.
                 if m > 0
-                    debug_obj.assert(all(linalg_obj.matprod12(xpt(:, 1), amat) - b <= max(fortran.power(consts_obj.TEN, max(-12, -consts_obj.MAXPOW10)), 100.0 * consts_obj.EPS) * (consts_obj.ONE + fortran.sum(abs(xpt(:, 1)), 'all') + fortran.sum(abs(b), 'all')), 'all'), "The starting point is feasible", srname);
+                    debug_obj.assert(all(linalg_obj.matprod12(xpt(:, 1), amat) - b <= max(consts_obj.TEN ^ max(-12, -consts_obj.MAXPOW10), 100.0 * consts_obj.EPS) * (consts_obj.ONE + sum(abs(xpt(:, 1)), 'all') + sum(abs(b), 'all')), 'all'), "The starting point is feasible", srname);
                 end
             end
 
@@ -314,7 +314,7 @@ classdef initialize_lincoa_mod
             %====================%
 
             rhobeg = max(abs(xpt(:, 2)), [], 'all'); % Read RHOBEG from XPT.
-            rhosq = fortran.power(rhobeg, 2);
+            rhosq = rhobeg ^ 2;
 
             % Set BMAT.
             recip = consts_obj.ONE / rhobeg;
@@ -335,7 +335,7 @@ classdef initialize_lincoa_mod
 
             % Set ZMAT.
             recip = consts_obj.ONE / rhosq;
-            reciq = fortran.sqrt(consts_obj.HALF) / rhosq;
+            reciq = sqrt(consts_obj.HALF) / rhosq;
             zmat = repmat(consts_obj.ZERO, size(zmat));
             if npt <= 2 * n + 1
                 zmat(1, :) = -reciq - reciq;

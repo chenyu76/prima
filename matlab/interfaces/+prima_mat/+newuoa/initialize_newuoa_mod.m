@@ -406,7 +406,7 @@ classdef initialize_newuoa_mod
             %====================%
 
             rhobeg = max(abs(xpt(:, 2)), [], 'all'); % Read RHOBEG from XPT.
-            rhosq = fortran.power(rhobeg, 2);
+            rhosq = rhobeg ^ 2;
 
             % Set BMAT.
             recip = consts_obj.ONE / rhobeg;
@@ -427,7 +427,7 @@ classdef initialize_newuoa_mod
 
             % Set ZMAT.
             recip = consts_obj.ONE / rhosq;
-            reciq = fortran.sqrt(consts_obj.HALF) / rhosq;
+            reciq = sqrt(consts_obj.HALF) / rhosq;
             zmat = repmat(consts_obj.ZERO, size(zmat));
             if npt <= 2 * n + 1
                 zmat(1, :) = -reciq - reciq;

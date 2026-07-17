@@ -294,7 +294,7 @@ classdef cobylb_mod
                 end
 
                 % Does the interpolation set have adequate geometry? It affects IMPROVE_GEO and REDUCE_RHO.
-                adequate_geo = all(fortran.sum(fortran.power(sim(:, 1:n), 2), 1) <= 4.0 * fortran.power(delta, 2), 'all');
+                adequate_geo = all(sum(sim(:, 1:n) .^ 2, 1) <= 4.0 * delta ^ 2, 'all');
 
                 % Calculate the linear approximations to the objective and constraint functions.
                 % N.B.: TRSTLP accesses A mostly by columns, so it is more reasonable to save A instead of A^T.
@@ -348,11 +348,11 @@ classdef cobylb_mod
                     % objective and constraints at X, assuming them to have the values at the closest point.
                     % N.B.: If this happens, do NOT include X into the filter, as F and CONSTR are inaccurate.
                     x(:) = sim(:, n + 1) + d;
-                    distsq(n + 1) = fortran.sum(fortran.power((x - sim(:, n + 1)), 2), 'all');
-                    distsq(1:n) = reshape(arrayfun(@(j) fortran.sum(fortran.power((x - (sim(:, n + 1) + sim(:, j))), 2), 'all'), 1:n), [], 1); % Implied do-loop
+                    distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
+                    distsq(1:n) = reshape(arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), 1:n), [], 1); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     j = fix(fortran.minloc(distsq, 'dim', 1));
-                    if distsq(j) <= fortran.power((1.0e-4 * rhoend), 2)
+                    if distsq(j) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(j);
                         constr(:) = conmat(:, j);
                         cstrv = cval(j);
@@ -502,7 +502,7 @@ classdef cobylb_mod
                 % we take another geometry step in that case? If no, why should we do it here? Indeed, this
                 % distinction makes no practical difference for CUTEst problems with at most 100 variables
                 % and 5000 constraints, while the algorithm framework is simplified.
-                if improve_geo && ~all(fortran.sum(fortran.power(sim(:, 1:n), 2), 1) <= 4.0 * fortran.power(delta, 2), 'all')
+                if improve_geo && ~all(sum(sim(:, 1:n) .^ 2, 1) <= 4.0 * delta ^ 2, 'all')
                     % Before the geometry step, UPDATEPOLE has been called either implicitly by UPDATEXFC or
                     % explicitly after CPEN is updated, so that SIM(:, N + 1) is the optimal vertex.
 
@@ -530,7 +530,7 @@ classdef cobylb_mod
                     % reduced, leading to infinite cycling. (N.B.: Our implementation uses DELTA as the trust
                     % region radius, with RHO being its lower bound. When the infinite cycling occurred in this
                     % test, DELTA = RHO and it could not be reduced due to the requirement that DELTA >= RHO.)
-                    jdrop_geo = fix(fortran.maxloc(fortran.sum(fortran.power(sim(:, 1:n), 2), 1), 'dim', 1));
+                    jdrop_geo = fix(fortran.maxloc(sum(sim(:, 1:n) .^ 2, 1), 'dim', 1));
 
                     % Calculate the geometry step D.
                     delbar = consts_obj.HALF * delta;
@@ -545,11 +545,11 @@ classdef cobylb_mod
                     % and any interpolation point is at least DELBAR, yet X may be close to them due to
                     % rounding. In an experiment with single precision on 20240317, X = SIM(:, N+1) occurred.
                     x(:) = sim(:, n + 1) + d;
-                    distsq(n + 1) = fortran.sum(fortran.power((x - sim(:, n + 1)), 2), 'all');
-                    distsq(1:n) = reshape(arrayfun(@(j) fortran.sum(fortran.power((x - (sim(:, n + 1) + sim(:, j))), 2), 'all'), 1:n), [], 1); % Implied do-loop
+                    distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
+                    distsq(1:n) = reshape(arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), 1:n), [], 1); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     j = fix(fortran.minloc(distsq, 'dim', 1));
-                    if distsq(j) <= fortran.power((1.0e-4 * rhoend), 2)
+                    if distsq(j) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(j);
                         constr(:) = conmat(:, j);
                         cstrv = cval(j);
@@ -734,7 +734,7 @@ classdef cobylb_mod
                 debug_obj.assert(numel(fval_in) == n + 1 && ~any(infnan_obj.is_nan_sp(fval_in) | infnan_obj.is_posinf(fval_in), 'all'), "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
                 debug_obj.assert(size(sim_in, 1) == n && size(sim_in, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(sim_in), 'all'), "SIM is finite", srname);
-                debug_obj.assert(all(fortran.sum(abs(sim_in(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(all(sum(abs(sim_in(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(size(simi_in, 1) == n && size(simi_in, 2) == n, "SIZE(SIMI) == [N, N]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(simi_in), 'all'), "SIMI is finite", srname);
                 debug_obj.assert(linalg_obj.isinv(sim_in(:, 1:n), simi_in, 'tol', itol), "SIMI = SIM(:, 1:N)^{-1}", srname);

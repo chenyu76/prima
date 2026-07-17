@@ -139,7 +139,7 @@ classdef shiftbase_mod
 
             % Update the quadratic model. Note that PQ remains unchanged. For HQ, see (7.14) of the NEWUOA paper.
             %v = matprod(xptxav, pq)  ! Vector V in (7.14) of the NEWUOA paper
-            v(:) = linalg_obj.matprod21(xpt, pq) - consts_obj.HALF * fortran.sum(pq, 'all') * xopt; % This one seems to work better numerically.
+            v(:) = linalg_obj.matprod21(xpt, pq) - consts_obj.HALF * sum(pq, 'all') * xopt; % This one seems to work better numerically.
             vxopt(:, :) = linalg_obj.outprod(v, xopt); %%MATLAB: vxopt = v * xopt';  % v and xopt should be both columns
             hq(:, :) = (vxopt + vxopt.') + hq; %call r2update(hq, ONE, xopt, v)
             %call symmetrize(hq)  ! Do this if the update above does not ensure symmetry.
