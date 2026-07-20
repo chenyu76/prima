@@ -118,7 +118,7 @@ classdef lincob_mod
             srname = "LINCOB";
             iact = NaN(numel(bvec), 1);
             idz = NaN;
-            ij = NaN(2, max(0, fix(npt - 2 * numel(x) - 1)));
+            ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
 
 
             accurate_mod = false;
@@ -172,12 +172,12 @@ classdef lincob_mod
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
             % Sizes.
-            m = fix(numel(bvec));
-            n = fix(numel(x));
+            m = numel(bvec);
+            n = numel(x);
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
-            maxchist = fix(numel(chist));
-            maxhist = fix(max(maxxhist, max(maxfhist, maxchist)));
+            maxfhist = numel(fhist);
+            maxchist = numel(chist);
+            maxhist = max(maxxhist, max(maxfhist, maxchist));
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -206,8 +206,8 @@ classdef lincob_mod
             %====================%
 
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
-            memory_obj.alloc_ivector(fix(nnz(xl > -consts_obj.BOUNDMAX))); % Removable in F2003.
-            memory_obj.alloc_ivector(fix(nnz(xu < consts_obj.BOUNDMAX))); % Removable in F2003.
+            memory_obj.alloc_ivector(nnz(xl > -consts_obj.BOUNDMAX)); % Removable in F2003.
+            memory_obj.alloc_ivector(nnz(xu < consts_obj.BOUNDMAX)); % Removable in F2003.
             ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
             ixu = linalg_obj.trueloc(xu < consts_obj.BOUNDMAX);
 
@@ -553,7 +553,7 @@ classdef lincob_mod
 
                 if improve_geo
                     % XPT(:, KNEW_GEO) will become  XOPT + D below. KNEW_GEO /= KOPT unless there is a bug.
-                    knew_geo = fix(fortran.maxloc(distsq, 'dim', 1));
+                    knew_geo = fortran.maxloc(distsq, 'dim', 1);
 
                     % Set DELBAR, which will be used as the trust-region radius for the geometry-improving
                     % scheme GEOSTEP. Note that DELTA has been updated before arriving here.

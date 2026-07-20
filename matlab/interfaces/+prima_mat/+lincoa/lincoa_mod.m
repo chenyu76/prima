@@ -344,14 +344,14 @@ classdef lincoa_mod
             if ismember('bineq', ipObj.UsingDefaults)
                 mineq = 0;
             else
-                mineq = fix(numel(bineq));
+                mineq = numel(bineq);
             end
             if ismember('beq', ipObj.UsingDefaults)
                 meq = 0;
             else
-                meq = fix(numel(beq));
+                meq = numel(beq);
             end
-            n = fix(numel(x));
+            n = numel(x);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -581,7 +581,7 @@ classdef lincoa_mod
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 6
-                nhist = min(nf_loc, fix(numel(fhist_loc)));
+                nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
                 fhist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
@@ -592,7 +592,7 @@ classdef lincoa_mod
 
             % Copy CHIST_LOC to CHIST if needed.
             if nargout >= 7
-                nhist = min(nf_loc, fix(numel(chist_loc)));
+                nhist = min(nf_loc, numel(chist_loc));
                 %--------------------------------------------------%
                 chist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
@@ -674,7 +674,7 @@ classdef lincoa_mod
 
 
             % Sizes
-            n = fix(numel(x0));
+            n = numel(x0);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -688,12 +688,12 @@ classdef lincoa_mod
             %====================%
 
             % Decide the number of nontrivial and valid (gradient is nonzero) constraints.
-            mxl = fix(nnz(xl > -consts_obj.BOUNDMAX));
-            mxu = fix(nnz(xu < consts_obj.BOUNDMAX));
+            mxl = nnz(xl > -consts_obj.BOUNDMAX);
+            mxu = nnz(xu < consts_obj.BOUNDMAX);
             Aeq_norm(:) = sqrt(sum(Aeq .^ 2, 2));
-            meq = fix(nnz(Aeq_norm > 0));
+            meq = nnz(Aeq_norm > 0);
             Aineq_norm(:) = sqrt(sum(Aineq .^ 2, 2));
-            mineq = fix(nnz(Aineq_norm > 0));
+            mineq = nnz(Aineq_norm > 0);
             m = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
 
             % Print a warning if some constraints are invalid. They will be ignored (Powell's code would stop).

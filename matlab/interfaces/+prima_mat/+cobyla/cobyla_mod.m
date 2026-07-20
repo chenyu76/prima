@@ -394,25 +394,25 @@ classdef cobyla_mod
             if ismember('bineq', ipObj.UsingDefaults)
                 mineq = 0;
             else
-                mineq = fix(numel(bineq));
+                mineq = numel(bineq);
             end
             if ismember('beq', ipObj.UsingDefaults)
                 meq = 0;
             else
-                meq = fix(numel(beq));
+                meq = numel(beq);
             end
             if ismember('xl', ipObj.UsingDefaults)
                 mxl = 0;
             else
-                mxl = fix(nnz(xl > -consts_obj.BOUNDMAX));
+                mxl = nnz(xl > -consts_obj.BOUNDMAX);
             end
             if ismember('xu', ipObj.UsingDefaults)
                 mxu = 0;
             else
-                mxu = fix(nnz(xu < consts_obj.BOUNDMAX));
+                mxu = nnz(xu < consts_obj.BOUNDMAX);
             end
             m = mxu + mxl + 2 * meq + mineq + m_nlcon;
-            n = fix(numel(x));
+            n = numel(x);
 
 
             % Preconditions
@@ -691,7 +691,7 @@ classdef cobyla_mod
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 7
-                nhist = min(nf_loc, fix(numel(fhist_loc)));
+                nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
                 fhist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
@@ -702,7 +702,7 @@ classdef cobyla_mod
 
             % Copy CHIST_LOC to CHIST if needed.
             if nargout >= 8
-                nhist = min(nf_loc, fix(numel(chist_loc)));
+                nhist = min(nf_loc, numel(chist_loc));
                 %--------------------------------------------------%
                 chist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
@@ -795,7 +795,7 @@ classdef cobyla_mod
             idmat = NaN(numel(xl));
 
             % Sizes
-            n = fix(numel(xl));
+            n = numel(xl);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -809,10 +809,10 @@ classdef cobyla_mod
             %====================%
 
             % Decide the number of nontrivial constraints.
-            mxl = fix(nnz(xl > -consts_obj.BOUNDMAX));
-            mxu = fix(nnz(xu < consts_obj.BOUNDMAX));
-            meq = fix(numel(beq));
-            mineq = fix(numel(bineq));
+            mxl = nnz(xl > -consts_obj.BOUNDMAX);
+            mxu = nnz(xu < consts_obj.BOUNDMAX);
+            meq = numel(beq);
+            mineq = numel(bineq);
             m_lcon = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
 
             % Allocate memory. Removable in F2003.

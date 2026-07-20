@@ -73,10 +73,10 @@ classdef selectx_mod
             if ismember('constr', ipObj.UsingDefaults)
                 m = 0;
             else
-                m = fix(numel(constr));
+                m = numel(constr);
             end
-            n = fix(numel(x));
-            maxfilt = fix(numel(ffilt));
+            n = numel(x);
+            maxfilt = numel(ffilt);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -153,7 +153,7 @@ classdef selectx_mod
                 phimax = max(phi, [], 'all');
                 cref = max(fortran.merge('tsource', cfilt_shifted, 'fsource', -realmax, 'mask', (phi >= phimax)), [], 'all');
                 fref = max(fortran.merge('tsource', ffilt, 'fsource', -realmax, 'mask', (cfilt_shifted >= cref)), [], 'all');
-                kworst = fix(fortran.maxloc(cfilt, 'mask', (ffilt >= fref), 'dim', 1));
+                kworst = fortran.maxloc(cfilt, 'mask', (ffilt >= fref), 'dim', 1);
                 %%MATLAB: cmax = max(cfilt(ffilt >= fref)); kworst = find(ffilt >= fref & ~(cfilt < cmax), 1,'first');
                 if kworst < 1 || kworst > numel(keep)
                     % For security. Should not happen.
@@ -162,7 +162,7 @@ classdef selectx_mod
                 keep(kworst) = false;
             end
 
-            nfilt = fix(nnz(keep));
+            nfilt = nnz(keep);
             index_to_keep(1:nfilt) = linalg_obj.trueloc(keep);
             xfilt(:, 1:nfilt) = xfilt(:, index_to_keep(1:nfilt));
             ffilt(1:nfilt) = ffilt(index_to_keep(1:nfilt));
@@ -237,7 +237,7 @@ classdef selectx_mod
 
 
             % Sizes
-            nhist = fix(numel(fhist));
+            nhist = numel(fhist);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -303,7 +303,7 @@ classdef selectx_mod
                 phimin = min(fortran.merge('tsource', phi, 'fsource', realmax, 'mask', (fhist < fref & chist_shifted <= cref)), [], 'all');
                 cref = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', (fhist < fref & phi <= phimin)), [], 'all');
                 fref = min(fortran.merge('tsource', fhist, 'fsource', realmax, 'mask', (chist_shifted <= cref)), [], 'all');
-                kopt = fix(fortran.minloc(chist, 'mask', (fhist <= fref), 'dim', 1));
+                kopt = fortran.minloc(chist, 'mask', (fhist <= fref), 'dim', 1);
                 %%MATLAB: cmin = min(chist(fhist <= fref)); kopt = find(fhist <= fref & ~(chist > cmin), 1,'first');
             else
                 kopt = nhist;
@@ -403,7 +403,7 @@ classdef selectx_mod
 
 
             % Sizes
-            nfc = fix(numel(f1));
+            nfc = numel(f1);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -452,7 +452,7 @@ classdef selectx_mod
 
 
             % Sizes
-            nfc = fix(numel(f2));
+            nfc = numel(f2);
 
             % Preconditions
             if consts_obj.DEBUGGING

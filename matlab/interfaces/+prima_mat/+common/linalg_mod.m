@@ -171,7 +171,7 @@ classdef linalg_mod
 
 
             % Sizes
-            n = fix(numel(x));
+            n = numel(x);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -259,7 +259,7 @@ classdef linalg_mod
 
 
             % Sizes
-            n = fix(numel(x));
+            n = numel(x);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -479,7 +479,7 @@ classdef linalg_mod
             %====================%
 
             z = consts_obj.ZERO;
-            for i = 1:fix(numel(x))
+            for i = 1:numel(x)
                 z = z + x(i) * y(i);
             end
 
@@ -507,7 +507,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            for i = 1:fix(numel(y))
+            for i = 1:numel(y)
                 z(:, i) = x * y(i);
             end
 
@@ -541,7 +541,7 @@ classdef linalg_mod
 
             if size(x, 1) * size(x, 2) > 0
                 x = repmat(consts_obj.ZERO, size(x));
-                for i = 1:fix(min(size(x, 1), size(x, 2)))
+                for i = 1:min(size(x, 1), size(x, 2))
                     x(i, i) = consts_obj.ONE;
                 end
             end
@@ -577,7 +577,7 @@ classdef linalg_mod
 
             if size(x, 1) * size(x, 2) > 0
                 x = repmat(consts_obj.ZERO, size(x));
-                for i = 1:fix(min(size(x, 1), size(x, 2)))
+                for i = 1:min(size(x, 1), size(x, 2))
                     x(i, i) = consts_obj.ONE;
                 end
             end
@@ -864,7 +864,7 @@ classdef linalg_mod
 
             for j = 1:n
                 if pivot
-                    k = fix(fortran.maxloc(sum(T(j:n, j:m) .^ 2, 2), 'dim', 1));
+                    k = fortran.maxloc(sum(T(j:n, j:m) .^ 2, 2), 'dim', 1);
                     if k > 1 && k <= n - j + 1
                         k = k + j - 1;
                         P([j, k]) = P([k, j]);
@@ -1114,7 +1114,7 @@ classdef linalg_mod
 
 
             % DLEN is the length of D. We allow |K| to exceed the number of rows/columns in A.
-            dlen = max(0, fix(min(size(A, 1), size(A, 2)) - abs(k_loc)));
+            dlen = max(0, min(size(A, 1), size(A, 2)) - abs(k_loc));
             D = memory_obj.alloc_rvector_sp(dlen);
             if k_loc >= 0
                 D = reshape(arrayfun(@(i) A(i, i + k_loc), 1:dlen), [], 1);
@@ -1225,7 +1225,7 @@ classdef linalg_mod
             else
                 tol_loc = tol;
             end
-            width = fix(max(0, size(A, 1) - 1));
+            width = max(0, size(A, 1) - 1);
             is_tril = obj.isbanded(A, width, 0, 'tol', tol_loc);
 
             %====================%
@@ -1268,7 +1268,7 @@ classdef linalg_mod
             else
                 tol_loc = tol;
             end
-            width = fix(max(0, size(A, 2) - 1));
+            width = max(0, size(A, 2) - 1);
             is_triu = obj.isbanded(A, 0, width, 'tol', tol_loc);
 
             %====================%
@@ -1707,7 +1707,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            is_minor(:) = arrayfun(@(i) obj.isminor0(x(i), ref(i)), 1:fix(numel(x)));
+            is_minor(:) = arrayfun(@(i) obj.isminor0(x(i), ref(i)), 1:numel(x));
 
             %====================%
             %  Calculation ends  %
@@ -2021,7 +2021,7 @@ classdef linalg_mod
             end
 
             y(:) = x;
-            n = fix(numel(y));
+            n = numel(y);
             while n > 1                % Bubble sort.
                 newn = 0;
                 for i = 2:n
@@ -2158,8 +2158,8 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            loc = memory_obj.alloc_ivector(fix(nnz(x))); % Removable in F03.
-            n = fix(numel(x));
+            loc = memory_obj.alloc_ivector(nnz(x)); % Removable in F03.
+            n = numel(x);
             loc = feval(@(a, m) reshape(a(m & true(size(a))), [], 1), obj.linspace_i(1, n, n), x);
 
             %====================%
@@ -2193,7 +2193,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            loc = memory_obj.alloc_ivector(fix(nnz(~x))); % Removable in F03.
+            loc = memory_obj.alloc_ivector(nnz(~x)); % Removable in F03.
             loc = obj.trueloc(~x);
 
             %====================%
@@ -2753,7 +2753,7 @@ classdef linalg_mod
 
 
             % Sizes
-            n = fix(numel(td));
+            n = numel(td);
 
             % Preconditions
             ipObj = inputParser();
@@ -2953,7 +2953,7 @@ classdef linalg_mod
 
 
             % Sizes
-            n = fix(numel(x));
+            n = numel(x);
 
             % Preconditions
             if consts_obj.DEBUGGING

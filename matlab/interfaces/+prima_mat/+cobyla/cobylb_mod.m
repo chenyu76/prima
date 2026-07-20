@@ -128,14 +128,14 @@ classdef cobylb_mod
             cpenmin = consts_obj.EPS;
 
             % Sizes
-            m_lcon = fix(numel(bvec));
-            m = fix(numel(constr));
-            n = fix(numel(x));
+            m_lcon = numel(bvec);
+            m = numel(constr);
+            n = numel(x);
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
+            maxfhist = numel(fhist);
             maxconhist = size(conhist, 2);
-            maxchist = fix(numel(chist));
-            maxhist = fix(max(maxxhist, max(maxfhist, max(maxconhist, maxchist))));
+            maxchist = numel(chist);
+            maxhist = max(maxxhist, max(maxfhist, max(maxconhist, maxchist)));
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -351,7 +351,7 @@ classdef cobylb_mod
                     distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
                     distsq(1:n) = reshape(arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), 1:n), [], 1); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
-                    j = fix(fortran.minloc(distsq, 'dim', 1));
+                    j = fortran.minloc(distsq, 'dim', 1);
                     if distsq(j) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(j);
                         constr(:) = conmat(:, j);
@@ -530,7 +530,7 @@ classdef cobylb_mod
                     % reduced, leading to infinite cycling. (N.B.: Our implementation uses DELTA as the trust
                     % region radius, with RHO being its lower bound. When the infinite cycling occurred in this
                     % test, DELTA = RHO and it could not be reduced due to the requirement that DELTA >= RHO.)
-                    jdrop_geo = fix(fortran.maxloc(sum(sim(:, 1:n) .^ 2, 1), 'dim', 1));
+                    jdrop_geo = fortran.maxloc(sum(sim(:, 1:n) .^ 2, 1), 'dim', 1);
 
                     % Calculate the geometry step D.
                     delbar = consts_obj.HALF * delta;
@@ -548,7 +548,7 @@ classdef cobylb_mod
                     distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
                     distsq(1:n) = reshape(arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), 1:n), [], 1); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
-                    j = fix(fortran.minloc(distsq, 'dim', 1));
+                    j = fortran.minloc(distsq, 'dim', 1);
                     if distsq(j) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(j);
                         constr(:) = conmat(:, j);
@@ -718,7 +718,7 @@ classdef cobylb_mod
             itol = consts_obj.ONE;
 
             % Sizes
-            m_lcon = fix(numel(bvec));
+            m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(sim, 1);
 

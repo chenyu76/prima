@@ -128,7 +128,7 @@ classdef geometry_newuoa_mod
             if any(score > 1, 'all') || (ximproved && any(score > 0, 'all'))
                 % Powell's UOBYQA and NEWUOA code
                 % See (7.5) of the NEWUOA paper for the definition of KNEW in this case.
-                knew = fix(fortran.maxloc(score, 'dim', 1));
+                knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
 
             end
@@ -140,7 +140,7 @@ classdef geometry_newuoa_mod
             % would be destroyed by the NaNs.
             if (ximproved && knew == 0) || knew < 0
                 % KNEW < 0 is impossible in theory.
-                knew = fix(fortran.maxloc(distsq, 'dim', 1));
+                knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
             %====================%
@@ -606,7 +606,7 @@ classdef geometry_newuoa_mod
 
                 dstemp(kopt) = consts_obj.TWO * ds + consts_obj.ONE;
                 sstemp(kopt) = ss;
-                k = fix(fortran.minloc(dstemp .^ 2 ./ sstemp, 'dim', 1));
+                k = fortran.minloc(dstemp .^ 2 ./ sstemp, 'dim', 1);
                 % K can be 0 due to NaN. In that case, set K = KNEW. Otherwise, memory errors will occur.
                 if k == 0
                     k = knew;

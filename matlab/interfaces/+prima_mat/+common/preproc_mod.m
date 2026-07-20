@@ -148,19 +148,19 @@ classdef preproc_mod
             % not needed in Python/MATLAB/Julia/R.
             switch string_obj.lower(solver)
             case "uobyqa"
-                min_maxfun = (fix(n + 1) * fix(n + 2)) / 2 + 1; % INT(*) avoids overflow when IK is 16-bit.
+                min_maxfun = ((n + 1) * (n + 2)) / 2 + 1; % INT(*) avoids overflow when IK is 16-bit.
                 min_maxfun_str = "(N+1)(N+2)/2 + 1";
             case "cobyla"
-                min_maxfun = fix(n) + 2;
+                min_maxfun = n + 2;
                 min_maxfun_str = "N + 2";
             otherwise                % CASE ('NEWUOA', 'BOBYQA', 'LINCOA')
-                min_maxfun = fix(n) + 3;
+                min_maxfun = n + 3;
                 min_maxfun_str = "N + 3";
             end
             if maxfun <= max(0, min_maxfun - 1)
                 maxfun_in = maxfun;
                 if maxfun > 0
-                    maxfun = fix(min_maxfun);
+                    maxfun = min_maxfun;
                 else                    % We assume that non-positive values of MAXFUN are produced by overflow.
                     maxfun = fix(max(min_maxfun, 10 ^ min(4, floor(log10(realmax(class(maxfun))))))); %%MATLAB: maxfun =  max(min_maxfun, 10^4);
                     % N.B.: Do NOT set MAXFUN to HUGE(MAXFUN), as it may cause overflow and infinite cycling
@@ -187,10 +187,10 @@ classdef preproc_mod
 
             % Validate NPT
             if ~ismember('npt', ipObj.UsingDefaults) || nargout >= 7
-                if npt < n + 2 || npt >= maxfun || 2 * fix(npt) > fix(n + 2) * fix(n + 1)
+                if npt < n + 2 || npt >= maxfun || 2 * npt > (n + 2) * (n + 1)
                     %INT(*) avoids overflow when IK is 16-bit
                     npt_in = npt;
-                    npt = fix(min(maxfun - 1, 2 * n + 1));
+                    npt = min(maxfun - 1, 2 * n + 1);
                     debug_obj.warning(solver, "Invalid NPT: " + string_obj.int2str(npt_in) + "; it should be an integer in the interval [N+2, (N+1)(N+2)/2] with N = " + string_obj.int2str(n) + " and less than MAXFUN = " + string_obj.int2str(maxfun) + "; it is set to " + string_obj.int2str(npt));
                 end
             end
@@ -206,9 +206,9 @@ classdef preproc_mod
                 % Further revise MAXFILT according to MAXHISTMEM.
                 switch string_obj.lower(solver)
                 case "lincoa"
-                    unit_memo = fix(n + 2) * fix(memory_obj.size_of_sp(0.0)); % INT(*) avoids overflow when IK is 16-bit.
+                    unit_memo = (n + 2) * memory_obj.size_of_sp(0.0); % INT(*) avoids overflow when IK is 16-bit.
                 case "cobyla"
-                    unit_memo = fix(m_loc + n + 2) * fix(memory_obj.size_of_sp(0.0)); % INT(*) avoids overflow when IK is 16-bit.
+                    unit_memo = (m_loc + n + 2) * memory_obj.size_of_sp(0.0); % INT(*) avoids overflow when IK is 16-bit.
                 otherwise                    % The following should not be reached unless there is a bug, but we keep it for safety.
                     unit_memo = 1;
                 end
@@ -408,7 +408,7 @@ classdef preproc_mod
                 debug_obj.validate(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", solver);
                 debug_obj.validate(maxfun >= min_maxfun, "MAXFUN >= MIN_MAXFUN", solver);
                 if ~ismember('npt', ipObj.UsingDefaults) || nargout >= 7
-                    debug_obj.validate(npt >= n + 2 && npt < maxfun && 2 * fix(npt) <= fix(n + 2) * fix(n + 1), "N+2 <= NPT < MAXFUN and 2*NPT <= (N+1)(N+2)", solver);
+                    debug_obj.validate(npt >= n + 2 && npt < maxfun && 2 * npt <= (n + 2) * (n + 1), "N+2 <= NPT < MAXFUN and 2*NPT <= (N+1)(N+2)", solver);
                 end
                 if ~ismember('maxfilt', ipObj.UsingDefaults) || nargout >= 8
                     debug_obj.validate(maxfilt >= min(consts_obj.MIN_MAXFILT, maxfun) && maxfilt <= maxfun, "MIN(MIN_MAXFILT, MAXFUN) <= MAXFILT <= MAXFUN", solver);

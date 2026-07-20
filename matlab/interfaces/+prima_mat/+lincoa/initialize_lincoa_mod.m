@@ -93,13 +93,13 @@ classdef initialize_lincoa_mod
             x = NaN(numel(x0), 1);
 
             % Sizes.
-            m = fix(numel(b));
+            m = numel(b);
             n = size(xpt, 1);
             npt = size(xpt, 2);
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
-            maxchist = fix(numel(chist));
-            maxhist = fix(max(maxxhist, max(maxfhist, maxchist)));
+            maxfhist = numel(fhist);
+            maxchist = numel(chist);
+            maxhist = max(maxxhist, max(maxfhist, maxchist));
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -195,8 +195,8 @@ classdef initialize_lincoa_mod
 
             % Set FVAL by evaluating F. Totally parallelizable except for FMSG.
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
-            memory_obj.alloc_ivector(fix(nnz(xl > -consts_obj.BOUNDMAX))); % Removable in F2003.
-            memory_obj.alloc_ivector(fix(nnz(xu < consts_obj.BOUNDMAX))); % Removable in F2003.
+            memory_obj.alloc_ivector(nnz(xl > -consts_obj.BOUNDMAX)); % Removable in F2003.
+            memory_obj.alloc_ivector(nnz(xu < consts_obj.BOUNDMAX)); % Removable in F2003.
             ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
             ixu = linalg_obj.trueloc(xu < consts_obj.BOUNDMAX);
             for k = 1:npt
@@ -227,12 +227,12 @@ classdef initialize_lincoa_mod
             % Deallocate IXL and IXU as they have finished their job.
 
 
-            nf = fix(nnz(evaluated));
+            nf = nnz(evaluated);
             % Since the starting point is supposed to be feasible, there should be at least one feasible point.
             % We set feasible to TRUE for the evaluated point with the smallest constraint violation. This is
             % necessary, or KOPT defined below may become 0 if EVALUATED .AND. FEASIBLE is all FALSE.
             feasible(fortran.minloc(cval, 'mask', evaluated, 'dim', 1)) = true;
-            kopt = fix(fortran.minloc(fval, 'mask', (evaluated & feasible), 'dim', 1));
+            kopt = fortran.minloc(fval, 'mask', (evaluated & feasible), 'dim', 1);
             %%MATLAB:
             %%fopt = min(fval(evaluated & feasible));
             %%kopt = find(evaluated & feasible & ~(fval > fopt), 1, 'first');

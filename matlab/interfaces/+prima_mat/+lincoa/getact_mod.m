@@ -117,7 +117,7 @@ classdef getact_mod
 
             % Sizes.
             m = size(amat, 2);
-            n = fix(numel(g));
+            n = numel(g);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -197,7 +197,7 @@ classdef getact_mod
             % MATLAB/Python/Julia/R, we can write maxiter = min(10000, 2*(m + n))
             % 2. The iteration counter ITER never appears in the code of the iterations, as its purpose is
             % merely to impose an upper bound on the number of iterations.
-            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 2 * fix(m + n)));
+            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 2 * (m + n)));
             for iter = 1:maxiter
                 % When NACT == N, exit with PSD = 0. Indeed, with a correctly implemented matrix product, the
                 % lines below this IF should render DD = 0 and trigger an exit. We make it explicit for clarity.
@@ -265,7 +265,7 @@ classdef getact_mod
                 %L = INT(MAXLOC(APSD, MASK=MASK, DIM=1), IK) ! MAXLOC(...) = 0 if MASK is all FALSE.
                 %VIOLMX = MAXVAL(APSD, MASK=MASK)  ! MAXVAL(...) = -HUGE(APSD) if MASK is all FALSE.
                 if any(mask, 'all')
-                    l = fix(fortran.maxloc(apsd, 'mask', mask, 'dim', 1));
+                    l = fortran.maxloc(apsd, 'mask', mask, 'dim', 1);
                     violmx = apsd(l);
                 else
                     l = 0;
@@ -422,8 +422,8 @@ classdef getact_mod
             tol = NaN;
 
             % Sizes
-            m = fix(numel(iact));
-            n = fix(numel(vlam));
+            m = numel(iact);
+            n = numel(vlam);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -513,8 +513,8 @@ classdef getact_mod
             tol = NaN;
 
             % Sizes
-            m = fix(numel(iact));
-            n = fix(numel(vlam));
+            m = numel(iact);
+            n = numel(vlam);
 
             % Preconditions
             % Preconditions

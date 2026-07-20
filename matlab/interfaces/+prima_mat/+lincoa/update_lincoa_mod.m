@@ -125,8 +125,8 @@ classdef update_lincoa_mod
             pqinc = NaN(numel(pq), 1);
 
             % Sizes
-            n = fix(numel(gopt));
-            npt = fix(numel(pq));
+            n = numel(gopt);
+            npt = numel(pq);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -312,8 +312,8 @@ classdef update_lincoa_mod
             ax = NaN(numel(b), 1);
 
             % Sizes
-            m = fix(numel(b));
-            n = fix(numel(xopt));
+            m = numel(b);
+            n = numel(xopt);
 
             % Preconditions
             if consts_obj.DEBUGGING

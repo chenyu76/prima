@@ -150,8 +150,8 @@ classdef string_mod
 
             if infnan_obj.is_finite(x)
                 wx = ndgt_loc + nexp_loc + 5;
-                debug_obj.validate(wx <= obj.MAX_NUM_STR_LEN, "The width of the printed number is at most " + obj.int2str(fix(obj.MAX_NUM_STR_LEN)), srname);
-                "(1PE" + obj.int2str(fix(wx)) + "." + obj.int2str(fix(ndgt_loc)) + "E" + obj.int2str(fix(nexp_loc)) + ")";
+                debug_obj.validate(wx <= obj.MAX_NUM_STR_LEN, "The width of the printed number is at most " + obj.int2str(obj.MAX_NUM_STR_LEN), srname);
+                "(1PE" + obj.int2str(wx) + "." + obj.int2str(ndgt_loc) + "E" + obj.int2str(nexp_loc) + ")";
                 str = sprintf('%s \n', num2str(x));
                 s = strtrim(str); % Remove the trailing spaces, but keep the leading ones, if any.
             else

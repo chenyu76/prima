@@ -240,7 +240,7 @@ classdef trustregion_cobyla_mod
                 if all(infnan_obj.is_nan_sp(b), 'all')
                     return
                 else
-                    icon = fix(fortran.maxloc(-b, 'mask', (~infnan_obj.is_nan_sp(b)), 'dim', 1));
+                    icon = fortran.maxloc(-b, 'mask', (~infnan_obj.is_nan_sp(b)), 'dim', 1);
                     %%MATLAB: [~, icon] = max(b, [], 'omitnan');
                 end
                 m = mcon;
@@ -278,7 +278,7 @@ classdef trustregion_cobyla_mod
             % this, we set the maximal number of iterations to MAXITER, and terminate if Inf/NaN occurs in D.
             % The formulation of MAXITER below contains a precaution against overflow. In MATLAB/Python/Julia/R,
             % we can write maxiter = min(10000, 100*max(m, n))
-            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 100 * fix(max(m, n))));
+            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 100 * max(m, n)));
             for iter = 1:maxiter
                 if consts_obj.DEBUGGING
                     debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || all(vmultc >= 0, 'all'), "VMULTC >= 0", srname);
@@ -525,7 +525,7 @@ classdef trustregion_cobyla_mod
                 fracmult(vmultd < 0) = vmultc(vmultd < 0) ./ (vmultc(vmultd < 0) - vmultd(vmultd < 0));
                 %%MATLAB: mask = (vmultd < 0); fracmult(mask) = vmultc(mask) / (vmultc(mask) - vmultd(mask));
                 % Only the places with VMULTD < 0 is relevant below, if any.
-                icon = fix(fortran.minloc([consts_obj.ONE; reshape(fracmult, [], 1)], 'dim', 1) - 1);
+                icon = fortran.minloc([consts_obj.ONE; reshape(fracmult, [], 1)], 'dim', 1) - 1;
                 frac = min([consts_obj.ONE; reshape(fracmult, [], 1)], [], 'all');
                 %%MATLAB: [frac, icon] = min([1, fracmult]); icon = icon - 1
 

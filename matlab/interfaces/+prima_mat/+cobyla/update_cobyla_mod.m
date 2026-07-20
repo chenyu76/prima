@@ -56,7 +56,7 @@ classdef update_cobyla_mod
             itol = consts_obj.ONE;
 
             % Sizes
-            m = fix(numel(constr));
+            m = numel(constr);
             n = size(sim, 1);
 
             % Preconditions
@@ -337,7 +337,7 @@ classdef update_cobyla_mod
 
 
             % Size
-            n = fix(numel(fval) - 1);
+            n = numel(fval) - 1;
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -351,13 +351,13 @@ classdef update_cobyla_mod
             %====================%
 
             % Identify the optimal vertex of the current simplex.
-            jopt = fix(numel(fval)); % We use N + 1 as the default value of JOPT.
+            jopt = numel(fval); % We use N + 1 as the default value of JOPT.
             phi(:) = fval + cpen * cval;
             phimin = min(phi, [], 'all');
             % Essentially, JOPT = MINLOC(PHI). However, we keep JOPT = N + 1 unless there is a strictly better
             % choice. When there are multiple choices, we choose the JOPT with the smallest value of CVAL.
             if phimin < phi(jopt) || any(cval < cval(jopt) & phi <= phi(jopt), 'all')
-                jopt = fix(fortran.minloc(cval, 'mask', (phi <= phimin), 'dim', 1));
+                jopt = fortran.minloc(cval, 'mask', (phi <= phimin), 'dim', 1);
                 %%MATLAB: cmin = min(cval(phi <= phimin)); jopt = find(phi <= phimin & cval <= cmin, 1, 'first');
 
             end

@@ -134,8 +134,8 @@ classdef update_newuoa_mod
             pqinc = NaN(numel(pq), 1);
 
             % Sizes
-            n = fix(numel(gopt));
-            npt = fix(numel(pq));
+            n = numel(gopt);
+            npt = numel(pq);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -239,8 +239,8 @@ classdef update_newuoa_mod
             pqalt = NaN(numel(pq), 1);
 
             % Sizes
-            n = fix(numel(gopt));
-            npt = fix(numel(pq));
+            n = numel(gopt);
+            npt = numel(pq);
 
             % Preconditions
             if consts_obj.DEBUGGING

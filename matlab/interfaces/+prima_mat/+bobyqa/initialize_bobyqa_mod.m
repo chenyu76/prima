@@ -81,8 +81,8 @@ classdef initialize_bobyqa_mod
             n = size(xpt, 1);
             npt = size(xpt, 2);
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
-            maxhist = fix(max(maxxhist, maxfhist));
+            maxfhist = numel(fhist);
+            maxhist = max(maxxhist, maxfhist);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -180,7 +180,7 @@ classdef initialize_bobyqa_mod
             end
 
             % Set FVAL(1 : MIN(2*N + 1, NPT)) by evaluating F. Totally parallelizable except for FMSG.
-            for k = 1:min(npt, fix(2 * n + 1))
+            for k = 1:min(npt, 2 * n + 1)
                 x(:) = xinbd_obj.xinbd(xbase, xpt(:, k), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XPT(:, K).
                 f = evaluate_obj.evaluatef(calfun, x);
 
@@ -211,7 +211,7 @@ classdef initialize_bobyqa_mod
             % 2. The initialization of NEWUOA revises IJ (see below) instead of XPT and FVAL. Theoretically, it
             % is equivalent; practically, after XPT is revised, the initialization of the quadratic model and
             % the Lagrange polynomials also needs revision, as, e.g., XPT(:, 2:N) is not RHOBEG*EYE(N) anymore.
-            for k = 2:min(npt - n, fix(n + 1))
+            for k = 2:min(npt - n, n + 1)
                 if xpt(k - 1, k) * xpt(k - 1, k + n) < 0 && fval(k + n) < fval(k)
                     fval([k, k + n]) = fval([k + n, k]);
                     xpt(:, [k, k + n]) = xpt(:, [k + n, k]);
@@ -234,7 +234,7 @@ classdef initialize_bobyqa_mod
 
             % Set FVAL(2*N + 2 : NPT) by evaluating F. Totally parallelizable except for FMSG.
             if info == infos_obj.INFO_DFT
-                for k = fix(2 * n + 2):npt
+                for k = 2 * n + 2:npt
                     x(:) = xinbd_obj.xinbd(xbase, xpt(:, k), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XPT(:, K).
                     f = evaluate_obj.evaluatef(calfun, x);
 
@@ -256,8 +256,8 @@ classdef initialize_bobyqa_mod
             end
 
             % Set NF, KOPT
-            nf = fix(nnz(evaluated));
-            kopt = fix(fortran.minloc(fval, 'mask', evaluated, 'dim', 1));
+            nf = nnz(evaluated);
+            kopt = fortran.minloc(fval, 'mask', evaluated, 'dim', 1);
             %%MATLAB: fopt = min(fval(evaluated)); kopt = find(evaluated & ~(fval > fopt), 1, 'first');
 
             %====================%
@@ -378,7 +378,7 @@ classdef initialize_bobyqa_mod
                 hq(j, i) = hq(i, j);
             end
 
-            kopt = fix(fortran.minloc(fval, 'dim', 1));
+            kopt = fortran.minloc(fval, 'dim', 1);
             if kopt ~= 1
                 gopt(:) = gopt + linalg_obj.matprod21(hq, xpt(:, kopt));
             end

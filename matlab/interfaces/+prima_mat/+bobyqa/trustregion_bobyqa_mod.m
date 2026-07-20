@@ -119,8 +119,8 @@ classdef trustregion_bobyqa_mod
             xnew = NaN(numel(gopt_in), 1);
 
             % Sizes
-            n = fix(numel(gopt_in));
-            npt = fix(numel(pq_in));
+            n = numel(gopt_in);
+            npt = numel(pq_in);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -175,7 +175,7 @@ classdef trustregion_bobyqa_mod
             xbdi(:) = 0;
             xbdi(linalg_obj.trueloc(xopt >= su & gopt <= 0)) = 1;
             xbdi(linalg_obj.trueloc(xopt <= sl & gopt >= 0)) = -1;
-            nact = fix(nnz(xbdi ~= 0));
+            nact = nnz(xbdi ~= 0);
 
             % Initialized D and CRVMIN.
             d(:) = consts_obj.ZERO;
@@ -203,7 +203,7 @@ classdef trustregion_bobyqa_mod
             % Powell commented in the BOBYQA paper (the paragraph above (3.7)) that "numerical experiments show
             % that it is very unusual for subroutine TRSBOX to make more than ten changes to d when seeking an
             % approximate solution to the subproblem (1.8), even if there are hundreds of variables."
-            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), fix(n - nact) ^ 2));
+            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), (n - nact) ^ 2));
             for iter = 1:maxiter
                 resid = delsq - sum(d(linalg_obj.trueloc(xbdi == 0)) .^ 2, 'all');
                 if resid <= 0
@@ -303,7 +303,7 @@ classdef trustregion_bobyqa_mod
                 sbound(linalg_obj.trueloc(infnan_obj.is_nan_sp(sbound))) = stplen; % Needed? No if we are sure that D and S are finite.
                 iact = 0;
                 if any(sbound < stplen, 'all')
-                    iact = fix(fortran.minloc(sbound, 'dim', 1));
+                    iact = fortran.minloc(sbound, 'dim', 1);
                     stplen = sbound(iact);
                     %%MATLAB: [stplen, iact] = min(sbound);
 
@@ -416,7 +416,7 @@ classdef trustregion_bobyqa_mod
                 % Update XBDI. It indicates whether the lower (-1) or upper bound (+1) is reached or not (0).
                 xbdi(linalg_obj.trueloc(xbdi == 0 & (xnew >= su))) = 1;
                 xbdi(linalg_obj.trueloc(xbdi == 0 & (xnew <= sl))) = -1;
-                nact = fix(nnz(xbdi ~= 0));
+                nact = nnz(xbdi ~= 0);
                 if nact >= n - 1
                     break
                 end
@@ -488,7 +488,7 @@ classdef trustregion_bobyqa_mod
                 iact = 0;
                 hangt_bd = consts_obj.ONE;
                 if any(tanbd < 1, 'all')
-                    iact = fix(fortran.minloc(tanbd, 'dim', 1));
+                    iact = fortran.minloc(tanbd, 'dim', 1);
                     hangt_bd = tanbd(iact);
                     %%MATLAB: [hangt_bd, iact] = min(tanbd);
 

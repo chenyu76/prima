@@ -197,7 +197,7 @@ classdef newuoa_mod
 
 
             % Sizes
-            n = fix(numel(x));
+            n = numel(x);
 
             % Replace any NaN in X by ZERO and Inf/-Inf in X by REALMAX/-REALMAX.
             x(:) = evaluate_obj.moderatex(x);
@@ -379,7 +379,7 @@ classdef newuoa_mod
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 5
-                nhist = min(nf_loc, fix(numel(fhist_loc)));
+                nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
                 fhist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%

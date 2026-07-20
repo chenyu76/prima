@@ -139,7 +139,7 @@ classdef geometry_bobyqa_mod
             if any(score > 1, 'all') || (ximproved && any(score > 0, 'all'))
                 % Powell's UOBYQA and NEWUOA code.
                 % See (6.1) of the BOBYQA paper for the definition of KNEW in this case.
-                knew = fix(fortran.maxloc(score, 'dim', 1));
+                knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
 
             end
@@ -151,7 +151,7 @@ classdef geometry_bobyqa_mod
             % would be destroyed by the NaNs.
             if (ximproved && knew == 0) || knew < 0
                 % KNEW < 0 is impossible in theory.
-                knew = fix(fortran.maxloc(distsq, 'dim', 1));
+                knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
             %====================%
@@ -368,7 +368,7 @@ classdef geometry_bobyqa_mod
                 slbd_test(linalg_obj.trueloc(xdiff > 0)) = lfrac(linalg_obj.trueloc(xdiff > 0));
                 slbd_test(linalg_obj.trueloc(xdiff < 0)) = ufrac(linalg_obj.trueloc(xdiff < 0));
                 if any(slbd_test > slbd, 'all')
-                    ilbd = fix(fortran.maxloc(slbd_test, 'mask', (~infnan_obj.is_nan_sp(slbd_test)), 'dim', 1));
+                    ilbd = fortran.maxloc(slbd_test, 'mask', (~infnan_obj.is_nan_sp(slbd_test)), 'dim', 1);
                     slbd = slbd_test(ilbd);
                     ilbd = -ilbd * round(fortran.sign(consts_obj.ONE, xdiff(ilbd)));
                     %%MATLAB:
@@ -382,7 +382,7 @@ classdef geometry_bobyqa_mod
                 subd_test(linalg_obj.trueloc(xdiff > 0)) = ufrac(linalg_obj.trueloc(xdiff > 0));
                 subd_test(linalg_obj.trueloc(xdiff < 0)) = lfrac(linalg_obj.trueloc(xdiff < 0));
                 if any(subd_test < subd, 'all')
-                    iubd = fix(fortran.minloc(subd_test, 'mask', (~infnan_obj.is_nan_sp(subd_test)), 'dim', 1));
+                    iubd = fortran.minloc(subd_test, 'mask', (~infnan_obj.is_nan_sp(subd_test)), 'dim', 1);
                     subd = max(sumin, subd_test(iubd));
                     iubd = iubd * round(fortran.sign(consts_obj.ONE, xdiff(iubd)));
                     %%MATLAB:
@@ -449,8 +449,8 @@ classdef geometry_bobyqa_mod
             %---------------------------------------------------------------------%
             % 2. Recall that we have set the NaN entries of PREDSQ to zero, if there is any. Thus the KSQS below
             % is a well defined integer array, all the three entries lying between 1 and NPT.
-            ksqs(:) = fix(fortran.maxloc(predsq, 'dim', 2));
-            isq = fix(fortran.maxloc([predsq(1, ksqs(1)), predsq(2, ksqs(2)), predsq(3, ksqs(3))], 'dim', 1));
+            ksqs(:) = fortran.maxloc(predsq, 'dim', 2);
+            isq = fortran.maxloc([predsq(1, ksqs(1)), predsq(2, ksqs(2)), predsq(3, ksqs(3))], 'dim', 1);
             ksq = ksqs(isq);
             %%MATLAB:
             %%[~, ksqs] = max(predsq, [], 'omitnan');

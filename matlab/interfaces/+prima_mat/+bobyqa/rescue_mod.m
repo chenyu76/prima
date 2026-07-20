@@ -167,8 +167,8 @@ classdef rescue_mod
             n = size(xpt, 1);
             npt = size(xpt, 2);
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
-            maxhist = fix(max(maxxhist, maxfhist));
+            maxfhist = numel(fhist);
+            maxhist = max(maxxhist, maxfhist);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -304,7 +304,7 @@ classdef rescue_mod
             % Originally, it is a WHILE loop, but we change it to a DO loop to avoid infinite cycling.
             % N.B.: Overflow will occur in NPT^2 if NPT > 180 and IK = 16. The following is a workaround, which
             % is **not needed in Python/MATLAB/Julia/R. In MATLAB, we can just take maxiter = npt^2**.
-            maxiter = fix(min(10 ^ min(floor(log10(double(intmax('int64')))), floor(log10(double(intmax('int64'))))), fix(npt) ^ 2)); %%MATLAB: maxiter = npt^2;
+            maxiter = fix(min(10 ^ min(floor(log10(double(intmax('int64')))), floor(log10(double(intmax('int64'))))), npt ^ 2)); %%MATLAB: maxiter = npt^2;
             for iter = 1:maxiter
                 % %DO WHILE (ANY(SCORE > 0) .AND. NPROV > 1)   ! WHILE version.
                 % %IF (ALL(SCORE <= 0) .AND. NPROV <= 0) THEN ! Powell's code. May not take any provisional point.
@@ -316,7 +316,7 @@ classdef rescue_mod
 
                 % Pick the index KORIG of an original point that has not yet replaced one of the provisional
                 % points, giving attention to the closeness to XOPT and to previous tries with KORIG.
-                korig = fix(fortran.minloc(score, 'mask', (score > 0), 'dim', 1));
+                korig = fortran.minloc(score, 'mask', (score > 0), 'dim', 1);
 
                 % Calculate VLAG and BETA for the required updating of the H matrix if XPT(:, KORIG) is
                 % reinstated in the set of interpolation points, which means to replace a point in the
@@ -401,7 +401,7 @@ classdef rescue_mod
                     score(korig) = -score(korig) - scoreinc;
                     continue
                 end
-                kprov = fix(fortran.maxloc(den, 'mask', (~infnan_obj.is_nan_sp(den)), 'dim', 1));
+                kprov = fortran.maxloc(den, 'mask', (~infnan_obj.is_nan_sp(den)), 'dim', 1);
                 %%MATLAB: [~, kprov] = max(den, [], 'omitnan');
 
                 % Update BMAT, ZMAT, VLAG, and PTSID to exchange the KPROV-th and KORIG-th provisional points.
@@ -664,7 +664,7 @@ classdef rescue_mod
 
             % Sizes.
             n = size(bmat, 1);
-            npt = fix(size(bmat, 2) - size(bmat, 1));
+            npt = size(bmat, 2) - size(bmat, 1);
 
             % Preconditions
             if consts_obj.DEBUGGING

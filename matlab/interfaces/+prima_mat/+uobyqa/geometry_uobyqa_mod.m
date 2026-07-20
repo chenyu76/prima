@@ -134,7 +134,7 @@ classdef geometry_uobyqa_mod
             % in Powell's BOBYQA and LINCOA code.
             if any(score > 1, 'all') || (ximproved && any(score > 0, 'all'))
                 % Powell's UOBYQA and NEWUOA code
-                knew = fix(fortran.maxloc(score, 'dim', 1));
+                knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
 
             end
@@ -146,7 +146,7 @@ classdef geometry_uobyqa_mod
             % destroyed by the NaNs.
             if (ximproved && knew == 0) || knew < 0
                 % KNEW < 0 is impossible in theory.
-                knew = fix(fortran.maxloc(distsq, 'dim', 1));
+                knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
             %====================%

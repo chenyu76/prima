@@ -168,14 +168,14 @@ classdef geometry_cobyla_mod
             % from Powell's UOBYQA and NEWUOA code.
             if any(score > 0, 'all')
                 % Powell's BOBYQA and LINCOA code
-                jdrop = fix(fortran.maxloc(score, 'dim', 1));
+                jdrop = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, jdrop] = max(score);
 
             end
 
             if (ximproved && jdrop == 0) || jdrop < 0
                 % JDROP < 0 is impossible in theory.
-                jdrop = fix(fortran.maxloc(distsq, 'dim', 1));
+                jdrop = fortran.maxloc(distsq, 'dim', 1);
             end
 
             %====================%
@@ -230,7 +230,7 @@ classdef geometry_cobyla_mod
             g = NaN(size(simi, 1), 1);
 
             % Sizes
-            m_lcon = fix(numel(bvec));
+            m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(simi, 1);
 

@@ -239,7 +239,7 @@ classdef bobyqa_mod
             % XHIST_LOC(N, MAXXHIST)
 
             % Sizes
-            n = fix(numel(x));
+            n = numel(x);
 
             % Preconditions
             ipObj = inputParser();
@@ -478,7 +478,7 @@ classdef bobyqa_mod
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 5
-                nhist = min(nf_loc, fix(numel(fhist_loc)));
+                nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
                 fhist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%

@@ -73,7 +73,7 @@ classdef fprint_mod
             if ~ismember('fname', ipObj.UsingDefaults)
                 fname_loc = fname;
             elseif funit_loc ~= consts_obj.STDOUT && funit_loc ~= consts_obj.STDERR
-                fname_loc = "fort." + string_obj.int2str(fix(funit_loc));
+                fname_loc = "fort." + string_obj.int2str(funit_loc);
             else
                 fname_loc = "";
             end

@@ -160,7 +160,7 @@ classdef geometry_lincoa_mod
             % from Powell's UOBYQA and NEWUOA code.
             if any(score > 0, 'all')
                 % Powell's BOBYQA and LINCOA code
-                knew = fix(fortran.maxloc(score, 'dim', 1));
+                knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
 
             end
@@ -172,7 +172,7 @@ classdef geometry_lincoa_mod
             % would be destroyed by the NaNs.
             if (ximproved && knew == 0) || knew < 0
                 % KNEW < 0 is impossible in theory.
-                knew = fix(fortran.maxloc(distsq, 'dim', 1));
+                knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
             %====================%
@@ -366,7 +366,7 @@ classdef geometry_lincoa_mod
             % 2. If VLAGABS(KNEW) = MAXVAL(VLAGABS) = VLAGABS(K) and K < KNEW, Powell's code does not set K=KNEW.
             k = knew;
             if any(vlagabs > vlagabs(knew), 'all')
-                k = fix(fortran.maxloc(vlagabs, 'mask', (~infnan_obj.is_nan_sp(vlagabs)), 'dim', 1));
+                k = fortran.maxloc(vlagabs, 'mask', (~infnan_obj.is_nan_sp(vlagabs)), 'dim', 1);
                 %%MATLAB: [~, k] = max(vlagabs, [], 'omitnan');
 
             end

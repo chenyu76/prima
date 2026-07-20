@@ -110,8 +110,8 @@ classdef trustregion_lincoa_mod
 
             % Sizes.
             m = size(amat, 2);
-            n = fix(numel(gopt_in));
-            npt = fix(numel(pq_in));
+            n = numel(gopt_in);
+            npt = numel(pq_in);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -211,7 +211,7 @@ classdef trustregion_lincoa_mod
             % What is the THEORETICAL upper bound of ITER? For the moment, we set the following MAXITER.
             % The formulation of MAXITER below contains a precaution against overflow. In MATLAB/Python/Julia/R,
             % we can write maxiter = min(10000, 10*(m + n))
-            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 10 * fix(m + n)));
+            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 10 * (m + n)));
             for iter = 1:maxiter                % Powell's code is essentially a DO WHILE loop. We impose an explicit MAXITER.
                 if newact
                     % GETACT picks the active set for the current S. It also sets PSD to the vector closest to
@@ -351,7 +351,7 @@ classdef trustregion_lincoa_mod
                 frac(linalg_obj.trueloc(infnan_obj.is_nan_sp(frac))) = alpha;
                 jsav = 0;
                 if any(frac < alpha, 'all')
-                    jsav = fix(fortran.minloc(frac, 'dim', 1));
+                    jsav = fortran.minloc(frac, 'dim', 1);
                     alpha = frac(jsav);
                 end
                 %----------------------------------------------------------------------------------------------%

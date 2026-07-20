@@ -109,7 +109,7 @@ classdef trustregion_uobyqa_mod
             zsq = NaN;
 
             % Sizes.
-            n = fix(numel(g));
+            n = numel(g);
 
             % Preconditions.
             if consts_obj.DEBUGGING

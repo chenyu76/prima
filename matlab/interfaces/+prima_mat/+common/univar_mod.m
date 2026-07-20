@@ -71,7 +71,7 @@ classdef univar_mod
                 return
             end
 
-            kopt = fix(fortran.minloc(fgrid, 'mask', (~infnan_obj.is_nan_sp(fgrid)), 'dim', 1));
+            kopt = fortran.minloc(fgrid, 'mask', (~infnan_obj.is_nan_sp(fgrid)), 'dim', 1);
             fopt = fgrid(kopt);
             %%MATLAB: [fopt, kopt] = min(fgrid, [], 'omitnan');
             fprev = fgrid(mod(kopt - 2, grid_size) + 1); % Corresponds to KOPT - 1
@@ -153,7 +153,7 @@ classdef univar_mod
                 return
             end
 
-            kopt = fix(fortran.maxloc(abs(fgrid), 'mask', (~infnan_obj.is_nan_sp(fgrid)), 'dim', 1));
+            kopt = fortran.maxloc(abs(fgrid), 'mask', (~infnan_obj.is_nan_sp(fgrid)), 'dim', 1);
             %%MATLAB: [~, kopt] = max(abs(fgrid), [], 'omitnan');
             fopt = fgrid(kopt);
             fprev = fgrid(mod(kopt - 2, grid_size) + 1); % Corresponds to KOPT - 1
@@ -234,7 +234,7 @@ classdef univar_mod
                 return
             end
 
-            kopt = fix(fortran.maxloc(fgrid, 'mask', (~infnan_obj.is_nan_sp(fgrid)), 'dim', 1));
+            kopt = fortran.maxloc(fgrid, 'mask', (~infnan_obj.is_nan_sp(fgrid)), 'dim', 1);
             fopt = fgrid(kopt);
             %%MATLAB: [fopt, kopt] = min(fgrid, [], 'omitnan');
 

@@ -115,11 +115,11 @@ classdef uobyqb_mod
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
             % Sizes.
-            n = fix(numel(x));
+            n = numel(x);
             npt = (n + 1) * (n + 2) / 2;
             debug_obj.validate(npt > 0, "NPT > 0", srname); % Validate that NPT does not overflow.
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
+            maxfhist = numel(fhist);
             maxhist = max(maxxhist, maxfhist);
 
             % Preconditions.
@@ -285,7 +285,7 @@ classdef uobyqb_mod
                     x(:) = xbase + (xpt(:, kopt) + d);
                     distsq(:) = sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
-                    k = fix(fortran.minloc(distsq, 'dim', 1));
+                    k = fortran.minloc(distsq, 'dim', 1);
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(k);
                     else
@@ -433,7 +433,7 @@ classdef uobyqb_mod
                     % XPT(:, KNEW_GEO) will become XOPT + D below. KNEW_GEO /= KOPT unless there is a bug.
                     distsq(:) = sum((xpt - xpt(:, kopt)) .^ 2, 1);
                     %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
-                    knew_geo = fix(fortran.maxloc(distsq, 'dim', 1));
+                    knew_geo = fortran.maxloc(distsq, 'dim', 1);
 
                     % DELBAR is the trust-region radius for the geometry improvement subproblem.
                     % Powell's UOBYQA code sets DELBAR = RHO, but NEWUOA/BOBYQA/LINCOA all take DELTA and/or
@@ -451,7 +451,7 @@ classdef uobyqb_mod
                     x(:) = xbase + (xpt(:, kopt) + d);
                     distsq(:) = sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
-                    k = fix(fortran.minloc(distsq, 'dim', 1));
+                    k = fortran.minloc(distsq, 'dim', 1);
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(k);
                     else

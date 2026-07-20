@@ -116,7 +116,7 @@ classdef shiftbase_mod
 
             % Update BMAT. See (7.11)--(7.12) of the NEWUOA paper and the elaborations around.
             % XPTXAV corresponds to XPT - XAV in the NEWUOA paper, with XAV = (X0 + XOPT)/2.
-            xptxav(:, :) = xpt - consts_obj.HALF * fortran.spread(xopt, 'dim', 2, 'ncopies', npt);
+            xptxav(:, :) = xpt - consts_obj.HALF * xopt;
             %%MATLAB: xptxav = xpt - xopt/2  % xopt should be a column! Implicit expansion
             %sxpt = matprod(xopt, xptxav)
             sxpt(:) = linalg_obj.matprod12(xopt, xpt) - consts_obj.HALF * xoptsq; % This one seems to work better numerically.

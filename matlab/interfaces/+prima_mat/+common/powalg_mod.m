@@ -667,7 +667,7 @@ classdef powalg_mod
             w = NaN(numel(ghv), 1);
 
             % Sizes
-            n = fix(numel(x));
+            n = numel(x);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -1783,7 +1783,7 @@ classdef powalg_mod
             w = NaN(size(pl, 1), 1);
 
             % Sizes
-            n = fix(numel(xref));
+            n = numel(xref);
 
             % Preconditions
             if consts_obj.DEBUGGING

@@ -68,14 +68,14 @@ classdef initialize_cobyla_mod
             itol = consts_obj.TENTH;
 
             % Sizes
-            m_lcon = fix(numel(bvec));
+            m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(sim, 1);
-            maxchist = fix(numel(chist));
+            maxchist = numel(chist);
             maxconhist = size(conhist, 2);
-            maxfhist = fix(numel(fhist));
+            maxfhist = numel(fhist);
             maxxhist = size(xhist, 2);
-            maxhist = fix(max(maxchist, max(maxconhist, max(maxfhist, maxxhist))));
+            maxhist = max(maxchist, max(maxconhist, max(maxfhist, maxxhist)));
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -179,7 +179,7 @@ classdef initialize_cobyla_mod
                 end
             end
 
-            nf = fix(nnz(evaluated));
+            nf = nnz(evaluated);
 
             if all(evaluated, 'all')
                 % Initialize SIMI to the inverse of SIM(:, 1:N).
@@ -249,7 +249,7 @@ classdef initialize_cobyla_mod
             % Sizes
             m = size(conmat, 1);
             n = size(sim, 1);
-            maxfilt = fix(numel(ffilt));
+            maxfilt = numel(ffilt);
 
             % Preconditions
             if consts_obj.DEBUGGING

@@ -30,7 +30,7 @@ classdef xinbd_mod
             s = NaN(numel(xbase), 1);
 
             % Sizes
-            n = fix(numel(xbase));
+            n = numel(xbase);
 
             % Preconditions
             if consts_obj.DEBUGGING

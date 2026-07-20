@@ -113,7 +113,7 @@ classdef bobyqb_mod
             % Local variables
             solver = "BOBYQA";
             srname = "BOBYQB";
-            ij = NaN(2, max(0, fix(npt - 2 * numel(x) - 1)));
+            ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
 
 
             accurate_mod = false;
@@ -159,10 +159,10 @@ classdef bobyqb_mod
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
             % Sizes.
-            n = fix(numel(x));
+            n = numel(x);
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
-            maxhist = fix(max(maxxhist, maxfhist));
+            maxfhist = numel(fhist);
+            maxhist = max(maxxhist, maxfhist);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -493,7 +493,7 @@ classdef bobyqb_mod
                 % Improve the geometry of the interpolation set by removing a point and adding a new one.
                 if improve_geo
                     % XPT(:, KNEW_GEO) will become XOPT + D below. KNEW_GEO /= KOPT unless there is a bug.
-                    knew_geo = fix(fortran.maxloc(distsq, 'dim', 1));
+                    knew_geo = fortran.maxloc(distsq, 'dim', 1);
 
                     % Set DELBAR, which will be used as the trust-region radius for the geometry-improving
                     % scheme GEOSTEP. Note that DELTA has been updated before arriving here.

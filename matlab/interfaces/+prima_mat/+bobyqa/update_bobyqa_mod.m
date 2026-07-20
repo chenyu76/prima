@@ -304,8 +304,8 @@ classdef update_bobyqa_mod
             pqinc = NaN(numel(pq), 1);
 
             % Sizes
-            n = fix(numel(gopt));
-            npt = fix(numel(pq));
+            n = numel(gopt);
+            npt = numel(pq);
 
             % Preconditions
             if consts_obj.DEBUGGING
@@ -414,8 +414,8 @@ classdef update_bobyqa_mod
             %real(RP) :: intp_tol
 
             % Sizes
-            n = fix(numel(gopt));
-            npt = fix(numel(pq));
+            n = numel(gopt);
+            npt = numel(pq);
 
             % Preconditions
             if consts_obj.DEBUGGING

@@ -79,7 +79,7 @@ classdef initialize_newuoa_mod
             n = size(xpt, 1);
             npt = size(xpt, 2);
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
+            maxfhist = numel(fhist);
             maxhist = max(maxxhist, maxfhist);
 
             % Preconditions
@@ -205,8 +205,8 @@ classdef initialize_newuoa_mod
             end
 
             % Set NF, KOPT
-            nf = fix(nnz(evaluated)); %%MATLAB: nf = sum(evaluated);
-            kopt = fix(fortran.minloc(fval, 'mask', evaluated, 'dim', 1));
+            nf = nnz(evaluated); %%MATLAB: nf = sum(evaluated);
+            kopt = fortran.minloc(fval, 'mask', evaluated, 'dim', 1);
             %%MATLAB: fopt = min(fval(evaluated)); kopt = find(evaluated & ~(fval > fopt), 1, 'first')
 
             %====================%
@@ -324,7 +324,7 @@ classdef initialize_newuoa_mod
                 hq(j, i) = hq(i, j);
             end
 
-            kopt = fix(fortran.minloc(fval, 'dim', 1));
+            kopt = fortran.minloc(fval, 'dim', 1);
             if kopt ~= 1
                 gopt(:) = gopt + linalg_obj.matprod21(hq, xpt(:, kopt));
             end

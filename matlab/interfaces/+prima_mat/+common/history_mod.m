@@ -73,14 +73,14 @@ classdef history_mod
             % N.B.: The `UNIT_MEMO = INT(*)` below converts integers to the default integer kind, which is the
             % kind of UNIT_MEMO. Fortran compilers may complain without the conversion. It is not needed in
             % Python/MATLAB/Julia/R. Meanwhile, INT(OUTPUT_*HIST) converts booleans to integers.
-            unit_memo = fix(linalg_obj.logical_to_int(output_xhist) * n + linalg_obj.logical_to_int(output_fhist));
+            unit_memo = linalg_obj.logical_to_int(output_xhist) * n + linalg_obj.logical_to_int(output_fhist);
             if ~ismember('output_chist', ipObj.UsingDefaults) && nargout >= 4
-                unit_memo = fix(unit_memo + linalg_obj.logical_to_int(output_chist));
+                unit_memo = unit_memo + linalg_obj.logical_to_int(output_chist);
             end
             if ~ismember('m', ipObj.UsingDefaults) && ~ismember('output_conhist', ipObj.UsingDefaults) && nargout >= 5
-                unit_memo = fix(unit_memo + linalg_obj.logical_to_int(output_conhist) * m);
+                unit_memo = unit_memo + linalg_obj.logical_to_int(output_conhist) * m;
             end
-            unit_memo = unit_memo * fix(memory_obj.size_of_sp(0.0)); % INT(*) avoids overflow when IK is 16-bit.
+            unit_memo = unit_memo * memory_obj.size_of_sp(0.0); % INT(*) avoids overflow when IK is 16-bit.
             if unit_memo <= 0
                 % No output of history is requested
                 maxhist = 0;
@@ -109,7 +109,7 @@ classdef history_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(maxhist >= 0 && maxhist <= maxhist_in, "0 <= MAXHIST <= MAXHIST_IN", srname);
-                debug_obj.assert(fix(maxhist) * fix(unit_memo) <= consts_obj.MAXHISTMEM, "The history will not take more memory than MAXHISTMEM", srname);
+                debug_obj.assert(maxhist * unit_memo <= consts_obj.MAXHISTMEM, "The history will not take more memory than MAXHISTMEM", srname);
                 debug_obj.assert(exist('xhist', 'var'), "XHIST is allocated", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxhist * linalg_obj.logical_to_int(output_xhist), "if XHIST is requested, then SIZE(XHIST) == [N, MAXHIST]; otherwise, SIZE(XHIST) == [N, 0]", srname);
                 debug_obj.assert(exist('fhist', 'var'), "FHIST is allocated", srname);
@@ -149,7 +149,7 @@ classdef history_mod
 
             % Sizes
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
+            maxfhist = numel(fhist);
             ipObj = inputParser();
             addParameter(ipObj, 'cstrv', NaN);
             addParameter(ipObj, 'chist', NaN);
@@ -161,7 +161,7 @@ classdef history_mod
             constr = ipObj.Results.constr;
             conhist = ipObj.Results.conhist;
             if (~ismember('chist', ipObj.UsingDefaults) || nargout >= 3) && ~ismember('cstrv', ipObj.UsingDefaults)
-                maxchist = fix(numel(chist));
+                maxchist = numel(chist);
             else
                 maxchist = 0;
             end
@@ -287,7 +287,7 @@ classdef history_mod
                 % point is repeated twice, but the solver is not in an infinite cycle, which was observed in an
                 % experiment of NEWUOA on 20240404.
                 nhist = min(nf, maxxhist);
-                n = fix(numel(x));
+                n = numel(x);
                 if n > 1 && nf > (n + 1) * (n + 2) / 2
                     if nhist >= 3
                         debug_obj.wassert(~(all(abs(xhist(:, nhist) - xhist(:, nhist - 1)) <= 0, 'all') && all(abs(xhist(:, nhist - 1) - xhist(:, nhist - 2)) <= 0, 'all')), "XHIST does not contain a repeating segment of length 1", srname);
@@ -323,7 +323,7 @@ classdef history_mod
             % Sizes
             n = size(xhist, 1);
             maxxhist = size(xhist, 2);
-            maxfhist = fix(numel(fhist));
+            maxfhist = numel(fhist);
             ipObj = inputParser();
             addParameter(ipObj, 'chist', NaN);
             addParameter(ipObj, 'conhist', NaN);
@@ -331,7 +331,7 @@ classdef history_mod
             chist = ipObj.Results.chist;
             conhist = ipObj.Results.conhist;
             if ~ismember('chist', ipObj.UsingDefaults) || nargout >= 3
-                maxchist = fix(numel(chist));
+                maxchist = numel(chist);
             else
                 maxchist = 0;
             end
