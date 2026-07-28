@@ -312,8 +312,8 @@ classdef getact_mod
                     frac(:) = consts_obj.REALMAX;
                     frac(vmu(1:nact) < 0 & vlam(1:nact) < 0) = vlam(vmu(1:nact) < 0 & vlam(1:nact) < 0) ./ vmu(vmu(1:nact) < 0 & vlam(1:nact) < 0);
                     %%MATLAB: frac = vlam / vmu; frac(vmu >= 0 | vlam >= 0) = Inf;
-                    vmult = min([violmx; reshape(frac(1:nact), [], 1)], [], 'all');
-                    icon = max([0; reshape(linalg_obj.trueloc(frac(1:nact) <= vmult), [], 1)], [], 'all');
+                    vmult = min([violmx; frac(1:nact)], [], 'all');
+                    icon = max([0; linalg_obj.trueloc(frac(1:nact) <= vmult)], [], 'all');
                     %%MATLAB: icon = max([0; find(frac(1:nact) <= vmult)]); % find(frac(1:nact)<=vmult) can be empty
 
                     % N.B.: 0. The definition of ICON given above is mathematically equivalent to the following.
@@ -549,10 +549,10 @@ classdef getact_mod
             % compilers may create a temporary copy of RFAC(1:NACT, 1:NACT), which is not contiguous in memory.
             % %call qrexc(qfac(:, 1:nact), rfac(1:nact, 1:nact), icon)
 
-            iact(icon:nact) = [reshape(iact(icon + 1:nact), [], 1); iact(icon)];
-            resact(icon:nact) = [reshape(resact(icon + 1:nact), [], 1); resact(icon)];
+            iact(icon:nact) = [iact(icon + 1:nact); iact(icon)];
+            resact(icon:nact) = [resact(icon + 1:nact); resact(icon)];
             resnew(iact(nact)) = max(resact(nact), consts_obj.TINYCV);
-            vlam(icon:nact) = [reshape(vlam(icon + 1:nact), [], 1); vlam(icon)];
+            vlam(icon:nact) = [vlam(icon + 1:nact); vlam(icon)];
             nact = nact - 1;
 
             %====================%

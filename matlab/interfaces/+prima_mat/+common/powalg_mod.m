@@ -243,7 +243,7 @@ classdef powalg_mod
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthogonal", srname);
                 debug_obj.assert(linalg_obj.istriu(R), "R is upper triangular", srname);
                 debug_obj.assert(all(linalg_obj.diag(R(:, 1:n)) > 0, 'all'), "DIAG(R(:, 1:N)) > 0", srname);
-                Anew(:, :) = reshape([reshape(linalg_obj.matprod22(Q, R(:, 1:n)), 1, []), reshape(c, 1, [])], size(Anew));
+                Anew(:, :) = reshape([reshape(linalg_obj.matprod22(Q, R(:, 1:n)), 1, []), c.'], size(Anew));
                 Qsave(:, :) = Q(:, 1:n); % For debugging only.
                 Rsave(:, :) = R(:, 1:n); % For debugging only.
 
@@ -381,7 +381,7 @@ classdef powalg_mod
             end
 
             % Calculate RDIAG(I:N) from scratch.
-            Rdiag(i:n - 1) = reshape(arrayfun(@(k) linalg_obj.inprod(Q(:, k), A(:, k + 1)), i:n - 1), [], 1);
+            Rdiag(i:n - 1) = arrayfun(@(k) linalg_obj.inprod(Q(:, k), A(:, k + 1)), (i:n - 1).');
             %%MATLAB: Rdiag(i:n-1) = sum(Q(:, i:n-1) .* A(:, i+1:n), 1);  % Row vector
             Rdiag(n) = linalg_obj.inprod(Q(:, n), A(:, i)); % Calculate RDIAG(N) from scratch. See the comments above.
 
@@ -399,11 +399,11 @@ classdef powalg_mod
                 debug_obj.assert(all(abs(Q - Qsave) <= 0, 'all'), "Q is unchanged except Q(:, I:N)", srname);
                 debug_obj.assert(all(abs(Rdiag(1:i - 1) - Rdsave(1:i - 1)) <= 0, 'all'), "Rdiag(1:I-1) is unchanged", srname);
 
-                Anew(:, :) = reshape([reshape(A(:, 1:i - 1), 1, []), reshape(A(:, i + 1:n), 1, []), reshape(A(:, i), 1, [])], size(Anew));
+                Anew(:, :) = reshape([reshape(A(:, 1:i - 1), 1, []), reshape(A(:, i + 1:n), 1, []), A(:, i).'], size(Anew));
                 QtAnew(:, :) = linalg_obj.matprod22(Q.', Anew);
                 debug_obj.assert(linalg_obj.istriu(QtAnew, 'tol', tol), "Q^T*Anew is upper triangular", srname);
                 % The following test may fail if RDIAG is not calculated from scratch.
-                debug_obj.assert(linalg_obj.p_norm(linalg_obj.diag(QtAnew) - Rdiag) <= max(tol, tol * linalg_obj.p_norm(reshape(arrayfun(@(k) linalg_obj.inprod(abs(Q(:, k)), abs(Anew(:, k))), 1:n), [], 1))), "Rdiag == diag(Q^T*Anew)", srname);
+                debug_obj.assert(linalg_obj.p_norm(linalg_obj.diag(QtAnew) - Rdiag) <= max(tol, tol * linalg_obj.p_norm(arrayfun(@(k) linalg_obj.inprod(abs(Q(:, k)), abs(Anew(:, k))), (1:n).'))), "Rdiag == diag(Q^T*Anew)", srname);
                 %%MATLAB: norm(diag(QtAnew) - Rdiag) <= max(tol, tol * norm(sum(abs(Q(:, 1:n)) .* abs(Anew), 1)))
 
             end
@@ -459,7 +459,7 @@ classdef powalg_mod
                 debug_obj.assert(linalg_obj.istriu(R), "R is upper triangular", srname);
                 debug_obj.assert(all(linalg_obj.diag(R(:, 1:n)) > 0, 'all'), "DIAG(R(:, 1:N)) > 0", srname);
                 Anew(:, :) = linalg_obj.matprod22(Q, R);
-                Anew(:, :) = reshape([reshape(Anew(:, 1:i - 1), 1, []), reshape(Anew(:, i + 1:n), 1, []), reshape(Anew(:, i), 1, [])], size(Anew));
+                Anew(:, :) = reshape([reshape(Anew(:, 1:i - 1), 1, []), reshape(Anew(:, i + 1:n), 1, []), Anew(:, i).'], size(Anew));
                 Qsave(:, :) = Q; % For debugging only.
                 Rsave(:, :) = R(:, 1:i); % For debugging only.
 
@@ -755,9 +755,9 @@ classdef powalg_mod
             %====================%
 
             if ismember('kref', ipObj.UsingDefaults)
-                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k), xpt, gq, pq, 'hq', hq), 1:npt);
+                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k), xpt, gq, pq, 'hq', hq), (1:npt).');
             else
-                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, 'hq', hq), 1:npt);
+                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, 'hq', hq), (1:npt).');
             end
             %%MATLAB:
             %%if nargin >= 5
@@ -1540,7 +1540,7 @@ classdef powalg_mod
 
             % The following two lines set VLAG to H*(w-v).
             vlag(1:npt) = obj.omega_mul(idz_loc, zmat, wcheck) + linalg_obj.matprod12(d, bmat(:, 1:npt));
-            vlag(npt + 1:npt + n) = linalg_obj.matprod21(bmat, [reshape(wcheck, [], 1); reshape(d, [], 1)]);
+            vlag(npt + 1:npt + n) = linalg_obj.matprod21(bmat, [wcheck; d]);
             % The following line is equivalent to the above one, but handles WCHECK and D separately.
             % %vlag(npt + 1:npt + n) = matprod(bmat(:, 1:npt), wcheck) + matprod(bmat(:, npt + 1:npt + n), d)
 
@@ -1636,7 +1636,7 @@ classdef powalg_mod
             wcheck(:) = wcheck .* (consts_obj.HALF * wcheck + linalg_obj.matprod12(xref, xpt));
 
             % WMV is the vector (w-v) for w and v in (4.10) and (4.24) of the NEWUOA paper.
-            wmv(:) = [reshape(wcheck, [], 1); reshape(d, [], 1)];
+            wmv(:) = [wcheck; d];
             % The following two lines set VLAG to H*(w-v).
             vlag(1:npt) = obj.omega_mul(idz_loc, zmat, wcheck) + linalg_obj.matprod12(d, bmat(:, 1:npt));
             vlag(npt + 1:npt + n) = linalg_obj.matprod21(bmat, wmv);
@@ -1851,8 +1851,8 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            ell(:) = fix(reshape(n:npt - n - 2, [], 1) ./ n); % The ell below (2.4) of the BOBYQA paper.
-            ij(1, :) = reshape(n:npt - n - 2, [], 1) - n * ell + 1;
+            ell(:) = fix((n:npt - n - 2).' ./ n); % The ell below (2.4) of the BOBYQA paper.
+            ij(1, :) = (n:npt - n - 2).' - n * ell + 1;
             ij(2, :) = mod(ij(1, :) + ell - 1, n) + 1; % MODULO(K-1, N) + 1 = K-N for K in [N+1, 2N]
             ipObj = inputParser();
             addParameter(ipObj, 'sorting_direction', "");

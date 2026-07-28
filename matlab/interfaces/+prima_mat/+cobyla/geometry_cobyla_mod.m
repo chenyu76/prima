@@ -153,7 +153,7 @@ classdef geometry_cobyla_mod
             % (N+1)-th Lagrange function is 1 - SUM(SIMID). [SIMID, 1 - SUM(SIMID)] is the counterpart of
             % VLAG in UOBYQA and DEN in NEWUOA/BOBYQA/LINCOA.
             simid(:) = linalg_obj.matprod21(simi, d);
-            score(:) = weight .* abs([reshape(simid, [], 1); consts_obj.ONE - sum(simid, 'all')]);
+            score(:) = weight .* abs([simid; consts_obj.ONE - sum(simid, 'all')]);
 
             % If XIMPROVED = FALSE (D does not render a better X), set SCORE(N+1) = -1 to avoid JDROP = N+1.
             if ~ximproved
@@ -269,8 +269,8 @@ classdef geometry_cobyla_mod
             A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1), simi).';
             %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
             % CVPD and CVND are the predicted constraint violation of D and -D by the linear models.
-            cvpd = linalg_obj.maximum1([consts_obj.ZERO; reshape(conmat(:, n + 1) + linalg_obj.matprod12(d, A), [], 1)]);
-            cvnd = linalg_obj.maximum1([consts_obj.ZERO; reshape(conmat(:, n + 1) - linalg_obj.matprod12(d, A), [], 1)]);
+            cvpd = linalg_obj.maximum1([consts_obj.ZERO; conmat(:, n + 1) + linalg_obj.matprod12(d, A)]);
+            cvnd = linalg_obj.maximum1([consts_obj.ZERO; conmat(:, n + 1) - linalg_obj.matprod12(d, A)]);
             % Take -D if the linear models predict that its merit function value is lower.
             if -linalg_obj.inprod(d, g) + cpen * cvnd < linalg_obj.inprod(d, g) + cpen * cvpd
                 d(:) = -d;

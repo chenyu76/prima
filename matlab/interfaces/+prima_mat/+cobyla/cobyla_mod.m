@@ -533,7 +533,7 @@ classdef cobyla_mod
                 % N.B.: Do NOT call FMSG, SAVEHIST, or SAVEFILT for the function/constraint evaluation at X0.
                 % They will be called during the initialization, which will read the function/constraint at X0.
             end
-            cstrv_loc = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr_loc, [], 1)]);
+            cstrv_loc = linalg_obj.maximum1([consts_obj.ZERO; constr_loc]);
 
             % If RHOBEG is present, then RHOBEG_LOC is a copy of RHOBEG; otherwise, RHOBEG_LOC takes the default
             % value for RHOBEG, taking the value of RHOEND into account. Note that RHOEND is considered only if
@@ -833,7 +833,7 @@ classdef cobyla_mod
             % 2. The code below is quite inefficient in terms of memory, but we prefer readability.
             idmat(:, :) = linalg_obj.eye2(n, n);
             amat = reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), reshape(-Aeq.', 1, []), reshape(Aeq.', 1, []), reshape(Aineq.', 1, [])], size(amat));
-            bvec = [reshape(-xl(ixl), [], 1); reshape(xu(ixu), [], 1); reshape(-beq, [], 1); reshape(beq, [], 1); reshape(bineq, [], 1)];
+            bvec = [-xl(ixl); xu(ixu); -beq; beq; bineq];
             %%MATLAB code:
             %%amat = [-idmat(:, ixl), idmat(:, ixu), -Aeq', Aeq', Aineq'];
             %%bvec = [-xl(ixl); xu(ixu); -beq; beq; bineq];

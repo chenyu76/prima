@@ -280,7 +280,7 @@ classdef trustregion_lincoa_mod
                             frac(:) = consts_obj.ONE;
                             restmp(linalg_obj.trueloc(ad > 0)) = resnew(linalg_obj.trueloc(ad > 0)) - linalg_obj.matprod12(psd, amat(:, linalg_obj.trueloc(ad > 0)));
                             frac(linalg_obj.trueloc(ad > 0)) = restmp(linalg_obj.trueloc(ad > 0)) ./ ad(linalg_obj.trueloc(ad > 0));
-                            gamma = min([gamma; consts_obj.ONE; reshape(frac, [], 1)], [], 'all'); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
+                            gamma = min([gamma; consts_obj.ONE; frac], [], 'all'); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
 
                         end
                     end

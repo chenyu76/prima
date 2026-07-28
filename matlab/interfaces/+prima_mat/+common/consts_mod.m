@@ -112,8 +112,8 @@ classdef consts_mod
 
 
             obj.DEBUGGING = (false); % Whether we are in debugging mode
-            obj.IK_DFT = class(0); % Default integer kind
-            obj.RP_DFT = class(0.0); % Default real kind
+            obj.IK_DFT = 4; % Default integer kind
+            obj.RP_DFT = 4; % Default real kind
 
             % Define the integer kind to be used in the Fortran code.
             obj.IK = obj.IK_DFT;

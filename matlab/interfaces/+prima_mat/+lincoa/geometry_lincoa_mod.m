@@ -398,7 +398,7 @@ classdef geometry_lincoa_mod
             rstat(iact(1:nact)) = 0; % Active
 
             % Set FEASIBLE for the calculated S.
-            cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0)), [], 1)]);
+            cstrv = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0))]);
             feasible = (cstrv <= 0);
 
             % If NACT <= 0 or NACT >= N, the calculation has finished. Otherwise, define PGSTP by maximizing
@@ -421,7 +421,7 @@ classdef geometry_lincoa_mod
                 % Decide whether to replace S with PGSTP and set FEASIBLE accordingly. CSTRV is the constraint
                 % violation of XOPT+PGSTP. Note that we only need to check the constraints that are inactive and
                 % relevant, as the value of the active constraints is not changed by moving along PGSTP.
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(pgstp, amat(:, linalg_obj.trueloc(rstat == 1))) - rescon(linalg_obj.trueloc(rstat == 1)), [], 1)]);
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(pgstp, amat(:, linalg_obj.trueloc(rstat == 1))) - rescon(linalg_obj.trueloc(rstat == 1))]);
                 % The purpose of CVTOL below is to provide a check on feasibility that includes a tolerance for
                 % contributions from computer rounding errors.
                 % Powell's code is as follows. Note that MATPROD(PGSTP, AMAT(:, IACT(1:NACT))) is 0 in theory.
@@ -445,7 +445,7 @@ classdef geometry_lincoa_mod
                 s(:) = xpt(:, knew) - xopt;
                 scaling = delbar / linalg_obj.p_norm(s);
                 s(:) = max(0.6 * scaling, min(consts_obj.HALF, scaling)) * s; % 0.6: ensure |D| > DELBAR/2
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0)), [], 1)]);
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0))]);
                 feasible = (cstrv <= 0);
             end
 

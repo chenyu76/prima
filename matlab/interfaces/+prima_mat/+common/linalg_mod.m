@@ -974,14 +974,14 @@ classdef linalg_mod
 
             if ismember('Q', ipObj.UsingDefaults)
                 [Q_loc, ~, P] = obj.qr(A);
-                Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, P(i))), 1:min(m, n));
+                Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, P(i))), (1:min(m, n)).');
                 %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, P(1:min(m,n))), 1); % Row vector
-                rank = max([0; reshape(obj.trueloc(abs(Rdiag_loc) > 0), [], 1)], [], 'all');
+                rank = max([0; obj.trueloc(abs(Rdiag_loc) > 0)], [], 'all');
                 pivot = true;
             else
                 Q_loc(:, :) = Q(:, 1:size(Q_loc, 2));
                 if ismember('Rdiag', ipObj.UsingDefaults)
-                    Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, i)), 1:min(m, n));
+                    Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, i)), (1:min(m, n)).');
                     %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, 1:min(m,n)), 1); % Row vector
                 else
                     Rdiag_loc(:) = Rdiag;
@@ -1117,9 +1117,9 @@ classdef linalg_mod
             dlen = max(0, min(size(A, 1), size(A, 2)) - abs(k_loc));
             D = memory_obj.alloc_rvector_sp(dlen);
             if k_loc >= 0
-                D = reshape(arrayfun(@(i) A(i, i + k_loc), 1:dlen), [], 1);
+                D = arrayfun(@(i) A(i, i + k_loc), (1:dlen).');
             else
-                D = reshape(arrayfun(@(i) A(i - k_loc, i), 1:dlen), [], 1);
+                D = arrayfun(@(i) A(i - k_loc, i), (1:dlen).');
             end
 
             %====================%
@@ -1707,7 +1707,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            is_minor(:) = arrayfun(@(i) obj.isminor0(x(i), ref(i)), 1:numel(x));
+            is_minor(:) = arrayfun(@(i) obj.isminor0(x(i), ref(i)), (1:numel(x)).');
 
             %====================%
             %  Calculation ends  %
@@ -1978,7 +1978,7 @@ classdef linalg_mod
                     % If SIZE(X) = 0, then MAXVAL(SUM(ABS(X), DIM=2)) = -HUGE(X); since we have handled such a
                     % case in the above, it is OK to write Y = MAXVAL(SUM(ABS(X), DIM=2)) below, but we append
                     % a 0 for robustness.
-                    y = max([reshape(sum(abs(x), 2), [], 1); consts_obj.ZERO], [], 'all');
+                    y = max([sum(abs(x), 2); consts_obj.ZERO], [], 'all');
                 otherwise
                     debug_obj.warning(srname, "Unknown name of norm: " + string_obj.strip(nname) + "; default to the Frobenius norm");
                     y = sqrt(sum(x .^ 2, 'all'));
@@ -2405,13 +2405,13 @@ classdef linalg_mod
                 x(:) = xstop;
             elseif abs(xstart) <= abs(xstop) && abs(xstop) <= abs(xstart)
                 xunit = xstop / double(nm);
-                x(:) = xunit * double(reshape(-nm:2:nm, [], 1));
+                x(:) = xunit * double((-nm:2:nm).');
                 if mod(nm, 2) == 0
                     x(1 + nm / 2) = consts_obj.ZERO;
                 end
             else
                 xunit = (xstop - xstart) / double(nm);
-                x(:) = xstart + xunit * double(reshape(0:nm, [], 1));
+                x(:) = xstart + xunit * double((0:nm).');
             end
 
             if n >= 1
@@ -2798,7 +2798,7 @@ classdef linalg_mod
                 eminlb = consts_obj.ZERO;
             else
                 eminub = min(td, [], 'all');
-                eminlb = -max(abs([consts_obj.ZERO; reshape(tn, [], 1)]) + abs(td) + abs([reshape(tn, [], 1); consts_obj.ZERO]), [], 'all');
+                eminlb = -max(abs([consts_obj.ZERO; tn]) + abs(td) + abs([tn; consts_obj.ZERO]), [], 'all');
             end
 
             ksav = 0;

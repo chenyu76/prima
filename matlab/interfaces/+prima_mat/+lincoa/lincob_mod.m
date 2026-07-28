@@ -234,8 +234,8 @@ classdef lincob_mod
             x(:) = xbase + xpt(:, kopt);
             f = fval(kopt);
             constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
-            constr(:) = [reshape(xl(ixl) - x(ixl), [], 1); reshape(x(ixu) - xu(ixu), [], 1); reshape(-constr_leq, [], 1); reshape(constr_leq, [], 1); reshape(linalg_obj.matprod21(Aineq, x) - bineq, [], 1)];
-            cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr, [], 1)]);
+            constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; linalg_obj.matprod21(Aineq, x) - bineq];
+            cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
             % Initialize the filter, including XFILT, FFILT, CONFILT, CFILT, and NFILT.
             % N.B.: The filter is used only when selecting which iterate to return. It does not interfere with
@@ -277,8 +277,8 @@ classdef lincob_mod
                 x(:) = xfilt(:, kopt);
                 f = ffilt(kopt);
                 constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
-                constr(:) = [reshape(xl(ixl) - x(ixl), [], 1); reshape(x(ixu) - xu(ixu), [], 1); reshape(-constr_leq, [], 1); reshape(constr_leq, [], 1); reshape(linalg_obj.matprod21(Aineq, x) - bineq, [], 1)];
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr, [], 1)]);
+                constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; linalg_obj.matprod21(Aineq, x) - bineq];
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
                 message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, 'constr', constr);
                 % Arrange CHIST, FHIST, and XHIST so that they are in the chronological order.
                 [xhist, fhist, chist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist);
@@ -376,7 +376,7 @@ classdef lincob_mod
                 % DNORM_REC records the DNORM of recent trust-region iterations. It will be used to decide
                 % whether we should improve the geometry of the interpolation set or reduce RHO when SHORTD
                 % is TRUE. Note that it does not record the geometry steps.
-                dnorm_rec(:) = [reshape(dnorm_rec(2:numel(dnorm_rec)), [], 1); dnorm];
+                dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
 
                 % In some cases, we reset DNORM_REC to REALMAX. This indicates a preference of improving the
                 % geometry of the interpolation set to reducing RHO in the subsequent three or more iterations.
@@ -413,8 +413,8 @@ classdef lincob_mod
 
                     % Evaluate the constraints. They are used only for printing messages.
                     constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
-                    constr(:) = [reshape(xl(ixl) - x(ixl), [], 1); reshape(x(ixu) - xu(ixu), [], 1); reshape(-constr_leq, [], 1); reshape(constr_leq, [], 1); reshape(linalg_obj.matprod21(Aineq, x) - bineq, [], 1)];
-                    cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr, [], 1)]);
+                    constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; linalg_obj.matprod21(Aineq, x) - bineq];
+                    cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
                     % Print a message about the function evaluation according to IPRINT.
                     message_obj.fmsg(solver, "Trust region", iprint, nf, delta, f, x, 'cstrv', cstrv, 'constr', constr);
@@ -436,7 +436,7 @@ classdef lincob_mod
                     % reasonable if the two values being compared are both ZERO or INF.
                     moderr = f - fval(kopt) + qred;
                     moderr_alt = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, galt, pqalt);
-                    qalt_better(:) = [reshape(qalt_better(2:numel(qalt_better)), [], 1); abs(moderr_alt) < consts_obj.TENTH * abs(moderr)];
+                    qalt_better(:) = [qalt_better(2:numel(qalt_better)); abs(moderr_alt) < consts_obj.TENTH * abs(moderr)];
 
                     % Calculate the reduction ratio by REDRAT, which handles Inf/NaN carefully.
                     ratio = ratio_obj.redrat(fval(kopt) - f, qred, eta1);
@@ -571,8 +571,8 @@ classdef lincob_mod
 
                     % Evaluate the constraints. They are used only for printing messages.
                     constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
-                    constr(:) = [reshape(xl(ixl) - x(ixl), [], 1); reshape(x(ixu) - xu(ixu), [], 1); reshape(-constr_leq, [], 1); reshape(constr_leq, [], 1); reshape(linalg_obj.matprod21(Aineq, x) - bineq, [], 1)];
-                    cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr, [], 1)]);
+                    constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; linalg_obj.matprod21(Aineq, x) - bineq];
+                    cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
                     % Print a message about the function evaluation according to IPRINT.
                     message_obj.fmsg(solver, "Geometry", iprint, nf, delbar, f, x, 'cstrv', cstrv, 'constr', constr);
@@ -595,7 +595,7 @@ classdef lincob_mod
                     % reasonable if the two values being compared are both ZERO or INF.
                     moderr = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq);
                     moderr_alt = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, galt, pqalt);
-                    qalt_better(:) = [reshape(qalt_better(2:numel(qalt_better)), [], 1); abs(moderr_alt) < consts_obj.TENTH * abs(moderr)];
+                    qalt_better(:) = [qalt_better(2:numel(qalt_better)); abs(moderr_alt) < consts_obj.TENTH * abs(moderr)];
 
                     % Is the newly generated X better than current best point?
                     ximproved = (f < fval(kopt) && feasible);
@@ -669,8 +669,8 @@ classdef lincob_mod
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
-                constr(:) = [reshape(xl(ixl) - x(ixl), [], 1); reshape(x(ixu) - xu(ixu), [], 1); reshape(-constr_leq, [], 1); reshape(constr_leq, [], 1); reshape(linalg_obj.matprod21(Aineq, x) - bineq, [], 1)];
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr, [], 1)]);
+                constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; linalg_obj.matprod21(Aineq, x) - bineq];
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
                 % Print a message about the function evaluation according to IPRINT.
                 % Zaikun 20230512: DELTA has been updated. RHO is only indicative here. TO BE IMPROVED.
                 message_obj.fmsg(solver, "Trust region", iprint, nf, rho, f, x, 'cstrv', cstrv, 'constr', constr);
@@ -685,8 +685,8 @@ classdef lincob_mod
             x(:) = xfilt(:, kopt);
             f = ffilt(kopt);
             constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
-            constr(:) = [reshape(xl(ixl) - x(ixl), [], 1); reshape(x(ixu) - xu(ixu), [], 1); reshape(-constr_leq, [], 1); reshape(constr_leq, [], 1); reshape(linalg_obj.matprod21(Aineq, x) - bineq, [], 1)];
-            cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr, [], 1)]);
+            constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; linalg_obj.matprod21(Aineq, x) - bineq];
+            cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
             % Deallocate IXL and IXU as they have finished their job.
 

@@ -391,7 +391,7 @@ classdef history_mod
             % The ranging should be done only if 0 < MAXFHIST < NF. Otherwise, it leads to errors/wrong results.
             if maxfhist > 0 && maxfhist < nf
                 khist = mod(nf - 1, maxfhist) + 1;
-                fhist(:) = [reshape(fhist(khist + 1:maxfhist), [], 1); reshape(fhist(1:khist), [], 1)];
+                fhist(:) = [fhist(khist + 1:maxfhist); fhist(1:khist)];
             end
             % The ranging should be done only if 0 < MAXCONHIST < NF. Otherwise, it leads to errors/wrong results.
             if maxconhist > 0 && maxconhist < nf
@@ -401,7 +401,7 @@ classdef history_mod
             % The ranging should be done only if 0 < MAXCHIST < NF. Otherwise, it leads to errors/wrong results.
             if maxchist > 0 && maxchist < nf
                 khist = mod(nf - 1, maxchist) + 1;
-                chist(:) = [reshape(chist(khist + 1:maxchist), [], 1); reshape(chist(1:khist), [], 1)];
+                chist(:) = [chist(khist + 1:maxchist); chist(1:khist)];
             end
 
             %====================%

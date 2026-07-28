@@ -89,7 +89,7 @@ classdef string_mod
             y = NaN(strlength(x), 1);
 
 
-            y(:) = arrayfun(@(i) fix(double(unicode2native(extractBetween(x, i, i)))), 1:fix(strlength(x)));
+            y(:) = arrayfun(@(i) fix(double(unicode2native(extractBetween(x, i, i)))), (1:fix(strlength(x))).');
 
         end
         function s = real2str_scalar(obj, x, varargin)
