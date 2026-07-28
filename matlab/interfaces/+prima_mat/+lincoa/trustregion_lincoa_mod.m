@@ -89,7 +89,7 @@ classdef trustregion_lincoa_mod
             dproj = NaN(numel(gopt_in), 1);
             ds = NaN;
             frac = NaN(size(amat, 2), 1);
-            g = NaN(numel(gopt_in), 1);
+
             gamma = NaN;
             gopt = NaN(numel(gopt_in), 1);
             hd = NaN(numel(gopt_in), 1);
@@ -193,7 +193,7 @@ classdef trustregion_lincoa_mod
             % but PSD + GAMMA * DPROJ.
             resact(1:nact) = rescon(iact(1:nact));
 
-            g(:) = gopt;
+            g = gopt;
             delsq = delta * delta;
             s(:) = consts_obj.ZERO;
             ss = consts_obj.ZERO;
@@ -289,10 +289,10 @@ classdef trustregion_lincoa_mod
                     % region bound and the linear constraints.
                     % Do NOT write D = PSD + GAMMA*DPROJ, as DPROJ may contain NaN/Inf, in which case GAMMA = 0.
                     if gamma > 0
-                        d(:) = psd + gamma * dproj; % Modified searching direction.
+                        d = psd + gamma * dproj; % Modified searching direction.
                         itercg = -1;
                     else
-                        d(:) = psd; % Original searching direction.
+                        d = psd; % Original searching direction.
                         itercg = 0;
                     end
                 end
@@ -394,13 +394,13 @@ classdef trustregion_lincoa_mod
                     s(:) = sold;
                     break
                 end
-                g(:) = g + alpha * hd;
+                g = g + alpha * hd;
                 if ~infnan_obj.is_finite(sum(abs(g), 'all'))
                     break
                 end
 
                 % Update RESNEW.
-                restmp(:) = resnew - alpha * ad; % Only RESTMP(TRUELOC(RESNEW > 0)) is needed.
+                restmp = resnew - alpha * ad; % Only RESTMP(TRUELOC(RESNEW > 0)) is needed.
                 resnew(linalg_obj.trueloc(resnew > 0)) = max(consts_obj.TINYCV, restmp(linalg_obj.trueloc(resnew > 0)));
                 %%MATLAB: mask = (resnew > 0); resnew(mask) = max(TINYCV, resnew(mask) - alpha * ad(mask));
 
@@ -463,7 +463,7 @@ classdef trustregion_lincoa_mod
                 % N.B.: NACT < 0 is impossible unless GETACT is buggy; NACT = 0 can happen, particularly if
                 % there is no constraint. In theory, the code for the second case below covers the first as well.
                 if nact <= 0
-                    pg(:) = g;
+                    pg = g;
                 else
                     pg(:) = linalg_obj.matprod21(qfac(:, nact + 1:n), linalg_obj.matprod12(g, qfac(:, nact + 1:n)));
                     %%MATLAB: pg = qfac(:, nact+1:n) * (g' * qfac(:, nact+1:n))';
@@ -475,7 +475,7 @@ classdef trustregion_lincoa_mod
                 else
                     beta = linalg_obj.inprod(pg, hd) / dhd;
                 end
-                d(:) = -pg + beta * d;
+                d = -pg + beta * d;
             end
 
             if nargout >= 6

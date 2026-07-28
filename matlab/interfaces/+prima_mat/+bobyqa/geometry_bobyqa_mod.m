@@ -55,9 +55,8 @@ classdef geometry_bobyqa_mod
             srname = "SETDROP_TR";
 
 
-            den = NaN(size(xpt, 2), 1);
             distsq = NaN(size(xpt, 2), 1);
-            score = NaN(size(xpt, 2), 1);
+
             weight = NaN(size(xpt, 2), 1);
 
             % Sizes
@@ -123,8 +122,8 @@ classdef geometry_bobyqa_mod
 
             % Different from NEWUOA/LINCOA, the possibility that entries in DEN become negative is handled by
             % RESCUE. Hence the SCORE here uses DEN in contrast to ABS(DEN) in NEWUOA/LINCOA.
-            den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
-            score(:) = weight .* den;
+            den = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
+            score = weight .* den;
 
             % If the new F is not better than FVAL(KOPT), we set SCORE(KOPT) = -1 to avoid KNEW = KOPT.
             if ~ximproved
@@ -218,19 +217,16 @@ classdef geometry_bobyqa_mod
             iubd = NaN;
             k = NaN;
 
-            ksqs = NaN(3, 1);
-
 
             mask_fixl = false(size(xpt, 1), 1);
             mask_fixu = false(size(xpt, 1), 1);
             mask_free = false(size(xpt, 1), 1);
 
-            betabd = NaN(3, size(xpt, 2));
 
             curv = NaN;
             dderiv = NaN(size(xpt, 2), 1);
-            den_cauchy = NaN(size(xpt, 2), 1);
-            den_line = NaN(size(xpt, 2), 1);
+
+
             distsq = NaN(size(xpt, 2), 1);
 
             glag = NaN(size(xpt, 1), 1);
@@ -238,7 +234,7 @@ classdef geometry_bobyqa_mod
             gs = NaN;
             lfrac = NaN(size(xpt, 1), 1);
             pqlag = NaN(size(xpt, 2), 1);
-            predsq = NaN(3, size(xpt, 2));
+
             resis = NaN;
             s = NaN(size(xpt, 1), 1);
             scaling = NaN;
@@ -253,11 +249,11 @@ classdef geometry_bobyqa_mod
             sumin = NaN;
             sxpt = NaN(size(xpt, 2), 1);
             ufrac = NaN(size(xpt, 1), 1);
-            vlag = NaN(3, size(xpt, 2));
+
             vlagsq = NaN;
 
             x = NaN(size(xpt, 1), 1);
-            xcauchy = NaN(size(xpt, 1), 1);
+
             xdiff = NaN(size(xpt, 1), 1);
             xline = NaN(size(xpt, 1), 1);
             xopt = NaN(size(xpt, 1), 1);
@@ -418,7 +414,7 @@ classdef geometry_bobyqa_mod
             % First, compute VLAG = PHI(STPLEN). Using the fact that PHI_K(0) = 0, PHI_K(1) = delta_{K, KNEW}
             % (Kronecker delta), and recalling the PHI_K is quadratic, we can find that
             % PHI_K(t) = t*(1-t)*PHI_K'(0) for K /= KNEW, and PHI_KNEW = t*[t*(1-PHI_K'(0)) + PHI_K'(0)].
-            vlag(:, :) = stplen .* (consts_obj.ONE - stplen) .* dderiv.';
+            vlag = stplen .* (consts_obj.ONE - stplen) .* dderiv.';
             %%MATLAB: vlag = stplen .* (1 - stplen) .* dderiv; % Implicit expansion; dderiv is a row!
             vlag(:, knew) = stplen(:, knew) .* (stplen(:, knew) * (consts_obj.ONE - dderiv(knew)) + dderiv(knew));
             % Set NaNs in VLAG to 0 so that the behavior of MAXVAL(ABS(VLAG)) is predictable. VLAG does not have
@@ -426,11 +422,11 @@ classdef geometry_bobyqa_mod
             vlag(infnan_obj.is_nan_sp(vlag)) = consts_obj.ZERO; %%MATLAB: vlag(isnan(vlag)) = 0;
             %
             % Second, BETABD is the upper bound of BETA given in (3.10) of the BOBYQA paper.
-            betabd(:, :) = consts_obj.HALF * (stplen .* (consts_obj.ONE - stplen) .* distsq.') .^ 2;
+            betabd = consts_obj.HALF * (stplen .* (consts_obj.ONE - stplen) .* distsq.') .^ 2;
             %%MATLAB: betabd = 0.5 * (stplen .* (1-stplen) .* distsq).^2 % Implicit expansion; distsq is a row!
             %
             % Finally, PREDSQ is the quantity defined in (3.11) of the BOBYQA paper.
-            predsq(:, :) = vlag .* vlag .* (vlag .* vlag + alpha * betabd);
+            predsq = vlag .* vlag .* (vlag .* vlag + alpha * betabd);
             % Set NaNs in PREDSQ to 0 so that the behavior of MAXLOC(PREDSQ) is predictable. PREDSQ does not
             % have NaN unless XPT does, which would be a bug.
             predsq(infnan_obj.is_nan_sp(predsq)) = consts_obj.ZERO; %%MATLAB: predsq(isnan(predsq)) = 0
@@ -449,7 +445,7 @@ classdef geometry_bobyqa_mod
             %---------------------------------------------------------------------%
             % 2. Recall that we have set the NaN entries of PREDSQ to zero, if there is any. Thus the KSQS below
             % is a well defined integer array, all the three entries lying between 1 and NPT.
-            ksqs(:) = fortran.maxloc(predsq, 'dim', 2);
+            ksqs = fortran.maxloc(predsq, 'dim', 2);
             isq = fortran.maxloc([predsq(1, ksqs(1)), predsq(2, ksqs(2)), predsq(3, ksqs(3))], 'dim', 1);
             ksq = ksqs(isq);
             %%MATLAB:
@@ -472,8 +468,8 @@ classdef geometry_bobyqa_mod
             % Calculate DENOM for the current choice of D. Indeed, only DEN_LINE(KNEW) is needed.
             % Zaikun 20250907: It was observed numerically that D could be ZERO here (i.e., XLINE = XOPT).
             % Should this be impossible in theory?
-            d(:) = xline - xopt;
-            den_line(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
+            d = xline - xopt;
+            den_line = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
 
             %--------------------------------------------------------------------------------------------------%
             % The following IF ... END IF does not exist in Powell's code. SURPRISINGLY, the performance of
@@ -497,11 +493,11 @@ classdef geometry_bobyqa_mod
             % KNEW-th Lagrange function; when UPHILL = 1, it calculates the uphill version that intends to
             % maximize the Lagrange function.
             bigstp = delbar + delbar; % N.B.: In the sequel, S <= BIGSTP.
-            xcauchy(:) = xopt;
+            xcauchy = xopt;
             vlagsq_cauchy = consts_obj.ZERO;
             for uphill = 0:1
                 if uphill == 1
-                    glag(:) = -glag;
+                    glag = -glag;
                 end
                 s(:) = consts_obj.ZERO;
                 mask_free(:) = (min(xopt - sl, glag) > 0 | max(xopt - su, glag) < 0);
@@ -527,10 +523,10 @@ classdef geometry_bobyqa_mod
                     end
                     ssqsav = sfixsq;
                     grdstp = sqrt(resis / ggfree);
-                    xtemp(:) = xopt - grdstp * glag;
-                    mask_fixl(:) = (s >= bigstp & xtemp <= sl); % S == BIGSTP & XTEMP == SL
-                    mask_fixu(:) = (s >= bigstp & xtemp >= su); % S == BIGSTP & XTEMP == SU
-                    mask_free(:) = (s >= bigstp & ~(mask_fixl | mask_fixu));
+                    xtemp = xopt - grdstp * glag;
+                    mask_fixl = (s >= bigstp & xtemp <= sl); % S == BIGSTP & XTEMP == SL
+                    mask_fixu = (s >= bigstp & xtemp >= su); % S == BIGSTP & XTEMP == SU
+                    mask_free = (s >= bigstp & ~(mask_fixl | mask_fixu));
                     s(linalg_obj.trueloc(mask_fixl)) = sl(linalg_obj.trueloc(mask_fixl)) - xopt(linalg_obj.trueloc(mask_fixl));
                     s(linalg_obj.trueloc(mask_fixu)) = su(linalg_obj.trueloc(mask_fixu)) - xopt(linalg_obj.trueloc(mask_fixu));
                     sfixsq = sfixsq + sum(s(linalg_obj.trueloc(mask_fixl | mask_fixu)) .^ 2, 'all');
@@ -566,20 +562,20 @@ classdef geometry_bobyqa_mod
                 end
 
                 if vlagsq > vlagsq_cauchy
-                    xcauchy(:) = x;
+                    xcauchy = x;
                     vlagsq_cauchy = vlagsq;
                 end
             end
 
             % Calculate the denominator rendered by the Cauchy step. Indeed, only DEN_CAUCHY(KNEW) is needed.
-            s(:) = xcauchy - xopt;
-            den_cauchy(:) = powalg_obj.calden(kopt, bmat, s, xpt, zmat);
+            s = xcauchy - xopt;
+            den_cauchy = powalg_obj.calden(kopt, bmat, s, xpt, zmat);
 
             % Take the Cauchy step if it is likely to render a larger denominator.
             %IF (VLAGSQ_CAUCHY > MAX(DEN_LINE(KNEW), ZERO) .OR. IS_NAN(DEN_LINE(KNEW))) THEN  ! Powell's version
             if den_cauchy(knew) > max(den_line(knew), consts_obj.ZERO) || infnan_obj.is_nan_sp(den_line(knew))
                 % Works better
-                d(:) = s;
+                d = s;
             end
 
             % In case D is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to XOPT.

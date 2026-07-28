@@ -261,8 +261,8 @@ classdef lincob_mod
                 hq = repmat(consts_obj.ZERO, size(hq));
                 pq(:) = powalg_obj.omega_mul(idz, zmat, fval);
                 gopt(:) = linalg_obj.matprod21(bmat(:, 1:npt), fval) + powalg_obj.hess_mul(xpt(:, kopt), xpt, pq);
-                pqalt(:) = pq;
-                galt(:) = gopt;
+                pqalt = pq;
+                galt = gopt;
                 if ~(all(infnan_obj.is_finite(gopt), 'all') && all(infnan_obj.is_finite(hq), 'all') && all(infnan_obj.is_finite(pq), 'all'))
                     subinfo = infos_obj.NAN_INF_MODEL;
                 end
@@ -458,8 +458,8 @@ classdef lincob_mod
                     if knew_tr > 0
                         % Update [BMAT, ZMAT, IDZ] (represents H in the NEWUOA paper), [XPT, FVAL, KOPT] and
                         % [GOPT, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_TR) becomes XNEW = XOPT + D.
-                        xdrop(:) = xpt(:, knew_tr);
-                        xosav(:) = xpt(:, kopt);
+                        xdrop = xpt(:, knew_tr);
+                        xosav = xpt(:, kopt);
                         [idz, bmat, zmat] = powalg_obj.updateh(knew_tr, kopt, d, xpt, idz, bmat, zmat);
                         [kopt, fval, xpt] = update_lincoa_obj.updatexf(knew_tr, ximproved, f, xosav + d, kopt, fval, xpt);
                         [gopt, hq, pq] = update_lincoa_obj.updateq(idz, knew_tr, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
@@ -602,8 +602,8 @@ classdef lincob_mod
 
                     % Update [BMAT, ZMAT, IDZ] (represents H in the NEWUOA paper), [XPT, FVAL, KOPT] and
                     % [GOPT, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_GEO) becomes XNEW = XOPT + D.
-                    xdrop(:) = xpt(:, knew_geo);
-                    xosav(:) = xpt(:, kopt);
+                    xdrop = xpt(:, knew_geo);
+                    xosav = xpt(:, kopt);
                     [idz, bmat, zmat] = powalg_obj.updateh(knew_geo, kopt, d, xpt, idz, bmat, zmat);
                     [kopt, fval, xpt] = update_lincoa_obj.updatexf(knew_geo, ximproved, f, xosav + d, kopt, fval, xpt);
                     [gopt, hq, pq] = update_lincoa_obj.updateq(idz, knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
@@ -644,7 +644,7 @@ classdef lincob_mod
                 % shift XBASE if SUM(XOPT**2) >= 1.0E3*DELTA**2.
                 if sum(xpt(:, kopt) .^ 2, 'all') >= 1000.0 * delta ^ 2
                     % Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E3*RHO**2.
-                    b(:) = b - linalg_obj.matprod12(xpt(:, kopt), amat);
+                    b = b - linalg_obj.matprod12(xpt(:, kopt), amat);
                     [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq, 'idz', idz);
                     % SHIFTBASE shifts XBASE to XBASE + XOPT and XOPT to 0.
                     pqalt(:) = powalg_obj.omega_mul(idz, zmat, fval - fval(kopt));

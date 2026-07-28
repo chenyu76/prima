@@ -256,7 +256,7 @@ classdef geometry_cobyla_mod
             % SIMI(JDROP, :) is a vector perpendicular to the face of the simplex to the opposite of vertex
             % JDROP. Set D to the vector in this direction and with length DELBAR.
             d(:) = simi(jdrop, :);
-            d(:) = delbar * (d ./ linalg_obj.p_norm(d));
+            d = delbar * (d ./ linalg_obj.p_norm(d));
 
             % The code below chooses the direction of D according to an approximation of the merit function.
             % See (17) of the COBYLA paper and  line 225 of Powell's cobylb.f.
@@ -273,7 +273,7 @@ classdef geometry_cobyla_mod
             cvnd = linalg_obj.maximum1([consts_obj.ZERO; conmat(:, n + 1) - linalg_obj.matprod12(d, A)]);
             % Take -D if the linear models predict that its merit function value is lower.
             if -linalg_obj.inprod(d, g) + cpen * cvnd < linalg_obj.inprod(d, g) + cpen * cvpd
-                d(:) = -d;
+                d = -d;
             end
 
             %====================%

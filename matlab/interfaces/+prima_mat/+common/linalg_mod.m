@@ -399,7 +399,7 @@ classdef linalg_mod
 
             z(:) = consts_obj.ZERO;
             for j = 1:size(x, 2)
-                z(:) = z + x(:, j) * y(j);
+                z = z + x(:, j) * y(j);
             end
 
             %====================%
@@ -713,7 +713,7 @@ classdef linalg_mod
                     B(i, i) = consts_obj.ONE / R(i, i);
                     B(1:i - 1, i) = -obj.matprod21(B(1:i - 1, 1:i - 1), R(1:i - 1, i) ./ R(i, i));
                 end
-                B(:, :) = B.';
+                B = B.';
             elseif obj.istriu(A)
                 B = repmat(consts_obj.ZERO, size(B));
                 for i = 1:n
@@ -723,13 +723,13 @@ classdef linalg_mod
             else
                 % This is NOT the best algorithm for the inverse, but since the QR subroutine is available ...
                 [Q, R, P] = obj.qr(A);
-                R(:, :) = R.'; % Take transpose to work on columns.
+                R = R.'; % Take transpose to work on columns.
                 B = repmat(consts_obj.ZERO, size(B));
                 for i = n:-1:1
                     B(:, i) = (Q(:, i) - obj.matprod21(B(:, i + 1:n), R(i + 1:n, i))) ./ R(i, i);
                 end
                 InvP(P) = obj.linspace_i(1, n, n); % The inverse permutation
-                B(:, :) = B(:, InvP).';
+                B = B(:, InvP).';
             end
 
             %====================%
@@ -814,7 +814,6 @@ classdef linalg_mod
             srname = "QR";
 
 
-            G = NaN(2);
             Q_loc = NaN(size(A, 1));
             T = NaN(size(A, 2), size(A, 1));
 
@@ -872,7 +871,7 @@ classdef linalg_mod
                     end
                 end
                 for i = m:-1:j + 1
-                    G(:, :) = obj.planerot(T(j, [j, i])).';
+                    G = obj.planerot(T(j, [j, i])).';
                     T(j, [j, i]) = [obj.hypotenuse(T(j, j), T(j, i)), consts_obj.ZERO]; %T(j, [j, i]) = [sqrt(T(j, j)**2 + T(j, i)**2), ZERO]
                     T(j + 1:n, [j, i]) = obj.matprod22(T(j + 1:n, [j, i]), G);
                     Q_loc(:, [j, i]) = obj.matprod22(Q_loc(:, [j, i]), G);
@@ -1007,7 +1006,7 @@ classdef linalg_mod
                     x(j) = consts_obj.ZERO;
                 else
                     x(j) = yq / Rdiag_loc(i);
-                    y(:) = y - x(j) * A(:, j);
+                    y = y - x(j) * A(:, j);
                 end
             end
 
@@ -1367,7 +1366,7 @@ classdef linalg_mod
                 u(:) = consts_obj.ZERO;
                 u(obj.trueloc(infnan_obj.is_inf(v))) = fortran.sign(consts_obj.ONE, v(obj.trueloc(infnan_obj.is_inf(v))));
                 %%MATLAB: u = 0; u(isinf(v)) = sign(v(isinf(v)))
-                u(:) = u ./ obj.p_norm(u);
+                u = u ./ obj.p_norm(u);
                 y(:) = obj.inprod(x, u) * u;
             else
                 u(:) = v ./ obj.p_norm(v);
@@ -1418,7 +1417,7 @@ classdef linalg_mod
             %====================%
 
             if size(V, 2) == 1
-                y(:) = obj.project1(x, V(:, 1));
+                y = obj.project1(x, V(:, 1));
             elseif all(abs(x) <= 0, 'all') || all(abs(V) <= 0, 'all')
                 y(:) = consts_obj.ZERO;
             elseif any(infnan_obj.is_nan_sp(x), 'all') || any(infnan_obj.is_nan_sp(V), 'all')
@@ -1592,7 +1591,7 @@ classdef linalg_mod
                 end
             end
 
-            G(:, :) = reshape([c, -s, s, c], [2, 2]); %%MATLAB: G = [c, s; -s, c]
+            G = reshape([c, -s, s, c], [2, 2]); %%MATLAB: G = [c, s; -s, c]
 
             %====================%
             %  Calculation ends  %
@@ -2826,7 +2825,7 @@ classdef linalg_mod
                 end
 
                 if all(pivnew > 0, 'all')
-                    piv(:) = pivnew;
+                    piv = pivnew;
                     eminlb = eig_min;
                     continue
                 end

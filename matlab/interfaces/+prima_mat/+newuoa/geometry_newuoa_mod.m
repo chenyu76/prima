@@ -55,7 +55,6 @@ classdef geometry_newuoa_mod
             srname = "SETDROP_TR";
 
 
-            den = NaN(size(xpt, 2), 1);
             distsq = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
             weight = NaN(size(xpt, 2), 1);
@@ -112,7 +111,7 @@ classdef geometry_newuoa_mod
             % %weight = max(ONE, distsq / max(TENTH * delta, rho)**2)**4  ! It does not work as well as the above.
             % %weight = max(ONE, distsq / max(TENTH * delta, rho)**2)**2  ! This works poorly.
 
-            den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat, 'idz', idz);
+            den = powalg_obj.calden(kopt, bmat, d, xpt, zmat, 'idz', idz);
             score(:) = weight .* abs(den);
 
             % If the new F is not better than FVAL(KOPT), we set SCORE(KOPT) = -1 to avoid KNEW = KOPT.
@@ -194,12 +193,8 @@ classdef geometry_newuoa_mod
             srname = "GEOSTEP";
 
 
-            dden = NaN(size(xpt, 1), 1);
-
-
             pqlag = NaN(size(xpt, 2), 1);
 
-            vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
 
             % Sizes
             n = size(xpt, 1);
@@ -223,7 +218,7 @@ classdef geometry_newuoa_mod
             % Calculation starts %
             %====================%
 
-            d(:) = obj.biglag(idz, knew, bmat, delbar, xpt(:, kopt), xpt, zmat);
+            d = obj.biglag(idz, knew, bmat, delbar, xpt(:, kopt), xpt, zmat);
 
             % PQLAG contains the leading NPT elements of the KNEW-th column of H, and it provides the second
             % derivative parameters of LFUNC.
@@ -231,7 +226,7 @@ classdef geometry_newuoa_mod
             alpha = pqlag(knew); % ALPHA is the KNEW-th diagonal entry of H, i.e., that of Omega.
 
             % Calculate VLAG and BETA for D. Indeed, only VLAG(KNEW) is needed.
-            vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat, 'idz', idz);
+            vlag = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat, 'idz', idz);
             beta = powalg_obj.calbeta(kopt, bmat, d, xpt, zmat, 'idz', idz);
             denom = alpha * beta + vlag(knew) ^ 2;
 
@@ -248,11 +243,11 @@ classdef geometry_newuoa_mod
             end
             % If DENRAT is NaN at this point, then ALPHA is NaN, and there is no need to call BIGDEN.
             if denrat <= 0.8
-                dden(:) = obj.bigden(idz, knew, kopt, bmat, d, xpt, zmat);
-                vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, dden, xpt, zmat, 'idz', idz);
+                dden = obj.bigden(idz, knew, kopt, bmat, d, xpt, zmat);
+                vlag = powalg_obj.calvlag_lfqint(kopt, bmat, dden, xpt, zmat, 'idz', idz);
                 beta = powalg_obj.calbeta(kopt, bmat, dden, xpt, zmat, 'idz', idz);
                 if abs(alpha * beta + vlag(knew) ^ 2) >= abs(denom) || infnan_obj.is_nan_sp(denom)
-                    d(:) = dden;
+                    d = dden;
                 end
             end
 
@@ -319,7 +314,7 @@ classdef geometry_newuoa_mod
 
             dold = NaN(numel(x), 1);
             gc = NaN(numel(x), 1);
-            gd = NaN(numel(x), 1);
+
 
             pqlag = NaN(size(xpt, 2), 1);
             s = NaN(numel(x), 1);
@@ -359,7 +354,7 @@ classdef geometry_newuoa_mod
             % Set the unscaled initial D. Form the gradient of LFUNC at X, and multiply D by the Hessian of LFUNC.
             d(:) = xpt(:, knew) - x;
             dd = linalg_obj.inprod(d, d);
-            gd(:) = powalg_obj.hess_mul(d, xpt, pqlag); % GD = MATPROD(XPT, PQLAG * MATPROD(D, XPT))
+            gd = powalg_obj.hess_mul(d, xpt, pqlag); % GD = MATPROD(XPT, PQLAG * MATPROD(D, XPT))
 
             gc(:) = bmat(:, knew) + powalg_obj.hess_mul(x, xpt, pqlag); % GC = BMAT(:,KNEW) + MATPROD(XPT,PQLAG*MATPROD(X,XPT))
 
@@ -380,9 +375,9 @@ classdef geometry_newuoa_mod
                 t = consts_obj.ONE;
             end
             if infnan_obj.is_finite(sum(abs(scaling * d), 'all'))
-                d(:) = scaling * d;
-                gd(:) = scaling * gd;
-                s(:) = gc + t * gd;
+                d = scaling * d;
+                gd = scaling * gd;
+                s = gc + t * gd;
                 maxiter = n;
             else
                 maxiter = 0; % Return immediately to avoid producing a D containing NaN/Inf.
@@ -408,7 +403,7 @@ classdef geometry_newuoa_mod
 
                 % We calculate S as follows. It did improve the performance of NEWUOA in our test.
                 ss = linalg_obj.inprod(s, s);
-                s(:) = s - linalg_obj.project1(s, d); % PROJECT(X, V) is the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||)
+                s = s - linalg_obj.project1(s, d); % PROJECT(X, V) is the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||)
                 % N.B.:
                 % 1. The condition ||S||<=TOL*SQRT(SS) below is equivalent to DS^2>=(1-TOL^2)*DD*SS in theory.
                 % As shown above, Powell's code triggers an exit if DS^2>=(1-1.0E-8)*DD*SS. So our condition is
@@ -417,14 +412,14 @@ classdef geometry_newuoa_mod
                 if linalg_obj.p_norm(s) <= tol * sqrt(ss)
                     break
                 end
-                s(:) = (linalg_obj.p_norm(d) / linalg_obj.p_norm(s)) * s;
+                s = (linalg_obj.p_norm(d) / linalg_obj.p_norm(s)) * s;
 
                 % In precise arithmetic, INPROD(S, D) = 0 and ||S|| = ||D|| = DELBAR.
                 if abs(linalg_obj.inprod(d, s)) >= consts_obj.TENTH * linalg_obj.p_norm(d) * linalg_obj.p_norm(s) || linalg_obj.p_norm(s) >= consts_obj.TWO * delbar
                     break
                 end
 
-                w(:) = powalg_obj.hess_mul(s, xpt, pqlag); % W = MATPROD(XPT, PQLAG * MATPROD(S, XPT))
+                w = powalg_obj.hess_mul(s, xpt, pqlag); % W = MATPROD(XPT, PQLAG * MATPROD(S, XPT))
 
                 % Seek the value of the angle that maximizes ||TAU||.
                 % First, calculate the coefficients of the objective function on the circle.
@@ -441,7 +436,7 @@ classdef geometry_newuoa_mod
                 cth = cos(angle);
                 sth = sin(angle);
                 dold(:) = d;
-                d(:) = cth * d + sth * s;
+                d = cth * d + sth * s;
 
                 % Exit in case of Inf/NaN in D.
                 if ~infnan_obj.is_finite(sum(abs(d), 'all'))
@@ -455,8 +450,8 @@ classdef geometry_newuoa_mod
                 end
 
                 % Calculate GD and S.
-                gd(:) = cth * gd + sth * w;
-                s(:) = gc + gd;
+                gd = cth * gd + sth * w;
+                s = gc + gd;
             end
 
             %====================%
@@ -639,7 +634,7 @@ classdef geometry_newuoa_mod
 
                 % We calculate S as below. It did improve the performance of NEWUOA in our test.
                 ss = linalg_obj.inprod(s, s);
-                s(:) = s - linalg_obj.project1(s, d); % PROJECT(X, V) is the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||)
+                s = s - linalg_obj.project1(s, d); % PROJECT(X, V) is the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||)
                 % N.B.:
                 % 1. The condition ||S||<=TOL*SQRT(SS) below is equivalent to DS^2>=(1-TOL^2)*DD*SS in theory.
                 % As shown above, Powell's code triggers an exit if DS^2>=(1-1.0E-8)*DD*SS. So our condition is
@@ -648,7 +643,7 @@ classdef geometry_newuoa_mod
                 if linalg_obj.p_norm(s) <= tol * sqrt(ss)
                     break
                 end
-                s(:) = (s ./ linalg_obj.p_norm(s)) * linalg_obj.p_norm(d);
+                s = (s ./ linalg_obj.p_norm(s)) * linalg_obj.p_norm(d);
                 % In precise arithmetic, INPROD(S, D) = 0 and ||S|| = ||D|| = DELBAR = ||D0||.
                 if abs(linalg_obj.inprod(d, s)) >= consts_obj.TENTH * linalg_obj.p_norm(d) * linalg_obj.p_norm(s) || linalg_obj.p_norm(s) >= consts_obj.TWO * delbar
                     break
@@ -740,12 +735,12 @@ classdef geometry_newuoa_mod
                 angle = univar_obj.circle_maxabs(@(varargin) obj.circle_fun_bigden(varargin{:}), denex, 50);
 
                 % Calculate the new D.
-                dold(:) = d;
+                dold = d;
                 d(:) = cos(angle) * d + sin(angle) * s;
 
                 % Exit in case of Inf/NaN in D.
                 if ~infnan_obj.is_finite(sum(abs(d), 'all'))
-                    d(:) = dold;
+                    d = dold;
                     break
                 end
 
@@ -763,12 +758,12 @@ classdef geometry_newuoa_mod
                 par(:) = [consts_obj.ONE, cos(angle), sin(angle), cos(2.0 * angle), sin(2.0 * angle)];
                 vlag(:) = linalg_obj.matprod21(prod_custom, par);
                 tau = vlag(knew);
-                y(:) = x + d;
+                y = x + d;
                 yd = linalg_obj.inprod(y, d);
                 ysq = linalg_obj.inprod(y, y);
-                v(:) = (tau * pqlag - alpha * vlag(1:npt)) .* linalg_obj.matprod12(y, xpt);
+                v = (tau * pqlag - alpha * vlag(1:npt)) .* linalg_obj.matprod12(y, xpt);
                 s(:) = tau * bmat(:, knew) + alpha * (yd * x + ysq * d - vlag(npt + 1:npt + n));
-                s(:) = s + linalg_obj.matprod21(xpt, v);
+                s = s + linalg_obj.matprod21(xpt, v);
             end
 
             %====================%

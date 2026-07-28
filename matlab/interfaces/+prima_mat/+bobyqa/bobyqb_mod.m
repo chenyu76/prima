@@ -406,8 +406,8 @@ classdef bobyqb_mod
                     % KNEW_TR = 0, the updating subroutines will do essentially nothing, as the algorithm
                     % decides not to include XOPT + D into XPT.
                     if knew_tr > 0
-                        xdrop(:) = xpt(:, knew_tr);
-                        xosav(:) = xpt(:, kopt);
+                        xdrop = xpt(:, knew_tr);
+                        xosav = xpt(:, kopt);
                         [bmat, zmat] = update_bobyqa_obj.updateh(knew_tr, kopt, d, xpt, bmat, zmat);
                         [kopt, fval, xpt] = update_bobyqa_obj.updatexf(knew_tr, ximproved, f, max(sl, min(su, xosav + d)), kopt, fval, xpt);
                         [gopt, hq, pq] = update_bobyqa_obj.updateq(knew_tr, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
@@ -567,8 +567,8 @@ classdef bobyqb_mod
 
                         % Update [BMAT, ZMAT] (represents H in the BOBYQA paper), [FVAL, XPT, KOPT, FOPT, XOPT],
                         % and [GQ, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_GEO) becomes XOPT + D.
-                        xdrop(:) = xpt(:, knew_geo);
-                        xosav(:) = xpt(:, kopt);
+                        xdrop = xpt(:, knew_geo);
+                        xosav = xpt(:, kopt);
                         [bmat, zmat] = update_bobyqa_obj.updateh(knew_geo, kopt, d, xpt, bmat, zmat);
                         [kopt, fval, xpt] = update_bobyqa_obj.updatexf(knew_geo, ximproved, f, max(sl, min(su, xosav + d)), kopt, fval, xpt);
                         [gopt, hq, pq] = update_bobyqa_obj.updateq(knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);

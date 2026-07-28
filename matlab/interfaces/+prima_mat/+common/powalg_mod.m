@@ -106,7 +106,7 @@ classdef powalg_mod
 
             cq = NaN(size(Q, 2), 1);
             cqa = NaN(size(Q, 2), 1);
-            G = NaN(2);
+
             %------------------------------------------------------------%
             Qsave = NaN(size(Q, 1), n); % Debugging only
             Rdsave = NaN(n, 1); % Debugging only
@@ -125,7 +125,7 @@ classdef powalg_mod
                 tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(12, consts_obj.MAXPOW10) * consts_obj.EPS * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthonormal", srname); % Costly!
                 Qsave(:, :) = Q(:, 1:n); % For debugging only
-                Rdsave(:) = Rdiag(1:n); % For debugging only
+                Rdsave = Rdiag(1:n); % For debugging only
 
             end
 
@@ -148,7 +148,7 @@ classdef powalg_mod
                 if abs(cq(k + 1)) > 0
                     % Powell wrote CQ(K+1) /= 0 instead of ABS(CQ(K+1)) > 0. The two differ if CQ(K+1) is NaN.
                     % If we apply the rotation below when CQ(K+1) = 0, then CQ(K) will get updated to |CQ(K)|.
-                    G(:, :) = linalg_obj.planerot(cq([k, k + 1]));
+                    G = linalg_obj.planerot(cq([k, k + 1]));
                     Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k, k + 1]), G.');
                     cq(k) = linalg_obj.hypotenuse(cq(k), cq(k + 1)); %cq(k) = sqrt(cq(k)**2 + cq(k + 1)**2)
 
@@ -222,7 +222,7 @@ classdef powalg_mod
 
 
             cq = NaN(size(Q, 2), 1);
-            G = NaN(2);
+
             %------------------------------------------------------------%
             Anew = NaN(size(Q, 1), n + 1); % Debugging only
             Qsave = NaN(size(Q, 1), n); % Debugging only
@@ -257,7 +257,7 @@ classdef powalg_mod
             for k = m - 1:-1:n + 1
                 if abs(cq(k + 1)) > 0
                     % Powell: IF (ABS(CQ(K + 1)) > 1.0D-20 * ABS(CQ(K))) THEN
-                    G(:, :) = linalg_obj.planerot(cq([k, k + 1]));
+                    G = linalg_obj.planerot(cq([k, k + 1]));
                     Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k, k + 1]), G.');
                     cq(k) = sqrt(cq(k) ^ 2 + cq(k + 1) ^ 2);
                 end
@@ -320,7 +320,6 @@ classdef powalg_mod
             srname = "QREXC_RDIAG";
 
 
-            G = NaN(2);
             %------------------------------------------------------------%
             Anew = NaN(size(A, 1), size(A, 2)); % Debugging only
             Qsave = NaN(size(Q, 1), size(Q, 2)); % Debugging only
@@ -342,7 +341,7 @@ classdef powalg_mod
                 tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthonormal", srname); % Costly!
                 Qsave(:, :) = Q; % For debugging only.
-                Rdsave(:) = Rdiag(1:i); % For debugging only.
+                Rdsave = Rdiag(1:i); % For debugging only.
 
             end
 
@@ -369,7 +368,7 @@ classdef powalg_mod
             % Zaikun 20230903: It turns out that Powell's code does not ensure that the original RDIAG is
             % positive (see QRADD_RDIAG), and hence the updated RDIAG may contain negative values.
             for k = i:n - 1
-                G(:, :) = linalg_obj.planerot([Rdiag(k + 1), linalg_obj.inprod(Q(:, k), A(:, k + 1))]);
+                G = linalg_obj.planerot([Rdiag(k + 1), linalg_obj.inprod(Q(:, k), A(:, k + 1))]);
                 Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k + 1, k]), G.');
                 % Powell's code updates RDIAG in the following way:
                 % %HYPT = SQRT(RDIAG(K + 1)**2 + INPROD(Q(:, K), A(:, K + 1))**2)
@@ -434,8 +433,6 @@ classdef powalg_mod
             srname = "QREXC_RFULL";
 
 
-            G = NaN(2);
-
             %------------------------------------------------------------%
             Anew = NaN(size(Q, 1), size(R, 2)); % Debugging only
             Qsave = NaN(size(Q, 1), size(Q, 2)); % Debugging only
@@ -484,7 +481,7 @@ classdef powalg_mod
             % K+1 of Q as well as rows K and K+1 of R. This makes sure that the diagonal entries of the updated
             % R are all positive if it is the case for the original R.
             for k = i:n - 1
-                G(:, :) = linalg_obj.planerot(R([k + 1, k], k + 1));
+                G = linalg_obj.planerot(R([k + 1, k], k + 1));
                 % HYPT must be calculated before R is updated.
                 hypt = linalg_obj.hypotenuse(R(k + 1, k + 1), R(k, k + 1)); %hypt = sqrt(R(k, k + 1)**2 + R(k + 1, k + 1)**2)
 
@@ -830,7 +827,7 @@ classdef powalg_mod
             y(:) = linalg_obj.matprod21(xpt, pq .* linalg_obj.matprod12(x, xpt));
             if ~ismember('hq', ipObj.UsingDefaults)
                 for j = 1:n
-                    y(:) = y + hq(:, j) * x(j);
+                    y = y + hq(:, j) * x(j);
                 end
             end
 
@@ -1237,7 +1234,7 @@ classdef powalg_mod
                 if abs(zmat(knew, j)) > 1.0e-20 * max(abs(zmat), [], 'all')
                     % Threshold comes from Powell's BOBYQA
                     % Multiply a Givens rotation to ZMAT from the right so that ZMAT(KNEW, [JL,J]) becomes [*,0].
-                    grot(:, :) = linalg_obj.planerot(zmat(knew, [jl, j])); %%MATLAB: grot = planerot(zmat(knew, [jl, j])')
+                    grot = linalg_obj.planerot(zmat(knew, [jl, j])); %%MATLAB: grot = planerot(zmat(knew, [jl, j])')
                     zmat(:, [jl, j]) = linalg_obj.matprod22(zmat(:, [jl, j]), grot.');
                 end
                 zmat(knew, j) = consts_obj.ZERO;
@@ -1536,7 +1533,7 @@ classdef powalg_mod
 
             % Set WCHECK to the first NPT entries of (w-v) for w and v in (4.10) and (4.24) of the NEWUOA paper.
             wcheck(:) = linalg_obj.matprod12(d, xpt);
-            wcheck(:) = wcheck .* (consts_obj.HALF * wcheck + linalg_obj.matprod12(xref, xpt));
+            wcheck = wcheck .* (consts_obj.HALF * wcheck + linalg_obj.matprod12(xref, xpt));
 
             % The following two lines set VLAG to H*(w-v).
             vlag(1:npt) = obj.omega_mul(idz_loc, zmat, wcheck) + linalg_obj.matprod12(d, bmat(:, 1:npt));
@@ -1633,7 +1630,7 @@ classdef powalg_mod
 
             % Set WCHECK to the first NPT entries of (w-v) for w and v in (4.10) and (4.24) of the NEWUOA paper.
             wcheck(:) = linalg_obj.matprod12(d, xpt);
-            wcheck(:) = wcheck .* (consts_obj.HALF * wcheck + linalg_obj.matprod12(xref, xpt));
+            wcheck = wcheck .* (consts_obj.HALF * wcheck + linalg_obj.matprod12(xref, xpt));
 
             % WMV is the vector (w-v) for w and v in (4.10) and (4.24) of the NEWUOA paper.
             wmv(:) = [wcheck; d];
@@ -1710,7 +1707,7 @@ classdef powalg_mod
 
 
             hdiag = NaN(size(xpt, 2), 1);
-            vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
+
 
             % Sizes
             n = size(xpt, 1);
@@ -1743,7 +1740,7 @@ classdef powalg_mod
             %====================%
 
             hdiag(:) = -sum(zmat(:, 1:idz_loc - 1) .^ 2, 2) + sum(zmat(:, idz_loc:size(zmat, 2)) .^ 2, 2);
-            vlag(:) = obj.calvlag_lfqint(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
+            vlag = obj.calvlag_lfqint(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             beta = obj.calbeta(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             den(:) = hdiag * beta + vlag(1:npt) .^ 2;
 

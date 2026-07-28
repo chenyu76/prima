@@ -331,8 +331,8 @@ classdef newuob_mod
                     % If KNEW_TR = 0, the updating subroutines will do essentially nothing, as the algorithm
                     % decides not to include XNEW into XPT.
                     if knew_tr > 0
-                        xdrop(:) = xpt(:, knew_tr);
-                        xosav(:) = xpt(:, kopt);
+                        xdrop = xpt(:, knew_tr);
+                        xosav = xpt(:, kopt);
                         [idz, bmat, zmat] = powalg_obj.updateh(knew_tr, kopt, d, xpt, idz, bmat, zmat);
                         [kopt, fval, xpt] = update_newuoa_obj.updatexf(knew_tr, ximproved, f, xosav + d, kopt, fval, xpt);
                         [gopt, hq, pq] = update_newuoa_obj.updateq(idz, knew_tr, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
@@ -564,8 +564,8 @@ classdef newuob_mod
 
                     % Update [BMAT, ZMAT, IDZ] (represents H in the NEWUOA paper), [XPT, FVAL, KOPT] and
                     % [GOPT, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_GEO) becomes XNEW = XOPT + D.
-                    xdrop(:) = xpt(:, knew_geo);
-                    xosav(:) = xpt(:, kopt);
+                    xdrop = xpt(:, knew_geo);
+                    xosav = xpt(:, kopt);
                     [idz, bmat, zmat] = powalg_obj.updateh(knew_geo, kopt, d, xpt, idz, bmat, zmat);
                     [kopt, fval, xpt] = update_newuoa_obj.updatexf(knew_geo, ximproved, f, xosav + d, kopt, fval, xpt);
                     [gopt, hq, pq] = update_newuoa_obj.updateq(idz, knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);

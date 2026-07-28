@@ -653,7 +653,6 @@ classdef rescue_mod
             srname = "UPDATEH_RSC";
 
 
-            grot = NaN(2);
             hcol = NaN(size(bmat, 2), 1);
 
 
@@ -732,7 +731,7 @@ classdef rescue_mod
             for j = 2:npt - n - 1
                 if abs(zmat(knew, j)) > 1.0e-20 * max(abs(zmat), [], 'all')
                     % This threshold is by Powell
-                    grot(:, :) = linalg_obj.planerot(zmat(knew, [1, j]));
+                    grot = linalg_obj.planerot(zmat(knew, [1, j]));
                     zmat(:, [1, j]) = linalg_obj.matprod22(zmat(:, [1, j]), grot.');
                 end
                 zmat(knew, j) = consts_obj.ZERO;

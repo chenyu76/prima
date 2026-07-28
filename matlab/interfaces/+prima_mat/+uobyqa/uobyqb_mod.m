@@ -326,7 +326,7 @@ classdef uobyqb_mod
                     % DDMOVE is norm square of DMOVE in the UOBYQA paper. See Steps 6--7 in Sec. 5 of the paper.
                     ddmove = consts_obj.ZERO;
                     if knew_tr > 0
-                        xdrop(:) = xpt(:, knew_tr);
+                        xdrop = xpt(:, knew_tr);
                         % Update PL, PQ, XPT, FVAL, and KOPT so that XPT(:, KNEW_TR) becomes XOPT + D.
                         [kopt, fval, pl, pq, xpt] = update_uobyqa_obj.update(knew_tr, d, f, moderr, kopt, fval, pl, pq, xpt);
                         if ~(all(infnan_obj.is_finite(pq), 'all'))

@@ -72,7 +72,7 @@ classdef shiftbase_mod
             xptxav = NaN(size(xpt, 1), size(xpt, 2));
             ymat = NaN(size(xpt, 1), size(xpt, 2));
             yzmat = NaN(numel(xbase), size(zmat, 2));
-            yzmat_c = NaN(numel(xbase), size(zmat, 2));
+
 
             % Sizes
             n = size(xpt, 1);
@@ -132,7 +132,7 @@ classdef shiftbase_mod
             bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + (bymat + bymat.');
             % Then the revisions of BMAT that depend on ZMAT are calculated.
             yzmat(:, :) = linalg_obj.matprod22(ymat, zmat);
-            yzmat_c(:, :) = yzmat;
+            yzmat_c = yzmat;
             yzmat_c(:, 1:idz_loc - 1) = -yzmat(:, 1:idz_loc - 1); % IDZ_LOC is usually small. So this assignment is cheap.
             bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + linalg_obj.matprod22(yzmat, yzmat_c.');
             bmat(:, 1:npt) = bmat(:, 1:npt) + linalg_obj.matprod22(yzmat_c, zmat.');

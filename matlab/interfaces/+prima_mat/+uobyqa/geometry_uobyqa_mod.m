@@ -216,9 +216,6 @@ classdef geometry_uobyqa_mod
             hv = NaN(size(xpt, 1), 1);
 
 
-            v = NaN(size(xpt, 1), 1);
-
-
             vlag = NaN(size(xpt, 2), 1);
             vlagc = NaN(size(xpt, 2), 1);
 
@@ -260,20 +257,20 @@ classdef geometry_uobyqa_mod
             if gg > 0 && infnan_obj.is_finite(gg)
                 dcauchy(:) = (delbar / sqrt(gg)) * g;
                 if ghg < 0
-                    dcauchy(:) = -dcauchy;
+                    dcauchy = -dcauchy;
                 end
             else                % GG is 0 or NaN due to rounding errors. Set DCAUCHY to a displacement from XOPT to XPT(:, KNEW).
                 dcauchy(:) = xpt(:, knew) - xopt;
                 scaling = delbar / linalg_obj.p_norm(dcauchy);
                 dcauchy(:) = max(0.6 * scaling, min(consts_obj.HALF, scaling)) * dcauchy; % 0.6: ensure |D| > DELBAR/2
                 if linalg_obj.inprod(g, dcauchy) * linalg_obj.inprod(dcauchy, linalg_obj.matprod21(h, dcauchy)) < 0
-                    dcauchy(:) = -dcauchy;
+                    dcauchy = -dcauchy;
                 end
             end
 
             % Return if H or G contains NaN or H is zero. Powell's code does not do this.
             if any(infnan_obj.is_nan_sp(h), 'all') || any(infnan_obj.is_nan_sp(g), 'all') || all(abs(h) <= 0, 'all')
-                d(:) = dcauchy;
+                d = dcauchy;
                 return
             end
 
@@ -289,10 +286,10 @@ classdef geometry_uobyqa_mod
             end
 
             % Pick V such that ||HV|| / ||V|| is large.
-            v(:) = h(:, fortran.maxloc(sum(h .^ 2, 1), 'dim', 1));
+            v = h(:, fortran.maxloc(sum(h .^ 2, 1), 'dim', 1));
             % Normalize V. Powell's code does not do this. It does not change the algorithm as only its
             % direction matters. It slightly improves the performance in the noiseless case.
-            v(:) = v ./ linalg_obj.p_norm(v);
+            v = v ./ linalg_obj.p_norm(v);
 
             % Set D to a vector in the subspace span{V, HV} that maximizes |(D, HD)|/(D, D), except that we set
             % D = HV if V and HV are nearly parallel.
@@ -300,11 +297,11 @@ classdef geometry_uobyqa_mod
             d(:) = linalg_obj.matprod21(h, v);
             vhv = linalg_obj.inprod(v, d);
             if vhv * vhv <= 0.9999 * sum(d .^ 2, 'all') * vv
-                d(:) = d - (vhv / vv) * v;
+                d = d - (vhv / vv) * v;
                 dd = sum(d .^ 2, 'all');
                 scaling = sqrt(dd / vv);
                 dhd = linalg_obj.inprod(d, linalg_obj.matprod21(h, d));
-                v(:) = scaling * v;
+                v = scaling * v;
                 vhv = scaling * scaling * vhv;
                 vhd = scaling * dd;
                 temp = consts_obj.HALF * (dhd - vhv);
@@ -323,24 +320,24 @@ classdef geometry_uobyqa_mod
 
             % Zaikun 20220504: GG and DD can become 0 at this point due to rounding. Detected by IFORT.
             if ~(gg > 0 && dd > 0)
-                d(:) = dcauchy;
+                d = dcauchy;
                 return
             end
 
-            v(:) = d - (gd / gg) * g;
+            v = d - (gd / gg) * g;
             vv = sum(v .^ 2, 'all');
             if gd * dhd < 0
                 scaling = -delbar / sqrt(dd);
             else
                 scaling = delbar / sqrt(dd);
             end
-            d(:) = scaling * d;
+            d = scaling * d;
             gnorm = sqrt(gg);
 
             if ~(gnorm * dd > 5.0e-3 * delbar * abs(dhd) && vv > 1.0e-4 * dd)
                 % It may happen that D = 0 due to overflow in DD, which is used to define SCALING.
                 if sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(sum(abs(d), 'all'))
-                    d(:) = dcauchy;
+                    d = dcauchy;
                 end
                 return
             end
@@ -373,8 +370,8 @@ classdef geometry_uobyqa_mod
             tempb = wsin / vnorm;
             tempc = wcos / vnorm;
             tempd = wsin / gnorm;
-            d(:) = tempa * g + tempb * v;
-            v(:) = tempc * v - tempd * g;
+            d = tempa * g + tempb * v;
+            v = tempc * v - tempd * g;
 
             % The final D is a multiple of the current D, V, D + V or D - V. We make the choice from these
             % possibilities that is optimal.
@@ -409,14 +406,14 @@ classdef geometry_uobyqa_mod
                     tempv = sqrt(consts_obj.HALF) * delbar;
                 end
             end
-            d(:) = tempd * d + tempv * v;
+            d = tempd * d + tempv * v;
 
             % Replace D with DCAUCHY if needed. Powell's code does not have this part. Indeed, only the KNEW-th
             % entries of VLAG and VLAGC are needed.
             vlag(:) = powalg_obj.calvlag_qint(pl, d, xopt, kopt);
             vlagc(:) = powalg_obj.calvlag_qint(pl, dcauchy, xopt, kopt);
             if abs(vlagc(knew)) > consts_obj.TWO * abs(vlag(knew)) || infnan_obj.is_nan_sp(vlag(knew))
-                d(:) = dcauchy;
+                d = dcauchy;
             end
 
             %====================%
