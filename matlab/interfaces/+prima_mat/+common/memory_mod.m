@@ -51,7 +51,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Return the storage size of X in Bytes, X being a REAL(SP) scalar.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             % Inputs
 
             % Outputs
@@ -65,7 +65,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Return the storage size of X in Bytes, X being a REAL(DP) scalar.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             % Inputs
 
             % Outputs
@@ -77,7 +77,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Return the storage size of X in Bytes, X being a REAL(QP) scalar.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             % Inputs
 
             % Outputs
@@ -89,7 +89,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(SP) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
@@ -126,7 +126,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(SP) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
@@ -158,7 +158,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(DP) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
@@ -192,7 +192,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(DP) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
@@ -224,7 +224,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(QP) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
@@ -258,7 +258,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(QP) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
@@ -290,7 +290,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable LOGICAL vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
@@ -321,7 +321,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable INTEGER(IK) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
@@ -352,7 +352,7 @@ classdef memory_mod
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for a INTEGER(IK) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
-            prima_mat.common.consts_mod();
+
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs

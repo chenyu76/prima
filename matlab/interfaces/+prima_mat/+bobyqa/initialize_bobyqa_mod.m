@@ -40,7 +40,7 @@ classdef initialize_bobyqa_mod
             infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
             message_obj = prima_mat.common.message_mod();
-            prima_mat.common.pintrf_mod();
+
             powalg_obj = prima_mat.common.powalg_mod();
             xinbd_obj = prima_mat.common.xinbd_mod();
 

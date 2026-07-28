@@ -256,7 +256,7 @@ classdef cobyla_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
-            prima_mat.common.pintrf_mod();
+
             selectx_obj = prima_mat.common.selectx_mod();
             preproc_obj = prima_mat.common.preproc_mod();
             string_obj = prima_mat.common.string_mod();

@@ -73,7 +73,7 @@ classdef lincob_mod
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
             message_obj = prima_mat.common.message_mod();
-            prima_mat.common.pintrf_mod();
+
             powalg_obj = prima_mat.common.powalg_mod();
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();

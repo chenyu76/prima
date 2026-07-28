@@ -162,7 +162,7 @@ classdef newuoa_mod
             history_obj = prima_mat.common.history_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             memory_obj = prima_mat.common.memory_mod();
-            prima_mat.common.pintrf_mod();
+
             preproc_obj = prima_mat.common.preproc_mod();
             string_obj = prima_mat.common.string_mod();
 

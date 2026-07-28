@@ -218,7 +218,7 @@ classdef lincoa_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
-            prima_mat.common.pintrf_mod();
+
             preproc_obj = prima_mat.common.preproc_mod();
             selectx_obj = prima_mat.common.selectx_mod();
             string_obj = prima_mat.common.string_mod();

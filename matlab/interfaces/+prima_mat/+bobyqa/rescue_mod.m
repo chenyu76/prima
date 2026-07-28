@@ -92,7 +92,7 @@ classdef rescue_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-            prima_mat.common.pintrf_mod();
+
             powalg_obj = prima_mat.common.powalg_mod();
             string_obj = prima_mat.common.string_mod();
             xinbd_obj = prima_mat.common.xinbd_mod();

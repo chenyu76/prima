@@ -77,7 +77,7 @@ classdef bobyqb_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-            prima_mat.common.pintrf_mod();
+
             powalg_obj = prima_mat.common.powalg_mod(); %, errquad
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();

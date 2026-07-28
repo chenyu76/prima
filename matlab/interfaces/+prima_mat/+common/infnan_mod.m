@@ -119,7 +119,6 @@ classdef infnan_mod
             [varargout{1:nargout}] = obj.inf_obj.is_inf_dp(varargin{:});
         end
         function y = is_nan_sp(obj, x)
-            prima_mat.common.consts_mod();
 
 
             %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
@@ -128,7 +127,6 @@ classdef infnan_mod
             y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp()))) | y;
         end
         function y = is_nan_dp(obj, x)
-            prima_mat.common.consts_mod();
 
 
             %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
@@ -137,7 +135,6 @@ classdef infnan_mod
             y = ((~obj.inf_obj.is_inf(x)) & (~(x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp()))) | y;
         end
         function y = is_nan_qp(obj, x)
-            prima_mat.common.consts_mod();
 
 
             %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))

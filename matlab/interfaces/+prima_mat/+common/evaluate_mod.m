@@ -83,7 +83,7 @@ classdef evaluate_mod
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
             infnan_obj = prima_mat.common.infnan_mod();
-            prima_mat.common.pintrf_mod();
+
 
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
@@ -139,7 +139,7 @@ classdef evaluate_mod
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
             infnan_obj = prima_mat.common.infnan_mod();
-            prima_mat.common.pintrf_mod();
+
 
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
