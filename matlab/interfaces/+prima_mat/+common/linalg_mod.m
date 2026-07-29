@@ -973,14 +973,14 @@ classdef linalg_mod
 
             if ismember('Q', ipObj.UsingDefaults)
                 [Q_loc, ~, P] = obj.qr(A);
-                Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, P(i))), (1:min(m, n)).');
+                Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, P(i))), (1:min(m, n))');
                 %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, P(1:min(m,n))), 1); % Row vector
                 rank = max([0; obj.trueloc(abs(Rdiag_loc) > 0)], [], 'all');
                 pivot = true;
             else
                 Q_loc(:, :) = Q(:, 1:size(Q_loc, 2));
                 if ismember('Rdiag', ipObj.UsingDefaults)
-                    Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, i)), (1:min(m, n)).');
+                    Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, i)), (1:min(m, n))');
                     %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, 1:min(m,n)), 1); % Row vector
                 else
                     Rdiag_loc(:) = Rdiag;
@@ -1116,9 +1116,9 @@ classdef linalg_mod
             dlen = max(0, min(size(A, 1), size(A, 2)) - abs(k_loc));
             D = memory_obj.alloc_rvector_sp(dlen);
             if k_loc >= 0
-                D = arrayfun(@(i) A(i, i + k_loc), (1:dlen).');
+                D = arrayfun(@(i) A(i, i + k_loc), (1:dlen)');
             else
-                D = arrayfun(@(i) A(i - k_loc, i), (1:dlen).');
+                D = arrayfun(@(i) A(i - k_loc, i), (1:dlen)');
             end
 
             %====================%
@@ -1706,7 +1706,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            is_minor(:) = arrayfun(@(i) obj.isminor0(x(i), ref(i)), (1:numel(x)).');
+            is_minor(:) = arrayfun(@(i) obj.isminor0(x(i), ref(i)), (1:numel(x))');
 
             %====================%
             %  Calculation ends  %

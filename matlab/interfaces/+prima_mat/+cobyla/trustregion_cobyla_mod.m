@@ -260,7 +260,7 @@ classdef trustregion_cobyla_mod
                 % them so that they need not be passed from stage 1 to 2, and hence the coupling is reduced.
                 cviol = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(d, A(:, 1:m)) - b(1:m)]);
             end
-            zdota(1:nact) = arrayfun(@(k) linalg_obj.inprod(z(:, k), A(:, iact(k))), (1:nact).');
+            zdota(1:nact) = arrayfun(@(k) linalg_obj.inprod(z(:, k), A(:, iact(k))), (1:nact)');
             %%MATLAB: zdota(1:nact) = sum(z(:, 1:nact) .* A(:, iact(1:nact)), 1);  % Row vector
 
             % More initialization.

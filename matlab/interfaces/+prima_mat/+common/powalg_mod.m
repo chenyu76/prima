@@ -380,7 +380,7 @@ classdef powalg_mod
             end
 
             % Calculate RDIAG(I:N) from scratch.
-            Rdiag(i:n - 1) = arrayfun(@(k) linalg_obj.inprod(Q(:, k), A(:, k + 1)), (i:n - 1).');
+            Rdiag(i:n - 1) = arrayfun(@(k) linalg_obj.inprod(Q(:, k), A(:, k + 1)), (i:n - 1)');
             %%MATLAB: Rdiag(i:n-1) = sum(Q(:, i:n-1) .* A(:, i+1:n), 1);  % Row vector
             Rdiag(n) = linalg_obj.inprod(Q(:, n), A(:, i)); % Calculate RDIAG(N) from scratch. See the comments above.
 
@@ -402,7 +402,7 @@ classdef powalg_mod
                 QtAnew(:, :) = linalg_obj.matprod22(Q.', Anew);
                 debug_obj.assert(linalg_obj.istriu(QtAnew, 'tol', tol), "Q^T*Anew is upper triangular", srname);
                 % The following test may fail if RDIAG is not calculated from scratch.
-                debug_obj.assert(linalg_obj.p_norm(linalg_obj.diag(QtAnew) - Rdiag) <= max(tol, tol * linalg_obj.p_norm(arrayfun(@(k) linalg_obj.inprod(abs(Q(:, k)), abs(Anew(:, k))), (1:n).'))), "Rdiag == diag(Q^T*Anew)", srname);
+                debug_obj.assert(linalg_obj.p_norm(linalg_obj.diag(QtAnew) - Rdiag) <= max(tol, tol * linalg_obj.p_norm(arrayfun(@(k) linalg_obj.inprod(abs(Q(:, k)), abs(Anew(:, k))), (1:n)'))), "Rdiag == diag(Q^T*Anew)", srname);
                 %%MATLAB: norm(diag(QtAnew) - Rdiag) <= max(tol, tol * norm(sum(abs(Q(:, 1:n)) .* abs(Anew), 1)))
 
             end
@@ -752,9 +752,9 @@ classdef powalg_mod
             %====================%
 
             if ismember('kref', ipObj.UsingDefaults)
-                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k), xpt, gq, pq, 'hq', hq), (1:npt).');
+                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k), xpt, gq, pq, 'hq', hq), (1:npt)');
             else
-                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, 'hq', hq), (1:npt).');
+                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, 'hq', hq), (1:npt)');
             end
             %%MATLAB:
             %%if nargin >= 5

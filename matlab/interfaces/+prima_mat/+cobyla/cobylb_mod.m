@@ -349,7 +349,7 @@ classdef cobylb_mod
                     % N.B.: If this happens, do NOT include X into the filter, as F and CONSTR are inaccurate.
                     x(:) = sim(:, n + 1) + d;
                     distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
-                    distsq(1:n) = arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n).'); % Implied do-loop
+                    distsq(1:n) = arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n)'); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     j = fortran.minloc(distsq, 'dim', 1);
                     if distsq(j) <= (1.0e-4 * rhoend) ^ 2
@@ -546,7 +546,7 @@ classdef cobylb_mod
                     % rounding. In an experiment with single precision on 20240317, X = SIM(:, N+1) occurred.
                     x(:) = sim(:, n + 1) + d;
                     distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
-                    distsq(1:n) = arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n).'); % Implied do-loop
+                    distsq(1:n) = arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n)'); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     j = fortran.minloc(distsq, 'dim', 1);
                     if distsq(j) <= (1.0e-4 * rhoend) ^ 2

@@ -422,7 +422,7 @@ classdef selectx_mod
             %====================%
 
             is_better = memory_obj.alloc_lvector(nfc);
-            is_better = arrayfun(@(i) obj.isbetter00(f1(i), c1(i), f2, c2, ctol), (1:nfc).');
+            is_better = arrayfun(@(i) obj.isbetter00(f1(i), c1(i), f2, c2, ctol), (1:nfc)');
 
             %====================%
             %  Calculation ends  %
@@ -471,7 +471,7 @@ classdef selectx_mod
             %====================%
 
             is_better = memory_obj.alloc_lvector(nfc);
-            is_better = arrayfun(@(i) obj.isbetter00(f1, c1, f2(i), c2(i), ctol), (1:nfc).');
+            is_better = arrayfun(@(i) obj.isbetter00(f1, c1, f2(i), c2(i), ctol), (1:nfc)');
 
             %====================%
             %  Calculation ends  %
