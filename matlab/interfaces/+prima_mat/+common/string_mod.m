@@ -23,7 +23,7 @@ classdef string_mod
             obj.MAX_WIDTH = 100;
         end
         function varargout = num2str_custom(obj, varargin)
-            if numel(varargin) == 1 && isinteger(varargin{1}) && isscalar(varargin{1})
+            if numel(varargin) == 1 && (isinteger(varargin{1}) || isnumeric(varargin{1}) && (isreal(varargin{1}) && all(fix(varargin{1}) == varargin{1}, 'all'))) && isscalar(varargin{1})
                 [varargout{1:nargout}] = obj.int2str(varargin{:});
             elseif numel(varargin) >= 1 && numel(varargin) <= 3 && isfloat(varargin{1}) && isscalar(varargin{1})
                 [varargout{1:nargout}] = obj.real2str_scalar(varargin{:});

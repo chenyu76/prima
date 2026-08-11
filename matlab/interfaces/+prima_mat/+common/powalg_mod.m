@@ -45,7 +45,7 @@ classdef powalg_mod
             end
         end
         function varargout = qrexc(obj, varargin)
-            if numel(varargin) == 3 && isinteger(varargin{3}) && isscalar(varargin{3})
+            if numel(varargin) == 3 && (isinteger(varargin{3}) || isnumeric(varargin{3}) && (isreal(varargin{3}) && all(fix(varargin{3}) == varargin{3}, 'all'))) && isscalar(varargin{3})
                 [varargout{1:nargout}] = obj.qrexc_Rfull(varargin{:});
             else
                 [varargout{1:nargout}] = obj.qrexc_Rdiag(varargin{:});
@@ -59,7 +59,7 @@ classdef powalg_mod
             end
         end
         function varargout = calvlag(obj, varargin)
-            if numel(varargin) >= 5 && numel(varargin) <= 6 && isinteger(varargin{1}) && isscalar(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2})) && isfloat(varargin{4}) && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
+            if numel(varargin) >= 5 && numel(varargin) <= 6 && (isinteger(varargin{1}) || isnumeric(varargin{1}) && (isreal(varargin{1}) && all(fix(varargin{1}) == varargin{1}, 'all'))) && isscalar(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2})) && isfloat(varargin{4}) && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
                 [varargout{1:nargout}] = obj.calvlag_lfqint(varargin{:});
             else
                 [varargout{1:nargout}] = obj.calvlag_qint(varargin{:});

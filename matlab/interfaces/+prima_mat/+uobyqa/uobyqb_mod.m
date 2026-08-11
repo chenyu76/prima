@@ -283,7 +283,7 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1); % Implied do-loop
+                    distsq(:) = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fortran.minloc(distsq, 'dim', 1);
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2
@@ -449,7 +449,7 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = sum((x - (xbase + xpt(:, 1:npt))) .^ 2, 1); % Implied do-loop
+                    distsq(:) = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     k = fortran.minloc(distsq, 'dim', 1);
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2

@@ -98,8 +98,7 @@ classdef fprint_mod
                     end
                 end
                 % Check whether the file is already existing.
-                %Unsupported Statement: StatementExpression (ExpressionFunctionCall "inquire" [CallArgumentKeyword "file" (ExpressionVariable "fname_loc"),CallArgumentKeyword "exist" (ExpressionVariable "fexist")])
-
+                inquire('file', fname_loc, 'exist', fexist);
                 fortran.merge('tsource', "old", 'fsource', "new", 'mask', fexist);
                 % Open the file.
 

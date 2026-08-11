@@ -99,7 +99,7 @@ classdef linalg_mod
             end
         end
         function varargout = sort(obj, varargin)
-            if numel(varargin) >= 1 && numel(varargin) <= 2 && isvector(varargin{1}) && (numel(varargin) < 2 || (ischar(varargin{2})))
+            if numel(varargin) >= 1 && numel(varargin) <= 2 && isvector(varargin{1}) && (numel(varargin) < 2 || ischar(varargin{2}))
                 [varargout{1:nargout}] = obj.sort_i1(varargin{:});
             else
                 [varargout{1:nargout}] = obj.sort_i2(varargin{:});
@@ -120,7 +120,7 @@ classdef linalg_mod
             end
         end
         function varargout = norm(obj, varargin)
-            if numel(varargin) >= 1 && numel(varargin) <= 2 && isvector(varargin{1}) && (numel(varargin) < 2 || (isfloat(varargin{2})))
+            if numel(varargin) >= 1 && numel(varargin) <= 2 && isvector(varargin{1}) && (numel(varargin) < 2 || isfloat(varargin{2}))
                 [varargout{1:nargout}] = obj.p_norm(varargin{:});
             elseif numel(varargin) == 2 && isvector(varargin{1}) && ischar(varargin{2})
                 [varargout{1:nargout}] = obj.named_norm_vec(varargin{:});
