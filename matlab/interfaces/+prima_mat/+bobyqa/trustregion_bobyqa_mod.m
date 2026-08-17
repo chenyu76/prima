@@ -134,7 +134,7 @@ classdef trustregion_bobyqa_mod
                 debug_obj.assert(all(xopt >= sl & xopt <= su, 'all'), "SL <= XOPT <= SU", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= reshape(sl, [], 1), 'all') && all(xpt <= reshape(su, [], 1), 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
                 debug_obj.assert(numel(gnew) == n, "SIZE(GNEW) == N", srname);
                 debug_obj.assert(numel(xnew) == n, "SIZE(XNEW) == N", srname);
@@ -182,7 +182,7 @@ classdef trustregion_bobyqa_mod
             crvmin = -consts_obj.REALMAX;
 
             % GNEW is the gradient at the current iterate.
-            gnew(:) = gopt;
+            gnew = gopt;
             gredsq = sum(gnew(linalg_obj.trueloc(xbdi == 0)) .^ 2, 'all');
             % DELSQ is the upper bound on the sum of squares of the free variables.
             delsq = delta * delta;
@@ -217,9 +217,9 @@ classdef trustregion_bobyqa_mod
                 % upper bound on the indices of the conjugate gradient iterations.
                 if itercg == 0
                     % TODO: If we are sure that S contain only finite values, we may merge this case into the next.
-                    s(:) = -gnew;
+                    s = -gnew;
                 else
-                    s(:) = beta * s - gnew;
+                    s = beta * s - gnew;
                 end
                 s(linalg_obj.trueloc(xbdi ~= 0)) = consts_obj.ZERO;
                 stepsq = sum(s .^ 2, 'all');
@@ -333,7 +333,7 @@ classdef trustregion_bobyqa_mod
                         end
                     end
                     ggsav = gredsq;
-                    gnew(:) = gnew + stplen * hs;
+                    gnew = gnew + stplen * hs;
                     gredsq = sum(gnew(linalg_obj.trueloc(xbdi == 0)) .^ 2, 'all');
                     dold(:) = d;
                     d(:) = d + stplen * s;
@@ -526,7 +526,7 @@ classdef trustregion_bobyqa_mod
                 % rounding errors.
                 cth = min((consts_obj.ONE - hangt ^ 2) / (consts_obj.ONE + hangt ^ 2), consts_obj.ONE - hangt ^ 2);
                 sth = min((hangt + hangt) / (consts_obj.ONE + hangt ^ 2), hangt + hangt);
-                gnew(:) = gnew + (cth - consts_obj.ONE) * hdred + sth * hs;
+                gnew = gnew + (cth - consts_obj.ONE) * hdred + sth * hs;
                 dold(:) = d;
                 d(linalg_obj.trueloc(xbdi == 0)) = cth * d(linalg_obj.trueloc(xbdi == 0)) + sth * s(linalg_obj.trueloc(xbdi == 0));
 
@@ -536,7 +536,7 @@ classdef trustregion_bobyqa_mod
                     break
                 end
 
-                hdred(:) = cth * hdred + sth * hs;
+                hdred = cth * hdred + sth * hs;
                 qred = qred + sdec;
                 if iact >= 1 && iact <= n && hangt >= hangt_bd
                     % D(IACT) reaches lower/upper bound.

@@ -103,8 +103,8 @@ classdef trustregion_cobyla_mod
 
             % Form A_aug and B_aug. This allows the gradient of the objective function to be regarded as the
             % gradient of a constraint in the second stage.
-            A_aug(:, :) = reshape([reshape(A, 1, []), reshape(g, 1, [])], [n, m + 1]); %%MATLAB: A_aug = [A, g];
-            b_aug(:) = [reshape(b, [], 1); consts_obj.ZERO]; %%MATLAB: b_aug = [b; 0];
+            A_aug(:, :) = reshape([reshape(A, 1, []), g.'], [n, m + 1]); %%MATLAB: A_aug = [A, g];
+            b_aug(:) = [b; consts_obj.ZERO]; %%MATLAB: b_aug = [b; 0];
 
             % Scale the problem if A_aug contains large values. Otherwise, floating point exceptions may occur.
             % Note that the trust-region step is scale invariant.
@@ -229,7 +229,7 @@ classdef trustregion_cobyla_mod
                 % 2. In MATLAB, linspace(1, mcon, mcon) can also be written as (1:mcon).
                 nact = 0;
                 d(:) = consts_obj.ZERO;
-                cviol = linalg_obj.maximum([consts_obj.ZERO; reshape(-b, [], 1)]);
+                cviol = linalg_obj.maximum([consts_obj.ZERO; -b]);
                 vmultc(:) = cviol + b;
                 z(:, :) = linalg_obj.eye1(n);
                 if mcon == 0 || cviol <= 0
@@ -258,7 +258,7 @@ classdef trustregion_cobyla_mod
 
                 % In Powell's code, stage 2 uses the ZDOTA and CVIOL calculated by stage 1. Here we re-calculate
                 % them so that they need not be passed from stage 1 to 2, and hence the coupling is reduced.
-                cviol = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(d, A(:, 1:m)) - b(1:m), [], 1)]);
+                cviol = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(d, A(:, 1:m)) - b(1:m)]);
             end
             zdota(1:nact) = arrayfun(@(k) linalg_obj.inprod(z(:, k), A(:, iact(k))), (1:nact)');
             %%MATLAB: zdota(1:nact) = sum(z(:, 1:nact) .* A(:, iact(1:nact)), 1);  % Row vector
@@ -388,7 +388,7 @@ classdef trustregion_cobyla_mod
                     % Usually during stage 1 the vector SDIRN gives a search direction that reduces all the
                     % active constraint violations by one simultaneously.
                     if stage == 1
-                        sdirn(:) = sdirn - ((linalg_obj.inprod(sdirn, A(:, iact(nact))) + consts_obj.ONE) / zdota(nact)) * z(:, nact);
+                        sdirn = sdirn - ((linalg_obj.inprod(sdirn, A(:, iact(nact))) + consts_obj.ONE) / zdota(nact)) * z(:, nact);
                     else
                         sdirn(:) = -(consts_obj.ONE / zdota(nact)) * z(:, nact);
                         % SDIRN = Z(:, NACT)/(A(:,IACT(NACT))^T*Z(:, NACT))
@@ -403,8 +403,8 @@ classdef trustregion_cobyla_mod
                     [z, Rdiag_slice] = powalg_obj.qrexc_Rdiag(A(:, iact(1:nact)), z, zdota(1:nact), icon); zdota(1:nact) = Rdiag_slice; % QREXC does nothing if ICON==NACT.
                     % Indeed, it suffices to pass Z(:, 1:NACT) to QREXC as follows.
                     % %call qrexc(A(:, iact(1:nact)), z(:, 1:nact), zdota(1:nact), icon)
-                    iact(icon:nact) = [reshape(iact(icon + 1:nact), [], 1); iact(icon)];
-                    vmultc(icon:nact) = [reshape(vmultc(icon + 1:nact), [], 1); vmultc(icon)];
+                    iact(icon:nact) = [iact(icon + 1:nact); iact(icon)];
+                    vmultc(icon:nact) = [vmultc(icon + 1:nact); vmultc(icon)];
                     nact = nact - 1;
 
                     % Powell's code does not have the following. It avoids subsequent exceptions.
@@ -428,7 +428,7 @@ classdef trustregion_cobyla_mod
 
                     % Set SDIRN to the direction of the next change to the current vector of variables.
                     if stage == 1
-                        sdirn(:) = sdirn - linalg_obj.inprod(sdirn, z(:, nact + 1)) * z(:, nact + 1);
+                        sdirn = sdirn - linalg_obj.inprod(sdirn, z(:, nact + 1)) * z(:, nact + 1);
                         % SDIRN is orthogonal to Z(:, NACT+1)
 
                     else
@@ -496,7 +496,7 @@ classdef trustregion_cobyla_mod
                 dnew(:) = d + step * sdirn;
                 if stage == 1
                     %cvold = cviol
-                    cviol = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(dnew, A(:, iact(1:nact))) - b(iact(1:nact)), [], 1)]);
+                    cviol = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(dnew, A(:, iact(1:nact))) - b(iact(1:nact))]);
                     % N.B.: CVIOL will be used when calculating VMULTD(NACT+1 : MCON).
 
                 end
@@ -525,8 +525,8 @@ classdef trustregion_cobyla_mod
                 fracmult(vmultd < 0) = vmultc(vmultd < 0) ./ (vmultc(vmultd < 0) - vmultd(vmultd < 0));
                 %%MATLAB: mask = (vmultd < 0); fracmult(mask) = vmultc(mask) / (vmultc(mask) - vmultd(mask));
                 % Only the places with VMULTD < 0 is relevant below, if any.
-                icon = fortran.minloc([consts_obj.ONE; reshape(fracmult, [], 1)], 'dim', 1) - 1;
-                frac = min([consts_obj.ONE; reshape(fracmult, [], 1)], [], 'all');
+                icon = fortran.minloc([consts_obj.ONE; fracmult], 'dim', 1) - 1;
+                frac = min([consts_obj.ONE; fracmult], [], 'all');
                 %%MATLAB: [frac, icon] = min([1, fracmult]); icon = icon - 1
 
                 % Update D, VMULTC and CVIOL.
@@ -543,7 +543,7 @@ classdef trustregion_cobyla_mod
                     %cviol = (ONE - frac) * cvold + frac * cviol  ! Powell's version
                     % In theory, CVIOL = MAXVAL([MATPROD(D, A) - B, ZERO]), yet the CVIOL updated as above
                     % can be quite different from this value if A has huge entries (e.g., > 1E20).
-                    cviol = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(d, A) - b, [], 1)]);
+                    cviol = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(d, A) - b]);
                 end
 
                 if icon < 1 || icon > mcon

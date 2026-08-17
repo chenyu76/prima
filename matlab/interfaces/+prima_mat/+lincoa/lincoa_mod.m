@@ -724,7 +724,7 @@ classdef lincoa_mod
             % 2. The code below is quite inefficient in terms of memory, but we prefer readability.
             idmat(:, :) = linalg_obj.eye2(n, n);
             amat = reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), reshape(-Aeq(ieq, :).', 1, []), reshape(Aeq(ieq, :).', 1, []), reshape(Aineq(iineq, :).', 1, [])], size(amat));
-            bvec = [reshape(-xl(ixl), [], 1); reshape(xu(ixu), [], 1); reshape(-beq(ieq), [], 1); reshape(beq(ieq), [], 1); reshape(bineq(iineq), [], 1)];
+            bvec = [-xl(ixl); xu(ixu); -beq(ieq); beq(ieq); bineq(iineq)];
             %%MATLAB code:
             %%amat = [-idmat(:, ixl), idmat(:, ixu), -Aeq(ieq, :)', Aeq(ieq, :)', Aineq(iineq, :)'];
             %%bvec = [-xl(ixl); xu(ixu); -beq(ieq); beq(ieq); bineq(iineq)];
@@ -732,11 +732,11 @@ classdef lincoa_mod
             % Modify BVEC if necessary so that the initial point is feasible.
             Aeqx0(:) = linalg_obj.matprod21(Aeq, x0);
             Aineqx0(:) = linalg_obj.matprod21(Aineq, x0);
-            bvec = max(bvec, [reshape(-x0(ixl), [], 1); reshape(x0(ixu), [], 1); reshape(-Aeqx0(ieq), [], 1); reshape(Aeqx0(ieq), [], 1); reshape(Aineqx0(iineq), [], 1)]);
+            bvec = max(bvec, [-x0(ixl); x0(ixu); -Aeqx0(ieq); Aeqx0(ieq); Aineqx0(iineq)]);
 
             % Normalize the linear constraints so that each constraint has a gradient of norm 1.
-            Anorm = [reshape(Aeq_norm(ieq), [], 1); reshape(Aeq_norm(ieq), [], 1); reshape(Aineq_norm(iineq), [], 1)];
-            amat(:, mxl + mxu + 1:m) = amat(:, mxl + mxu + 1:m) ./ reshape(Anorm, 1, []);
+            Anorm = [Aeq_norm(ieq); Aeq_norm(ieq); Aineq_norm(iineq)];
+            amat(:, mxl + mxu + 1:m) = amat(:, mxl + mxu + 1:m) ./ Anorm.';
             bvec(mxl + mxu + 1:m) = bvec(mxl + mxu + 1:m) ./ Anorm;
 
             % Deallocate memory.

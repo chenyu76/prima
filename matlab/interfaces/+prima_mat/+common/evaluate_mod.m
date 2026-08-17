@@ -32,7 +32,7 @@ classdef evaluate_mod
 
             y(:) = x;
             y(linalg_obj.trueloc(infnan_obj.is_nan_sp(x))) = consts_obj.ZERO;
-            y(:) = max(-consts_obj.REALMAX, min(consts_obj.REALMAX, y));
+            y = max(-consts_obj.REALMAX, min(consts_obj.REALMAX, y));
         end
         function y = moderatef(~, f)
             %--------------------------------------------------------------------------------------------------%
@@ -72,7 +72,7 @@ classdef evaluate_mod
 
             y(:) = c;
             y(linalg_obj.trueloc(infnan_obj.is_nan_sp(c))) = consts_obj.CONSTRMAX;
-            y(:) = max(-consts_obj.CONSTRMAX, min(consts_obj.CONSTRMAX, y));
+            y = max(-consts_obj.CONSTRMAX, min(consts_obj.CONSTRMAX, y));
         end
         function f = evaluatef(obj, calfun, x)
             %--------------------------------------------------------------------------------------------------%

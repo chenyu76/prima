@@ -125,7 +125,7 @@ classdef powalg_mod
                 tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(12, consts_obj.MAXPOW10) * consts_obj.EPS * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthonormal", srname); % Costly!
                 Qsave(:, :) = Q(:, 1:n); % For debugging only
-                Rdsave(:) = Rdiag(1:n); % For debugging only
+                Rdsave = Rdiag(1:n); % For debugging only
 
             end
 
@@ -243,7 +243,7 @@ classdef powalg_mod
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthogonal", srname);
                 debug_obj.assert(linalg_obj.istriu(R), "R is upper triangular", srname);
                 debug_obj.assert(all(linalg_obj.diag(R(:, 1:n)) > 0, 'all'), "DIAG(R(:, 1:N)) > 0", srname);
-                Anew(:, :) = reshape([reshape(linalg_obj.matprod22(Q, R(:, 1:n)), 1, []), reshape(c, 1, [])], size(Anew));
+                Anew(:, :) = reshape([reshape(linalg_obj.matprod22(Q, R(:, 1:n)), 1, []), c.'], size(Anew));
                 Qsave(:, :) = Q(:, 1:n); % For debugging only.
                 Rsave(:, :) = R(:, 1:n); % For debugging only.
 
@@ -341,7 +341,7 @@ classdef powalg_mod
                 tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(m + 1)));
                 debug_obj.assert(linalg_obj.isorth(Q, 'tol', tol), "The columns of Q are orthonormal", srname); % Costly!
                 Qsave(:, :) = Q; % For debugging only.
-                Rdsave(:) = Rdiag(1:i); % For debugging only.
+                Rdsave = Rdiag(1:i); % For debugging only.
 
             end
 
@@ -368,7 +368,7 @@ classdef powalg_mod
             % Zaikun 20230903: It turns out that Powell's code does not ensure that the original RDIAG is
             % positive (see QRADD_RDIAG), and hence the updated RDIAG may contain negative values.
             for k = i:n - 1
-                G = linalg_obj.planerot([Rdiag(k + 1), linalg_obj.inprod(Q(:, k), A(:, k + 1))]);
+                G = linalg_obj.planerot([Rdiag(k + 1), linalg_obj.inprod(Q(:, k), A(:, k + 1))].');
                 Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k + 1, k]), G.');
                 % Powell's code updates RDIAG in the following way:
                 % %HYPT = SQRT(RDIAG(K + 1)**2 + INPROD(Q(:, K), A(:, K + 1))**2)
@@ -765,7 +765,7 @@ classdef powalg_mod
             %%end
             if all(infnan_obj.is_finite(qval), 'all')
                 fmq(:) = fval - qval;
-                err = (max(fmq, [], 'all') - min(fmq, [], 'all')) / max([consts_obj.ONE; reshape(abs(fval), [], 1)], [], 'all');
+                err = (max(fmq, [], 'all') - min(fmq, [], 'all')) / max([consts_obj.ONE; abs(fval)], [], 'all');
             else
                 err = consts_obj.REALMAX;
             end
@@ -827,7 +827,7 @@ classdef powalg_mod
             y(:) = linalg_obj.matprod21(xpt, pq .* linalg_obj.matprod12(x, xpt));
             if ~ismember('hq', ipObj.UsingDefaults)
                 for j = 1:n
-                    y(:) = y + hq(:, j) * x(j);
+                    y = y + hq(:, j) * x(j);
                 end
             end
 
@@ -1234,7 +1234,7 @@ classdef powalg_mod
                 if abs(zmat(knew, j)) > 1.0e-20 * max(abs(zmat), [], 'all')
                     % Threshold comes from Powell's BOBYQA
                     % Multiply a Givens rotation to ZMAT from the right so that ZMAT(KNEW, [JL,J]) becomes [*,0].
-                    grot = linalg_obj.planerot(zmat(knew, [jl, j])); %%MATLAB: grot = planerot(zmat(knew, [jl, j])')
+                    grot = linalg_obj.planerot(zmat(knew, [jl, j]).'); %%MATLAB: grot = planerot(zmat(knew, [jl, j])')
                     zmat(:, [jl, j]) = linalg_obj.matprod22(zmat(:, [jl, j]), grot.');
                 end
                 zmat(knew, j) = consts_obj.ZERO;
@@ -1533,11 +1533,11 @@ classdef powalg_mod
 
             % Set WCHECK to the first NPT entries of (w-v) for w and v in (4.10) and (4.24) of the NEWUOA paper.
             wcheck(:) = linalg_obj.matprod12(d, xpt);
-            wcheck(:) = wcheck .* (consts_obj.HALF * wcheck + linalg_obj.matprod12(xref, xpt));
+            wcheck = wcheck .* (consts_obj.HALF * wcheck + linalg_obj.matprod12(xref, xpt));
 
             % The following two lines set VLAG to H*(w-v).
             vlag(1:npt) = obj.omega_mul(idz_loc, zmat, wcheck) + linalg_obj.matprod12(d, bmat(:, 1:npt));
-            vlag(npt + 1:npt + n) = linalg_obj.matprod(bmat, [reshape(wcheck, [], 1); reshape(d, [], 1)]);
+            vlag(npt + 1:npt + n) = linalg_obj.matprod(bmat, [wcheck; d]);
             % The following line is equivalent to the above one, but handles WCHECK and D separately.
             % %vlag(npt + 1:npt + n) = matprod(bmat(:, 1:npt), wcheck) + matprod(bmat(:, npt + 1:npt + n), d)
 
@@ -1630,10 +1630,10 @@ classdef powalg_mod
 
             % Set WCHECK to the first NPT entries of (w-v) for w and v in (4.10) and (4.24) of the NEWUOA paper.
             wcheck(:) = linalg_obj.matprod12(d, xpt);
-            wcheck(:) = wcheck .* (consts_obj.HALF * wcheck + linalg_obj.matprod12(xref, xpt));
+            wcheck = wcheck .* (consts_obj.HALF * wcheck + linalg_obj.matprod12(xref, xpt));
 
             % WMV is the vector (w-v) for w and v in (4.10) and (4.24) of the NEWUOA paper.
-            wmv(:) = [reshape(wcheck, [], 1); reshape(d, [], 1)];
+            wmv(:) = [wcheck; d];
             % The following two lines set VLAG to H*(w-v).
             vlag(1:npt) = obj.omega_mul(idz_loc, zmat, wcheck) + linalg_obj.matprod12(d, bmat(:, 1:npt));
             vlag(npt + 1:npt + n) = linalg_obj.matprod21(bmat, wmv);
@@ -1707,7 +1707,7 @@ classdef powalg_mod
 
 
             hdiag = NaN(size(xpt, 2), 1);
-            vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
+
 
             % Sizes
             n = size(xpt, 1);
@@ -1740,9 +1740,9 @@ classdef powalg_mod
             %====================%
 
             hdiag(:) = -sum(zmat(:, 1:idz_loc - 1) .^ 2, 2) + sum(zmat(:, idz_loc:size(zmat, 2)) .^ 2, 2);
-            vlag(:) = obj.calvlag_lfqint(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
+            vlag = obj.calvlag_lfqint(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             beta = obj.calbeta(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
-            den(:) = hdiag * beta + vlag(1:npt) .^ 2;
+            den = hdiag * beta + vlag(1:npt) .^ 2;
 
             %====================%
             %  Calculation ends  %

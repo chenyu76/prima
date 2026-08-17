@@ -144,7 +144,7 @@ classdef initialize_cobyla_mod
                     % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
                     % linear constraint values here to make CSTRV consistent.
                 end
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr, [], 1)]);
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
                 % Print a message about the function/constraint evaluation according to IPRINT.
                 message_obj.fmsg(solver, "Initialization", iprint, k, rhobeg, f, x, 'cstrv', cstrv, 'constr', constr);

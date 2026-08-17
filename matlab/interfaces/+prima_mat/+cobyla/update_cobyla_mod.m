@@ -96,12 +96,12 @@ classdef update_cobyla_mod
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             if jdrop <= n
                 sim(:, jdrop) = d;
-                simi_jdrop(:) = simi(jdrop, :) ./ linalg_obj.inprod(simi(jdrop, :), d);
+                simi_jdrop(:) = simi(jdrop, :) ./ linalg_obj.inprod(simi(jdrop, :).', d);
                 simi(:, :) = simi - linalg_obj.outprod(linalg_obj.matprod21(simi, d), simi_jdrop);
                 simi(jdrop, :) = simi_jdrop;
             else                % JDROP = N+1
                 sim(:, n + 1) = sim(:, n + 1) + d;
-                sim(:, 1:n) = sim(:, 1:n) - reshape(d, [], 1);
+                sim(:, 1:n) = sim(:, 1:n) - d;
                 simid(:) = linalg_obj.matprod21(simi, d);
                 sum_simi(:) = sum(simi, 1);
                 simi(:, :) = simi + linalg_obj.outprod(simid, sum_simi ./ (consts_obj.ONE - sum(simid, 'all')));
@@ -251,7 +251,7 @@ classdef update_cobyla_mod
                 sim(:, n + 1) = sim(:, n + 1) + sim(:, jopt);
                 sim_jopt(:) = sim(:, jopt);
                 sim(:, jopt) = consts_obj.ZERO;
-                sim(:, 1:n) = sim(:, 1:n) - reshape(sim_jopt, [], 1);
+                sim(:, 1:n) = sim(:, 1:n) - sim_jopt;
                 %%MATLAB: sim(:, 1:n) = sim(:, 1:n) - sim_jopt; % sim_jopt should be a column! Implicit expansion
                 % The above update is equivalent to multiply SIM(:, 1:N) from the right side by a matrix whose
                 % JOPT-th row is [-1, -1, ..., -1], while all the other rows are the same as those of the

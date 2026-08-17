@@ -73,7 +73,7 @@ classdef update_bobyqa_mod
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
 
                 for j = 1:npt
-                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
+                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :).');
                     hcol(npt + 1:npt + n) = bmat(:, j);
                     debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
@@ -108,7 +108,7 @@ classdef update_bobyqa_mod
             % Put the KNEW-th column of the unupdated H (except for the (NPT+1)th entry) into HCOL. Powell's
             % code does this after ZMAT is rotated below, and then HCOL(1:NPT) = ZMAT(KNEW, 1) * ZMAT(:, 1),
             % which saves flops but also introduces rounding errors due to the rotation.
-            hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(knew, :));
+            hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(knew, :).');
             hcol(npt + 1:npt + n) = bmat(:, knew);
 
             % Calculate VLAG and BETA and other parameters for (4.9) and (4.14) of the BOBYQA paper.
@@ -147,7 +147,7 @@ classdef update_bobyqa_mod
             for j = 2:npt - n - 1
                 if abs(zmat(knew, j)) > 1.0e-20 * max(abs(zmat), [], 'all')
                     % This threshold is by Powell
-                    grot = linalg_obj.planerot(zmat(knew, [1, j]));
+                    grot = linalg_obj.planerot(zmat(knew, [1, j]).');
                     zmat(:, [1, j]) = linalg_obj.matprod22(zmat(:, [1, j]), grot.');
                 end
                 zmat(knew, j) = consts_obj.ZERO;
@@ -172,7 +172,7 @@ classdef update_bobyqa_mod
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
 
                 for j = 1:npt
-                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
+                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :).');
                     hcol(npt + 1:npt + n) = bmat(:, j);
                     debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
@@ -339,7 +339,7 @@ classdef update_bobyqa_mod
             pq(knew) = consts_obj.ZERO;
 
             % Update the implicit part of the Hessian.
-            pqinc(:) = moderr * linalg_obj.matprod21(zmat, zmat(knew, :)); % pqinc = moderr * omega_col(1_IK, zmat, knew)
+            pqinc(:) = moderr * linalg_obj.matprod21(zmat, zmat(knew, :).'); % pqinc = moderr * omega_col(1_IK, zmat, knew)
             pq(:) = pq + pqinc;
 
             % Update the gradient, which needs the updated XPT.
@@ -405,7 +405,7 @@ classdef update_bobyqa_mod
 
 
             galt = NaN(numel(gopt), 1);
-            pgalt = NaN(numel(gopt), 1);
+
             pgopt = NaN(numel(gopt), 1);
             pqalt = NaN(numel(pq), 1);
 
@@ -445,7 +445,7 @@ classdef update_bobyqa_mod
             galt(:) = linalg_obj.matprod21(bmat(:, 1:npt), fval) + powalg_obj.hess_mul(xopt, xpt, pqalt);
 
             % Calculate the norm square of the projected alternative gradient.
-            pgalt(:) = galt;
+            pgalt = galt;
             pgalt(linalg_obj.trueloc(xopt >= su)) = max(consts_obj.ZERO, galt(linalg_obj.trueloc(xopt >= su)));
             pgalt(linalg_obj.trueloc(xopt <= sl)) = min(consts_obj.ZERO, galt(linalg_obj.trueloc(xopt <= sl)));
 

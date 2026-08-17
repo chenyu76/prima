@@ -399,7 +399,7 @@ classdef linalg_mod
 
             z(:) = consts_obj.ZERO;
             for j = 1:size(x, 2)
-                z(:) = z + x(:, j) * y(j);
+                z = z + x(:, j) * y(j);
             end
 
             %====================%
@@ -633,19 +633,19 @@ classdef linalg_mod
             % with the -Mbounds flag. See https://github.com/flang-compiler/flang/issues/1238
             if obj.istril(A)
                 for i = 1:n
-                    x(i) = (b(i) - obj.inprod(A(i, 1:i - 1), x(1:i - 1))) / A(i, i); % INPROD = 0 if I == 1.
+                    x(i) = (b(i) - obj.inprod(A(i, 1:i - 1).', x(1:i - 1))) / A(i, i); % INPROD = 0 if I == 1.
                 end
             elseif obj.istriu(A)
                 % This case is invoked in LINCOA.
                 for i = n:-1:1
-                    x(i) = (b(i) - obj.inprod(A(i, i + 1:n), x(i + 1:n))) / A(i, i); % INPROD = 0 if I == N.
+                    x(i) = (b(i) - obj.inprod(A(i, i + 1:n).', x(i + 1:n))) / A(i, i); % INPROD = 0 if I == N.
                 end
             else
                 % This is NOT a good algorithm for linear systems, but since the QR subroutine is available ...
                 [Q, R, P] = obj.qr(A);
                 x(:) = obj.matprod12(b, Q);
                 for i = n:-1:1
-                    x(i) = (x(i) - obj.inprod(R(i, i + 1:n), x(i + 1:n))) / R(i, i); % INPROD = 0 if I == N.
+                    x(i) = (x(i) - obj.inprod(R(i, i + 1:n).', x(i + 1:n))) / R(i, i); % INPROD = 0 if I == N.
                 end
                 x(P) = x; % Handle the permutation.
             end
@@ -871,7 +871,7 @@ classdef linalg_mod
                     end
                 end
                 for i = m:-1:j + 1
-                    G = obj.planerot(T(j, [j, i])).';
+                    G = obj.planerot(T(j, [j, i]).').';
                     T(j, [j, i]) = [obj.hypotenuse(T(j, j), T(j, i)), consts_obj.ZERO]; %T(j, [j, i]) = [sqrt(T(j, j)**2 + T(j, i)**2), ZERO]
                     T(j + 1:n, [j, i]) = obj.matprod22(T(j + 1:n, [j, i]), G);
                     Q_loc(:, [j, i]) = obj.matprod22(Q_loc(:, [j, i]), G);
@@ -975,7 +975,7 @@ classdef linalg_mod
                 [Q_loc, ~, P] = obj.qr(A);
                 Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, P(i))), (1:min(m, n))');
                 %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, P(1:min(m,n))), 1); % Row vector
-                rank = max([0; reshape(obj.trueloc(abs(Rdiag_loc) > 0), [], 1)], [], 'all');
+                rank = max([0; obj.trueloc(abs(Rdiag_loc) > 0)], [], 'all');
                 pivot = true;
             else
                 Q_loc(:, :) = Q(:, 1:size(Q_loc, 2));
@@ -1006,7 +1006,7 @@ classdef linalg_mod
                     x(j) = consts_obj.ZERO;
                 else
                     x(j) = yq / Rdiag_loc(i);
-                    y(:) = y - x(j) * A(:, j);
+                    y = y - x(j) * A(:, j);
                 end
             end
 
@@ -1366,7 +1366,7 @@ classdef linalg_mod
                 u(:) = consts_obj.ZERO;
                 u(obj.trueloc(infnan_obj.is_inf(v))) = fortran.sign(consts_obj.ONE, v(obj.trueloc(infnan_obj.is_inf(v))));
                 %%MATLAB: u = 0; u(isinf(v)) = sign(v(isinf(v)))
-                u(:) = u ./ obj.p_norm(u);
+                u = u ./ obj.p_norm(u);
                 y(:) = obj.inprod(x, u) * u;
             else
                 u(:) = v ./ obj.p_norm(v);
@@ -1417,7 +1417,7 @@ classdef linalg_mod
             %====================%
 
             if size(V, 2) == 1
-                y(:) = obj.project1(x, V(:, 1));
+                y = obj.project1(x, V(:, 1));
             elseif all(abs(x) <= 0, 'all') || all(abs(V) <= 0, 'all')
                 y(:) = consts_obj.ZERO;
             elseif any(infnan_obj.is_nan_sp(x), 'all') || any(infnan_obj.is_nan_sp(V), 'all')
@@ -1819,7 +1819,7 @@ classdef linalg_mod
 
             % If SIZE(X) = 0, then MAXVAL(ABS(X)) = -HUGE(X); since we handle such a case individually,
             % it is OK to write MAXVAL(ABS(X)) below, but we append 0 for robustness.
-            maxabs = max([reshape(abs(x), [], 1); consts_obj.ZERO], [], 'all');
+            maxabs = max([abs(x); consts_obj.ZERO], [], 'all');
 
             if numel(x) == 0
                 y = consts_obj.ZERO;
@@ -1927,7 +1927,7 @@ classdef linalg_mod
                 case "inf"
                     % If SIZE(X) = 0, then MAXVAL(ABS(X)) = -HUGE(X); since we have handled such a case in the
                     % above, it is OK to write Y = MAXVAL(ABS(X)) below, but we append a 0 for robustness.
-                    y = max([reshape(abs(x), [], 1); consts_obj.ZERO], [], 'all');
+                    y = max([abs(x); consts_obj.ZERO], [], 'all');
                 otherwise
                     debug_obj.warning(srname, "Unknown name of norm: " + string_obj.strip(nname) + "; default to the L2-norm");
                     y = obj.p_norm(x); % 2-norm, which is the default case of P_NORM.
@@ -2090,7 +2090,7 @@ classdef linalg_mod
                 end
             else
                 for i = 1:size(x, 1)
-                    y(i, :) = obj.sort_i1(y(i, :), 'direction', direction_loc);
+                    y(i, :) = obj.sort_i1(y(i, :).', 'direction', direction_loc);
                 end
             end
 
@@ -2448,7 +2448,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            x(:) = round(obj.linspace_r(double(xstart), double(xstop), n)); % Rounded to the closest integer.
+            x = round(obj.linspace_r(double(xstart), double(xstop), n)); % Rounded to the closest integer.
 
             %====================%
             %  Calculation ends  %
@@ -2797,7 +2797,7 @@ classdef linalg_mod
                 eminlb = consts_obj.ZERO;
             else
                 eminub = min(td, [], 'all');
-                eminlb = -max(abs([consts_obj.ZERO; reshape(tn, [], 1)]) + abs(td) + abs([reshape(tn, [], 1); consts_obj.ZERO]), [], 'all');
+                eminlb = -max(abs([consts_obj.ZERO; tn]) + abs(td) + abs([tn; consts_obj.ZERO]), [], 'all');
             end
 
             ksav = 0;
@@ -2825,7 +2825,7 @@ classdef linalg_mod
                 end
 
                 if all(pivnew > 0, 'all')
-                    piv(:) = pivnew;
+                    piv = pivnew;
                     eminlb = eig_min;
                     continue
                 end

@@ -305,7 +305,7 @@ classdef cobylb_mod
                 % (not necessarily a good algorithm). No preconditioning or scaling was used.
                 g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
                 A(:, 1:m_lcon) = amat;
-                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - reshape(conmat(m_lcon + 1:m, n + 1), [], 1), simi).';
+                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1), simi).';
                 %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
 
                 % Calculate the trust-region trial step D. Note that D does NOT depend on CPEN.
@@ -327,7 +327,7 @@ classdef cobylb_mod
                 % 2. PREREF may be negative or 0, but it should be positive when PREREC = 0 and SHORTD is FALSE.
                 % 3. Due to 2, in theory, MAXIMUM([PREREC, PREREF]) > 0 if SHORTD is FALSE.
                 preref = -linalg_obj.inprod(d, g); % Can be negative.
-                prerec = cval(n + 1) - linalg_obj.maximum1([consts_obj.ZERO; reshape(conmat(:, n + 1) + linalg_obj.matprod12(d, A), [], 1)]);
+                prerec = cval(n + 1) - linalg_obj.maximum1([consts_obj.ZERO; conmat(:, n + 1) + linalg_obj.matprod12(d, A)]);
 
                 % Evaluate PREREM, which is the predicted reduction in the merit function.
                 % In theory, PREREM >= 0 and it is 0 iff CPEN = 0 = PREREF. This may not be true numerically.
@@ -362,7 +362,7 @@ classdef cobylb_mod
                         [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m)); constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
                         % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
                         % linear constraint values here to make CSTRV consistent.
-                        cstrv = linalg_obj.maximum([consts_obj.ZERO; reshape(constr, [], 1)]);
+                        cstrv = linalg_obj.maximum([consts_obj.ZERO; constr]);
                         nf = nf + 1;
                         % Save X, F, CONSTR, CSTRV into the history.
                         [xhist, fhist, chist, conhist] = history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist, 'constr', constr, 'conhist', conhist);
@@ -559,7 +559,7 @@ classdef cobylb_mod
                         [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m)); constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
                         % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
                         % linear constraint values here to make CSTRV consistent.
-                        cstrv = linalg_obj.maximum([consts_obj.ZERO; reshape(constr, [], 1)]);
+                        cstrv = linalg_obj.maximum([consts_obj.ZERO; constr]);
                         nf = nf + 1;
                         % Save X, F, CONSTR, CSTRV into the history.
                         [xhist, fhist, chist, conhist] = history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist, 'constr', constr, 'conhist', conhist);
@@ -629,7 +629,7 @@ classdef cobylb_mod
                 [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m)); constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
                 % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the linear
                 % constraint values here to make CSTRV consistent.
-                cstrv = linalg_obj.maximum([consts_obj.ZERO; reshape(constr, [], 1)]);
+                cstrv = linalg_obj.maximum([consts_obj.ZERO; constr]);
                 nf = nf + 1;
                 % Save X, F, CONSTR, CSTRV into the history.
                 [xhist, fhist, chist, conhist] = history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist, 'constr', constr, 'conhist', conhist);
@@ -780,7 +780,7 @@ classdef cobylb_mod
                 % Calculate the linear approximations to the objective and constraint functions.
                 g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
                 A(:, 1:m_lcon) = amat;
-                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - reshape(conmat(m_lcon + 1:m, n + 1), [], 1), simi).';
+                A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1), simi).';
                 %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
 
                 % Calculate the trust-region trial step D. Note that D does NOT depend on CPEN.
@@ -788,7 +788,7 @@ classdef cobylb_mod
 
                 % Predict the change to F (PREREF) and to the constraint violation (PREREC) due to D.
                 preref = -linalg_obj.inprod(d, g); % Can be negative.
-                prerec = cval(n + 1) - linalg_obj.maximum1([consts_obj.ZERO; reshape(conmat(:, n + 1) + linalg_obj.matprod12(d, A), [], 1)]);
+                prerec = cval(n + 1) - linalg_obj.maximum1([consts_obj.ZERO; conmat(:, n + 1) + linalg_obj.matprod12(d, A)]);
 
                 if ~(prerec > 0 && preref < 0)
                     % PREREC <= 0 or PREREF >= 0 or either is NaN.

@@ -195,7 +195,7 @@ classdef rescue_mod
                     debug_obj.assert(all(xhist(:, k) >= xl, 'all') && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
                 end
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= reshape(sl, [], 1), 'all') && all(xpt <= reshape(su, [], 1), 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
                 debug_obj.assert(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", srname);
@@ -221,7 +221,7 @@ classdef rescue_mod
             sl(:) = min(sl - xopt, consts_obj.ZERO);
             su(:) = max(su - xopt, consts_obj.ZERO);
             xbase(:) = min(max(xl, xbase + xopt), xu);
-            xpt(:, :) = xpt - reshape(xopt, [], 1);
+            xpt(:, :) = xpt - xopt;
             xpt(:, kopt) = consts_obj.ZERO;
 
             % Update HQ so that HQ and PQ define the second derivatives of the model after XBASE has been
@@ -420,7 +420,7 @@ classdef rescue_mod
                 score(korig) = consts_obj.ZERO;
                 % Reset SCORE to ABS(SCORE) so that all the original points with a nonzero score will be checked
                 % in later loops.
-                score(:) = abs(score);
+                score = abs(score);
 
                 % Update the BMAT and ZMAT matrices so that the KORIG-th original point replaces the KORIG-th
                 % provisional point.
@@ -534,7 +534,7 @@ classdef rescue_mod
                     % Update the quadratic model.
                     moderr = f - vquad;
                     gopt(:) = gopt + moderr * bmat(:, kpt);
-                    pqinc(:) = moderr * linalg_obj.matprod21(zmat, zmat(kpt, :));
+                    pqinc(:) = moderr * linalg_obj.matprod21(zmat, zmat(kpt, :).');
                     pq(linalg_obj.trueloc(ptsid <= 0)) = pq(linalg_obj.trueloc(ptsid <= 0)) + pqinc(linalg_obj.trueloc(ptsid <= 0));
                     for k = 1:npt
                         if ptsid(k) <= 0
@@ -604,13 +604,13 @@ classdef rescue_mod
                 end
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= reshape(sl, [], 1), 'all') && all(xpt <= reshape(su, [], 1), 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
 
                 for j = 1:npt
-                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
+                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :).');
                     hcol(npt + 1:npt + n) = bmat(:, j);
                     debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
@@ -676,7 +676,7 @@ classdef rescue_mod
                 debug_obj.assert(numel(vlag_in) == npt + n, "SIZE(VLAG) == NPT + N", srname);
 
                 for j = 1:npt
-                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
+                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :).');
                     hcol(npt + 1:npt + n) = bmat(:, j);
                     debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end
@@ -731,7 +731,7 @@ classdef rescue_mod
             for j = 2:npt - n - 1
                 if abs(zmat(knew, j)) > 1.0e-20 * max(abs(zmat), [], 'all')
                     % This threshold is by Powell
-                    grot = linalg_obj.planerot(zmat(knew, [1, j]));
+                    grot = linalg_obj.planerot(zmat(knew, [1, j]).');
                     zmat(:, [1, j]) = linalg_obj.matprod22(zmat(:, [1, j]), grot.');
                 end
                 zmat(knew, j) = consts_obj.ZERO;
@@ -767,7 +767,7 @@ classdef rescue_mod
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
 
                 for j = 1:npt
-                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :));
+                    hcol(1:npt) = linalg_obj.matprod21(zmat, zmat(j, :).');
                     hcol(npt + 1:npt + n) = bmat(:, j);
                     debug_obj.assert(floor(-log10(eps(class(0.0)))) < floor(-log10(eps(class(0.0)))) || sum(abs(hcol), 'all') > 0, "Column " + string_obj.int2str(j) + " of H is nonzero", srname);
                 end

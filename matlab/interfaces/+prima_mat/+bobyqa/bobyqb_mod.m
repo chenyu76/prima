@@ -344,11 +344,11 @@ classdef bobyqb_mod
 
                     % Update DNORM_REC and MODERR_REC.
                     % DNORM_REC records the DNORM of the recent function evaluations with the current RHO.
-                    dnorm_rec(:) = [reshape(dnorm_rec(2:numel(dnorm_rec)), [], 1); dnorm];
+                    dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
                     % MODERR is the error of the current model in predicting the change in F due to D.
                     % MODERR_REC records the prediction errors of the recent models with the current RHO.
                     moderr = f - fval(kopt) + qred;
-                    moderr_rec(:) = [reshape(moderr_rec(2:numel(moderr_rec)), [], 1); moderr];
+                    moderr_rec(:) = [moderr_rec(2:numel(moderr_rec)); moderr];
 
                     % Calculate the reduction ratio by REDRAT, which handles Inf/NaN carefully.
                     ratio = ratio_obj.redrat(fval(kopt) - f, qred, eta1);
@@ -392,7 +392,7 @@ classdef bobyqb_mod
                         % RESCUE shifts XBASE to the best point before RESCUE. Update D, MODERR, and XIMPROVED.
                         % Do NOT calculate QRED according to this D, as it is not really a trust region step.
                         % Note that QRED will be used afterward for defining IMPROVE_GEO and REDUCE_RHO.
-                        d(:) = max(sl, min(su, d)) - xpt(:, kopt);
+                        d = max(sl, min(su, d)) - xpt(:, kopt);
                         moderr = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq);
                         ximproved = (f < fval(kopt));
                     end
@@ -556,11 +556,11 @@ classdef bobyqb_mod
                         % Powell's code does not update DNORM. Therefore, DNORM is the length of the last
                         % trust-region trial step, inconsistent with MODERR_REC. The same problem exists in NEWUOA.
                         dnorm = min(delbar, linalg_obj.p_norm(d));
-                        dnorm_rec(:) = [reshape(dnorm_rec(2:numel(dnorm_rec)), [], 1); dnorm];
+                        dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
                         % MODERR is the error of the current model in predicting the change in F due to D.
                         % MODERR_REC records the prediction errors of the recent models with the current RHO.
                         moderr = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
-                        moderr_rec(:) = [reshape(moderr_rec(2:numel(moderr_rec)), [], 1); moderr];
+                        moderr_rec(:) = [moderr_rec(2:numel(moderr_rec)); moderr];
 
                         % Is the newly generated X better than current best point?
                         ximproved = (f < fval(kopt));
@@ -603,8 +603,8 @@ classdef bobyqb_mod
                 % 2. Before a geometry step, shift XBASE if SUM(XOPT**2) >= 1.0E3*DELBAR**2.
                 if sum(xpt(:, kopt) .^ 2, 'all') >= 1000.0 * delta ^ 2
                     % Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E4*RHO**2.
-                    sl(:) = min(sl - xpt(:, kopt), consts_obj.ZERO);
-                    su(:) = max(su - xpt(:, kopt), consts_obj.ZERO);
+                    sl = min(sl - xpt(:, kopt), consts_obj.ZERO);
+                    su = max(su - xpt(:, kopt), consts_obj.ZERO);
                     [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq);
                     xbase(:) = max(xl, min(xu, xbase));
                 end
@@ -714,7 +714,7 @@ classdef bobyqb_mod
                 debug_obj.assert(numel(xopt) == n && all(infnan_obj.is_finite(xopt), 'all'), "SIZE(XOPT) == N, XOPT is finite", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(all(xopt >= sl & xopt <= su, 'all'), "SL <= XOPT <= SU", srname);
-                debug_obj.assert(all(xpt >= reshape(sl, [], 1) & xpt <= reshape(su, [], 1), 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= sl & xpt <= su, 'all'), "SL <= XPT <= SU", srname);
             end
 
             %====================%
