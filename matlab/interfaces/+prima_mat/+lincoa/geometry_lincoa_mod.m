@@ -53,6 +53,7 @@ classdef geometry_lincoa_mod
             srname = "SETDROP_TR";
 
 
+            den = NaN(size(xpt, 2), 1);
             distsq = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
             weight = NaN(size(xpt, 2), 1);
@@ -93,7 +94,7 @@ classdef geometry_lincoa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum((xpt - (xpt(:, kopt) + d)) .^ 2, 1);
+                distsq(:) = sum((xpt - reshape(xpt(:, kopt) + d, [], 1)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column!! Implicit expansion
 
             else
@@ -143,7 +144,7 @@ classdef geometry_lincoa_mod
             % avoids this problem. However, such a DISTSQ itself seems not ideal, as mentioned above.
             %--------------------------------------------------------------------------------------------------%
 
-            den = powalg_obj.calden(kopt, bmat, d, xpt, zmat, 'idz', idz);
+            den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat, 'idz', idz);
             score(:) = weight .* abs(den);
 
             % If the new F is not better than FVAL(KOPT), we set SCORE(KOPT) = -1 to avoid KNEW = KOPT.
@@ -282,14 +283,14 @@ classdef geometry_lincoa_mod
 
 
             dderiv = NaN(size(xpt, 2), 1);
-
+            den = NaN(size(xpt, 2), 1);
 
             distsq = NaN(size(xpt, 2), 1);
             glag = NaN(size(xpt, 1), 1);
-
+            gstp = NaN(size(xpt, 1), 1);
 
             pglag = NaN(size(xpt, 1), 1);
-
+            pgstp = NaN(size(xpt, 1), 1);
             pqlag = NaN(size(xpt, 2), 1);
 
             stplen = NaN(size(xpt, 2), 1);
@@ -342,7 +343,7 @@ classdef geometry_lincoa_mod
             % without considering the linear constraints. In the following, VLAGABS(K) is set to the maximum of
             % |PHI_K(t)| subject to the trust-region constraint with PHI_K(t) = LFUNC((1-t)*XOPT + t*XPT(:, K)).
             dderiv(:) = linalg_obj.matprod12(glag, xpt) - linalg_obj.inprod(glag, xopt); % The derivatives PHI_K'(0).
-            distsq(:) = sum((xpt - xopt) .^ 2, 1);
+            distsq(:) = sum((xpt - reshape(xopt, [], 1)) .^ 2, 1);
             % Set DISTSQ(KOPT) to a positive artificial value. Otherwise, the calculation of STPLEN will raise a
             % floating point exception. This artificial value will NOT be used.
             distsq(kopt) = consts_obj.ONE;
@@ -371,18 +372,18 @@ classdef geometry_lincoa_mod
             end
             % Set S to the step corresponding to VLAGABS(K), and calculate DENABS for it.
             s(:) = stplen(k) * (xpt(:, k) - xopt);
-            den = powalg_obj.calden(kopt, bmat, s, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
+            den(:) = powalg_obj.calden(kopt, bmat, s, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
             denabs = abs(den(knew));
 
             % Replace S with a steepest ascent step from XOPT if the latter provides a larger value of DENABS.
             gnorm = linalg_obj.p_norm(glag);
             if gnorm > consts_obj.EPS && infnan_obj.is_finite(gnorm)
-                gstp = (delbar / gnorm) * glag;
+                gstp(:) = (delbar / gnorm) * glag;
                 if linalg_obj.inprod(gstp, powalg_obj.hess_mul(gstp, xpt, pqlag)) < 0
                     % <GSTP, HESS_LAG*GSTP> is negative
-                    gstp = -gstp;
+                    gstp(:) = -gstp;
                 end
-                den = powalg_obj.calden(kopt, bmat, gstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
+                den(:) = powalg_obj.calden(kopt, bmat, gstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
                 if abs(den(knew)) > denabs || infnan_obj.is_nan_sp(denabs)
                     denabs = abs(den(knew));
                     s(:) = gstp;
@@ -397,7 +398,7 @@ classdef geometry_lincoa_mod
             rstat(iact(1:nact)) = 0; % Active
 
             % Set FEASIBLE for the calculated S.
-            cstrv = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0))]);
+            cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0)), [], 1)]);
             feasible = (cstrv <= 0);
 
             % If NACT <= 0 or NACT >= N, the calculation has finished. Otherwise, define PGSTP by maximizing
@@ -411,16 +412,16 @@ classdef geometry_lincoa_mod
             %%MATLAB: pglag = qfac(:, nact+1:n) * (glag' * qfac(:, nact+1:n))';
             gnorm = linalg_obj.p_norm(pglag);
             if nact > 0 && gnorm > consts_obj.EPS && infnan_obj.is_finite(gnorm)
-                pgstp = (delbar / gnorm) * pglag;
+                pgstp(:) = (delbar / gnorm) * pglag;
                 if linalg_obj.inprod(pgstp, powalg_obj.hess_mul(pgstp, xpt, pqlag)) < 0
                     % <PGSTP, HESS_LAG*PGSTP> is negative.
-                    pgstp = -pgstp;
+                    pgstp(:) = -pgstp;
                 end
 
                 % Decide whether to replace S with PGSTP and set FEASIBLE accordingly. CSTRV is the constraint
                 % violation of XOPT+PGSTP. Note that we only need to check the constraints that are inactive and
                 % relevant, as the value of the active constraints is not changed by moving along PGSTP.
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(pgstp, amat(:, linalg_obj.trueloc(rstat == 1))) - rescon(linalg_obj.trueloc(rstat == 1))]);
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(pgstp, amat(:, linalg_obj.trueloc(rstat == 1))) - rescon(linalg_obj.trueloc(rstat == 1)), [], 1)]);
                 % The purpose of CVTOL below is to provide a check on feasibility that includes a tolerance for
                 % contributions from computer rounding errors.
                 % Powell's code is as follows. Note that MATPROD(PGSTP, AMAT(:, IACT(1:NACT))) is 0 in theory.
@@ -429,7 +430,7 @@ classdef geometry_lincoa_mod
                 cvtol = max(consts_obj.EPS * linalg_obj.p_norm(pgstp), consts_obj.TEN * linalg_obj.named_norm_vec(linalg_obj.matprod12(pgstp, amat(:, iact(1:nact))), "inf"));
                 take_pgstp = false;
                 if cstrv <= cvtol
-                    den = powalg_obj.calden(kopt, bmat, pgstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
+                    den(:) = powalg_obj.calden(kopt, bmat, pgstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
                     take_pgstp = (abs(den(knew)) > consts_obj.TENTH * denabs);
                 end
                 if take_pgstp || infnan_obj.is_nan_sp(denabs)
@@ -444,7 +445,7 @@ classdef geometry_lincoa_mod
                 s(:) = xpt(:, knew) - xopt;
                 scaling = delbar / linalg_obj.p_norm(s);
                 s(:) = max(0.6 * scaling, min(consts_obj.HALF, scaling)) * s; % 0.6: ensure |D| > DELBAR/2
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0))]);
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0)), [], 1)]);
                 feasible = (cstrv <= 0);
             end
 

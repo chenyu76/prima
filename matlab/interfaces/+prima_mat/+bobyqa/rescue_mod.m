@@ -195,7 +195,7 @@ classdef rescue_mod
                     debug_obj.assert(all(xhist(:, k) >= xl, 'all') && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
                 end
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= reshape(sl, [], 1), 'all') && all(xpt <= reshape(su, [], 1), 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
                 debug_obj.assert(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", srname);
@@ -221,7 +221,7 @@ classdef rescue_mod
             sl(:) = min(sl - xopt, consts_obj.ZERO);
             su(:) = max(su - xopt, consts_obj.ZERO);
             xbase(:) = min(max(xl, xbase + xopt), xu);
-            xpt(:, :) = xpt - xopt;
+            xpt(:, :) = xpt - reshape(xopt, [], 1);
             xpt(:, kopt) = consts_obj.ZERO;
 
             % Update HQ so that HQ and PQ define the second derivatives of the model after XBASE has been
@@ -604,7 +604,7 @@ classdef rescue_mod
                 end
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= reshape(sl, [], 1), 'all') && all(xpt <= reshape(su, [], 1), 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);

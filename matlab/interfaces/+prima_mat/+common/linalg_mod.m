@@ -399,7 +399,7 @@ classdef linalg_mod
 
             z(:) = consts_obj.ZERO;
             for j = 1:size(x, 2)
-                z = z + x(:, j) * y(j);
+                z(:) = z + x(:, j) * y(j);
             end
 
             %====================%
@@ -975,7 +975,7 @@ classdef linalg_mod
                 [Q_loc, ~, P] = obj.qr(A);
                 Rdiag_loc(:) = arrayfun(@(i) obj.inprod(Q_loc(:, i), A(:, P(i))), (1:min(m, n))');
                 %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, P(1:min(m,n))), 1); % Row vector
-                rank = max([0; obj.trueloc(abs(Rdiag_loc) > 0)], [], 'all');
+                rank = max([0; reshape(obj.trueloc(abs(Rdiag_loc) > 0), [], 1)], [], 'all');
                 pivot = true;
             else
                 Q_loc(:, :) = Q(:, 1:size(Q_loc, 2));
@@ -1006,7 +1006,7 @@ classdef linalg_mod
                     x(j) = consts_obj.ZERO;
                 else
                     x(j) = yq / Rdiag_loc(i);
-                    y = y - x(j) * A(:, j);
+                    y(:) = y - x(j) * A(:, j);
                 end
             end
 
@@ -1366,7 +1366,7 @@ classdef linalg_mod
                 u(:) = consts_obj.ZERO;
                 u(obj.trueloc(infnan_obj.is_inf(v))) = fortran.sign(consts_obj.ONE, v(obj.trueloc(infnan_obj.is_inf(v))));
                 %%MATLAB: u = 0; u(isinf(v)) = sign(v(isinf(v)))
-                u = u ./ obj.p_norm(u);
+                u(:) = u ./ obj.p_norm(u);
                 y(:) = obj.inprod(x, u) * u;
             else
                 u(:) = v ./ obj.p_norm(v);
@@ -1417,7 +1417,7 @@ classdef linalg_mod
             %====================%
 
             if size(V, 2) == 1
-                y = obj.project1(x, V(:, 1));
+                y(:) = obj.project1(x, V(:, 1));
             elseif all(abs(x) <= 0, 'all') || all(abs(V) <= 0, 'all')
                 y(:) = consts_obj.ZERO;
             elseif any(infnan_obj.is_nan_sp(x), 'all') || any(infnan_obj.is_nan_sp(V), 'all')
@@ -2159,7 +2159,7 @@ classdef linalg_mod
 
             loc = memory_obj.alloc_ivector(nnz(x)); % Removable in F03.
             n = numel(x);
-            loc = feval(@(a, m) reshape(a(m & true(size(a))), [], 1), obj.linspace_i(1, n, n), x);
+            loc = feval(@(source_array, selection_mask) reshape(source_array(selection_mask & true(size(source_array))), [], 1), obj.linspace_i(1, n, n), x);
 
             %====================%
             %  Calculation ends  %
@@ -2797,7 +2797,7 @@ classdef linalg_mod
                 eminlb = consts_obj.ZERO;
             else
                 eminub = min(td, [], 'all');
-                eminlb = -max(abs([consts_obj.ZERO; tn]) + abs(td) + abs([tn; consts_obj.ZERO]), [], 'all');
+                eminlb = -max(abs([consts_obj.ZERO; reshape(tn, [], 1)]) + abs(td) + abs([reshape(tn, [], 1); consts_obj.ZERO]), [], 'all');
             end
 
             ksav = 0;
@@ -2825,7 +2825,7 @@ classdef linalg_mod
                 end
 
                 if all(pivnew > 0, 'all')
-                    piv = pivnew;
+                    piv(:) = pivnew;
                     eminlb = eig_min;
                     continue
                 end

@@ -72,11 +72,14 @@ classdef trustregion_newuoa_mod
             args = NaN(4, 1);
             bstep = NaN;
             cth = NaN;
+            d = NaN(numel(gopt_in), 1);
 
 
             dg = NaN;
             dhd = NaN;
             dhs = NaN;
+
+            g = NaN(numel(gopt_in), 1);
 
 
             ggsav = NaN;
@@ -145,11 +148,11 @@ classdef trustregion_newuoa_mod
             % N.B.: During the iterations, G is NOT updated, and it equals always GOPT, which is the gradient
             % of the trust-region model at the trust-region center X. However, GG is updated: GG = ||G + HS||^2,
             % which is the norm square of the gradient at the current iterate.
-            g = gopt;
+            g(:) = gopt;
             gg = linalg_obj.inprod(g, g);
             %--------------------------------------------------------------------------------------------------%
             gg0 = gg;
-            d = -g;
+            d(:) = -g;
             dd = gg;
             ds = consts_obj.ZERO;
             ss = consts_obj.ZERO;
@@ -250,7 +253,7 @@ classdef trustregion_newuoa_mod
                 sold(:) = s;
                 s(:) = s + alpha * d;
                 ss = linalg_obj.inprod(s, s);
-                hs = hs + alpha * hd;
+                hs(:) = hs + alpha * hd;
                 ggsav = gg; % Gradient norm square before this iteration
                 gg = linalg_obj.inprod(g + hs, g + hs); % Current gradient norm square
                 % We may record g+hs for later usage:
@@ -281,7 +284,7 @@ classdef trustregion_newuoa_mod
                 end
 
                 % Prepare for the next CG iteration.
-                d = (gg / ggsav) * d - g - hs; % CG direction
+                d(:) = (gg / ggsav) * d - g - hs; % CG direction
                 dd = linalg_obj.inprod(d, d);
                 ds = linalg_obj.inprod(d, s);
                 if ds <= 0
@@ -337,7 +340,7 @@ classdef trustregion_newuoa_mod
 
                 % We calculate D as below. It did improve the performance of NEWUOA in our test.
                 % PROJECT(X, V) returns the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||).
-                d = (g + hs) - linalg_obj.project1(g + hs, s);
+                d(:) = (g + hs) - linalg_obj.project1(g + hs, s);
                 % N.B.:
                 % 1. The condition ||D||<=SQRT(TOL*GG) below is equivalent to |INPROD(G+HS,S)|<=SQRT((1-TOL)*GG*SS).
                 % As given above, Powell's code triggers an exit if INPROD(G+HS,S)=SGK<=(TOL-1)*SQRT(GG*SS).
@@ -350,7 +353,7 @@ classdef trustregion_newuoa_mod
                     info_loc = 0;
                     break
                 end
-                d = (linalg_obj.p_norm(s) / linalg_obj.p_norm(d)) * d;
+                d(:) = (linalg_obj.p_norm(s) / linalg_obj.p_norm(d)) * d;
                 % In precise arithmetic, INPROD(D, S) = 0 and ||D|| = ||S|| = DELTA.
                 if abs(linalg_obj.inprod(d, s)) >= consts_obj.TENTH * linalg_obj.p_norm(d) * linalg_obj.p_norm(s) || linalg_obj.p_norm(d) >= consts_obj.TWO * delta
                     info_loc = -1;
@@ -391,7 +394,7 @@ classdef trustregion_newuoa_mod
                 end
 
                 % Calculate HS.
-                hs = cth * hs + sth * hd;
+                hs(:) = cth * hs + sth * hd;
                 gg = linalg_obj.inprod(g + hs, g + hs);
             end
 

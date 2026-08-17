@@ -405,7 +405,7 @@ classdef update_bobyqa_mod
 
 
             galt = NaN(numel(gopt), 1);
-
+            pgalt = NaN(numel(gopt), 1);
             pgopt = NaN(numel(gopt), 1);
             pqalt = NaN(numel(pq), 1);
 
@@ -445,7 +445,7 @@ classdef update_bobyqa_mod
             galt(:) = linalg_obj.matprod21(bmat(:, 1:npt), fval) + powalg_obj.hess_mul(xopt, xpt, pqalt);
 
             % Calculate the norm square of the projected alternative gradient.
-            pgalt = galt;
+            pgalt(:) = galt;
             pgalt(linalg_obj.trueloc(xopt >= su)) = max(consts_obj.ZERO, galt(linalg_obj.trueloc(xopt >= su)));
             pgalt(linalg_obj.trueloc(xopt <= sl)) = min(consts_obj.ZERO, galt(linalg_obj.trueloc(xopt <= sl)));
 

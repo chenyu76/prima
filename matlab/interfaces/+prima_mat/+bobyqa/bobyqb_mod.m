@@ -344,11 +344,11 @@ classdef bobyqb_mod
 
                     % Update DNORM_REC and MODERR_REC.
                     % DNORM_REC records the DNORM of the recent function evaluations with the current RHO.
-                    dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
+                    dnorm_rec(:) = [reshape(dnorm_rec(2:numel(dnorm_rec)), [], 1); dnorm];
                     % MODERR is the error of the current model in predicting the change in F due to D.
                     % MODERR_REC records the prediction errors of the recent models with the current RHO.
                     moderr = f - fval(kopt) + qred;
-                    moderr_rec(:) = [moderr_rec(2:numel(moderr_rec)); moderr];
+                    moderr_rec(:) = [reshape(moderr_rec(2:numel(moderr_rec)), [], 1); moderr];
 
                     % Calculate the reduction ratio by REDRAT, which handles Inf/NaN carefully.
                     ratio = ratio_obj.redrat(fval(kopt) - f, qred, eta1);
@@ -556,11 +556,11 @@ classdef bobyqb_mod
                         % Powell's code does not update DNORM. Therefore, DNORM is the length of the last
                         % trust-region trial step, inconsistent with MODERR_REC. The same problem exists in NEWUOA.
                         dnorm = min(delbar, linalg_obj.p_norm(d));
-                        dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
+                        dnorm_rec(:) = [reshape(dnorm_rec(2:numel(dnorm_rec)), [], 1); dnorm];
                         % MODERR is the error of the current model in predicting the change in F due to D.
                         % MODERR_REC records the prediction errors of the recent models with the current RHO.
                         moderr = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
-                        moderr_rec(:) = [moderr_rec(2:numel(moderr_rec)); moderr];
+                        moderr_rec(:) = [reshape(moderr_rec(2:numel(moderr_rec)), [], 1); moderr];
 
                         % Is the newly generated X better than current best point?
                         ximproved = (f < fval(kopt));
@@ -714,7 +714,7 @@ classdef bobyqb_mod
                 debug_obj.assert(numel(xopt) == n && all(infnan_obj.is_finite(xopt), 'all'), "SIZE(XOPT) == N, XOPT is finite", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(all(xopt >= sl & xopt <= su, 'all'), "SL <= XOPT <= SU", srname);
-                debug_obj.assert(all(xpt >= sl & xpt <= su, 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= reshape(sl, [], 1) & xpt <= reshape(su, [], 1), 'all'), "SL <= XPT <= SU", srname);
             end
 
             %====================%

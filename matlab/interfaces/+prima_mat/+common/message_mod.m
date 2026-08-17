@@ -87,7 +87,7 @@ classdef message_mod
             if ~ismember('cstrv', ipObj.UsingDefaults)
                 cstrv_loc = cstrv;
             elseif ~ismember('constr', ipObj.UsingDefaults)
-                cstrv_loc = linalg_obj.maximum1([consts_obj.ZERO; -constr]); % N.B.: We assume that the constraint is CONSTR >= 0.
+                cstrv_loc = linalg_obj.maximum([consts_obj.ZERO; reshape(-constr, [], 1)]); % N.B.: We assume that the constraint is CONSTR >= 0.
 
             else
                 cstrv_loc = consts_obj.ZERO;
@@ -223,7 +223,7 @@ classdef message_mod
             if ~ismember('cstrv', ipObj.UsingDefaults)
                 cstrv_loc = cstrv;
             elseif ~ismember('constr', ipObj.UsingDefaults)
-                cstrv_loc = linalg_obj.maximum1([consts_obj.ZERO; -constr]); % N.B.: We assume that the constraint is CONSTR >= 0.
+                cstrv_loc = linalg_obj.maximum([consts_obj.ZERO; reshape(-constr, [], 1)]); % N.B.: We assume that the constraint is CONSTR >= 0.
 
             else
                 cstrv_loc = consts_obj.ZERO;
@@ -391,7 +391,7 @@ classdef message_mod
             if ~ismember('cstrv', ipObj.UsingDefaults)
                 cstrv_loc = cstrv;
             elseif ~ismember('constr', ipObj.UsingDefaults)
-                cstrv_loc = linalg_obj.maximum1([consts_obj.ZERO; -constr]); % N.B.: We assume that the constraint is CONSTR >= 0.
+                cstrv_loc = linalg_obj.maximum([consts_obj.ZERO; reshape(-constr, [], 1)]); % N.B.: We assume that the constraint is CONSTR >= 0.
 
             else
                 cstrv_loc = consts_obj.ZERO;

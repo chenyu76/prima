@@ -301,11 +301,11 @@ classdef uobyqb_mod
 
                     % Update DNORM_REC and MODERR_REC.
                     % DNORM_REC records the DNORM of the recent function evaluations with the current RHO.
-                    dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
+                    dnorm_rec(:) = [reshape(dnorm_rec(2:numel(dnorm_rec)), [], 1); dnorm];
                     % MODERR is the error of the current model in predicting the change in F due to D.
                     % MODERR_REC records the prediction errors of the recent models with the current RHO.
                     moderr = f - fval(kopt) + qred;
-                    moderr_rec(:) = [moderr_rec(2:numel(moderr_rec)); moderr];
+                    moderr_rec(:) = [reshape(moderr_rec(2:numel(moderr_rec)), [], 1); moderr];
 
                     % Calculate the reduction ratio by REDRAT, which handles Inf/NaN carefully.
                     ratio = ratio_obj.redrat(fval(kopt) - f, qred, eta1);
@@ -468,11 +468,11 @@ classdef uobyqb_mod
                     % Update DNORM_REC and MODERR_REC.
                     % DNORM_REC records the DNORM of the recent function evaluations with the current RHO.
                     dnorm = min(delbar, linalg_obj.p_norm(d)); % In theory, DNORM = DELBAR in this case.
-                    dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
+                    dnorm_rec(:) = [reshape(dnorm_rec(2:numel(dnorm_rec)), [], 1); dnorm];
                     % MODERR is the error of the current model in predicting the change in F due to D.
                     % MODERR_REC records the prediction errors of the recent models with the current RHO.
                     moderr = f - fval(kopt) - powalg_obj.quadinc_ghv(pq, d, xpt(:, kopt)); % QUADINC = Q(XOPT + D) - Q(XOPT)
-                    moderr_rec(:) = [moderr_rec(2:numel(moderr_rec)); moderr];
+                    moderr_rec(:) = [reshape(moderr_rec(2:numel(moderr_rec)), [], 1); moderr];
 
                     % Update PL, PQ, XPT, FVAL, and KOPT so that XPT(:, KNEW_GEO) becomes XOPT + D.
                     [kopt, fval, pl, pq, xpt] = update_uobyqa_obj.update(knew_geo, d, f, moderr, kopt, fval, pl, pq, xpt);

@@ -360,7 +360,7 @@ classdef preproc_mod
                 ubx(:) = (infnan_obj.is_finite(xu) & x0 - xu >= -consts_obj.EPS * max(consts_obj.ONE, abs(xu))); % X0 essentially equals XU
                 x0(linalg_obj.trueloc(lbx)) = xl(linalg_obj.trueloc(lbx));
                 x0(linalg_obj.trueloc(ubx)) = xu(linalg_obj.trueloc(ubx));
-                rhobeg = max(consts_obj.EPS, min([rhobeg; x0(linalg_obj.falseloc(lbx)) - xl(linalg_obj.falseloc(lbx)); xu(linalg_obj.falseloc(ubx)) - x0(linalg_obj.falseloc(ubx))], [], 'all'));
+                rhobeg = max(consts_obj.EPS, min([rhobeg; reshape(x0(linalg_obj.falseloc(lbx)) - xl(linalg_obj.falseloc(lbx)), [], 1); reshape(xu(linalg_obj.falseloc(ubx)) - x0(linalg_obj.falseloc(ubx)), [], 1)], [], 'all'));
                 if rhobeg_in - rhobeg > consts_obj.EPS * max(consts_obj.ONE, rhobeg_in)
                     rhoend = max(consts_obj.EPS, min((rhoend / rhobeg_in) * rhobeg, rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
                     if has_rhobeg

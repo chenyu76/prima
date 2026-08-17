@@ -207,7 +207,7 @@ classdef trustregion_uobyqa_mod
 
             % Begin the trust region calculation with a tridiagonal matrix by calculating the L_1-norm of the
             % Hessenberg form of H, which is an upper bound for the spectral norm of H.
-            hnorm = max(abs([consts_obj.ZERO; tn]) + abs(td) + abs([tn; consts_obj.ZERO]), [], 'all');
+            hnorm = max(abs([consts_obj.ZERO; reshape(tn, [], 1)]) + abs(td) + abs([reshape(tn, [], 1); consts_obj.ZERO]), [], 'all');
             delsq = delta * delta;
 
             % Set the initial values of PAR and its bounds.
@@ -265,7 +265,7 @@ classdef trustregion_uobyqa_mod
                 end
 
                 % NEGCRV is TRUE iff H + PAR*I has at least one negative eigenvalue (CRV means curvature).
-                negcrv = any(piv < 0 | (piv <= 0 & abs([tn; 0.0]) > 0), 'all');
+                negcrv = any(piv < 0 | (piv <= 0 & abs([reshape(tn, [], 1); 0.0]) > 0), 'all');
 
                 % Handle the case where H + PAR*I is positive semidefinite and the gradient at the trust region
                 % center is zero.
@@ -284,10 +284,10 @@ classdef trustregion_uobyqa_mod
                     % a nonempty array when NEGCRV is TRUE, and hence K <= N; however, the Fortran code may not
                     % behave in this way when compiled with aggressive optimization options; on 20221220, it is
                     % observed that K = HUGE(K) = 32767 with Flang -Ofast.
-                    k = min([n; linalg_obj.trueloc(piv < 0 | (piv <= 0 & abs([tn; 0.0]) > 0))], [], 'all');
+                    k = min([n; reshape(linalg_obj.trueloc(piv < 0 | (piv <= 0 & abs([reshape(tn, [], 1); 0.0]) > 0)), [], 1)], [], 'all');
                 else
                     % Set K to the last index corresponding to a zero curvature; K = 0 if no such curvature exits.
-                    k = max([0; linalg_obj.trueloc(abs(piv) + abs([tn; 0.0]) <= 0)], [], 'all');
+                    k = max([0; reshape(linalg_obj.trueloc(abs(piv) + abs([reshape(tn, [], 1); 0.0]) <= 0), [], 1)], [], 'all');
                 end
 
                 % At this point, K == 0 iff H + PAR*I is positive definite.

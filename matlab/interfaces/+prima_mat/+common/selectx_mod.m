@@ -134,7 +134,7 @@ classdef selectx_mod
                 if cweight <= 0
                     phi(:) = ffilt;
                 elseif infnan_obj.is_posinf(cweight)
-                    phi = cfilt_shifted;
+                    phi(:) = cfilt_shifted;
                     % We should not use CFILT here; if MAX(CFILT_SHIFTED) is attained at multiple indices, then
                     % we will check FFILT to exhaust the remaining degree of freedom.
 
@@ -282,7 +282,7 @@ classdef selectx_mod
                 if cweight <= 0
                     phi(:) = fhist;
                 elseif infnan_obj.is_posinf(cweight)
-                    phi = chist_shifted;
+                    phi(:) = chist_shifted;
                     % We should not use CHIST here; if MIN(CHIST_SHIFTED) is attained at multiple indices, then
                     % we will check FHIST to exhaust the remaining degree of freedom.
 

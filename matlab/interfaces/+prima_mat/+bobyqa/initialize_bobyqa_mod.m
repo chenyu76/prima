@@ -275,7 +275,7 @@ classdef initialize_bobyqa_mod
                 debug_obj.assert(all(xbase >= xl & xbase <= xu, 'all'), "XL <= XBASE <= XU", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), "SL <= XPT <= SU", srname);
+                debug_obj.assert(all(xpt >= reshape(sl, [], 1), 'all') && all(xpt <= reshape(su, [], 1), 'all'), "SL <= XPT <= SU", srname);
                 debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", srname);
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);

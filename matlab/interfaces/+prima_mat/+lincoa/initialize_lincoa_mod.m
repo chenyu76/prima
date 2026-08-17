@@ -174,7 +174,7 @@ classdef initialize_lincoa_mod
             % Define FEASIBLE, which will be used when defining KOPT.
             for k = 1:npt
                 % Internally, we use AMAT and B to evaluate the constraints.
-                cval(k) = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(xpt(:, k), amat) - b]);
+                cval(k) = linalg_obj.maximum1([consts_obj.ZERO; reshape(linalg_obj.matprod12(xpt(:, k), amat) - b, [], 1)]);
                 if infnan_obj.is_nan_sp(cval(k))
                     cval(k) = consts_obj.REALMAX;
                 end
@@ -204,8 +204,8 @@ classdef initialize_lincoa_mod
                 f = evaluate_obj.evaluatef(calfun, x);
                 % Evaluate the constraints.
                 constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
-                constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; linalg_obj.matprod21(Aineq, x) - bineq];
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
+                constr(:) = [reshape(xl(ixl) - x(ixl), [], 1); reshape(x(ixu) - xu(ixu), [], 1); reshape(-constr_leq, [], 1); reshape(constr_leq, [], 1); reshape(linalg_obj.matprod21(Aineq, x) - bineq, [], 1)];
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; reshape(constr, [], 1)]);
 
                 % Print a message about the function evaluation according to IPRINT.
                 message_obj.fmsg(solver, "Initialization", iprint, k, rhobeg, f, x, 'cstrv', cstrv, 'constr', constr);

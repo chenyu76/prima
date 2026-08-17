@@ -133,7 +133,7 @@ classdef geometry_cobyla_mod
             % DISTQ(J) is the square of the distance from the J-th vertex of the simplex to the "best" point so
             % far, taking the trial point SIM(:, N+1) + D into account.
             if ximproved
-                distsq(1:n) = sum((sim(:, 1:n) - d) .^ 2, 1);
+                distsq(1:n) = sum((sim(:, 1:n) - reshape(d, [], 1)) .^ 2, 1);
                 %%MATLAB: distsq = sum((sim(:, 1:n) - d).^2);  % d should be a column! Implicit expansion
                 distsq(n + 1) = sum(d .^ 2, 'all');
             else
@@ -153,7 +153,7 @@ classdef geometry_cobyla_mod
             % (N+1)-th Lagrange function is 1 - SUM(SIMID). [SIMID, 1 - SUM(SIMID)] is the counterpart of
             % VLAG in UOBYQA and DEN in NEWUOA/BOBYQA/LINCOA.
             simid(:) = linalg_obj.matprod21(simi, d);
-            score(:) = weight .* abs([simid; consts_obj.ONE - sum(simid, 'all')]);
+            score(:) = weight .* abs([reshape(simid, [], 1); consts_obj.ONE - sum(simid, 'all')]);
 
             % If XIMPROVED = FALSE (D does not render a better X), set SCORE(N+1) = -1 to avoid JDROP = N+1.
             if ~ximproved
@@ -256,7 +256,7 @@ classdef geometry_cobyla_mod
             % SIMI(JDROP, :) is a vector perpendicular to the face of the simplex to the opposite of vertex
             % JDROP. Set D to the vector in this direction and with length DELBAR.
             d(:) = simi(jdrop, :);
-            d = delbar * (d ./ linalg_obj.p_norm(d));
+            d(:) = delbar * (d ./ linalg_obj.p_norm(d));
 
             % The code below chooses the direction of D according to an approximation of the merit function.
             % See (17) of the COBYLA paper and  line 225 of Powell's cobylb.f.
@@ -266,14 +266,14 @@ classdef geometry_cobyla_mod
             % So we cannot pass G and A from outside.
             g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
             A(:, 1:m_lcon) = amat;
-            A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1), simi).';
+            A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - reshape(conmat(m_lcon + 1:m, n + 1), [], 1), simi).';
             %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
             % CVPD and CVND are the predicted constraint violation of D and -D by the linear models.
-            cvpd = linalg_obj.maximum1([consts_obj.ZERO; conmat(:, n + 1) + linalg_obj.matprod12(d, A)]);
-            cvnd = linalg_obj.maximum1([consts_obj.ZERO; conmat(:, n + 1) - linalg_obj.matprod12(d, A)]);
+            cvpd = linalg_obj.maximum([consts_obj.ZERO; reshape(conmat(:, n + 1) + linalg_obj.matprod12(d, A), [], 1)]);
+            cvnd = linalg_obj.maximum([consts_obj.ZERO; reshape(conmat(:, n + 1) - linalg_obj.matprod12(d, A), [], 1)]);
             % Take -D if the linear models predict that its merit function value is lower.
             if -linalg_obj.inprod(d, g) + cpen * cvnd < linalg_obj.inprod(d, g) + cpen * cvpd
-                d = -d;
+                d(:) = -d;
             end
 
             %====================%

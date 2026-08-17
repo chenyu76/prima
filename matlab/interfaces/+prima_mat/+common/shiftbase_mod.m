@@ -116,7 +116,7 @@ classdef shiftbase_mod
 
             % Update BMAT. See (7.11)--(7.12) of the NEWUOA paper and the elaborations around.
             % XPTXAV corresponds to XPT - XAV in the NEWUOA paper, with XAV = (X0 + XOPT)/2.
-            xptxav(:, :) = xpt - consts_obj.HALF * xopt;
+            xptxav(:, :) = xpt - consts_obj.HALF * reshape(xopt, [], 1);
             %%MATLAB: xptxav = xpt - xopt/2  % xopt should be a column! Implicit expansion
             %sxpt = matprod(xopt, xptxav)
             sxpt(:) = linalg_obj.matprod12(xopt, xpt) - consts_obj.HALF * xoptsq; % This one seems to work better numerically.
@@ -146,7 +146,7 @@ classdef shiftbase_mod
 
             % The following instructions complete the shift of XBASE.
             xbase(:) = xbase + xopt;
-            xpt(:, :) = xpt - xopt;
+            xpt(:, :) = xpt - reshape(xopt, [], 1);
             xpt(:, kopt) = consts_obj.ZERO;
             %%MATLAB: xpt = xpt - xopt; xpt(:, kopt) = 0;  % xopt should be a column! Implicit expansion
 
@@ -219,7 +219,7 @@ classdef shiftbase_mod
             % Shift the base point from XBASE to XBASE + XOPT.
             xopt(:) = xpt(:, kopt);
             xbase(:) = xbase + xopt;
-            xpt(:, :) = xpt - xopt;
+            xpt(:, :) = xpt - reshape(xopt, [], 1);
             xpt(:, kopt) = consts_obj.ZERO;
 
             % Update the gradient of the model
