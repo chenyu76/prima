@@ -46,8 +46,7 @@ classdef univar_mod
                 return
             end
 
-            [~, kopt] = min(fgrid, [], 'omitnan');
-            fopt = fgrid(kopt);
+            [fopt, kopt] = min(fgrid, [], 'omitnan');
             %%MATLAB: [fopt, kopt] = min(fgrid, [], 'omitnan');
             fprev = fgrid(mod(kopt - 2, grid_size) + 1); % Corresponds to KOPT - 1
             fnext = fgrid(mod(kopt, grid_size) + 1); % Corresponds to KOPT + 1
@@ -150,8 +149,7 @@ classdef univar_mod
                 return
             end
 
-            [~, kopt] = max(fgrid, [], 'omitnan');
-            fopt = fgrid(kopt);
+            [fopt, kopt] = max(fgrid, [], 'omitnan');
             %%MATLAB: [fopt, kopt] = min(fgrid, [], 'omitnan');
 
             if kopt == 1

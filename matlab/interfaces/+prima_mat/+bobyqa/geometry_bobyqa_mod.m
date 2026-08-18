@@ -289,8 +289,7 @@ classdef geometry_bobyqa_mod
                 slbd_test(xdiff > 0) = lfrac(xdiff > 0);
                 slbd_test(xdiff < 0) = ufrac(xdiff < 0);
                 if any(slbd_test > slbd, 'all')
-                    [~, ilbd] = max(slbd_test, [], 'omitnan');
-                    slbd = slbd_test(ilbd);
+                    [slbd, ilbd] = max(slbd_test, [], 'omitnan');
                     ilbd = -ilbd * round(1.0 .* ((xdiff(ilbd) > 0) .* 2 - 1));
                     %%MATLAB:
                     %%[slbd, ilbd] = max(slbd_test, [], 'omitnan');
