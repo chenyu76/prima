@@ -38,12 +38,11 @@ classdef initialize_uobyqa_mod
 
             solver = "UOBYQA";
 
-            kk = NaN(numel(x0), 1);
+            kk = NaN(size(x0));
 
             evaluated = false(size(xpt, 2), 1);
 
-            x = NaN(numel(x0), 1);
-            xw = NaN(numel(x0), 1);
+            xw = NaN(size(x0));
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -57,7 +56,7 @@ classdef initialize_uobyqa_mod
             info = 0;
 
             % Initialize XBASE to X0.
-            xbase(:) = x0;
+            xbase = x0;
 
             % EVALUATED is a boolean array with EVALUATED(I) indicating whether the function value of the I-th
             % interpolation point has been evaluated. We need it for a portable counting of the number of
@@ -79,7 +78,7 @@ classdef initialize_uobyqa_mod
             kk(:) = linspace(2, 2 * n, n).';
             xpt(:, kk) = rhobeg * eye(n);
             for k = 1:2 * n + 1
-                x(:) = xpt(:, k) + xbase;
+                x = xpt(:, k) + xbase;
                 f = evaluate_obj.evaluatef(calfun, x);
 
                 % Print a message about the function evaluation according to IPRINT.
@@ -129,7 +128,7 @@ classdef initialize_uobyqa_mod
                         ip = 1;
                     end
                     xpt([ip, iq], k) = xw([ip, iq]);
-                    x(:) = xpt(:, k) + xbase;
+                    x = xpt(:, k) + xbase;
                     f = evaluate_obj.evaluatef(calfun, x);
 
                     % Print a message about the function evaluation according to IPRINT.

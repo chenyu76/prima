@@ -30,11 +30,6 @@ classdef preproc_mod
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
 
 
-            lbx = false(n, 1);
-            ubx = false(n, 1);
-
-            x0_in = NaN(n, 1);
-
             ipObj = inputParser();
             addParameter(ipObj, 'm', NaN);
             addParameter(ipObj, 'npt', NaN);
@@ -261,7 +256,7 @@ classdef preproc_mod
             if lower(solver) == "bobyqa"
                 % Revise X0 if allowed and needed.
                 if ~honour_x0
-                    x0_in(:) = x0; % Recorded to see whether X0 is really revised.
+                    x0_in = x0; % Recorded to see whether X0 is really revised.
                     % N.B.: The following revision is valid only if XL <= X0 <= XU and RHOBEG <= MINVAL(XU-XL)/2,
                     % which should hold at this point due to the revision of RHOBEG and moderation of X0.
                     % The cases below are mutually exclusive in precise arithmetic as MINVAL(XU-XL) >= 2*RHOBEG.
@@ -292,8 +287,8 @@ classdef preproc_mod
                 % Revise RHOBEG if needed.
                 % N.B.: If X0 has been revised above (i.e., HONOUR_X0 is FALSE), then the following revision
                 % is unnecessary in precise arithmetic. However, it may still be needed due to rounding errors.
-                lbx(:) = (isfinite(xl) & x0 - xl <= eps(1.0) * max(1.0, abs(xl))); % X0 essentially equals XL
-                ubx(:) = (isfinite(xu) & x0 - xu >= -eps(1.0) * max(1.0, abs(xu))); % X0 essentially equals XU
+                lbx = (isfinite(xl) & x0 - xl <= eps(1.0) * max(1.0, abs(xl))); % X0 essentially equals XL
+                ubx = (isfinite(xu) & x0 - xu >= -eps(1.0) * max(1.0, abs(xu))); % X0 essentially equals XU
                 x0(lbx) = xl(lbx);
                 x0(ubx) = xu(ubx);
                 rhobeg = max(eps(1.0), min([rhobeg; x0(find(~lbx)) - xl(find(~lbx)); xu(find(~ubx)) - x0(find(~ubx))], [], 'all'));

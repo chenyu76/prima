@@ -400,9 +400,7 @@ classdef powalg_mod
             % HQ(N, N)
 
 
-            qinc = NaN;
-
-            dxpt = NaN(numel(pq), 1);
+            dxpt = NaN(size(pq));
 
             ipObj = inputParser();
             addParameter(ipObj, 'hq', NaN);
@@ -469,10 +467,7 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            qinc = NaN;
-
-            s = NaN(numel(x), 1);
-            w = NaN(numel(ghv), 1);
+            w = NaN(size(ghv));
 
             n = numel(x);
 
@@ -480,7 +475,7 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            s(:) = x + d;
+            s = x + d;
 
             w(1:n) = d;
             for j = 1:n
@@ -515,11 +510,6 @@ classdef powalg_mod
             % HQ(N, N)
 
 
-            err = NaN;
-
-            fmq = NaN(size(xpt, 2), 1);
-            qval = NaN(size(xpt, 2), 1);
-
             npt = size(xpt, 2);
 
             ipObj = inputParser();
@@ -532,9 +522,9 @@ classdef powalg_mod
             %====================%
 
             if ismember('kref', ipObj.UsingDefaults)
-                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k), xpt, gq, pq, 'hq', hq), (1:npt)');
+                qval = arrayfun(@(k) obj.quadinc_d0(xpt(:, k), xpt, gq, pq, 'hq', hq), (1:npt)');
             else
-                qval(:) = arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, 'hq', hq), (1:npt)');
+                qval = arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, 'hq', hq), (1:npt)');
             end
             %%MATLAB:
             %%if nargin >= 5
@@ -544,7 +534,7 @@ classdef powalg_mod
             %%    qval = cellfun(@(x) quadinc(x, xpt, gq, pq, hq), num2cell(xpt, 1));  % Row vector
             %%end
             if all(isfinite(qval), 'all')
-                fmq(:) = fval - qval;
+                fmq = fval - qval;
                 err = (max(fmq, [], 'all') - min(fmq, [], 'all')) / max([1.0; abs(fval)], [], 'all');
             else
                 err = realmax;
@@ -568,7 +558,7 @@ classdef powalg_mod
             % HQ(N, N)
 
 
-            y = NaN(numel(x), 1);
+            y = NaN(size(x));
 
             n = size(xpt, 1);
 
@@ -654,8 +644,6 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            p = NaN;
-
             xz = NaN(size(zmat, 2), 1);
             yz = NaN(size(zmat, 2), 1);
 
@@ -682,8 +670,6 @@ classdef powalg_mod
             % H = [Omega, r, BMAT(:, 1:NPT)^T; r^T, t(1), s^T, BMAT(:, 1:NPT), s, BMAT(:, NPT+1:NPT+N)]
             %--------------------------------------------------------------------------------------------------%
 
-
-            err = NaN;
 
             A = NaN(size(xpt, 2));
             e = NaN(3);
@@ -842,7 +828,7 @@ classdef powalg_mod
             % Update the matrix BMAT. It implements the last N rows of (4.11) in the NEWUOA paper.
             v1(:) = (alpha * vlag(npt + 1:npt + n) - tau * hcol(npt + 1:npt + n)) ./ denom;
             v2(:) = (-beta * hcol(npt + 1:npt + n) - tau * vlag(npt + 1:npt + n)) ./ denom;
-            bmat(:, :) = bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
+            bmat = bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             % Numerically, the update above does not guarantee BMAT(:, NPT+1 : NPT+N) to be symmetric.
             A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n)); bmat(:, npt + 1:npt + n) = A_slice;
@@ -1099,7 +1085,6 @@ classdef powalg_mod
 
             % For debugging only
             wcheck = NaN(size(zmat, 1), 1);
-            xref = NaN(size(xpt, 1), 1);
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -1118,7 +1103,7 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            xref(:) = xpt(:, kref); % Read XREF.
+            xref = xpt(:, kref); % Read XREF.
 
             % Set WCHECK to the first NPT entries of (w-v) for w and v in (4.10) and (4.24) of the NEWUOA paper.
             wcheck(:) = xpt.' * d;
@@ -1154,13 +1139,9 @@ classdef powalg_mod
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
 
-            beta = NaN;
-
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
             wcheck = NaN(size(zmat, 1), 1);
             wmv = NaN(size(xpt, 1) + size(xpt, 2), 1);
-
-            xref = NaN(size(xpt, 1), 1);
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -1179,7 +1160,7 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            xref(:) = xpt(:, kref); % Read XREF.
+            xref = xpt(:, kref); % Read XREF.
 
             %--------------------------------------------------------------------------------------------------%
             % N.B.: When checking the NEWUOA paper, note that the paper takes KREF = KOPT and XREF = XOPT.
@@ -1249,10 +1230,6 @@ classdef powalg_mod
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
 
-            den = NaN(size(xpt, 2), 1);
-
-            hdiag = NaN(size(xpt, 2), 1);
-
             npt = size(xpt, 2);
 
             % Read IDZ, which is absent from BOBYQA, being equivalent to IDZ = 1.
@@ -1269,7 +1246,7 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            hdiag(:) = -sum(zmat(:, 1:idz_loc - 1) .^ 2, 2) + sum(zmat(:, idz_loc:size(zmat, 2)) .^ 2, 2);
+            hdiag = -sum(zmat(:, 1:idz_loc - 1) .^ 2, 2) + sum(zmat(:, idz_loc:size(zmat, 2)) .^ 2, 2);
             vlag = obj.calvlag_lfqint(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             beta = obj.calbeta(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             den = hdiag * beta + vlag(1:npt) .^ 2;
@@ -1297,7 +1274,6 @@ classdef powalg_mod
 
             vlag = NaN(size(pl, 2), 1);
 
-            s = NaN(numel(xref), 1);
             w = NaN(size(pl, 1), 1);
 
             n = numel(xref);
@@ -1306,7 +1282,7 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            s(:) = xref + d;
+            s = xref + d;
 
             w(1:n) = d;
             for j = 1:n
@@ -1341,13 +1317,11 @@ classdef powalg_mod
 
             ij = NaN(2, max(0, npt - 2 * n - 1));
 
-            ell = NaN(max(0, npt - 2 * n - 1), 1);
-
             %====================%
             % Calculation starts %
             %====================%
 
-            ell(:) = fix((n:npt - n - 2).' ./ n); % The ell below (2.4) of the BOBYQA paper.
+            ell = fix((n:npt - n - 2).' ./ n); % The ell below (2.4) of the BOBYQA paper.
             ij(1, :) = (n:npt - n - 2).' - n * ell + 1;
             ij(2, :) = mod(ij(1, :) + ell - 1, n) + 1; % MODULO(K-1, N) + 1 = K-N for K in [N+1, 2N]
             ipObj = inputParser();

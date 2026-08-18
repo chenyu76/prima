@@ -163,13 +163,7 @@ classdef uobyqa_mod
 
             solver = "UOBYQA";
 
-            info_loc = NaN;
-
-            nf_loc = NaN;
-
             eta1_loc = NaN;
-
-            f_loc = NaN;
 
             % FHIST_LOC(MAXFHIST)
             % XHIST_LOC(N, MAXXHIST)
@@ -182,7 +176,7 @@ classdef uobyqa_mod
             end % Validate that NPT does not overflow.
 
             % Replace any NaN in X by ZERO and Inf/-Inf in X by REALMAX/-REALMAX.
-            x(:) = evaluate_obj.moderatex(x);
+            x = evaluate_obj.moderatex(x);
 
             % Read the inputs.
 
@@ -301,7 +295,7 @@ classdef uobyqa_mod
             if nargout >= 4
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                xhist = NaN(n, nhist); % Removable in F2003.
+                % Removable in F2003.
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -325,7 +319,7 @@ classdef uobyqa_mod
             if nargout >= 5
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                fhist = NaN(nhist, 1); % Removable in F2003.
+                % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 

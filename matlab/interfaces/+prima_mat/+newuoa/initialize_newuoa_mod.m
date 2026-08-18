@@ -59,9 +59,7 @@ classdef initialize_newuoa_mod
 
             solver = "NEWUOA";
 
-            evaluated = false(numel(fval), 1);
-
-            x = NaN(numel(x0), 1);
+            evaluated = false(size(fval));
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -75,7 +73,7 @@ classdef initialize_newuoa_mod
             info = 0;
 
             % Initialize XBASE to X0.
-            xbase(:) = x0;
+            xbase = x0;
 
             % EVALUATED is a boolean array with EVALUATED(I) indicating whether the function value of the I-th
             % interpolation point has been evaluated. We need it for a portable counting of the number of
@@ -101,7 +99,7 @@ classdef initialize_newuoa_mod
 
             % Set FVAL(1 : min(2*N + 1, NPT)) by evaluating F. Totally parallelizable except for FMSG.
             for k = 1:min(npt, 2 * n + 1)
-                x(:) = xpt(:, k) + xbase;
+                x = xpt(:, k) + xbase;
                 f = evaluate_obj.evaluatef(calfun, x);
 
                 % Print a message about the function evaluation according to IPRINT.
@@ -125,7 +123,7 @@ classdef initialize_newuoa_mod
             % of {{I, J} : 1 <= I /= J <= N}; when NPT < (N+1)*(N+2)/2, we can set it to the first NPT - (2*N+1)
             % elements of such a permutation. The following IJ is defined according to Powell's code. See also
             % Section 3 of the NEWUOA paper and (2.4) of the BOBYQA paper.
-            ij(:, :) = powalg_obj.setij(n, npt);
+            ij = powalg_obj.setij(n, npt);
 
             % Further revise IJ according to FVAL(2 : 2*N + 1).
             % N.B.:
@@ -153,7 +151,7 @@ classdef initialize_newuoa_mod
             % Set FVAL(2*N + 2 : NPT) by evaluating F. Totally parallelizable except for FMSG.
             if info == 0
                 for k = 2 * n + 2:npt
-                    x(:) = xpt(:, k) + xbase;
+                    x = xpt(:, k) + xbase;
                     f = evaluate_obj.evaluatef(calfun, x);
 
                     % Print a message about the function evaluation according to IPRINT.
@@ -254,7 +252,7 @@ classdef initialize_newuoa_mod
 
             [~, kopt] = min(fval);
             if kopt ~= 1
-                gopt(:) = gopt + hq * xpt(:, kopt);
+                gopt = gopt + hq * xpt(:, kopt);
             end
 
             pq(:) = 0.0;

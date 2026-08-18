@@ -54,11 +54,9 @@ classdef shiftbase_mod
             %real(RP) :: htol
 
             sxpt = NaN(size(xpt, 2), 1);
-            v = NaN(numel(xbase), 1);
+            v = NaN(size(xbase));
             vxopt = NaN(numel(xbase));
-            xopt = NaN(numel(xbase), 1);
 
-            xptxav = NaN(size(xpt, 1), size(xpt, 2));
             ymat = NaN(size(xpt, 1), size(xpt, 2));
             yzmat = NaN(numel(xbase), size(zmat, 2));
 
@@ -80,12 +78,12 @@ classdef shiftbase_mod
             %====================%
 
             % Read XOPT.
-            xopt(:) = xpt(:, kopt);
+            xopt = xpt(:, kopt);
             xoptsq = sum(xopt .* xopt, 'all');
 
             % Update BMAT. See (7.11)--(7.12) of the NEWUOA paper and the elaborations around.
             % XPTXAV corresponds to XPT - XAV in the NEWUOA paper, with XAV = (X0 + XOPT)/2.
-            xptxav(:, :) = xpt - 0.5 * xopt;
+            xptxav = xpt - 0.5 * xopt;
             %%MATLAB: xptxav = xpt - xopt/2  % xopt should be a column! Implicit expansion
             %sxpt = matprod(xopt, xptxav)
             sxpt(:) = xpt.' * xopt - 0.5 * xoptsq; % This one seems to work better numerically.
@@ -110,12 +108,12 @@ classdef shiftbase_mod
             %v = matprod(xptxav, pq)  ! Vector V in (7.14) of the NEWUOA paper
             v(:) = xpt * pq - 0.5 * sum(pq, 'all') * xopt; % This one seems to work better numerically.
             vxopt(:, :) = v * xopt.'; %%MATLAB: vxopt = v * xopt';  % v and xopt should be both columns
-            hq(:, :) = (vxopt + vxopt.') + hq; %call r2update(hq, ONE, xopt, v)
+            hq = (vxopt + vxopt.') + hq; %call r2update(hq, ONE, xopt, v)
             %call symmetrize(hq)  ! Do this if the update above does not ensure symmetry.
 
             % The following instructions complete the shift of XBASE.
-            xbase(:) = xbase + xopt;
-            xpt(:, :) = xpt - xopt;
+            xbase = xbase + xopt;
+            xpt = xpt - xopt;
             xpt(:, kopt) = 0.0;
             %%MATLAB: xpt = xpt - xopt; xpt(:, kopt) = 0;  % xopt should be a column! Implicit expansion
 
@@ -141,8 +139,6 @@ classdef shiftbase_mod
             % PQ(NPT-1)
 
 
-            xopt = NaN(numel(xbase), 1);
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
 
@@ -151,9 +147,9 @@ classdef shiftbase_mod
             %====================%
 
             % Shift the base point from XBASE to XBASE + XOPT.
-            xopt(:) = xpt(:, kopt);
-            xbase(:) = xbase + xopt;
-            xpt(:, :) = xpt - xopt;
+            xopt = xpt(:, kopt);
+            xbase = xbase + xopt;
+            xpt = xpt - xopt;
             xpt(:, kopt) = 0.0;
 
             % Update the gradient of the model

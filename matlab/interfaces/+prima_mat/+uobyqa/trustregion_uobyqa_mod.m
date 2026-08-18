@@ -67,31 +67,28 @@ classdef trustregion_uobyqa_mod
             negcrv = false;
 
             dhd = NaN;
-            dnewton = NaN(numel(g), 1); % Newton-Raphson step; only calculated when N = 1.
+            % Newton-Raphson step; only calculated when N = 1.
             dnorm = NaN;
-            dold = NaN(numel(g), 1);
+            dold = NaN(size(g));
 
             dtg = NaN;
             dtz = NaN;
             gam = NaN;
-            gg = NaN(numel(g), 1);
-
-            hh = NaN(numel(g));
 
             partmp = NaN;
 
             phi = NaN;
 
-            piv = NaN(numel(g), 1);
+            piv = NaN(size(g));
             slope = NaN;
-            td = NaN(numel(g), 1);
+            td = NaN(size(g));
             tempa = NaN;
             tempb = NaN;
             tn = NaN(numel(g) + -1, 1);
             tnz = NaN;
             wsq = NaN;
             wwsq = NaN;
-            z = NaN(numel(g), 1);
+            z = NaN(size(g));
             zsq = NaN;
 
             n = numel(g);
@@ -114,13 +111,13 @@ classdef trustregion_uobyqa_mod
             if max(abs(g), [], 'all') > 1.0e8
                 % The threshold is empirical.
                 modscal = max(2.0 * realmin, 1.0 / max(abs(g), [], 'all')); % MAX: precaution against underflow.
-                gg(:) = g * modscal;
-                hh(:, :) = h * modscal;
+                gg = g * modscal;
+                hh = h * modscal;
                 scaled = true;
             else
                 modscal = 1.0; % This value is not used, but Fortran compilers may complain without it.
-                gg(:) = g;
-                hh(:, :) = h;
+                gg = g;
+                hh = h;
                 scaled = false;
             end
 
@@ -136,7 +133,7 @@ classdef trustregion_uobyqa_mod
             end
             if ~any(abs(hh) > 0, 'all')
                 if gnorm > 0
-                    d(:) = -(delta / gnorm) * gg;
+                    d = -(delta / gnorm) * gg;
                 end
                 return
             end
@@ -146,11 +143,11 @@ classdef trustregion_uobyqa_mod
             % encounters memory errors). This is indeed why the original UOBYQA code constantly terminates with
             % "a trust region step has failed to reduce the quadratic model" when applied to univariate problems.
             if n == 1
-                d(:) = delta .* ((-g > 0) .* 2 - 1); %%MATLAB: d = -delta * sign(g)
+                d = delta .* ((-g > 0) .* 2 - 1); %%MATLAB: d = -delta * sign(g)
                 if h(1, 1) > 0
-                    dnewton(:) = -g ./ h(1, 1);
+                    dnewton = -g ./ h(1, 1);
                     if abs(dnewton(1)) <= delta
-                        d(:) = dnewton;
+                        d = dnewton;
                         crvmin = h(1, 1); % If we use HH(1, 1) here, then we need to scale it back!
 
                     end
@@ -206,9 +203,9 @@ classdef trustregion_uobyqa_mod
 
             for iter = 1:maxiter
                 if isfinite(sum(abs(d), 'all'))
-                    dold(:) = d;
+                    dold = d;
                 else
-                    d(:) = dold;
+                    d = dold;
                     break
                 end
                 if iter > maxiter
@@ -352,9 +349,9 @@ classdef trustregion_uobyqa_mod
                         dtg = sum(d .* gg, 'all');
                         if dtg > 0
                             % Has DSQ got the correct value?
-                            d(:) = -(delta / sqrt(dsq)) * d;
+                            d = -(delta / sqrt(dsq)) * d;
                         else                            % This ELSE covers the unlikely yet possible case where DTG is zero or even NaN.
-                            d(:) = (delta / sqrt(dsq)) * d;
+                            d = (delta / sqrt(dsq)) * d;
                         end
                         % N.B.: As per Powell's code, the lines above would be D = -SIGN(DELTA/SQRT(DSQ), DTG)*D.
                         % However, our version here seems more reasonable in case DTG == 0, which is unlikely
@@ -379,7 +376,7 @@ classdef trustregion_uobyqa_mod
                     end
 
                     if ~isfinite(sum(abs(d), 'all'))
-                        d(:) = dold;
+                        d = dold;
                         break
                     end
 
@@ -401,7 +398,7 @@ classdef trustregion_uobyqa_mod
 
                     phi = 1.0 / dnorm - 1.0 / delta;
                     if tol * (1.0 + par * dsq / wsq) - dsq * phi * phi >= 0
-                        d(:) = (delta / dnorm) * d;
+                        d = (delta / dnorm) * d;
                         break
                     end
                     if iter >= 2 && par <= parl
@@ -471,7 +468,7 @@ classdef trustregion_uobyqa_mod
                                 gam = sqrt(tempa / zsq);
                             end
                             if tol * (wsq + par * delsq) - gam * gam * wwsq >= 0
-                                d(:) = d + gam * z;
+                                d = d + gam * z;
                                 break
                             end
                             parlest = max(parlest, par - wwsq / zsq);
@@ -519,7 +516,7 @@ classdef trustregion_uobyqa_mod
             % If the More-Sorensen algorithm breaks down abnormally (e.g., NaN in the computation), then ||D||
             % may be (much) more than DELTA. This is handled in the following naive way.
             if norm(d) > delta
-                d(:) = (delta / norm(d)) * d;
+                d = (delta / norm(d)) * d;
             end
 
             % Set CRVMIN to zero if it is NaN, which may happen if the problem is ill-conditioned.
@@ -552,8 +549,6 @@ classdef trustregion_uobyqa_mod
             % Expansion factor
             % Reduction ratio
 
-
-            delta = NaN;
 
             %====================%
             % Calculation starts %

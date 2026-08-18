@@ -37,8 +37,6 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = pad(" ", strlength(x));
-
             dist = 'A' - 'a';
 
             y = x;
@@ -54,9 +52,7 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = NaN(strlength(x), 1);
-
-            y(:) = arrayfun(@(i) fix(double(unicode2native(extractBetween(x, i, i)))), (1:fix(strlength(x)))');
+            y = arrayfun(@(i) fix(double(unicode2native(extractBetween(x, i, i)))), (1:fix(strlength(x)))');
 
         end
         function s = real2str_scalar(obj, x, varargin)
@@ -65,8 +61,6 @@ classdef string_mod
             % digits to print, and NEXP is the number of digits in the exponent; they may be reduced if needed.
             %--------------------------------------------------------------------------------------------------%
 
-
-            s = "";
 
             % The number of decimal digits to print
             % The number of digits in the exponent
@@ -125,8 +119,6 @@ classdef string_mod
             % printed per row; they may be reduced if needed.
             %--------------------------------------------------------------------------------------------------%
 
-
-            s = "";
 
             spaces = "  "; % The spaces between two entries in a row
 
@@ -217,8 +209,6 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            x = NaN;
-
             x = sscanf(s, '%s');
         end
         function x = str2int(~, s)
@@ -226,8 +216,6 @@ classdef string_mod
             % This function converts a string to an integer scalar.
             %--------------------------------------------------------------------------------------------------%
 
-
-            x = NaN;
 
             x = sscanf(s, '%s');
         end

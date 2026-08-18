@@ -30,7 +30,6 @@ classdef update_uobyqa_mod
             % XPT(N, NPT)
 
 
-            plnew = NaN(size(pl, 1), 1);
             vlag = NaN(size(xpt, 2), 1);
 
             %====================%
@@ -46,13 +45,13 @@ classdef update_uobyqa_mod
             % Update the Lagrange functions.
             vlag(:) = powalg_obj.calvlag_qint(pl, d, xpt(:, kopt), kopt);
             pl(:, knew) = pl(:, knew) ./ vlag(knew);
-            plnew(:) = pl(:, knew);
-            pl(:, :) = pl - plnew * vlag.';
+            plnew = pl(:, knew);
+            pl = pl - plnew * vlag.';
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             pl(:, knew) = plnew;
 
             % Update the quadratic model.
-            pq(:) = pq + moderr * plnew;
+            pq = pq + moderr * plnew;
 
             % Replace the interpolation point that has index KNEW by the point XNEW.
             xpt(:, knew) = xpt(:, kopt) + d;

@@ -94,7 +94,7 @@ classdef update_bobyqa_mod
             % Update the matrix BMAT. It implements the last N rows of (4.9) in the BOBYQA paper.
             v1(:) = (alpha * vlag(npt + 1:npt + n) - tau * hcol(npt + 1:npt + n)) ./ denom;
             v2(:) = (-beta * hcol(npt + 1:npt + n) - tau * vlag(npt + 1:npt + n)) ./ denom;
-            bmat(:, :) = bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
+            bmat = bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             % Numerically, the update above does not guarantee BMAT(:, NPT+1 : NPT+N) to be symmetric.
             A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n)); bmat(:, npt + 1:npt + n) = A_slice;
@@ -190,7 +190,7 @@ classdef update_bobyqa_mod
             % PQ(NPT)
 
 
-            pqinc = NaN(numel(pq), 1);
+            pqinc = NaN(size(pq));
 
             %====================%
             % Calculation starts %
@@ -212,14 +212,14 @@ classdef update_bobyqa_mod
 
             % Update the implicit part of the Hessian.
             pqinc(:) = moderr * (zmat * zmat(knew, :).'); % pqinc = moderr * omega_col(1_IK, zmat, knew)
-            pq(:) = pq + pqinc;
+            pq = pq + pqinc;
 
             % Update the gradient, which needs the updated XPT.
-            gopt(:) = gopt + moderr * bmat(:, knew) + powalg_obj.hess_mul(xosav, xpt, pqinc);
+            gopt = gopt + moderr * bmat(:, knew) + powalg_obj.hess_mul(xosav, xpt, pqinc);
 
             % Further update GOPT if XIMPROVED is TRUE, as XOPT changes from XOSAV to XNEW = XOSAV + D.
             if ximproved
-                gopt(:) = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
+                gopt = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
             end
 
             %====================%
@@ -260,10 +260,9 @@ classdef update_bobyqa_mod
             % needed for defining ITEST, so it must be INTENT(INOUT).
 
 
-            galt = NaN(numel(gopt), 1);
+            galt = NaN(size(gopt));
 
-            pgopt = NaN(numel(gopt), 1);
-            pqalt = NaN(numel(pq), 1);
+            pqalt = NaN(size(pq));
 
             % Debugging variables
             %real(RP) :: intp_tol
@@ -276,7 +275,7 @@ classdef update_bobyqa_mod
             %====================%
 
             % Calculate the norm square of the projected gradient.
-            pgopt(:) = gopt;
+            pgopt = gopt;
             pgopt(xopt >= su) = max(0.0, gopt(xopt >= su));
             pgopt(xopt <= sl) = min(0.0, gopt(xopt <= sl));
 
@@ -300,8 +299,8 @@ classdef update_bobyqa_mod
                 itest = itest + 1;
             end
             if itest >= 3
-                gopt(:) = galt;
-                pq(:) = pqalt;
+                gopt = galt;
+                pq = pqalt;
                 hq = zeros(size(hq));
                 itest = 0;
             end

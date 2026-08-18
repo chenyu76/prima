@@ -40,8 +40,6 @@ classdef geometry_newuoa_mod
             % ZMAT(NPT, NPT - N - 1)
 
 
-            knew = NaN;
-
             distsq = NaN(size(xpt, 2), 1);
 
             %====================%
@@ -138,7 +136,7 @@ classdef geometry_newuoa_mod
             % ZMAT(NPT, NPT - N - 1)
 
 
-            d = NaN(size(xpt, 1), 1); % D(N)
+            % D(N)
 
 
             pqlag = NaN(size(xpt, 2), 1);
@@ -183,7 +181,7 @@ classdef geometry_newuoa_mod
             % In case D is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to
             % XOPT. Powell's code does not have this.
             if sum(abs(d), 'all') <= 0 || ~isfinite(sum(abs(d), 'all'))
-                d(:) = xpt(:, knew) - xpt(:, kopt);
+                d = xpt(:, knew) - xpt(:, kopt);
                 scaling = delbar / norm(d);
                 d = max(0.6 * scaling, min(0.5, scaling)) * d; % 0.6: ensure |D| > DELBAR/2
 
@@ -216,24 +214,23 @@ classdef geometry_newuoa_mod
             % ZMAT(NPT, NPT - N - 1)
 
 
-            d = NaN(size(xpt, 1), 1); % D(N)
+            % D(N)
 
 
             angle = NaN;
             cf = NaN(5, 1);
             cth = NaN;
 
-            dold = NaN(numel(x), 1);
-            gc = NaN(numel(x), 1);
+            dold = NaN(size(x));
 
             pqlag = NaN(size(xpt, 2), 1);
-            s = NaN(numel(x), 1);
+            s = NaN(size(x));
 
             sth = NaN;
 
             % LFUNC(X)
 
-            w = NaN(numel(x), 1);
+            w = NaN(size(x));
 
             n = size(xpt, 1);
 
@@ -246,11 +243,11 @@ classdef geometry_newuoa_mod
             pqlag(:) = powalg_obj.omega_col(idz, zmat, knew);
 
             % Set the unscaled initial D. Form the gradient of LFUNC at X, and multiply D by the Hessian of LFUNC.
-            d(:) = xpt(:, knew) - x;
+            d = xpt(:, knew) - x;
             dd = sum(d .* d, 'all');
             gd = powalg_obj.hess_mul(d, xpt, pqlag); % GD = MATPROD(XPT, PQLAG * MATPROD(D, XPT))
 
-            gc(:) = bmat(:, knew) + powalg_obj.hess_mul(x, xpt, pqlag); % GC = BMAT(:,KNEW) + MATPROD(XPT,PQLAG*MATPROD(X,XPT))
+            gc = bmat(:, knew) + powalg_obj.hess_mul(x, xpt, pqlag); % GC = BMAT(:,KNEW) + MATPROD(XPT,PQLAG*MATPROD(X,XPT))
 
             % Scale D and GD, with a sign change if needed. Set S to another vector in the initial 2-D subspace.
             gg = sum(gc .* gc, 'all');
@@ -381,7 +378,7 @@ classdef geometry_newuoa_mod
             % ZMAT(NPT, NPT - N - 1)
 
 
-            d = NaN(size(xpt, 1), 1); % D(N)
+            % D(N)
 
 
             j = NaN;
@@ -402,7 +399,6 @@ classdef geometry_newuoa_mod
             par = NaN(5, 1);
             pqlag = NaN(size(xpt, 2), 1);
             prod_custom = NaN(size(xpt, 1) + size(xpt, 2), 5);
-            s = NaN(size(xpt, 1), 1);
 
             sstemp = NaN(size(xpt, 2), 1);
             tau = NaN;
@@ -413,9 +409,9 @@ classdef geometry_newuoa_mod
             v = NaN(size(xpt, 2), 1);
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
             w = NaN(size(xpt, 1) + size(xpt, 2), 5);
-            x = NaN(size(xpt, 1), 1);
+
             xd = NaN;
-            xptemp = NaN(size(xpt, 1), size(xpt, 2));
+
             xs = NaN;
 
             y = NaN(size(xpt, 1), 1);
@@ -429,7 +425,7 @@ classdef geometry_newuoa_mod
             % Calculation starts %
             %====================%
 
-            x(:) = xpt(:, kopt); % For simplicity, we use X to denote XOPT.
+            x = xpt(:, kopt); % For simplicity, we use X to denote XOPT.
 
             delbar = norm(d0); % In theory, ||D0|| = DELBAR.
 
@@ -441,9 +437,9 @@ classdef geometry_newuoa_mod
             % The initial search direction D is taken from the last call of BIGLAG, and the initial S is set
             % below, usually to the direction from X to X_KNEW, but a different direction to an interpolation
             % point may be chosen, in order to prevent S from being nearly parallel to D.
-            d(:) = d0;
+            d = d0;
             dd = sum(d .* d, 'all');
-            s(:) = xpt(:, knew) - x;
+            s = xpt(:, knew) - x;
             ds = sum(d .* s, 'all');
             ss = sum(s .* s, 'all');
             xsq = sum(x .* x, 'all');
@@ -451,7 +447,7 @@ classdef geometry_newuoa_mod
             if ~(ds ^ 2 <= 0.99 * dd * ss)
                 % `.NOT. (A <= B)` differs from `A > B`.  The former holds iff A > B or {A, B} contains NaN.
                 dtest = ds ^ 2 / ss;
-                xptemp(:, :) = xpt - x;
+                xptemp = xpt - x;
                 %%MATLAB: xptemp = xpt - x  % x should be a column! Implicit expansion
                 %----------------------------------------------------------------%
                 %---------!dstemp = matprod(d, xpt) - inprod(x, d) !-------------%
@@ -469,7 +465,7 @@ classdef geometry_newuoa_mod
                 if (~(dstemp(k) ^ 2 / sstemp(k) >= dtest)) && k ~= kopt
                     % `.NOT. (A >= B)` differs from `A < B`.  The former holds iff A < B or {A, B} contains NaN.
                     % Although unlikely, if NaN occurs, it may happen that K = KOPT.
-                    s(:) = xpt(:, k) - x;
+                    s = xpt(:, k) - x;
                 end
             end
 
@@ -622,7 +618,7 @@ classdef geometry_newuoa_mod
                 yd = sum(y .* d, 'all');
                 ysq = sum(y .* y, 'all');
                 v = (tau * pqlag - alpha * vlag(1:npt)) .* (xpt.' * y);
-                s(:) = tau * bmat(:, knew) + alpha * (yd * x + ysq * d - vlag(npt + 1:npt + n));
+                s = tau * bmat(:, knew) + alpha * (yd * x + ysq * d - vlag(npt + 1:npt + n));
                 s = s + xpt * v;
             end
 
@@ -637,8 +633,6 @@ classdef geometry_newuoa_mod
             % This function defines the objective function of the 2-dimensional search on a circle in BIGLAG.
             %--------------------------------------------------------------------------------------------------%
 
-
-            f = NaN;
 
             %====================%
             % Calculation starts %
@@ -658,9 +652,7 @@ classdef geometry_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            f = NaN;
-
-            par = NaN(numel(args), 1);
+            par = NaN(size(args));
 
             %====================%
             % Calculation starts %

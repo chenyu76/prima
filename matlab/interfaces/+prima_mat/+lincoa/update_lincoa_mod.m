@@ -76,7 +76,7 @@ classdef update_lincoa_mod
             % PQ(NPT)
 
 
-            pqinc = NaN(numel(pq), 1);
+            pqinc = NaN(size(pq));
 
             %====================%
             % Calculation starts %
@@ -98,14 +98,14 @@ classdef update_lincoa_mod
 
             % Update the implicit part of the Hessian.
             pqinc(:) = moderr * powalg_obj.omega_col(idz, zmat, knew);
-            pq(:) = pq + pqinc;
+            pq = pq + pqinc;
 
             % Update the gradient, which needs the updated XPT.
-            gopt(:) = gopt + moderr * bmat(:, knew) + powalg_obj.hess_mul(xosav, xpt, pqinc);
+            gopt = gopt + moderr * bmat(:, knew) + powalg_obj.hess_mul(xosav, xpt, pqinc);
 
             % Further update GOPT if XIMPROVED is TRUE, as XOPT changes from XOSAV to XNEW = XOSAV + D.
             if ximproved
-                gopt(:) = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
+                gopt = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
             end
 
             %====================%
@@ -150,15 +150,15 @@ classdef update_lincoa_mod
             %====================%
 
             % Establish the alternative model, which is the least Frobenius norm interpolant.
-            pqalt(:) = powalg_obj.omega_mul(idz, zmat, fval);
-            galt(:) = bmat(:, 1:npt) * fval + powalg_obj.hess_mul(xopt, xpt, pqalt);
+            pqalt = powalg_obj.omega_mul(idz, zmat, fval);
+            galt = bmat(:, 1:npt) * fval + powalg_obj.hess_mul(xopt, xpt, pqalt);
 
             % Replace the current model with the alternative model if ALL(QALT_BETTER) = TRUE, i.e., the
             % recent few alternative models are more accurate in predicting the function value of XOPT + D.
             if all(qalt_better, 'all')
-                pq(:) = pqalt;
+                pq = pqalt;
                 hq = zeros(size(hq));
-                gopt(:) = galt;
+                gopt = galt;
                 qalt_better(:) = false;
             end
 
@@ -190,8 +190,7 @@ classdef update_lincoa_mod
             % RESCON(M)
 
 
-            mask = false(numel(b), 1);
-            ax = NaN(numel(b), 1);
+            ax = NaN(size(b));
 
             %====================%
             % Calculation starts %
@@ -203,7 +202,7 @@ classdef update_lincoa_mod
                 return
             end
 
-            mask(:) = (abs(rescon) < dnorm + delta);
+            mask = (abs(rescon) < dnorm + delta);
             ax(find(mask)) = amat(:, find(mask)).' * xopt;
             mask00 = mask;
             rescon(mask00) = max(b(mask00) - ax(mask00), 0.0);

@@ -78,23 +78,23 @@ classdef uobyqb_mod
 
             ximproved = false;
 
-            d = NaN(numel(x), 1);
+            d = NaN(size(x));
 
             delbar = NaN;
 
             distsq = NaN((numel(x) + 1) * (numel(x) + 2) / 2, 1);
 
             dnorm_rec = NaN(2, 1); % Powell's implementation: DNORM_REC(3)
-            fval = NaN(numel(distsq), 1);
-            g = NaN(numel(x), 1);
+            fval = NaN(size(distsq));
+            g = NaN(size(x));
 
             h = NaN(numel(x));
             moderr = NaN;
-            moderr_rec = NaN(numel(dnorm_rec), 1);
+            moderr_rec = NaN(size(dnorm_rec));
             pq = NaN(numel(distsq) + -1, 1);
 
-            xbase = NaN(numel(x), 1);
-            xdrop = NaN(numel(x), 1);
+            xbase = NaN(size(x));
+            xdrop = NaN(size(x));
             xpt = NaN(numel(x), numel(distsq));
             pl = NaN;
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
@@ -128,7 +128,7 @@ classdef uobyqb_mod
             end
 
             % Initialize X and F according to KOPT.
-            x(:) = xbase + xpt(:, kopt);
+            x = xbase + xpt(:, kopt);
             f = fval(kopt);
 
             % Finish the initialization if INITXF completed normally and CALLBACK did not request termination;
@@ -242,8 +242,8 @@ classdef uobyqb_mod
                     % Calculate the next value of the objective function.
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
-                    x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
+                    x = xbase + (xpt(:, kopt) + d);
+                    distsq = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2
@@ -408,8 +408,8 @@ classdef uobyqb_mod
                     % Calculate the next value of the objective function.
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
-                    x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
+                    x = xbase + (xpt(:, kopt) + d);
+                    distsq = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2
@@ -489,7 +489,7 @@ classdef uobyqb_mod
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             % Ensure that D has not been updated after SHORTD == TRUE occurred, or the code below is incorrect.
-            x(:) = xbase + (xpt(:, kopt) + d);
+            x = xbase + (xpt(:, kopt) + d);
             if info == 0 && shortd && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
@@ -505,7 +505,7 @@ classdef uobyqb_mod
             end
 
             % Choose the [X, F] to return.
-            x(:) = xbase + xpt(:, kopt);
+            x = xbase + xpt(:, kopt);
             f = fval(kopt);
 
             % Arrange FHIST and XHIST so that they are in the chronological order.

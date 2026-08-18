@@ -41,8 +41,6 @@ classdef geometry_bobyqa_mod
             % ZMAT(NPT, NPT - N - 1)
 
 
-            knew = NaN;
-
             distsq = NaN(size(xpt, 2), 1);
 
             %====================%
@@ -159,7 +157,7 @@ classdef geometry_bobyqa_mod
             % ZMAT(NPT, NPT-N-1)
 
 
-            d = NaN(size(xpt, 1), 1); % D(N)
+            % D(N)
 
 
             ilbd = NaN;
@@ -176,7 +174,6 @@ classdef geometry_bobyqa_mod
 
             distsq = NaN(size(xpt, 2), 1);
 
-            glag = NaN(size(xpt, 1), 1);
             grdstp = NaN;
             gs = NaN;
             lfrac = NaN(size(xpt, 1), 1);
@@ -202,8 +199,7 @@ classdef geometry_bobyqa_mod
             x = NaN(size(xpt, 1), 1);
 
             xdiff = NaN(size(xpt, 1), 1);
-            xline = NaN(size(xpt, 1), 1);
-            xopt = NaN(size(xpt, 1), 1);
+
             xtemp = NaN(size(xpt, 1), 1);
 
             n = size(xpt, 1);
@@ -220,16 +216,16 @@ classdef geometry_bobyqa_mod
             alpha = pqlag(knew);
 
             % Read XOPT.
-            xopt(:) = xpt(:, kopt);
+            xopt = xpt(:, kopt);
 
             % Calculate the gradient GLAG of the KNEW-th Lagrange function at XOPT.
-            glag(:) = bmat(:, knew) + powalg_obj.hess_mul(xopt, xpt, pqlag);
+            glag = bmat(:, knew) + powalg_obj.hess_mul(xopt, xpt, pqlag);
 
             % In case GLAG contains NaN, set D to a displacement from XOPT to XPT(:, KNEW) and return. Powell's
             % code does not have this, and D may be NaN in the end. Note that it is crucial to ensure that a
             % geometry step is nonzero.
             if ~isfinite(sum(abs(glag), 'all'))
-                d(:) = xpt(:, knew) - xopt;
+                d = xpt(:, knew) - xopt;
                 d = min(0.5, delbar / norm(d)) * d; % Since XPT respects the bounds, so does XOPT + D.
                 return
             end
@@ -279,7 +275,7 @@ classdef geometry_bobyqa_mod
                 % SL <= XOPT is ensured. In addition, when initializing LFRAC to SIGN(SUBD, -XDIFF), we do not
                 % need to worry about the case where XDIFF = 0, because we only use LFRAC when XDIFF /= 0.
                 % Similar things can be said about UFRAC.
-                xdiff(:) = xpt(:, k) - xopt;
+                xdiff = xpt(:, k) - xopt;
                 lfrac = subd .* ((-xdiff > 0) .* 2 - 1);
                 lfrac(sl - xopt > -abs(xdiff) * subd) = (sl(sl - xopt > -abs(xdiff) * subd) - xopt(sl - xopt > -abs(xdiff) * subd)) ./ xdiff(sl - xopt > -abs(xdiff) * subd);
                 ufrac = subd .* ((xdiff > 0) .* 2 - 1);
@@ -383,7 +379,7 @@ classdef geometry_bobyqa_mod
             stpsiz = stplen(isq, ksq);
             ibd = isbd(isq, ksq);
 
-            xline(:) = max(sl, min(su, xopt + stpsiz * (xpt(:, ksq) - xopt)));
+            xline = max(sl, min(su, xopt + stpsiz * (xpt(:, ksq) - xopt)));
             if ibd < 0
                 xline(-ibd) = sl(-ibd);
             end
@@ -466,7 +462,7 @@ classdef geometry_bobyqa_mod
                 x(glag > 0) = sl(glag > 0);
                 x(glag <= 0) = su(glag <= 0);
                 x(abs(s) <= 0) = xopt(abs(s) <= 0);
-                xtemp(:) = max(sl, min(su, xopt - grdstp * glag));
+                xtemp = max(sl, min(su, xopt - grdstp * glag));
                 x(s >= bigstp) = xtemp(s >= bigstp); % S == BIGSTP
                 s(s >= bigstp) = -grdstp * glag(s >= bigstp); % S == BIGSTP
                 gs = sum(glag .* s, 'all');
@@ -481,7 +477,7 @@ classdef geometry_bobyqa_mod
                 end
                 if curv > -gs && curv < -(1.0 + sqrt(2.0)) * gs
                     scaling = -gs / curv;
-                    x(:) = max(sl, min(su, xopt + scaling * s));
+                    x = max(sl, min(su, xopt + scaling * s));
                     vlagsq = (0.5 * gs * scaling) ^ 2;
                 else
                     vlagsq = (gs + 0.5 * curv) ^ 2;
@@ -507,7 +503,7 @@ classdef geometry_bobyqa_mod
             % In case D is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to XOPT.
             % Powell's code does not have this. Note that it is crucial to ensure that a geometry step is nonzero.
             if sum(abs(d), 'all') <= 0 || ~isfinite(sum(abs(d), 'all'))
-                d(:) = xpt(:, knew) - xopt;
+                d = xpt(:, knew) - xopt;
                 d = min(0.5, delbar / norm(d)) * d; % Since XPT respects the bounds, so does XOPT + D.
 
             end

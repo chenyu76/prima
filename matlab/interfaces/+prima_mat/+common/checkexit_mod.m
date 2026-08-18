@@ -24,8 +24,6 @@ classdef checkexit_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            info = NaN;
-
             %====================%
             % Calculation starts %
             %====================%
@@ -62,8 +60,6 @@ classdef checkexit_mod
             % This module checks whether to exit the solver in the constrained case.
             %--------------------------------------------------------------------------------------------------%
 
-
-            info = NaN;
 
             %====================%
             % Calculation starts %

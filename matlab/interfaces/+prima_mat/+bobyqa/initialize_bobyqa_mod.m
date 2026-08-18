@@ -78,8 +78,8 @@ classdef initialize_bobyqa_mod
             info = 0;
 
             % SL and SU are the lower and upper bounds on feasible moves from X0.
-            sl(:) = xl - x0;
-            su(:) = xu - x0;
+            sl = xl - x0;
+            su = xu - x0;
             % After the preprocessing subroutine PREPROC, SL <= 0 and the nonzero entries of SL should be less
             % than -RHOBEG, while SU >= 0 and the nonzeros of SU should be larger than RHOBEG. However, this may
             % not be true due to rounding. The following lines revise SL and SU to ensure it. X0 is also revised
@@ -109,7 +109,7 @@ classdef initialize_bobyqa_mod
             %%su(su <= 0) = 0;
 
             % Initialize XBASE to X0.
-            xbase(:) = x0;
+            xbase = x0;
 
             % EVALUATED is a boolean array with EVALUATED(I) indicating whether the function value of the I-th
             % interpolation point has been evaluated. We need it for a portable counting of the number of
@@ -193,7 +193,7 @@ classdef initialize_bobyqa_mod
             % of {{I, J} : 1 <= I /= J <= N}; when NPT < (N+1)*(N+2)/2, we can set it to the first NPT - (2*N+1)
             % elements of such a permutation. The following IJ is defined according to Powell's code. See also
             % Section 3 of the NEWUOA paper and (2.4) of the BOBYQA paper.
-            ij(:, :) = powalg_obj.setij(n, npt);
+            ij = powalg_obj.setij(n, npt);
 
             % Set XPT(:, 2*N + 2 : NPT). It depends on XPT(:, 1 : 2*N + 1) and hence on FVAL(1: 2*N + 1).
             % Indeed, XPT(:, K) has only two nonzeros for each K >= 2*N+2.
@@ -251,9 +251,6 @@ classdef initialize_bobyqa_mod
             % PQ(NPT)
 
 
-            xa = NaN(min(size(xpt, 1), size(xpt, 2) - size(xpt, 1) - 1), 1);
-            xb = NaN(numel(xa), 1);
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
 
@@ -264,13 +261,13 @@ classdef initialize_bobyqa_mod
             fbase = fval(1); % FBASE is the function value at XBASE.
 
             % Set GOPT by the forward difference.
-            gopt(:) = (fval(2:n + 1) - fbase) ./ diag(xpt(:, 2:n + 1));
+            gopt = (fval(2:n + 1) - fbase) ./ diag(xpt(:, 2:n + 1));
 
             % The interpolation conditions decide GOPT(1:NDIAG) and the first NDIAG diagonal 2nd derivatives of
             % the initial quadratic model by a quadratic interpolation on three points.
             ndiag = min(n, npt - n - 1);
-            xa(:) = diag(xpt(:, 2:ndiag + 1));
-            xb(:) = diag(xpt(:, n + 2:n + ndiag + 1));
+            xa = diag(xpt(:, 2:ndiag + 1));
+            xb = diag(xpt(:, n + 2:n + ndiag + 1));
 
             % Revise GOPT(1:NDIAG) to the value provided by the three-point interpolation.
             gopt(1:ndiag) = (gopt(1:ndiag) .* xb - ((fval(n + 2:n + ndiag + 1) - fbase) ./ xb) .* xa) ./ (xb - xa);
@@ -299,7 +296,7 @@ classdef initialize_bobyqa_mod
 
             [~, kopt] = min(fval);
             if kopt ~= 1
-                gopt(:) = gopt + hq * xpt(:, kopt);
+                gopt = gopt + hq * xpt(:, kopt);
             end
 
             pq(:) = 0.0;
@@ -340,9 +337,6 @@ classdef initialize_bobyqa_mod
             % ZMAT(NPT, NPT - N - 1)
 
 
-            xa = NaN(min(size(xpt, 1), size(xpt, 2) - size(xpt, 1) - 1), 1);
-            xb = NaN(numel(xa), 1);
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
 
@@ -356,8 +350,8 @@ classdef initialize_bobyqa_mod
 
             % The interpolation set decides the first NDIAG diagonal 2nd derivatives of the Lagrange polynomials.
             ndiag = min(n, npt - n - 1);
-            xa(:) = diag(xpt(:, 2:ndiag + 1));
-            xb(:) = diag(xpt(:, n + 2:n + ndiag + 1));
+            xa = diag(xpt(:, 2:ndiag + 1));
+            xb = diag(xpt(:, n + 2:n + ndiag + 1));
 
             bmat = zeros(size(bmat));
             % Set BMAT(1 : NDIAG, :)

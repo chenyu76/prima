@@ -38,8 +38,6 @@ classdef geometry_lincoa_mod
             % ZMAT(NPT, NPT - N - 1)
 
 
-            knew = NaN;
-
             distsq = NaN(size(xpt, 2), 1);
 
             %====================%
@@ -232,13 +230,10 @@ classdef geometry_lincoa_mod
             dderiv = NaN(size(xpt, 2), 1);
 
             distsq = NaN(size(xpt, 2), 1);
-            glag = NaN(size(xpt, 1), 1);
 
             pglag = NaN(size(xpt, 1), 1);
 
             pqlag = NaN(size(xpt, 2), 1);
-
-            xopt = NaN(size(xpt, 1), 1);
 
             n = size(xpt, 1);
 
@@ -247,12 +242,12 @@ classdef geometry_lincoa_mod
             %====================%
 
             % Read XOPT.
-            xopt(:) = xpt(:, kopt);
+            xopt = xpt(:, kopt);
 
             % PQLAG contains the leading NPT elements of the KNEW-th column of H, and it provides the second
             % derivative parameters of LFUNC. Set GLAG to the gradient of LFUNC at the trust region centre.
             pqlag(:) = powalg_obj.omega_col(idz, zmat, knew);
-            glag(:) = bmat(:, knew) + powalg_obj.hess_mul(xopt, xpt, pqlag);
+            glag = bmat(:, knew) + powalg_obj.hess_mul(xopt, xpt, pqlag);
 
             % Maximize |LFUNC| within the trust region on the lines through XOPT and other interpolation points,
             % without considering the linear constraints. In the following, VLAGABS(K) is set to the maximum of
@@ -286,7 +281,7 @@ classdef geometry_lincoa_mod
 
             end
             % Set S to the step corresponding to VLAGABS(K), and calculate DENABS for it.
-            s(:) = stplen(k) * (xpt(:, k) - xopt);
+            s = stplen(k) * (xpt(:, k) - xopt);
             den = powalg_obj.calden(kopt, bmat, s, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
             denabs = abs(den(knew));
 
@@ -301,7 +296,7 @@ classdef geometry_lincoa_mod
                 den = powalg_obj.calden(kopt, bmat, gstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
                 if abs(den(knew)) > denabs || isnan(denabs)
                     denabs = abs(den(knew));
-                    s(:) = gstp;
+                    s = gstp;
                 end
             end
 
@@ -349,7 +344,7 @@ classdef geometry_lincoa_mod
                     take_pgstp = (abs(den(knew)) > 0.1 * denabs);
                 end
                 if take_pgstp || isnan(denabs)
-                    s(:) = pgstp;
+                    s = pgstp;
                     feasible = (cstrv <= cvtol);
                 end
             end
@@ -357,9 +352,9 @@ classdef geometry_lincoa_mod
             % In case S is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to
             % XOPT. Powell's code does not have this.
             if sum(abs(s), 'all') <= 0 || ~isfinite(sum(abs(s), 'all'))
-                s(:) = xpt(:, knew) - xopt;
+                s = xpt(:, knew) - xopt;
                 scaling = delbar / norm(s);
-                s(:) = max(0.6 * scaling, min(0.5, scaling)) * s; % 0.6: ensure |D| > DELBAR/2
+                s = max(0.6 * scaling, min(0.5, scaling)) * s; % 0.6: ensure |D| > DELBAR/2
                 cstrv = max([0.0; amat(:, find(rstat >= 0)).' * s - rescon(find(rstat >= 0))], [], 'all');
                 feasible = (cstrv <= 0);
             end

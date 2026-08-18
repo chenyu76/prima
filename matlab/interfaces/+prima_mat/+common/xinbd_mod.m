@@ -12,16 +12,12 @@ classdef xinbd_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            x = NaN(numel(xbase), 1);
-
-            s = NaN(numel(xbase), 1);
-
             %====================%
             % Calculation starts %
             %====================%
 
-            s(:) = max(sl, min(su, step));
-            x(:) = max(xl, min(xu, xbase + s));
+            s = max(sl, min(su, step));
+            x = max(xl, min(xu, xbase + s));
             x(s <= sl) = xl(s <= sl);
             x(s >= su) = xu(s >= su);
 

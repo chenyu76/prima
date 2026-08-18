@@ -102,7 +102,7 @@ classdef lincob_mod
 
             solver = "LINCOA";
 
-            iact = NaN(numel(bvec), 1);
+            iact = NaN(size(bvec));
             idz = NaN;
             ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
 
@@ -119,13 +119,13 @@ classdef lincob_mod
             small_trrad = false;
 
             ximproved = false;
-            b = NaN(numel(bvec), 1);
+
             bmat = NaN(numel(x), npt + numel(x));
             cfilt = NaN(maxfilt, 1);
             constr = NaN(nnz(xl > -(0.25 * realmax)) + nnz(xu < 0.25 * realmax) + 2 * numel(beq) + numel(bineq), 1);
-            constr_leq = NaN(numel(beq), 1);
+            constr_leq = NaN(size(beq));
             cval = NaN(npt, 1);
-            d = NaN(numel(x), 1);
+            d = NaN(size(x));
             delbar = NaN;
 
             distsq = NaN(npt, 1);
@@ -133,9 +133,9 @@ classdef lincob_mod
             dnorm_rec = NaN(3, 1); % Powell's implementation: DNORM_REC(5)
             ffilt = NaN(maxfilt, 1);
             fval = NaN(npt, 1);
-            galt = NaN(numel(x), 1);
+            galt = NaN(size(x));
 
-            gopt = NaN(numel(x), 1);
+            gopt = NaN(size(x));
             hq = NaN(numel(x));
             moderr = NaN;
             moderr_alt = NaN;
@@ -145,10 +145,10 @@ classdef lincob_mod
 
             rfac = NaN(numel(x));
 
-            xbase = NaN(numel(x), 1);
-            xdrop = NaN(numel(x), 1);
+            xbase = NaN(size(x));
+            xdrop = NaN(size(x));
             xfilt = NaN(numel(x), maxfilt);
-            xosav = NaN(numel(x), 1);
+            xosav = NaN(size(x));
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
@@ -168,7 +168,7 @@ classdef lincob_mod
             ixu = find(xu < 0.25 * realmax);
 
             % Initialize B, XBASE, XPT, FVAL, CVAL, and KOPT, together with the history, NF, IJ, and EVALUATED.
-            b(:) = bvec;
+            b = bvec;
             [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, subinfo] = initialize_lincoa_obj.initxf(calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, rhobeg, xl, xu, x, b, ij, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
@@ -187,7 +187,7 @@ classdef lincob_mod
             % Initialize X, F, CONSTR, and CSTRV according to KOPT.
             % N.B.: We must set CONSTR and CSTRV. Otherwise, if REDUCE_RHO is TRUE after the very first
             % iteration due to SHORTD, then RHOMSG will be called with CONSTR and CSTRV uninitialized.
-            x(:) = xbase + xpt(:, kopt);
+            x = xbase + xpt(:, kopt);
             f = fval(kopt);
             constr_leq(:) = Aeq * x - beq;
             constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
@@ -230,7 +230,7 @@ classdef lincob_mod
                 % Return the best calculated values of the variables. If CTOL > 0, the KOPT decided by SELECTX
                 % may not be the same as the one by INITXF.
                 kopt = selectx_obj.selectx(ffilt(1:nfilt), cfilt(1:nfilt), cweight, ctol);
-                x(:) = xfilt(:, kopt);
+                x = xfilt(:, kopt);
                 f = ffilt(kopt);
                 constr_leq(:) = Aeq * x - beq;
                 constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
@@ -349,7 +349,7 @@ classdef lincob_mod
                     end
                 else
                     % Calculate the next value of the objective function.
-                    x(:) = xbase + (xpt(:, kopt) + d);
+                    x = xbase + (xpt(:, kopt) + d);
                     f = evaluate_obj.evaluatef(calfun, x);
                     nf = nf + 1;
 
@@ -507,7 +507,7 @@ classdef lincob_mod
                     [feasible, d] = geometry_lincoa_obj.geostep(iact, idz, knew_geo, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat, d);
 
                     % Calculate the next value of the objective function.
-                    x(:) = xbase + (xpt(:, kopt) + d);
+                    x = xbase + (xpt(:, kopt) + d);
                     f = evaluate_obj.evaluatef(calfun, x);
                     nf = nf + 1;
 
@@ -607,7 +607,7 @@ classdef lincob_mod
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             if info == 0 && shortd && dnorm > 0.1 * rhoend && nf < maxfun
-                x(:) = xbase + (xpt(:, kopt) + d);
+                x = xbase + (xpt(:, kopt) + d);
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 constr_leq(:) = Aeq * x - beq;
@@ -624,7 +624,7 @@ classdef lincob_mod
 
             % Return the best calculated values of the variables.
             kopt = selectx_obj.selectx(ffilt(1:nfilt), cfilt(1:nfilt), cweight, ctol);
-            x(:) = xfilt(:, kopt);
+            x = xfilt(:, kopt);
             f = ffilt(kopt);
             constr_leq(:) = Aeq * x - beq;
             constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];

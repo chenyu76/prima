@@ -237,18 +237,10 @@ classdef lincoa_mod
 
             solver = "LINCOA";
 
-            info_loc = NaN;
-
-            nf_loc = NaN;
-
-            cstrv_loc = NaN;
-
             eta1_loc = NaN;
 
-            f_loc = NaN;
-
-            xl_loc = NaN(numel(x), 1);
-            xu_loc = NaN(numel(x), 1);
+            xl_loc = NaN(size(x));
+            xu_loc = NaN(size(x));
             % Aeq_LOC(Meq, N)
             % Aineq_LOC(Mineq, N)
             amat = NaN; % AMAT(N, M); each column corresponds to a constraint
@@ -331,7 +323,7 @@ classdef lincoa_mod
 
             % Read the inputs
 
-            x(:) = evaluate_obj.moderatex(x);
+            x = evaluate_obj.moderatex(x);
 
             Aineq_loc = NaN(mineq, n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
             if ~ismember('Aineq', ipObj.UsingDefaults) && mineq > 0
@@ -362,7 +354,7 @@ classdef lincoa_mod
             xl_loc(:) = -(0.25 * realmax);
             if ~ismember('xl', ipObj.UsingDefaults)
                 if numel(xl) > 0
-                    xl_loc(:) = xl;
+                    xl_loc = xl;
                 end
             end
             xl_loc(isnan(xl_loc) | xl_loc < -(0.25 * realmax)) = -(0.25 * realmax);
@@ -370,7 +362,7 @@ classdef lincoa_mod
             xu_loc(:) = 0.25 * realmax;
             if ~ismember('xu', ipObj.UsingDefaults)
                 if numel(xu) > 0
-                    xu_loc(:) = xu;
+                    xu_loc = xu;
                 end
             end
             xu_loc(isnan(xu_loc) | xu_loc > 0.25 * realmax) = 0.25 * realmax;
@@ -471,7 +463,7 @@ classdef lincoa_mod
             if nargout >= 5
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                xhist = NaN(n, nhist); % Removable in F2003.
+                % Removable in F2003.
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -495,7 +487,7 @@ classdef lincoa_mod
             if nargout >= 6
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                fhist = NaN(nhist, 1); % Removable in F2003.
+                % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
@@ -505,7 +497,7 @@ classdef lincoa_mod
             if nargout >= 7
                 nhist = min(nf_loc, numel(chist_loc));
                 %--------------------------------------------------%
-                chist = NaN(nhist, 1); % Removable in F2003.
+                % Removable in F2003.
                 %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
@@ -534,9 +526,8 @@ classdef lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            Aeq_norm = NaN(size(Aeq, 1), 1);
             Aeqx0 = NaN(size(Aeq, 1), 1);
-            Aineq_norm = NaN(size(Aineq, 1), 1);
+
             Aineqx0 = NaN(size(Aineq, 1), 1);
             idmat = NaN(numel(x0));
 
@@ -549,9 +540,9 @@ classdef lincoa_mod
             % Decide the number of nontrivial and valid (gradient is nonzero) constraints.
             mxl = nnz(xl > -(0.25 * realmax));
             mxu = nnz(xu < 0.25 * realmax);
-            Aeq_norm(:) = sqrt(sum(Aeq .^ 2, 2));
+            Aeq_norm = sqrt(sum(Aeq .^ 2, 2));
             meq = nnz(Aeq_norm > 0);
-            Aineq_norm(:) = sqrt(sum(Aineq .^ 2, 2));
+            Aineq_norm = sqrt(sum(Aineq .^ 2, 2));
             mineq = nnz(Aineq_norm > 0);
             m = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
 
@@ -563,7 +554,6 @@ classdef lincoa_mod
 
 
             amat = NaN(n, m);
-            bvec = NaN(m, 1);
 
             % Define the indices of the valid and nontrivial constraints.
             ixl = find(xl > -(0.25 * realmax));

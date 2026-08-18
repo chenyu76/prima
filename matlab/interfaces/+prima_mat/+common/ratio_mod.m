@@ -19,8 +19,6 @@ classdef ratio_mod
             % When RATIO <= RSHRINK, DELTA will be shrunk.
 
 
-            ratio = NaN;
-
             %====================%
             % Calculation starts %
             %====================%

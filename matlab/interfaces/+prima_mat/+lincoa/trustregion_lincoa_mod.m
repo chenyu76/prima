@@ -70,28 +70,27 @@ classdef trustregion_lincoa_mod
             alphm = NaN;
             alpht = NaN;
             beta = NaN;
-            d = NaN(numel(gopt_in), 1);
+            d = NaN(size(gopt_in));
 
             dg = NaN;
             dhd = NaN;
-            dproj = NaN(numel(gopt_in), 1);
+            dproj = NaN(size(gopt_in));
             ds = NaN;
             frac = NaN(size(amat, 2), 1);
 
             gamma = NaN;
-            gopt = NaN(numel(gopt_in), 1);
-            hd = NaN(numel(gopt_in), 1);
-            hq = NaN(size(hq_in, 1), size(hq_in, 2));
 
-            pg = NaN(numel(gopt_in), 1);
-            pq = NaN(numel(pq_in), 1);
-            psd = NaN(numel(gopt_in), 1);
+            hd = NaN(size(gopt_in));
+
+            pg = NaN(size(gopt_in));
+
+            psd = NaN(size(gopt_in));
 
             resact = NaN(size(amat, 2), 1);
             resid = NaN;
-            resnew = NaN(size(amat, 2), 1);
+
             restmp = NaN(size(amat, 2), 1);
-            sold = NaN(numel(s), 1);
+            sold = NaN(size(s));
             sqrtd = NaN;
 
             m = size(amat, 2);
@@ -108,13 +107,13 @@ classdef trustregion_lincoa_mod
             if max(abs(gopt_in), [], 'all') > 1.0e12
                 % The threshold is empirical.
                 modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
-                gopt(:) = gopt_in * modscal;
-                pq(:) = pq_in * modscal;
-                hq(:, :) = hq_in * modscal;
+                gopt = gopt_in * modscal;
+                pq = pq_in * modscal;
+                hq = hq_in * modscal;
             else
-                gopt(:) = gopt_in;
-                pq(:) = pq_in;
-                hq(:, :) = hq_in;
+                gopt = gopt_in;
+                pq = pq_in;
+                hq = hq_in;
             end
 
             % Return if G is not finite. Otherwise, GETACT will fail in the debugging mode.
@@ -138,7 +137,7 @@ classdef trustregion_lincoa_mod
             % 3. RESNEW(J) > 0 means that RESNEW(J) = max(B(J) - AMAT(:, J)^T*(XOPT+S), TINYCV), where S is the
             % step up to now, calculated by a sequence of (truncated) CG iterations.
             % N.B.: The order of the following lines is important, as the later ones override the earlier.
-            resnew(:) = rescon;
+            resnew = rescon;
             resnew(rescon >= 0) = max(1.0e-60, rescon(rescon >= 0));
             resnew(rescon >= delta) = -1.0;
             %%MATLAB:
@@ -349,11 +348,11 @@ classdef trustregion_lincoa_mod
                 alpha = min(alpha, alphm);
 
                 % Update S, G.
-                sold(:) = s;
-                s(:) = s + alpha * d;
+                sold = s;
+                s = s + alpha * d;
                 ss = sum(s .^ 2, 'all');
                 if ~isfinite(ss)
-                    s(:) = sold;
+                    s = sold;
                     break
                 end
                 g = g + alpha * hd;
@@ -388,7 +387,7 @@ classdef trustregion_lincoa_mod
                 % Update REDUCT, the reduction up to now.
                 reduct = reduct - alpha * (dg + 0.5 * alpha * dhd);
                 if reduct <= 0 || isnan(reduct)
-                    s(:) = sold;
+                    s = sold;
                     break
                 end
 
@@ -479,8 +478,6 @@ classdef trustregion_lincoa_mod
             % Expansion factor
             % Reduction ratio
 
-
-            delta = NaN;
 
             %====================%
             % Calculation starts %

@@ -83,7 +83,7 @@ classdef update_newuoa_mod
             % PQ(NPT)
 
 
-            pqinc = NaN(numel(pq), 1);
+            pqinc = NaN(size(pq));
 
             %====================%
             % Calculation starts %
@@ -105,14 +105,14 @@ classdef update_newuoa_mod
 
             % Update the implicit part of the Hessian.
             pqinc(:) = moderr * powalg_obj.omega_col(idz, zmat, knew);
-            pq(:) = pq + pqinc;
+            pq = pq + pqinc;
 
             % Update the gradient, which needs the updated XPT.
-            gopt(:) = gopt + moderr * bmat(:, knew) + powalg_obj.hess_mul(xosav, xpt, pqinc);
+            gopt = gopt + moderr * bmat(:, knew) + powalg_obj.hess_mul(xosav, xpt, pqinc);
 
             % Further update GOPT if XIMPROVED is TRUE, as XOPT changes from XOSAV to XNEW = XOSAV + D.
             if ximproved
-                gopt(:) = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
+                gopt = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
             end
 
             %====================%
@@ -151,8 +151,8 @@ classdef update_newuoa_mod
             % needed for defining ITEST, so it must be INTENT(INOUT).
 
 
-            galt = NaN(numel(gopt), 1);
-            pqalt = NaN(numel(pq), 1);
+            galt = NaN(size(gopt));
+            pqalt = NaN(size(pq));
 
             npt = numel(pq);
 
@@ -174,8 +174,8 @@ classdef update_newuoa_mod
                 itest = itest + 1;
             end
             if itest >= 3
-                gopt(:) = galt;
-                pq(:) = pqalt;
+                gopt = galt;
+                pq = pqalt;
                 hq = zeros(size(hq));
                 itest = 0;
             end

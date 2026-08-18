@@ -31,8 +31,6 @@ classdef geometry_cobyla_mod
             % SIMI(N, N)
 
 
-            jdrop = NaN;
-
             distsq = NaN(size(sim, 2), 1);
 
             simid = NaN(size(simi, 1), 1);

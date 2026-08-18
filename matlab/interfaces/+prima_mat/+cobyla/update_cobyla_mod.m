@@ -31,9 +31,8 @@ classdef update_cobyla_mod
             % SIMI(N, N)
 
 
-            sim_old = NaN(size(sim, 1), size(sim, 2));
             simi_jdrop = NaN(size(simi, 2), 1);
-            simi_old = NaN(size(simi, 1), size(simi, 2));
+
             simi_test = NaN(size(simi, 1), size(simi, 2));
             simid = NaN(size(simi, 1), 1);
             sum_simi = NaN(size(simi, 2), 1);
@@ -52,20 +51,20 @@ classdef update_cobyla_mod
                 return
             end
 
-            sim_old(:, :) = sim;
-            simi_old(:, :) = simi;
+            sim_old = sim;
+            simi_old = simi;
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             if jdrop <= n
                 sim(:, jdrop) = d;
                 simi_jdrop(:) = simi(jdrop, :) ./ sum(simi(jdrop, :).' .* d, 'all');
-                simi(:, :) = simi - simi * d * simi_jdrop.';
+                simi = simi - simi * d * simi_jdrop.';
                 simi(jdrop, :) = simi_jdrop;
             else                % JDROP = N+1
                 sim(:, n + 1) = sim(:, n + 1) + d;
                 sim(:, 1:n) = sim(:, 1:n) - d;
                 simid(:) = simi * d;
                 sum_simi(:) = sum(simi, 1);
-                simi(:, :) = simi + simid * (sum_simi ./ (1.0 - sum(simid, 'all'))).';
+                simi = simi + simid * (sum_simi ./ (1.0 - sum(simid, 'all'))).';
             end
 
             % Check whether SIMI is a poor approximation to the inverse of SIM(:, 1:N).
@@ -75,7 +74,7 @@ classdef update_cobyla_mod
                 simi_test(:, :) = inv(sim(:, 1:n));
                 erri_test = max(abs(simi_test * sim(:, 1:n) - eye(n)), [], 'all');
                 if erri_test < erri || (isnan(erri) && ~isnan(erri_test))
-                    simi(:, :) = simi_test;
+                    simi = simi_test;
                     erri = erri_test;
                 end
             end
@@ -90,8 +89,8 @@ classdef update_cobyla_mod
                 [conmat, cval, fval, sim, simi, info] = obj.updatepole(cpen, conmat, cval, fval, sim, simi);
             else                % ERRI > ITOL or ERRI is NaN
                 info = 7;
-                sim(:, :) = sim_old;
-                simi(:, :) = simi_old;
+                sim = sim_old;
+                simi = simi_old;
             end
 
             %====================%
@@ -135,9 +134,6 @@ classdef update_cobyla_mod
             % SIMI(N, N)
 
 
-            sim_jopt = NaN(size(sim, 1), 1);
-            sim_old = NaN(size(sim, 1), size(sim, 2));
-            simi_old = NaN(size(simi, 1), size(simi, 2));
             simi_test = NaN(size(simi, 1), size(simi, 2));
             itol = 1.0;
 
@@ -156,13 +152,13 @@ classdef update_cobyla_mod
             % Switch the best vertex to the pole position SIM(:, N+1) if it is not there already, and update
             % SIMI. Before the update, save a copy of SIM and SIMI. If the update is unsuccessful due to
             % damaging rounding errors, we restore them and return with INFO = DAMAGING_ROUNDING.
-            sim_old(:, :) = sim;
-            simi_old(:, :) = simi;
+            sim_old = sim;
+            simi_old = simi;
             if jopt >= 1 && jopt <= n
                 % Unless there is a bug in FINDPOLE, it is guaranteed that JOPT >= 1.
                 % When JOPT == N + 1, there is nothing to switch; in addition, SIMI(JOPT, :) will be illegal.
                 sim(:, n + 1) = sim(:, n + 1) + sim(:, jopt);
-                sim_jopt(:) = sim(:, jopt);
+                sim_jopt = sim(:, jopt);
                 sim(:, jopt) = 0.0;
                 sim(:, 1:n) = sim(:, 1:n) - sim_jopt;
                 %%MATLAB: sim(:, 1:n) = sim(:, 1:n) - sim_jopt; % sim_jopt should be a column! Implicit expansion
@@ -183,7 +179,7 @@ classdef update_cobyla_mod
                 simi_test(:, :) = inv(sim(:, 1:n));
                 erri_test = max(abs(simi_test * sim(:, 1:n) - eye(n)), [], 'all');
                 if erri_test < erri || (isnan(erri) && ~isnan(erri_test))
-                    simi(:, :) = simi_test;
+                    simi = simi_test;
                     erri = erri_test;
                 end
             end
@@ -198,8 +194,8 @@ classdef update_cobyla_mod
                 end
             else                % ERRI > ITOL or ERRI is NaN
                 info = 7;
-                sim(:, :) = sim_old;
-                simi(:, :) = simi_old;
+                sim = sim_old;
+                simi = simi_old;
             end
 
             %====================%
@@ -219,17 +215,13 @@ classdef update_cobyla_mod
             % FVAL(N+1)
 
 
-            jopt = NaN;
-
-            phi = NaN(numel(cval), 1);
-
             %====================%
             % Calculation starts %
             %====================%
 
             % Identify the optimal vertex of the current simplex.
             jopt = numel(fval); % We use N + 1 as the default value of JOPT.
-            phi(:) = fval + cpen * cval;
+            phi = fval + cpen * cval;
             phimin = min(phi, [], 'all');
             % Essentially, JOPT = MINLOC(PHI). However, we keep JOPT = N + 1 unless there is a strictly better
             % choice. When there are multiple choices, we choose the JOPT with the smallest value of CVAL.

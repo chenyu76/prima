@@ -118,7 +118,7 @@ classdef bobyqb_mod
             ximproved = false;
             bmat = NaN(numel(x), npt + numel(x));
 
-            d = NaN(numel(x), 1);
+            d = NaN(size(x));
             delbar = NaN;
 
             den = NaN(npt, 1);
@@ -128,18 +128,18 @@ classdef bobyqb_mod
 
             fval = NaN(npt, 1);
 
-            gopt = NaN(numel(x), 1);
+            gopt = NaN(size(x));
             hq = NaN(numel(x));
             moderr = NaN;
-            moderr_rec = NaN(numel(dnorm_rec), 1);
+            moderr_rec = NaN(size(dnorm_rec));
             pq = NaN(npt, 1);
 
-            sl = NaN(numel(x), 1);
-            su = NaN(numel(x), 1);
+            sl = NaN(size(x));
+            su = NaN(size(x));
             vlag = NaN(npt + numel(x), 1);
-            xbase = NaN(numel(x), 1);
-            xdrop = NaN(numel(x), 1);
-            xosav = NaN(numel(x), 1);
+            xbase = NaN(size(x));
+            xdrop = NaN(size(x));
+            xosav = NaN(size(x));
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
@@ -166,7 +166,7 @@ classdef bobyqb_mod
             end
 
             % Initialize X and F according to KOPT.
-            x(:) = xinbd_obj.xinbd(xbase, xpt(:, kopt), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT.
+            x = xinbd_obj.xinbd(xbase, xpt(:, kopt), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT.
             f = fval(kopt);
 
             % Finish the initialization if INITXF completed normally and CALLBACK did not request termination;
@@ -272,7 +272,7 @@ classdef bobyqb_mod
                     ebound = obj.errbd(crvmin, d, gopt, hq, moderr_rec, pq, rho, sl, su, xpt(:, kopt), xpt);
                 else
                     % Calculate the next value of the objective function.
-                    x(:) = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % X = XBASE + XOPT + D without rounding.
+                    x = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % X = XBASE + XOPT + D without rounding.
                     f = evaluate_obj.evaluatef(calfun, x);
                     nf = nf + 1;
                     rescued = false; % Set RESCUED to FALSE after evaluating F at a new point.
@@ -481,7 +481,7 @@ classdef bobyqb_mod
                         moderr_rec(:) = realmax;
                     else
                         % Calculate the next value of the objective function.
-                        x(:) = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % X = XBASE + XOPT + D without rounding.
+                        x = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % X = XBASE + XOPT + D without rounding.
                         f = evaluate_obj.evaluatef(calfun, x);
                         nf = nf + 1;
                         rescued = false; % Set RESCUED to FALSE after evaluating F at a new point.
@@ -553,7 +553,7 @@ classdef bobyqb_mod
                     sl = min(sl - xpt(:, kopt), 0.0);
                     su = max(su - xpt(:, kopt), 0.0);
                     [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq);
-                    xbase(:) = max(xl, min(xu, xbase));
+                    xbase = max(xl, min(xu, xbase));
                 end
 
                 % Report the current best value, and check if user asks for early termination.
@@ -569,7 +569,7 @@ classdef bobyqb_mod
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             if info == 0 && shortd && dnorm > 0.1 * rhoend && nf < maxfun
-                x(:) = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT + D.
+                x = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT + D.
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 % Print a message about the function evaluation according to IPRINT.
@@ -581,7 +581,7 @@ classdef bobyqb_mod
 
             % Choose the [X, F] to return: either the current [X, F] or [XBASE + XOPT, FOPT].
             if fval(kopt) < f || isnan(f)
-                x(:) = xinbd_obj.xinbd(xbase, xpt(:, kopt), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT.
+                x = xinbd_obj.xinbd(xbase, xpt(:, kopt), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT.
                 f = fval(kopt);
             end
 
@@ -607,23 +607,18 @@ classdef bobyqb_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            ebound = NaN;
-
-            bfirst = NaN(numel(d), 1);
-            bsecond = NaN(numel(d), 1);
-            gnew = NaN(numel(d), 1);
-            xnew = NaN(numel(d), 1);
+            bfirst = NaN(size(d));
 
             %====================%
             % Calculation starts %
             %====================%
 
-            xnew(:) = xopt + d;
-            gnew(:) = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
+            xnew = xopt + d;
+            gnew = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
             bfirst(:) = max(abs(moderr_rec), [], 'all');
             bfirst(xnew <= sl) = gnew(xnew <= sl) * rho;
             bfirst(xnew >= su) = -gnew(xnew >= su) * rho;
-            bsecond(:) = 0.5 * (diag(hq) + xpt .^ 2 * pq) * rho ^ 2;
+            bsecond = 0.5 * (diag(hq) + xpt .^ 2 * pq) * rho ^ 2;
             ebound = min(max(bfirst, bfirst + bsecond), [], 'all');
             if crvmin > 0
                 ebound = min(ebound, 0.125 * crvmin * rho ^ 2);

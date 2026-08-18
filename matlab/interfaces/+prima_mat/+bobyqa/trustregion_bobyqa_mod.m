@@ -62,7 +62,7 @@ classdef trustregion_bobyqa_mod
             % D(N)
 
 
-            xbdi = NaN(numel(gopt_in), 1);
+            xbdi = NaN(size(gopt_in));
             grid_size = NaN;
 
             bstep = NaN;
@@ -70,19 +70,17 @@ classdef trustregion_bobyqa_mod
 
             dhd = NaN;
             dhs = NaN;
-            dold = NaN(numel(d), 1);
+            dold = NaN(size(d));
             dredg = NaN;
 
             ds = NaN;
 
             hangt = NaN;
             hangt_bd = NaN;
-            hq = NaN(size(hq_in, 1), size(hq_in, 2));
-            pq = NaN(numel(pq_in), 1);
 
             rayleighq = NaN;
 
-            sbound = NaN(numel(gopt_in), 1);
+            sbound = NaN(size(gopt_in));
             sdec = NaN;
             shs = NaN;
             sqrtd = NaN;
@@ -91,19 +89,18 @@ classdef trustregion_bobyqa_mod
             sth = NaN;
             stplen = NaN;
             temp = NaN;
-            xtest = NaN(numel(xopt), 1);
+            xtest = NaN(size(xopt));
             args = NaN(5, 1);
-            dred = NaN(numel(gopt_in), 1);
+            dred = NaN(size(gopt_in));
 
-            gopt = NaN(numel(gopt_in), 1);
-            hdred = NaN(numel(gopt_in), 1);
-            hs = NaN(numel(gopt_in), 1);
+            hdred = NaN(size(gopt_in));
+            hs = NaN(size(gopt_in));
 
-            s = NaN(numel(gopt_in), 1);
-            sqdscr = NaN(numel(gopt_in), 1);
-            ssq = NaN(numel(gopt_in), 1);
-            tanbd = NaN(numel(gopt_in), 1);
-            xnew = NaN(numel(gopt_in), 1);
+            s = NaN(size(gopt_in));
+            sqdscr = NaN(size(gopt_in));
+            ssq = NaN(size(gopt_in));
+            tanbd = NaN(size(gopt_in));
+            xnew = NaN(size(gopt_in));
 
             n = numel(gopt_in);
 
@@ -118,15 +115,15 @@ classdef trustregion_bobyqa_mod
             if max(abs(gopt_in), [], 'all') > 1.0e12
                 % The threshold is empirical.
                 modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
-                gopt(:) = gopt_in * modscal;
-                pq(:) = pq_in * modscal;
-                hq(:, :) = hq_in * modscal;
+                gopt = gopt_in * modscal;
+                pq = pq_in * modscal;
+                hq = hq_in * modscal;
                 scaled = true;
             else
                 modscal = 1.0; % This value is not used, but Fortran compilers may complain without it.
-                gopt(:) = gopt_in;
-                pq(:) = pq_in;
-                hq(:, :) = hq_in;
+                gopt = gopt_in;
+                pq = pq_in;
+                hq = hq_in;
                 scaled = false;
             end
 
@@ -254,7 +251,7 @@ classdef trustregion_bobyqa_mod
                 % MIN(STPLEN*S, SU-XSUM)/S, or set IACT to a positive value only if the minimum of SBOUND is
                 % surely less STPLEN, e.g. ANY(SBOUND < (ONE-EPS) * STPLEN). The first method does not avoid
                 % overflow and makes little sense.
-                xnew(:) = xopt + d;
+                xnew = xopt + d;
                 xtest(:) = xnew + stplen * s;
                 sbound(:) = stplen;
                 sbound(s > 0 & xtest > su) = (su(s > 0 & xtest > su) - xnew(s > 0 & xtest > su)) ./ s(s > 0 & xtest > su);
@@ -301,12 +298,12 @@ classdef trustregion_bobyqa_mod
                     ggsav = gredsq;
                     gnew = gnew + stplen * hs;
                     gredsq = sum(gnew(find(xbdi == 0)) .^ 2, 'all');
-                    dold(:) = d;
-                    d(:) = d + stplen * s;
+                    dold = d;
+                    d = d + stplen * s;
 
                     % Exit in case of Inf/NaN in D.
                     if ~isfinite(sum(abs(d), 'all'))
-                        d(:) = dold;
+                        d = dold;
                         break
                     end
 
@@ -377,7 +374,7 @@ classdef trustregion_bobyqa_mod
 
             nactsav = nact - 1;
             for iter = 1:maxiter
-                xnew(:) = xopt + d;
+                xnew = xopt + d;
 
                 % Update XBDI. It indicates whether the lower (-1) or upper bound (+1) is reached or not (0).
                 xbdi(xbdi == 0 & (xnew >= su)) = 1;
@@ -392,7 +389,7 @@ classdef trustregion_bobyqa_mod
                 dredg = sum(d(find(xbdi == 0)) .* gnew(find(xbdi == 0)), 'all');
                 if iter == 1 || nact > nactsav
                     dredsq = sum(d(find(xbdi == 0)) .^ 2, 'all'); % In theory, DREDSQ changes only when NACT increases.
-                    dred(:) = d;
+                    dred = d;
                     dred(xbdi ~= 0) = 0.0;
                     hdred(:) = powalg_obj.hess_mul(dred, xpt, pq, 'hq', hq);
                     nactsav = nact;
@@ -406,7 +403,7 @@ classdef trustregion_bobyqa_mod
                     break
                 end
                 temp = sqrt(temp);
-                s(:) = (dredg * d - dredsq * gnew) ./ temp;
+                s = (dredg * d - dredsq * gnew) ./ temp;
                 s(xbdi ~= 0) = 0.0;
                 sredg = -temp;
 
@@ -426,7 +423,7 @@ classdef trustregion_bobyqa_mod
                 % positive. However, overflow will occur if SL contains large values that indicate absence of
                 % bounds. It is not a problem in MATLAB/Python/Julia/R.
                 % 2. Even if XOPT - SL < SQRT(SSQ), rounding errors may render SSQ - (XOPT - SL)**2) < 0.
-                ssq(:) = d .^ 2 + s .^ 2; % Indeed, only SSQ(TRUELOC(XBDI == 0)) is needed.
+                ssq = d .^ 2 + s .^ 2; % Indeed, only SSQ(TRUELOC(XBDI == 0)) is needed.
                 tanbd(:) = 1.0;
                 sqdscr(:) = -realmax;
                 sqdscr(xbdi == 0 & xopt - sl < sqrt(ssq)) = sqrt(max(0.0, ssq(xbdi == 0 & xopt - sl < sqrt(ssq)) - (xopt(xbdi == 0 & xopt - sl < sqrt(ssq)) - sl(xbdi == 0 & xopt - sl < sqrt(ssq))) .^ 2));
@@ -492,12 +489,12 @@ classdef trustregion_bobyqa_mod
                 cth = min((1.0 - hangt ^ 2) / (1.0 + hangt ^ 2), 1.0 - hangt ^ 2);
                 sth = min((hangt + hangt) / (1.0 + hangt ^ 2), hangt + hangt);
                 gnew = gnew + (cth - 1.0) * hdred + sth * hs;
-                dold(:) = d;
+                dold = d;
                 d(xbdi == 0) = cth * d(xbdi == 0) + sth * s(xbdi == 0);
 
                 % Exit in case of Inf/NaN in D.
                 if ~isfinite(sum(abs(d), 'all'))
-                    d(:) = dold;
+                    d = dold;
                     break
                 end
 
@@ -515,10 +512,10 @@ classdef trustregion_bobyqa_mod
             end
 
             % Set D, giving careful attention to the bounds.
-            xnew(:) = max(sl, min(su, xopt + d));
+            xnew = max(sl, min(su, xopt + d));
             xnew(xbdi == -1) = sl(xbdi == -1);
             xnew(xbdi == 1) = su(xbdi == 1);
-            d(:) = xnew - xopt;
+            d = xnew - xopt;
 
             % Set CRVMIN to ZERO if it has never been set or becomes NaN due to ill conditioning.
             if crvmin <= -realmax || isnan(crvmin)
@@ -542,8 +539,6 @@ classdef trustregion_bobyqa_mod
             % the TANGENT of HALF the angle of the "alternative iteration".
             %--------------------------------------------------------------------------------------------------%
 
-
-            f = NaN;
 
             %====================%
             % Calculation starts %
@@ -576,8 +571,6 @@ classdef trustregion_bobyqa_mod
             % Expansion factor
             % Reduction ratio
 
-
-            delta = NaN;
 
             %====================%
             % Calculation starts %

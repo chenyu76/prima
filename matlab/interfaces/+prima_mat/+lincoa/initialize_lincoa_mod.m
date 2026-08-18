@@ -72,11 +72,8 @@ classdef initialize_lincoa_mod
 
             solver = "LINCOA";
 
-            feasible = false(size(xpt, 2), 1);
             constr = NaN(nnz(xl > -(0.25 * realmax)) + nnz(xu < 0.25 * realmax) + 2 * numel(beq) + numel(bineq), 1);
-            constr_leq = NaN(numel(beq), 1);
-
-            x = NaN(numel(x0), 1);
+            constr_leq = NaN(size(beq));
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -90,7 +87,7 @@ classdef initialize_lincoa_mod
             info = 0;
 
             % Initialize XBASE to X0.
-            xbase(:) = x0;
+            xbase = x0;
 
             % EVALUATED is a boolean array with EVALUATED(I) indicating whether the function value of the I-th
             % interpolation point has been evaluated. We need it for a portable counting of the number of
@@ -120,7 +117,7 @@ classdef initialize_lincoa_mod
             % of {{I, J} : 1 <= I /= J <= N}; when NPT < (N+1)*(N+2)/2, we can set it to the first NPT - (2*N+1)
             % elements of such a permutation. The following IJ is defined according to Powell's code. See also
             % Section 3 of the NEWUOA paper and (2.4) of the BOBYQA paper.
-            ij(:, :) = powalg_obj.setij(n, npt);
+            ij = powalg_obj.setij(n, npt);
 
             % Set XPT(:, 2*N + 2 : NPT).
             % Indeed, XPT(:, K) has only two nonzeros for each K >= 2*N + 2,
@@ -128,7 +125,7 @@ classdef initialize_lincoa_mod
             xpt(:, 2 * n + 2:npt) = xpt(:, ij(1, :) + 1) + xpt(:, ij(2, :) + 1);
 
             % Update the constraint right-hand sides to allow for the shift XBASE.
-            b(:) = b - amat.' * xbase;
+            b = b - amat.' * xbase;
 
             % Define FEASIBLE, which will be used when defining KOPT.
             for k = 1:npt
@@ -150,7 +147,7 @@ classdef initialize_lincoa_mod
                 %end if
                 %----------------------------------------------------------------------------------------------%
             end
-            feasible(:) = (cval <= 0);
+            feasible = (cval <= 0);
 
             % Set FVAL by evaluating F. Totally parallelizable except for FMSG.
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
@@ -159,7 +156,7 @@ classdef initialize_lincoa_mod
             ixl = find(xl > -(0.25 * realmax));
             ixu = find(xu < 0.25 * realmax);
             for k = 1:npt
-                x(:) = xbase + xpt(:, k);
+                x = xbase + xpt(:, k);
                 f = evaluate_obj.evaluatef(calfun, x);
                 % Evaluate the constraints.
                 constr_leq(:) = Aeq * x - beq;

@@ -140,20 +140,20 @@ classdef trustregion_cobyla_mod
             nactsav = NaN;
 
             %real(RP) :: cvold
-            cvsabs = NaN(numel(b), 1);
-            cvshift = NaN(numel(b), 1);
+            cvsabs = NaN(size(b));
+            cvshift = NaN(size(b));
             dd = NaN;
-            dnew = NaN(numel(d), 1);
-            dold = NaN(numel(d), 1);
+            dnew = NaN(size(d));
+            dold = NaN(size(d));
             frac = NaN;
-            fracmult = NaN(numel(vmultc), 1);
+            fracmult = NaN(size(vmultc));
 
             sd = NaN;
-            sdirn = NaN(numel(d), 1);
+            sdirn = NaN(size(d));
             sqrtd = NaN;
             ss = NaN;
             step = NaN;
-            vmultd = NaN(numel(vmultc), 1);
+            vmultd = NaN(size(vmultc));
             zdasav = NaN(size(z, 2), 1);
             zdota = NaN(size(z, 2), 1);
 
@@ -166,14 +166,14 @@ classdef trustregion_cobyla_mod
 
             % Initialization according to STAGE.
             if stage == 1
-                iact(:) = (1:mcon).'; %%MATLAB: iact = (1:mcon);  % Row vector
+                iact = (1:mcon).'; %%MATLAB: iact = (1:mcon);  % Row vector
                 % N.B.: 1. The MATLAB version of LINSPACE returns a row vector. Take a transpose if needed.
                 % 2. In MATLAB, linspace(1, mcon, mcon) can also be written as (1:mcon).
                 nact = 0;
                 d(:) = 0.0;
                 cviol = max([0.0; -b], [], 'all');
-                vmultc(:) = cviol + b;
-                z(:, :) = eye(n);
+                vmultc = cviol + b;
+                z = eye(n);
                 if mcon == 0 || cviol <= 0
                     % Check whether a quick return is possible. Make sure the In-outputs have been initialized.
                     return
@@ -330,7 +330,7 @@ classdef trustregion_cobyla_mod
                     if stage == 1
                         sdirn = sdirn - ((sum(sdirn .* A(:, iact(nact)), 'all') + 1.0) / zdota(nact)) * z(:, nact);
                     else
-                        sdirn(:) = -(1.0 / zdota(nact)) * z(:, nact);
+                        sdirn = -(1.0 / zdota(nact)) * z(:, nact);
                         % SDIRN = Z(:, NACT)/(A(:,IACT(NACT))^T*Z(:, NACT))
                         % SDIRN^T*A(:, IACT(NACT)) = 1, SDIRN is orthogonal to A(:, IACT(1:NACT-1)) and is
                         % parallel to Z(:, NACT).
@@ -374,7 +374,7 @@ classdef trustregion_cobyla_mod
                         % SDIRN is orthogonal to Z(:, NACT+1)
 
                     else
-                        sdirn(:) = -(1.0 / zdota(nact)) * z(:, nact);
+                        sdirn = -(1.0 / zdota(nact)) * z(:, nact);
                         % SDIRN = Z(:, NACT)/(A(:,IACT(NACT))^T*Z(:, NACT))
                         % SDIRN^T*A(:, IACT(NACT)) = 1, SDIRN is orthogonal to A(:, IACT(1:NACT-1)) and is
                         % parallel to Z(:, NACT).
@@ -435,7 +435,7 @@ classdef trustregion_cobyla_mod
 
                 % Set DNEW to the new variables if STEP is the steplength, and reduce CVIOL to the corresponding
                 % maximum residual if stage 1 is being done.
-                dnew(:) = d + step * sdirn;
+                dnew = d + step * sdirn;
                 if stage == 1
                     %cvold = cviol
                     cviol = max([0.0; A(:, iact(1:nact)).' * dnew - b(iact(1:nact))], [], 'all');
@@ -472,12 +472,12 @@ classdef trustregion_cobyla_mod
                 %%MATLAB: [frac, icon] = min([1, fracmult]); icon = icon - 1
 
                 % Update D, VMULTC and CVIOL.
-                dold(:) = d;
-                d(:) = (1.0 - frac) * d + frac * dnew;
-                vmultc(:) = max(0.0, (1.0 - frac) * vmultc + frac * vmultd);
+                dold = d;
+                d = (1.0 - frac) * d + frac * dnew;
+                vmultc = max(0.0, (1.0 - frac) * vmultc + frac * vmultd);
                 % Exit in case of Inf/NaN in D or VMULTC.
                 if ~(isfinite(sum(abs(d), 'all')) && isfinite(sum(abs(vmultc), 'all')))
-                    d(:) = dold; % Should we restore also IACT, NACT, VMULTC, and Z?
+                    d = dold; % Should we restore also IACT, NACT, VMULTC, and Z?
                     break
                 end
 
@@ -515,8 +515,6 @@ classdef trustregion_cobyla_mod
             % Expansion factor
             % Reduction ratio
 
-
-            delta = NaN;
 
             %====================%
             % Calculation starts %

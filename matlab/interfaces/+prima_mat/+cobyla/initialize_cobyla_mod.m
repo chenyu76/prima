@@ -12,7 +12,7 @@ classdef initialize_cobyla_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, info] = initxfc(~, calcfc, iprint, maxfun, amat, bvec, constr0, ctol, f0, ftarget, rhobeg, x0, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated)
+        function [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, info] = initxfc(~, calcfc, iprint, maxfun, amat, bvec, constr0, ctol, f0, ftarget, rhobeg, x0, chist, conhist, conmat, cval, fhist, fval, sim, xhist, evaluated)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization concerning X, function values, and constraints.
             %--------------------------------------------------------------------------------------------------%
@@ -49,8 +49,6 @@ classdef initialize_cobyla_mod
 
             constr = NaN(size(conmat, 1), 1);
 
-            x = NaN(numel(x0), 1);
-
             m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(sim, 1);
@@ -64,12 +62,12 @@ classdef initialize_cobyla_mod
             info = 0;
 
             % Initialize the simplex. It will be revised during the initialization.
-            sim(:, :) = eye(n, n + 1) * rhobeg;
+            sim = eye(n, n + 1) * rhobeg;
             sim(:, n + 1) = x0;
 
             % Initialize the matrix SIMI. This initial value will be discarded at the end of the initialization.
             % If we do not do this, compilers may complain if we return due to CHECKEXIT before SIMI is set.
-            simi(:, :) = eye(n) ./ rhobeg;
+            simi = eye(n) ./ rhobeg;
 
             % EVALUATED(J) = TRUE iff the function/constraint of SIM(:, J) has been evaluated.
             evaluated(:) = false;
@@ -89,12 +87,12 @@ classdef initialize_cobyla_mod
             conmat = repmat(realmax, size(conmat));
 
             for k = 1:n + 1
-                x(:) = sim(:, n + 1);
+                x = sim(:, n + 1);
                 % We will evaluate F corresponding to SIM(:, J).
                 if k == 1
                     j = n + 1;
                     f = f0;
-                    constr(:) = constr0;
+                    constr = constr0;
                 else
                     j = k - 1;
                     x(j) = x(j) + rhobeg;
@@ -141,7 +139,7 @@ classdef initialize_cobyla_mod
 
             if all(evaluated, 'all')
                 % Initialize SIMI to the inverse of SIM(:, 1:N).
-                simi(:, :) = inv(sim(:, 1:n));
+                simi = inv(sim(:, 1:n));
             end
 
             %====================%
@@ -163,8 +161,6 @@ classdef initialize_cobyla_mod
 
             selectx_obj = prima_mat.common.selectx_mod();
 
-            x = NaN(size(sim, 1), 1);
-
             n = size(sim, 1);
 
             %====================%
@@ -175,9 +171,9 @@ classdef initialize_cobyla_mod
             for i = 1:n + 1
                 if evaluated(i)
                     if i <= n
-                        x(:) = sim(:, i) + sim(:, n + 1);
+                        x = sim(:, i) + sim(:, n + 1);
                     else
-                        x(:) = sim(:, i); % I == N+1
+                        x = sim(:, i); % I == N+1
                     end
                     [nfilt, cfilt, ffilt, xfilt, confilt] = selectx_obj.savefilt(cval(i), ctol, cweight, fval(i), x, nfilt, cfilt, ffilt, xfilt, 'constr', conmat(:, i), 'confilt', confilt);
                 end

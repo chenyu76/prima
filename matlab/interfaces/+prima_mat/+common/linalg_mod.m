@@ -146,7 +146,7 @@ classdef linalg_mod
             %====================%
 
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
-            A(:, :) = A + alpha * x * y.';
+            A = A + alpha * x * y.';
             %A = A + alpha * outprod(x, y)
 
             %====================%
@@ -205,7 +205,7 @@ classdef linalg_mod
             %====================%
 
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
-            A(:, :) = A + alpha * x * y.' + beta * u * v.';
+            A = A + alpha * x * y.' + beta * u * v.';
             %A = A + (alpha * outprod(x, y) + beta * outprod(u, v))
 
             %====================%
@@ -217,8 +217,6 @@ classdef linalg_mod
             % This procedure tests whether A = B^{-1} up to the tolerance TOL.
             %--------------------------------------------------------------------------------------------------%
 
-
-            is_inv = false;
 
             n = size(A, 1);
 
@@ -252,7 +250,6 @@ classdef linalg_mod
 
 
             Q_loc = NaN(size(A, 1));
-            T = NaN(size(A, 2), size(A, 1));
 
             ipObj = inputParser();
             addParameter(ipObj, 'Q', NaN);
@@ -275,7 +272,7 @@ classdef linalg_mod
 
             pivot = (nargout >= 3);
             Q_loc(:, :) = eye(m);
-            T(:, :) = A.'; % T is the transpose of R. We consider T in order to work on columns.
+            T = A.'; % T is the transpose of R. We consider T in order to work on columns.
             if pivot
                 P = (1:n).';
             end
@@ -331,9 +328,6 @@ classdef linalg_mod
             P = NaN(size(A, 2), 1);
 
             Q_loc = NaN(size(A, 1), min(size(A, 1), size(A, 2)));
-            Rdiag_loc = NaN(min(size(A, 1), size(A, 2)), 1);
-
-            y = NaN(numel(b), 1);
 
             m = size(A, 1);
             n = size(A, 2);
@@ -356,24 +350,24 @@ classdef linalg_mod
 
             if ismember('Q', ipObj.UsingDefaults)
                 [Q_loc, ~, P] = obj.qr(A);
-                Rdiag_loc(:) = arrayfun(@(i) sum(Q_loc(:, i) .* A(:, P(i)), 'all'), (1:min(m, n))');
+                Rdiag_loc = arrayfun(@(i) sum(Q_loc(:, i) .* A(:, P(i)), 'all'), (1:min(m, n))');
                 %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, P(1:min(m,n))), 1); % Row vector
                 rank = max([0; find(abs(Rdiag_loc) > 0)], [], 'all');
                 pivot = true;
             else
-                Q_loc(:, :) = Q(:, 1:size(Q_loc, 2));
+                Q_loc = Q(:, 1:size(Q_loc, 2));
                 if ismember('Rdiag', ipObj.UsingDefaults)
-                    Rdiag_loc(:) = arrayfun(@(i) sum(Q_loc(:, i) .* A(:, i), 'all'), (1:min(m, n))');
+                    Rdiag_loc = arrayfun(@(i) sum(Q_loc(:, i) .* A(:, i), 'all'), (1:min(m, n))');
                     %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, 1:min(m,n)), 1); % Row vector
                 else
-                    Rdiag_loc(:) = Rdiag;
+                    Rdiag_loc = Rdiag;
                 end
                 rank = min(m, n);
                 pivot = false;
             end
 
             x(:) = 0.0;
-            y(:) = b; % Local copy of B; B is INTENT(IN) and should not be modified.
+            y = b; % Local copy of B; B is INTENT(IN) and should not be modified.
 
             for i = rank:-1:1
                 if pivot
@@ -455,8 +449,6 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            is_banded = false;
-
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -495,8 +487,6 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            is_tril = false;
-
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -524,8 +514,6 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            is_triu = false;
-
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -552,8 +540,6 @@ classdef linalg_mod
             % This function tests whether the matrix A has orthonormal columns up to the tolerance TOL.
             %--------------------------------------------------------------------------------------------------%
 
-
-            is_orth = false;
 
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
@@ -594,9 +580,9 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = NaN(numel(x), 1);
+            y = NaN(size(x));
 
-            u = NaN(numel(v), 1);
+            u = NaN(size(v));
 
             %====================%
             % Calculation starts %
@@ -614,7 +600,7 @@ classdef linalg_mod
                 u = u ./ norm(u);
                 y(:) = sum(x .* u, 'all') * u;
             else
-                u(:) = v ./ norm(v);
+                u = v ./ norm(v);
                 y(:) = sum(x .* u, 'all') * u;
             end
 
@@ -630,7 +616,7 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = NaN(numel(x), 1);
+            y = NaN(size(x));
 
             V_loc = NaN(size(V, 1), size(V, 2));
 
@@ -670,8 +656,6 @@ classdef linalg_mod
             % HYPOTENUSE(X1, X2) returns SQRT(X1^2 + X2^2), handling over/underflow.
             %--------------------------------------------------------------------------------------------------%
 
-
-            r = NaN;
 
             y = NaN(2, 1);
 
@@ -716,8 +700,6 @@ classdef linalg_mod
             % but we return an identity matrix or a matrix of +/-SQRT(2). We intend to keep G always orthogonal.
             %--------------------------------------------------------------------------------------------------%
 
-
-            G = NaN(2);
 
             %====================%
             % Calculation starts %
@@ -819,8 +801,6 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            is_minor = false;
-
             sensitivity = 0.1;
 
             %====================%
@@ -842,13 +822,11 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            is_minor = false(numel(x), 1);
-
             %====================%
             % Calculation starts %
             %====================%
 
-            is_minor(:) = arrayfun(@(i) obj.isminor0(x(i), ref(i)), (1:numel(x))');
+            is_minor = arrayfun(@(i) obj.isminor0(x(i), ref(i)), (1:numel(x))');
 
             %====================%
             %  Calculation ends  %
@@ -861,8 +839,6 @@ classdef linalg_mod
             % This function tests whether A is symmetric up to TOL.
             %--------------------------------------------------------------------------------------------------%
 
-
-            is_symmetric = false;
 
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
@@ -945,11 +921,11 @@ classdef linalg_mod
                 return
             elseif scaling > 1.0e8 || scaling < 1.0e-4
                 % The thresholds are empirical.
-                A(:, :) = A ./ scaling;
+                A = A ./ scaling;
                 scaled = true;
             end
 
-            tdiag(:) = diag(A);
+            tdiag = diag(A);
 
             for k = 1:n - 1
                 colsq = sum(A(k + 2:n, k) .^ 2, 'all');
@@ -987,8 +963,8 @@ classdef linalg_mod
             end
 
             if scaled
-                tdiag(:) = tdiag * scaling;
-                tsubdiag(:) = tsubdiag * scaling;
+                tdiag = tdiag * scaling;
+                tsubdiag = tsubdiag * scaling;
             end
 
             %====================%
@@ -1030,7 +1006,7 @@ classdef linalg_mod
                 return
             end
 
-            H(:, :) = A;
+            H = A;
             if nargout >= 2
                 Q = eye(n);
             end
@@ -1043,7 +1019,7 @@ classdef linalg_mod
                 return
             elseif scaling > 1000000.0 || scaling < 1.0e-6
                 % 1.0E6 and 1.0E-6 are heuristic.
-                H(:, :) = H ./ scaling;
+                H = H ./ scaling;
                 scaled = true;
             end
 
@@ -1084,7 +1060,7 @@ classdef linalg_mod
             end
 
             if scaled
-                H(:, :) = H * scaling;
+                H = H * scaling;
             end
 
             %====================%
@@ -1129,9 +1105,9 @@ classdef linalg_mod
 
             k = NaN;
 
-            piv = NaN(numel(td), 1);
+            piv = NaN(size(td));
 
-            pivnew = NaN(numel(td), 1);
+            pivnew = NaN(size(td));
 
             n = numel(td);
 
@@ -1290,7 +1266,7 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = NaN(numel(x), 1);
+            y = NaN(size(x));
 
             n = numel(x);
 

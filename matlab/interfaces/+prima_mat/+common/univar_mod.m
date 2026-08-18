@@ -33,18 +33,14 @@ classdef univar_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            angle = NaN;
-
             agrid = NaN(grid_size + 1, 1);
-
-            fgrid = NaN(grid_size, 1);
 
             %====================%
             % Calculation starts %
             %====================%
 
             agrid(:) = linspace(0.0, 2.0 * pi, grid_size + 1).'; % Size: GRID_SIZE+1; the last entry will be unused
-            fgrid(:) = cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size)', "UniformOutput", false)).';
+            fgrid = reshape(cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size)', "UniformOutput", false)).', [], 1);
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 
             if all(isnan(fgrid), 'all')
@@ -92,18 +88,14 @@ classdef univar_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            angle = NaN;
-
             agrid = NaN(grid_size + 1, 1);
-
-            fgrid = NaN(grid_size, 1);
 
             %====================%
             % Calculation starts %
             %====================%
 
             agrid(:) = linspace(0.0, 2.0 * pi, grid_size + 1).'; % Size: GRID_SIZE+1; the last entry is not used
-            fgrid(:) = cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size)', "UniformOutput", false)).';
+            fgrid = reshape(cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size)', "UniformOutput", false)).', [], 1);
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 
             if all(isnan(fgrid), 'all')
@@ -144,10 +136,6 @@ classdef univar_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            x = NaN;
-
-            fgrid = NaN(grid_size, 1);
-
             xgrid = NaN(grid_size, 1);
 
             %====================%
@@ -160,7 +148,7 @@ classdef univar_mod
             end
 
             xgrid(:) = linspace(lb, ub, grid_size).';
-            fgrid(:) = cell2mat(arrayfun(@(k) fun(xgrid(k), args), (1:grid_size)', "UniformOutput", false)).';
+            fgrid = reshape(cell2mat(arrayfun(@(k) fun(xgrid(k), args), (1:grid_size)', "UniformOutput", false)).', [], 1);
             %%MATLAB: fgrid = arrayfun(@(x) fun(x, args), xgrid(1:grid_size));  % Same shape as `xgrid`
 
             if all(isnan(fgrid), 'all')

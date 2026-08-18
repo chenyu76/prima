@@ -98,13 +98,13 @@ classdef getact_mod
 
             dnorm = NaN;
 
-            frac = NaN(numel(g), 1);
-            psdsav = NaN(numel(psd), 1);
+            frac = NaN(size(g));
+            psdsav = NaN(size(psd));
 
-            v = NaN(numel(g), 1);
+            v = NaN(size(g));
             violmx = NaN;
-            vlam = NaN(numel(g), 1);
-            vmu = NaN(numel(g), 1);
+            vlam = NaN(size(g));
+            vmu = NaN(size(g));
             vmult = NaN;
 
             m = size(amat, 2);
@@ -117,8 +117,8 @@ classdef getact_mod
             % Quick return when M = 0.
             if m <= 0
                 nact = 0;
-                qfac(:, :) = eye(n);
-                psd(:) = -g;
+                qfac = eye(n);
+                psd = -g;
                 return
             end
 
@@ -128,7 +128,7 @@ classdef getact_mod
 
             % Set the initial QFAC to the identity matrix in the case NACT = 0.
             if nact == 0
-                qfac(:, :) = eye(n);
+                qfac = eye(n);
             end
 
             % Remove any constraints from the initial active set whose residuals exceed TDEL.
@@ -180,7 +180,7 @@ classdef getact_mod
                 end
 
                 % Set PSD to the projection of -G to range(QFAC(:,NACT+1:N))
-                psd(:) = -(qfac(:, nact + 1:n) * (qfac(:, nact + 1:n).' * g));
+                psd = -(qfac(:, nact + 1:n) * (qfac(:, nact + 1:n).' * g));
                 %%MATLAB: psd = -qfac(:, nact + 1:n) * (g' * qfac(:, nact + 1:n))';
                 %----------------------------------------------------------------------------------------------%
                 % Zaikun: The schemes below work evidently worse than the one above in a test on 20220417. Why?
@@ -213,7 +213,7 @@ classdef getact_mod
                 %---------------------------------------------------------------------------------------%
                 % Powell's code does not handle the following pathological cases.
                 if sum(psd .* g, 'all') > 0 || ~isfinite(sum(abs(psd), 'all'))
-                    psd(:) = psdsav;
+                    psd = psdsav;
                     break
                 end
                 % In our tests, tolerating the following cases seems to render better numerical results.
@@ -226,12 +226,12 @@ classdef getact_mod
                 % %end if
                 %---------------------------------------------------------------------------------------%
 
-                psdsav(:) = psd;
+                psdsav = psd;
                 ddsav = dd;
 
                 % Pick the next integer L or terminate; a positive L is the index of the most violated constraint.
                 apsd(:) = amat.' * psd;
-                mask(:) = (resnew > 0 & resnew <= tdel & apsd > (dnorm / delta) * resnew);
+                mask = (resnew > 0 & resnew <= tdel & apsd > (dnorm / delta) * resnew);
                 %----------------------------------------------------------------------------------------------%
                 % N.B.: the definition of L and VIOLMX can be simplified as follows, but we prefer explicitness.
                 %L = INT(MAXLOC(APSD, MASK=MASK, DIM=1), IK) ! MAXLOC(...) = 0 if MASK is all FALSE.
@@ -332,8 +332,8 @@ classdef getact_mod
             % It is possible to have NACT == 0 here. The following lines improve the performance of LINCOA.
             % Powell's code does not take care of this case explicitly.
             if nact == 0
-                qfac(:, :) = eye(n);
-                psd(:) = -g;
+                qfac = eye(n);
+                psd = -g;
             end
 
             %====================%

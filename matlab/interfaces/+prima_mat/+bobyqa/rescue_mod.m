@@ -144,7 +144,7 @@ classdef rescue_mod
             wmv = NaN(size(xpt, 1) + size(xpt, 2), 1);
             x = NaN(size(xpt, 1), 1);
             xnew = NaN(size(xpt, 1), 1);
-            xopt = NaN(size(xpt, 1), 1);
+
             xp = NaN;
             xq = NaN;
             xxpt = NaN(size(xpt, 2), 1);
@@ -168,11 +168,11 @@ classdef rescue_mod
             end
 
             % Shift the interpolation points so that XOPT becomes the origin.
-            xopt(:) = xpt(:, kopt);
-            sl(:) = min(sl - xopt, 0.0);
-            su(:) = max(su - xopt, 0.0);
-            xbase(:) = min(max(xl, xbase + xopt), xu);
-            xpt(:, :) = xpt - xopt;
+            xopt = xpt(:, kopt);
+            sl = min(sl - xopt, 0.0);
+            su = max(su - xopt, 0.0);
+            xbase = min(max(xl, xbase + xopt), xu);
+            xpt = xpt - xopt;
             xpt(:, kopt) = 0.0;
 
             % Update HQ so that HQ and PQ define the second derivatives of the model after XBASE has been
@@ -484,7 +484,7 @@ classdef rescue_mod
 
                     % Update the quadratic model.
                     moderr = f - vquad;
-                    gopt(:) = gopt + moderr * bmat(:, kpt);
+                    gopt = gopt + moderr * bmat(:, kpt);
                     pqinc(:) = moderr * (zmat * zmat(kpt, :).');
                     pq(ptsid <= 0) = pq(ptsid <= 0) + pqinc(ptsid <= 0);
                     for k = 1:npt
@@ -512,7 +512,7 @@ classdef rescue_mod
 
             % Update GOPT if necessary.
             if kopt ~= kbase
-                gopt(:) = gopt + powalg_obj.hess_mul(xpt(:, kopt), xpt, pq, 'hq', hq);
+                gopt = gopt + powalg_obj.hess_mul(xpt(:, kopt), xpt, pq, 'hq', hq);
             end
 
             %--------------------------------------------------------------------------------------------------%
@@ -563,7 +563,6 @@ classdef rescue_mod
 
             v1 = NaN(size(bmat, 1), 1);
             v2 = NaN(size(bmat, 1), 1);
-            vlag = NaN(numel(vlag_in), 1);
 
             n = size(bmat, 1);
             npt = size(bmat, 2) - size(bmat, 1);
@@ -587,7 +586,7 @@ classdef rescue_mod
             end
 
             % Read VLAG, and calculate parameters for the updating formula (4.9) and (4.14) of the BOBYQA paper.
-            vlag(:) = vlag_in;
+            vlag = vlag_in;
             tau = vlag(knew);
             % In theory, DENOM can also be calculated after ZMAT is rotated below. However, this worsened the
             % performance of BOBYQA in a test on 20220413.
@@ -631,7 +630,7 @@ classdef rescue_mod
             alpha = hcol(knew);
             v1(:) = (alpha * vlag(npt + 1:npt + n) - tau * hcol(npt + 1:npt + n)) ./ denom;
             v2(:) = (-beta * hcol(npt + 1:npt + n) - tau * vlag(npt + 1:npt + n)) ./ denom;
-            bmat(:, :) = bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
+            bmat = bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             % Numerically, the update above does not guarantee BMAT(:, NPT+1 : NPT+N) to be symmetric.
             A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n)); bmat(:, npt + 1:npt + n) = A_slice;

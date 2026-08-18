@@ -23,9 +23,7 @@ classdef evaluate_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = NaN(numel(x), 1);
-
-            y(:) = x;
+            y = x;
             y(isnan(x)) = 0.0;
             y = max(-realmax, min(realmax, y));
         end
@@ -52,9 +50,7 @@ classdef evaluate_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = NaN(numel(c), 1);
-
-            y(:) = c;
+            y = c;
             y(isnan(c)) = 1.0e30;
             y = max(-1.0e30, min(1.0e30, y));
         end
@@ -109,7 +105,7 @@ classdef evaluate_mod
                 % Moderated extreme barrier: replace NaN/huge objective or constraint values with a large but
                 % finite value. This is naive, and better approaches surely exist.
                 f = obj.moderatef(f);
-                constr(:) = obj.moderatec(constr);
+                constr = obj.moderatec(constr);
             end
 
             %====================%

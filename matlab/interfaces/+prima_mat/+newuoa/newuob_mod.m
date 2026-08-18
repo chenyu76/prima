@@ -87,7 +87,7 @@ classdef newuob_mod
             ximproved = false;
             bmat = NaN(numel(x), npt + numel(x));
 
-            d = NaN(numel(x), 1);
+            d = NaN(size(x));
             delbar = NaN;
 
             distsq = NaN(npt, 1);
@@ -95,15 +95,15 @@ classdef newuob_mod
             dnorm_rec = NaN(2, 1); % Powell's implementation: DNORM_REC(3)
             fval = NaN(npt, 1);
 
-            gopt = NaN(numel(x), 1);
+            gopt = NaN(size(x));
             hq = NaN(numel(x));
             moderr = NaN;
-            moderr_rec = NaN(numel(dnorm_rec), 1);
+            moderr_rec = NaN(size(dnorm_rec));
             pq = NaN(npt, 1);
 
-            xbase = NaN(numel(x), 1);
-            xdrop = NaN(numel(x), 1);
-            xosav = NaN(numel(x), 1);
+            xbase = NaN(size(x));
+            xdrop = NaN(size(x));
+            xosav = NaN(size(x));
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
@@ -130,7 +130,7 @@ classdef newuob_mod
             end
 
             % Initialize X and F according to KOPT.
-            x(:) = xbase + xpt(:, kopt);
+            x = xbase + xpt(:, kopt);
             f = fval(kopt);
 
             % Finish the initialization if INITXF completed normally and CALLBACK did not request termination;
@@ -232,8 +232,8 @@ classdef newuob_mod
                     % Calculate the next value of the objective function.
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
-                    x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
+                    x = xbase + (xpt(:, kopt) + d);
+                    distsq = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-3 * rhoend) ^ 2
@@ -480,8 +480,8 @@ classdef newuob_mod
                     % Calculate the next value of the objective function.
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
-                    x(:) = xbase + (xpt(:, kopt) + d);
-                    distsq(:) = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
+                    x = xbase + (xpt(:, kopt) + d);
+                    distsq = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-3 * rhoend) ^ 2
@@ -575,7 +575,7 @@ classdef newuob_mod
             end % End of DO TR = 1, MAXTR. The iterative procedure ends.
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
-            x(:) = xbase + (xpt(:, kopt) + d);
+            x = xbase + (xpt(:, kopt) + d);
             if info == 0 && shortd && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
@@ -591,7 +591,7 @@ classdef newuob_mod
             end
 
             % Choose the [X, F] to return.
-            x(:) = xbase + xpt(:, kopt);
+            x = xbase + xpt(:, kopt);
             f = fval(kopt);
 
             % Arrange FHIST and XHIST so that they are in the chronological order.

@@ -83,14 +83,14 @@ classdef cobylb_mod
             conmat = NaN(numel(constr), numel(x) + 1);
             % Penalty parameter for constraint in merit function (PARMU in Powell's code)
             cval = NaN(numel(x) + 1, 1);
-            d = NaN(numel(x), 1);
+            d = NaN(size(x));
             delbar = NaN;
 
             distsq = NaN(numel(x) + 1, 1);
             dnorm = NaN;
-            ffilt = NaN(numel(cfilt), 1);
+            ffilt = NaN(size(cfilt));
             fval = NaN(numel(x) + 1, 1);
-            g = NaN(numel(x), 1);
+            g = NaN(size(x));
 
             % Predicted reduction in constraint violation
             % Predicted reduction in objective Function
@@ -98,7 +98,7 @@ classdef cobylb_mod
             % Reduction ratio: ACTREM/PREREM
 
             sim = NaN(numel(x), numel(x) + 1);
-            simi = NaN(numel(x));
+
             xfilt = NaN(numel(x), numel(cfilt));
             % CPENMIN is the minimum of the penalty parameter CPEN for the L-infinity constraint violation in
             % the merit function. Note that CPENMIN = 0 in Powell's implementation, which allows CPEN to be 0.
@@ -125,7 +125,7 @@ classdef cobylb_mod
             % function value (regardless of the constraint violation), and SIM(:, 1:N) holds the displacements
             % from the other vertices to SIM(:, N+1). FVAL, CONMAT, and CVAL hold the function values,
             % constraint values, and constraint violations on the vertices in the order corresponding to SIM.
-            [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, subinfo] = initialize_cobyla_obj.initxfc(calcfc, iprint, maxfun, amat, bvec, constr, ctol, f, ftarget, rhobeg, x, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated);
+            [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, subinfo] = initialize_cobyla_obj.initxfc(calcfc, iprint, maxfun, amat, bvec, constr, ctol, f, ftarget, rhobeg, x, chist, conhist, conmat, cval, fhist, fval, sim, xhist, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
             terminate = false;
@@ -153,9 +153,9 @@ classdef cobylb_mod
                 % Return the best calculated values of the variables.
                 % N.B. SELECTX and FINDPOLE choose X by different standards. One cannot replace the other.
                 kopt = selectx_obj.selectx(ffilt(1:nfilt), cfilt(1:nfilt), cweight, ctol);
-                x(:) = xfilt(:, kopt);
+                x = xfilt(:, kopt);
                 f = ffilt(kopt);
-                constr(:) = confilt(:, kopt);
+                constr = confilt(:, kopt);
                 cstrv = cfilt(kopt);
                 % Arrange CHIST, CONHIST, FHIST, and XHIST so that they are in the chronological order.
                 [xhist, fhist, chist, conhist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist, 'conhist', conhist);
@@ -289,14 +289,14 @@ classdef cobylb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective and constraints at X, assuming them to have the values at the closest point.
                     % N.B.: If this happens, do NOT include X into the filter, as F and CONSTR are inaccurate.
-                    x(:) = sim(:, n + 1) + d;
+                    x = sim(:, n + 1) + d;
                     distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
                     distsq(1:n) = arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n)'); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     [~, j] = min(distsq);
                     if distsq(j) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(j);
-                        constr(:) = conmat(:, j);
+                        constr = conmat(:, j);
                         cstrv = cval(j);
                     else
                         % Evaluate the objective and constraints at X, taking care of possible Inf/NaN values.
@@ -486,14 +486,14 @@ classdef cobylb_mod
                     % 2. In precise arithmetic, the geometry improving step ensures that the distance between X
                     % and any interpolation point is at least DELBAR, yet X may be close to them due to
                     % rounding. In an experiment with single precision on 20240317, X = SIM(:, N+1) occurred.
-                    x(:) = sim(:, n + 1) + d;
+                    x = sim(:, n + 1) + d;
                     distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
                     distsq(1:n) = arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n)'); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     [~, j] = min(distsq);
                     if distsq(j) <= (1.0e-4 * rhoend) ^ 2
                         f = fval(j);
-                        constr(:) = conmat(:, j);
+                        constr = conmat(:, j);
                         cstrv = cval(j);
                     else
                         % Evaluate the objective and constraints at X, taking care of possible Inf/NaN values.
@@ -565,7 +565,7 @@ classdef cobylb_mod
 
             % Return from the calculation, after trying the last trust-region step if it has not been tried yet.
             % Ensure that D has not been updated after SHORTD == TRUE occurred, or the code below is incorrect.
-            x(:) = sim(:, n + 1) + d;
+            x = sim(:, n + 1) + d;
             if info == 0 && shortd && norm(x - sim(:, n + 1)) > 1.0e-3 * rhoend && nf < maxfun
                 constr(1:m_lcon) = evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints
                 [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m)); constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
@@ -585,9 +585,9 @@ classdef cobylb_mod
             % Return the best calculated values of the variables.
             % N.B. SELECTX and FINDPOLE choose X by different standards. One cannot replace the other.
             kopt = selectx_obj.selectx(ffilt(1:nfilt), cfilt(1:nfilt), max(cpen, cweight), ctol);
-            x(:) = xfilt(:, kopt);
+            x = xfilt(:, kopt);
             f = ffilt(kopt);
-            constr(:) = confilt(:, kopt);
+            constr = confilt(:, kopt);
             cstrv = cfilt(kopt);
 
             % Arrange CHIST, CONHIST, FHIST, and XHIST so that they are in the chronological order.
@@ -612,17 +612,14 @@ classdef cobylb_mod
             trustregion_cobyla_obj = prima_mat.cobyla.trustregion_cobyla_mod();
             update_cobyla_obj = prima_mat.cobyla.update_cobyla_mod();
 
-            cpen = NaN;
-
             A = NaN(size(sim_in, 1), size(conmat_in, 1));
             conmat = NaN(size(conmat_in, 1), size(conmat_in, 2));
-            cval = NaN(numel(cval_in), 1);
+
             d = NaN(size(sim_in, 1), 1);
-            fval = NaN(numel(fval_in), 1);
+
             g = NaN(size(sim_in, 1), 1);
 
             sim = NaN(size(sim_in, 1), size(sim_in, 2));
-            simi = NaN(size(simi_in, 1), size(simi_in, 2));
 
             m_lcon = numel(bvec);
             m = size(conmat, 1);
@@ -633,12 +630,12 @@ classdef cobylb_mod
             %====================%
 
             % Copy the inputs.
-            conmat(:, :) = conmat_in;
+            conmat = conmat_in;
             cpen = cpen_in;
-            cval(:) = cval_in;
-            fval(:) = fval_in;
-            sim(:, :) = sim_in;
-            simi(:, :) = simi_in;
+            cval = cval_in;
+            fval = fval_in;
+            sim = sim_in;
+            simi = simi_in;
 
             % Initialize INFO, PREREF, and PREREC, which are needed in the postconditions.
 
@@ -710,11 +707,6 @@ classdef cobylb_mod
             % FVAL(N+1)
 
 
-            r = NaN;
-
-            cmax = NaN(size(conmat, 1), 1);
-            cmin = NaN(size(conmat, 1), 1);
-
             %====================%
             % Calculation starts %
             %====================%
@@ -722,8 +714,8 @@ classdef cobylb_mod
             % N.B.: In the original version of COBYLA, Powell proposed the ratio for constraints in the form of
             % CONSTR(X) >= 0, but the constraints we consider here are CONSTR(X) <= 0. Hence we need to change
             % the sign of the constraints before defining CMIN and CMAX.
-            cmin(:) = min(-conmat, [], 2);
-            cmax(:) = max(-conmat, [], 2);
+            cmin = min(-conmat, [], 2);
+            cmax = max(-conmat, [], 2);
             fmin = min(fval, [], 'all');
             fmax = max(fval, [], 'all');
             r = 0.0;

@@ -54,7 +54,6 @@ classdef trustregion_newuoa_mod
             % S(N)
 
 
-            info_loc = NaN;
             iter = NaN;
 
             alpha = NaN;
@@ -68,19 +67,18 @@ classdef trustregion_newuoa_mod
             dhs = NaN;
 
             ggsav = NaN;
-            gopt = NaN(numel(gopt_in), 1);
-            hd = NaN(numel(gopt_in), 1);
-            hq = NaN(size(hq_in, 1), size(hq_in, 2));
-            hs = NaN(numel(gopt_in), 1);
 
-            pq = NaN(numel(pq_in), 1);
+            hd = NaN(size(gopt_in));
+
+            hs = NaN(size(gopt_in));
+
             qadd = NaN;
 
             reduc = NaN;
             resid = NaN;
             sg = NaN;
             shs = NaN;
-            sold = NaN(numel(gopt_in), 1);
+            sold = NaN(size(gopt_in));
             sqrtd = NaN;
 
             sth = NaN;
@@ -98,15 +96,15 @@ classdef trustregion_newuoa_mod
             if max(abs(gopt_in), [], 'all') > 1.0e12
                 % The threshold is empirical.
                 modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
-                gopt(:) = gopt_in * modscal;
-                pq(:) = pq_in * modscal;
-                hq(:, :) = hq_in * modscal;
+                gopt = gopt_in * modscal;
+                pq = pq_in * modscal;
+                hq = hq_in * modscal;
                 scaled = true;
             else
                 modscal = 1.0; % This value is not used, but Fortran compilers may complain without it.
-                gopt(:) = gopt_in;
-                pq(:) = pq_in;
-                hq(:, :) = hq_in;
+                gopt = gopt_in;
+                pq = pq_in;
+                hq = hq_in;
                 scaled = false;
             end
 
@@ -222,8 +220,8 @@ classdef trustregion_newuoa_mod
                 % QADD and QRED will be used in the 2-dimensional minimization if any.
 
                 % Update S, HS, and GG.
-                sold(:) = s;
-                s(:) = s + alpha * d;
+                sold = s;
+                s = s + alpha * d;
                 ss = sum(s .* s, 'all');
                 hs = hs + alpha * hd;
                 ggsav = gg; % Gradient norm square before this iteration
@@ -237,7 +235,7 @@ classdef trustregion_newuoa_mod
                 % Exit in case of Inf/NaN in S. This should come the first! Otherwise, we may return an S that
                 % contains NaN and fulfills other exit conditions.
                 if ~isfinite(sum(abs(s), 'all'))
-                    s(:) = sold;
+                    s = sold;
                     info_loc = -1;
                     break
                 end
@@ -347,12 +345,12 @@ classdef trustregion_newuoa_mod
                 % Calculate the new S.
                 cth = cos(angle);
                 sth = sin(angle);
-                sold(:) = s;
-                s(:) = cth * s + sth * d;
+                sold = s;
+                s = cth * s + sth * d;
 
                 % Exit in case of Inf/NaN in S.
                 if ~isfinite(sum(abs(s), 'all'))
-                    s(:) = sold;
+                    s = sold;
                     info_loc = -1;
                     break
                 end
@@ -396,8 +394,6 @@ classdef trustregion_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            f = NaN;
-
             %====================%
             % Calculation starts %
             %====================%
@@ -424,8 +420,6 @@ classdef trustregion_newuoa_mod
             % Expansion factor
             % Reduction ratio
 
-
-            delta = NaN;
 
             %====================%
             % Calculation starts %

@@ -43,12 +43,7 @@ classdef selectx_mod
             % (M, MAXFILT)
 
 
-            index_to_keep = NaN(numel(ffilt), 1);
-
-            keep = false(nfilt, 1);
-            cfilt_shifted = NaN(numel(ffilt), 1);
-
-            phi = NaN(numel(ffilt), 1);
+            index_to_keep = NaN(size(ffilt));
 
             ipObj = inputParser();
             addParameter(ipObj, 'constr', NaN);
@@ -71,22 +66,22 @@ classdef selectx_mod
             end
 
             % Decide which columns of XFILT to keep.
-            keep(:) = (~obj.isbetter01(f, cstrv, ffilt(1:nfilt), cfilt(1:nfilt), ctol));
+            keep = (~obj.isbetter01(f, cstrv, ffilt(1:nfilt), cfilt(1:nfilt), ctol));
 
             % If NFILT == MAXFILT and X is not better than any column of XFILT, then we remove the worst column
             % of XFILT according to the merit function PHI = FFILT + CWEIGHT * MAX(CFILT - CTOL, ZERO).
             if nnz(keep) == maxfilt
                 % In this case, NFILT = SIZE(KEEP) = COUNT(KEEP) = MAXFILT > 0.
-                cfilt_shifted(:) = max(cfilt - ctol, 0.0);
+                cfilt_shifted = max(cfilt - ctol, 0.0);
                 if cweight <= 0
-                    phi(:) = ffilt;
+                    phi = ffilt;
                 elseif isinf(cweight) & cweight > 0
                     phi = cfilt_shifted;
                     % We should not use CFILT here; if MAX(CFILT_SHIFTED) is attained at multiple indices, then
                     % we will check FFILT to exhaust the remaining degree of freedom.
 
                 else
-                    phi(:) = max(ffilt, -realmax) + cweight * cfilt_shifted;
+                    phi = max(ffilt, -realmax) + cweight * cfilt_shifted;
                     % MAX(FFILT, -REALMAX) makes sure that PHI will not contain NaN (unless there is a bug).
                 end
                 % We select X to maximize PHI. In case there are multiple maximizers, we take the one with the
@@ -143,12 +138,6 @@ classdef selectx_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            kopt = NaN;
-
-            chist_shifted = NaN(numel(fhist), 1);
-
-            phi = NaN(numel(fhist), 1);
-
             nhist = numel(fhist);
 
             %====================%
@@ -173,7 +162,7 @@ classdef selectx_mod
 
             if any(fhist < fref & chist < cref, 'all')
                 % Shift the constraint violations by CTOL, so that CSTRV <= CTOL is regarded as no violation.
-                chist_shifted(:) = max(chist - ctol, 0.0);
+                chist_shifted = max(chist - ctol, 0.0);
                 % CMIN is the minimal shifted constraint violation attained in the history.
                 cmin = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', (fhist < fref)), [], 'all');
                 % We consider only the points whose shifted constraint violations are at most the CREF below.
@@ -182,14 +171,14 @@ classdef selectx_mod
                 cref = max(eps(1.0), 2.0 * cmin);
                 % We use the following PHI as our merit function to select X.
                 if cweight <= 0
-                    phi(:) = fhist;
+                    phi = fhist;
                 elseif isinf(cweight) & cweight > 0
                     phi = chist_shifted;
                     % We should not use CHIST here; if MIN(CHIST_SHIFTED) is attained at multiple indices, then
                     % we will check FHIST to exhaust the remaining degree of freedom.
 
                 else
-                    phi(:) = max(fhist, -realmax) + cweight * chist_shifted;
+                    phi = max(fhist, -realmax) + cweight * chist_shifted;
                     % MAX(FHIST, -REALMAX) makes sure that PHI will not contain NaN (unless there is a bug).
                 end
                 % We select X to minimize PHI subject to F < FREF and CSTRV_SHIFTED <= CREF (see the comments
@@ -228,8 +217,6 @@ classdef selectx_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            is_better = false;
-
             %====================%
             % Calculation starts %
             %====================%
@@ -254,15 +241,13 @@ classdef selectx_mod
         end
         function is_better = isbetter10(obj, f1, c1, f2, c2, ctol)
 
-            is_better = false(1, 1);
-
             nfc = numel(f1);
 
             %====================%
             % Calculation starts %
             %====================%
 
-            is_better = false(nfc, 1);
+
             is_better = arrayfun(@(i) obj.isbetter00(f1(i), c1(i), f2, c2, ctol), (1:nfc)');
 
             %====================%
@@ -273,15 +258,13 @@ classdef selectx_mod
         end
         function is_better = isbetter01(obj, f1, c1, f2, c2, ctol)
 
-            is_better = false(1, 1);
-
             nfc = numel(f2);
 
             %====================%
             % Calculation starts %
             %====================%
 
-            is_better = false(nfc, 1);
+
             is_better = arrayfun(@(i) obj.isbetter00(f1, c1, f2(i), c2(i), ctol), (1:nfc)');
 
             %====================%

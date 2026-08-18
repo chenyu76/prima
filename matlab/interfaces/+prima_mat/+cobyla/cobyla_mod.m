@@ -288,8 +288,8 @@ classdef cobyla_mod
 
             f_loc = NaN;
 
-            xl_loc = NaN(numel(x), 1);
-            xu_loc = NaN(numel(x), 1);
+            xl_loc = NaN(size(x));
+            xu_loc = NaN(size(x));
             % Aeq_LOC(Meq, N)
             % Aineq_LOC(Mineq, N)
             amat = NaN; % AMAT(N, M_LCON); each column corresponds to a linear constraint
@@ -429,7 +429,7 @@ classdef cobyla_mod
             xl_loc(:) = -(0.25 * realmax);
             if ~ismember('xl', ipObj.UsingDefaults)
                 if numel(xl) > 0
-                    xl_loc(:) = xl;
+                    xl_loc = xl;
                 end
             end
             xl_loc(isnan(xl_loc) | xl_loc < -(0.25 * realmax)) = -(0.25 * realmax);
@@ -437,7 +437,7 @@ classdef cobyla_mod
             xu_loc(:) = 0.25 * realmax;
             if ~ismember('xu', ipObj.UsingDefaults)
                 if numel(xu) > 0
-                    xu_loc(:) = xu;
+                    xu_loc = xu;
                 end
             end
             xu_loc(isnan(xu_loc) | xu_loc > 0.25 * realmax) = 0.25 * realmax;
@@ -461,12 +461,11 @@ classdef cobyla_mod
                 f_loc = evaluate_obj.moderatef(f0);
                 constr_loc(m - m_nlcon + 1:m) = evaluate_obj.moderatec(nlconstr0);
             else
-                x(:) = evaluate_obj.moderatex(x);
+                x = evaluate_obj.moderatex(x);
                 [f_loc, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr_loc(m - m_nlcon + 1:m)); constr_loc(m - m_nlcon + 1:m) = constr_slice; % Nonlinear constraints
                 % N.B.: Do NOT call FMSG, SAVEHIST, or SAVEFILT for the function/constraint evaluation at X0.
                 % They will be called during the initialization, which will read the function/constraint at X0.
             end
-            cstrv_loc = max([0.0; constr_loc], [], 'all');
 
             % If RHOBEG is present, then RHOBEG_LOC is a copy of RHOBEG; otherwise, RHOBEG_LOC takes the default
             % value for RHOBEG, taking the value of RHOEND into account. Note that RHOEND is considered only if
@@ -556,7 +555,7 @@ classdef cobyla_mod
             if nargout >= 6
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                xhist = NaN(n, nhist); % Removable in F2003.
+                % Removable in F2003.
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -580,7 +579,7 @@ classdef cobyla_mod
             if nargout >= 7
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                fhist = NaN(nhist, 1); % Removable in F2003.
+                % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
@@ -590,7 +589,7 @@ classdef cobyla_mod
             if nargout >= 8
                 nhist = min(nf_loc, numel(chist_loc));
                 %--------------------------------------------------%
-                chist = NaN(nhist, 1); % Removable in F2003.
+                % Removable in F2003.
                 %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
@@ -606,7 +605,7 @@ classdef cobyla_mod
             if nargout >= 9
                 nhist = min(nf_loc, size(conhist_loc, 2));
                 %---------------------------------------------------------------%
-                nlchist = NaN(m_nlcon, nhist); % Removable in F2003.
+                % Removable in F2003.
                 %---------------------------------------------------------------%
                 nlchist = conhist_loc(m - m_nlcon + 1:m, 1:nhist); % The same as XHIST, we must cap NLCHIST at NF_LOC.
 
@@ -650,7 +649,6 @@ classdef cobyla_mod
 
 
             amat = NaN(n, m_lcon);
-            bvec = NaN(m_lcon, 1);
 
             % Define the indices of the nontrivial bound constraints.
             ixl = find(xl > -(0.25 * realmax));

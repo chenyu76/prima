@@ -39,8 +39,6 @@ classdef geometry_uobyqa_mod
             % XPT(N, NPT)
 
 
-            knew = NaN;
-
             distsq = NaN(size(xpt, 2), 1);
 
             vlag = NaN(size(xpt, 2), 1);
@@ -161,8 +159,6 @@ classdef geometry_uobyqa_mod
             d = NaN(size(xpt, 1), 1); % D(N)
 
 
-            dcauchy = NaN(size(xpt, 1), 1);
-
             g = NaN(size(xpt, 1), 1);
 
             h = NaN(size(xpt, 1));
@@ -170,8 +166,6 @@ classdef geometry_uobyqa_mod
 
             vlag = NaN(size(xpt, 2), 1);
             vlagc = NaN(size(xpt, 2), 1);
-
-            xopt = NaN(size(xpt, 1), 1);
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -181,7 +175,7 @@ classdef geometry_uobyqa_mod
             %====================%
 
             % Read XOPT.
-            xopt(:) = xpt(:, kopt);
+            xopt = xpt(:, kopt);
 
             % For the KNEW-th Lagrange function, evaluate the gradient at XOPT and the Hessian.
             g(:) = pl(1:n, knew) + linalg_obj.smat_mul_vec(pl(n + 1:npt - 1, knew), xopt);
@@ -198,7 +192,7 @@ classdef geometry_uobyqa_mod
                     dcauchy = -dcauchy;
                 end
             else                % GG is 0 or NaN due to rounding errors. Set DCAUCHY to a displacement from XOPT to XPT(:, KNEW).
-                dcauchy(:) = xpt(:, knew) - xopt;
+                dcauchy = xpt(:, knew) - xopt;
                 scaling = delbar / norm(dcauchy);
                 dcauchy = max(0.6 * scaling, min(0.5, scaling)) * dcauchy; % 0.6: ensure |D| > DELBAR/2
                 if sum(g .* dcauchy, 'all') * sum(dcauchy .* (h * dcauchy), 'all') < 0
