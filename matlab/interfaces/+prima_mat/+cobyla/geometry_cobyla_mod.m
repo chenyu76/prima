@@ -33,7 +33,6 @@ classdef geometry_cobyla_mod
 
             distsq = NaN(size(sim, 2), 1);
 
-            simid = NaN(size(simi, 1), 1);
             %real(RP) :: sigbar(size(sim, 1))
             %real(RP) :: veta(size(sim, 1))
             %real(RP) :: vsig(size(sim, 1))
@@ -124,7 +123,7 @@ classdef geometry_cobyla_mod
             % If 1 <= J <= N, SIMID(J) is the value of the J-th Lagrange function at D; the value of the
             % (N+1)-th Lagrange function is 1 - SUM(SIMID). [SIMID, 1 - SUM(SIMID)] is the counterpart of
             % VLAG in UOBYQA and DEN in NEWUOA/BOBYQA/LINCOA.
-            simid(:) = simi * d;
+            simid = simi * d;
             score = weight .* abs([simid; 1.0 - sum(simid, 'all')]);
 
             % If XIMPROVED = FALSE (D does not render a better X), set SCORE(N+1) = -1 to avoid JDROP = N+1.

@@ -526,9 +526,6 @@ classdef lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            Aeqx0 = NaN(size(Aeq, 1), 1);
-
-            Aineqx0 = NaN(size(Aineq, 1), 1);
             idmat = NaN(numel(x0));
 
             n = numel(x0);
@@ -575,8 +572,8 @@ classdef lincoa_mod
             %%bvec = [-xl(ixl); xu(ixu); -beq(ieq); beq(ieq); bineq(iineq)];
 
             % Modify BVEC if necessary so that the initial point is feasible.
-            Aeqx0(:) = Aeq * x0;
-            Aineqx0(:) = Aineq * x0;
+            Aeqx0 = Aeq * x0;
+            Aineqx0 = Aineq * x0;
             bvec = max(bvec, [-x0(ixl); x0(ixu); -Aeqx0(ieq); Aeqx0(ieq); Aineqx0(iineq)]);
 
             % Normalize the linear constraints so that each constraint has a gradient of norm 1.

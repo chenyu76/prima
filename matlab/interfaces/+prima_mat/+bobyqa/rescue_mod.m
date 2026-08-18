@@ -138,7 +138,6 @@ classdef rescue_mod
             ptsid = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
 
-            v = NaN(size(xpt, 1), 1);
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
             vquad = NaN;
             wmv = NaN(size(xpt, 1) + size(xpt, 2), 1);
@@ -177,7 +176,7 @@ classdef rescue_mod
 
             % Update HQ so that HQ and PQ define the second derivatives of the model after XBASE has been
             % shifted to the trust region centre.
-            v(:) = xpt * pq + 0.5 * sum(pq, 'all') * xopt;
+            v = xpt * pq + 0.5 * sum(pq, 'all') * xopt;
             hq = linalg_obj.r2_sym(hq, 1.0, xopt, v);
 
             % Set the elements of PTSAUX.

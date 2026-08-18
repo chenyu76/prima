@@ -34,7 +34,7 @@ classdef update_cobyla_mod
             simi_jdrop = NaN(size(simi, 2), 1);
 
             simi_test = NaN(size(simi, 1), size(simi, 2));
-            simid = NaN(size(simi, 1), 1);
+
             sum_simi = NaN(size(simi, 2), 1);
             itol = 1.0;
 
@@ -62,7 +62,7 @@ classdef update_cobyla_mod
             else                % JDROP = N+1
                 sim(:, n + 1) = sim(:, n + 1) + d;
                 sim(:, 1:n) = sim(:, 1:n) - d;
-                simid(:) = simi * d;
+                simid = simi * d;
                 sum_simi(:) = sum(simi, 1);
                 simi = simi + simid * (sum_simi ./ (1.0 - sum(simid, 'all'))).';
             end

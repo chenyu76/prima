@@ -223,6 +223,8 @@ classdef geometry_newuoa_mod
 
             dold = NaN(size(x));
 
+            gd = NaN(size(x));
+
             pqlag = NaN(size(xpt, 2), 1);
             s = NaN(size(x));
 
@@ -245,7 +247,7 @@ classdef geometry_newuoa_mod
             % Set the unscaled initial D. Form the gradient of LFUNC at X, and multiply D by the Hessian of LFUNC.
             d = xpt(:, knew) - x;
             dd = sum(d .* d, 'all');
-            gd = powalg_obj.hess_mul(d, xpt, pqlag); % GD = MATPROD(XPT, PQLAG * MATPROD(D, XPT))
+            gd(:) = powalg_obj.hess_mul(d, xpt, pqlag); % GD = MATPROD(XPT, PQLAG * MATPROD(D, XPT))
 
             gc = bmat(:, knew) + powalg_obj.hess_mul(x, xpt, pqlag); % GC = BMAT(:,KNEW) + MATPROD(XPT,PQLAG*MATPROD(X,XPT))
 
@@ -310,7 +312,7 @@ classdef geometry_newuoa_mod
                     break
                 end
 
-                w = powalg_obj.hess_mul(s, xpt, pqlag); % W = MATPROD(XPT, PQLAG * MATPROD(S, XPT))
+                w(:) = powalg_obj.hess_mul(s, xpt, pqlag); % W = MATPROD(XPT, PQLAG * MATPROD(S, XPT))
 
                 % Seek the value of the angle that maximizes ||TAU||.
                 % First, calculate the coefficients of the objective function on the circle.

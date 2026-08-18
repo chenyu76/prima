@@ -170,7 +170,6 @@ classdef geometry_bobyqa_mod
             mask_fixu = false(size(xpt, 1), 1);
 
             curv = NaN;
-            dderiv = NaN(size(xpt, 2), 1);
 
             distsq = NaN(size(xpt, 2), 1);
 
@@ -247,7 +246,7 @@ classdef geometry_bobyqa_mod
             % whether the corresponding trial points lie on bounds; SBDI(I, K) = J > 0 means that the I-th trail
             % point on the K-th line attains the J-th upper bound, SBDI(I, K) = -J < 0 indicates reaching the
             % J-th lower bound, and SBDI(I, K) = 0 means not touching any bound.
-            dderiv(:) = xpt.' * glag - sum(glag .* xopt, 'all'); % The derivatives PHI_K'(0).
+            dderiv = xpt.' * glag - sum(glag .* xopt, 'all'); % The derivatives PHI_K'(0).
             distsq(:) = sum((xpt - xopt) .^ 2, 1);
             for k = 1:npt
                 % It does not make sense to consider "straight line through XOPT and XPT(:, KOPT)". Hence set
@@ -470,7 +469,7 @@ classdef geometry_bobyqa_mod
                 % Set CURV to the curvature of the KNEW-th Lagrange function along S. Scale S by a factor less
                 % than ONE if that can reduce the modulus of the Lagrange function at XOPT+S. Set CAUCHY to the
                 % final value of the square of this function.
-                sxpt(:) = xpt.' * s;
+                sxpt = xpt.' * s;
                 curv = sum(sxpt .* (pqlag .* sxpt), 'all'); % CURV = INPROD(S, HESS_MUL(S, XPT, PQLAG))
                 if uphill == 1
                     curv = -curv;

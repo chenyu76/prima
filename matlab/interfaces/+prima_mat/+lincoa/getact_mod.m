@@ -230,7 +230,7 @@ classdef getact_mod
                 ddsav = dd;
 
                 % Pick the next integer L or terminate; a positive L is the index of the most violated constraint.
-                apsd(:) = amat.' * psd;
+                apsd = amat.' * psd;
                 mask = (resnew > 0 & resnew <= tdel & apsd > (dnorm / delta) * resnew);
                 %----------------------------------------------------------------------------------------------%
                 % N.B.: the definition of L and VIOLMX can be simplified as follows, but we prefer explicitness.

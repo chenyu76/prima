@@ -33,13 +33,11 @@ classdef univar_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            agrid = NaN(grid_size + 1, 1);
-
             %====================%
             % Calculation starts %
             %====================%
 
-            agrid(:) = linspace(0.0, 2.0 * pi, grid_size + 1).'; % Size: GRID_SIZE+1; the last entry will be unused
+            agrid = linspace(0.0, 2.0 * pi, grid_size + 1).'; % Size: GRID_SIZE+1; the last entry will be unused
             fgrid = reshape(cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size)', "UniformOutput", false)).', [], 1);
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 
@@ -88,13 +86,11 @@ classdef univar_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            agrid = NaN(grid_size + 1, 1);
-
             %====================%
             % Calculation starts %
             %====================%
 
-            agrid(:) = linspace(0.0, 2.0 * pi, grid_size + 1).'; % Size: GRID_SIZE+1; the last entry is not used
+            agrid = linspace(0.0, 2.0 * pi, grid_size + 1).'; % Size: GRID_SIZE+1; the last entry is not used
             fgrid = reshape(cell2mat(arrayfun(@(k) fun(agrid(k), args), (1:grid_size)', "UniformOutput", false)).', [], 1);
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 
@@ -136,8 +132,6 @@ classdef univar_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            xgrid = NaN(grid_size, 1);
-
             %====================%
             % Calculation starts %
             %====================%
@@ -147,7 +141,7 @@ classdef univar_mod
                 return
             end
 
-            xgrid(:) = linspace(lb, ub, grid_size).';
+            xgrid = linspace(lb, ub, grid_size).';
             fgrid = reshape(cell2mat(arrayfun(@(k) fun(xgrid(k), args), (1:grid_size)', "UniformOutput", false)).', [], 1);
             %%MATLAB: fgrid = arrayfun(@(x) fun(x, args), xgrid(1:grid_size));  % Same shape as `xgrid`
 

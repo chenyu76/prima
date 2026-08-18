@@ -227,8 +227,6 @@ classdef geometry_lincoa_mod
 
             rstat = NaN(size(amat, 2), 1);
 
-            dderiv = NaN(size(xpt, 2), 1);
-
             distsq = NaN(size(xpt, 2), 1);
 
             pglag = NaN(size(xpt, 1), 1);
@@ -252,7 +250,7 @@ classdef geometry_lincoa_mod
             % Maximize |LFUNC| within the trust region on the lines through XOPT and other interpolation points,
             % without considering the linear constraints. In the following, VLAGABS(K) is set to the maximum of
             % |PHI_K(t)| subject to the trust-region constraint with PHI_K(t) = LFUNC((1-t)*XOPT + t*XPT(:, K)).
-            dderiv(:) = xpt.' * glag - sum(glag .* xopt, 'all'); % The derivatives PHI_K'(0).
+            dderiv = xpt.' * glag - sum(glag .* xopt, 'all'); % The derivatives PHI_K'(0).
             distsq(:) = sum((xpt - xopt) .^ 2, 1);
             % Set DISTSQ(KOPT) to a positive artificial value. Otherwise, the calculation of STPLEN will raise a
             % floating point exception. This artificial value will NOT be used.

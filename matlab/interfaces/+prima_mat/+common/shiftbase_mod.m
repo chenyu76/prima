@@ -53,7 +53,7 @@ classdef shiftbase_mod
             bymat = NaN(numel(xbase));
             %real(RP) :: htol
 
-            sxpt = NaN(size(xpt, 2), 1);
+
             v = NaN(size(xbase));
             vxopt = NaN(numel(xbase));
 
@@ -86,7 +86,7 @@ classdef shiftbase_mod
             xptxav = xpt - 0.5 * xopt;
             %%MATLAB: xptxav = xpt - xopt/2  % xopt should be a column! Implicit expansion
             %sxpt = matprod(xopt, xptxav)
-            sxpt(:) = xpt.' * xopt - 0.5 * xoptsq; % This one seems to work better numerically.
+            sxpt = xpt.' * xopt - 0.5 * xoptsq; % This one seems to work better numerically.
 
             % First, make the changes to BMAT that do not depend on ZMAT.
             qxoptq = 0.25 * xoptsq;

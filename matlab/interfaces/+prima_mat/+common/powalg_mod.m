@@ -97,7 +97,6 @@ classdef powalg_mod
             % MIN(M, N+1) <= SIZE(Rdiag) <= M
 
 
-            cq = NaN(size(Q, 2), 1);
             cqa = NaN(size(Q, 2), 1);
 
             %------------------------------------------------------------%
@@ -117,7 +116,7 @@ classdef powalg_mod
 
             % As in Powell's COBYLA, CQ is set to 0 at the positions with CQ being negligible as per ISMINOR.
             % This may not be the best choice if the subroutine is used in other contexts, e.g., LINCOA.
-            cq(:) = Q.' * c;
+            cq = Q.' * c;
             cqa(:) = abs(Q).' * abs(c);
             cq(linalg_obj.isminor1(cq, cqa)) = 0.0; %%MATLAB: cq(isminor(cq, cqa)) = zero
 
@@ -179,8 +178,6 @@ classdef powalg_mod
             % R(M, :), N+1 <= SIZE(R, 2) <= M
 
 
-            cq = NaN(size(Q, 2), 1);
-
             %------------------------------------------------------------%
             % Debugging only
             % Debugging only
@@ -191,7 +188,7 @@ classdef powalg_mod
 
             m = size(Q, 1);
 
-            cq(:) = Q.' * c;
+            cq = Q.' * c;
 
             % Update Q so that the columns of Q(:, N+2:M) are orthogonal to C. This is done by applying a 2D
             % Givens rotation to Q(:, [K, K+1]) from the right to zero C'*Q(:, K+1) out for K = N+1, ..., M-1.
@@ -594,8 +591,6 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = NaN(size(zmat, 1), 1);
-
             zk = NaN(size(zmat, 2), 1);
 
             %====================%
@@ -604,7 +599,7 @@ classdef powalg_mod
 
             zk(:) = zmat(k, :);
             zk(1:idz - 1) = -zk(1:idz - 1);
-            y(:) = zmat * zk;
+            y = zmat * zk;
 
             %====================%
             %  Calculation ends  %
@@ -619,17 +614,13 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = NaN(size(zmat, 1), 1);
-
-            xz = NaN(size(zmat, 2), 1);
-
             %====================%
             % Calculation starts %
             %====================%
 
-            xz(:) = zmat.' * x;
+            xz = zmat.' * x;
             xz(1:idz - 1) = -xz(1:idz - 1);
-            y(:) = zmat * xz;
+            y = zmat * xz;
 
             %====================%
             %  Calculation ends  %
@@ -644,16 +635,13 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            xz = NaN(size(zmat, 2), 1);
-            yz = NaN(size(zmat, 2), 1);
-
             %====================%
             % Calculation starts %
             %====================%
 
-            xz(:) = zmat.' * x;
+            xz = zmat.' * x;
             xz(1:idz - 1) = -xz(1:idz - 1);
-            yz(:) = zmat.' * y;
+            yz = zmat.' * y;
             p = sum(xz .* yz, 'all');
 
             %====================%
@@ -1272,8 +1260,6 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            vlag = NaN(size(pl, 2), 1);
-
             w = NaN(size(pl, 1), 1);
 
             n = numel(xref);
@@ -1291,7 +1277,7 @@ classdef powalg_mod
                 w(ih + j) = 0.5 * w(ih + j);
             end
 
-            vlag(:) = pl.' * w; % VLAG(K) = QUADINC_GHV(PL(:, K), D, XREF)
+            vlag = pl.' * w; % VLAG(K) = QUADINC_GHV(PL(:, K), D, XREF)
             vlag(kref) = vlag(kref) + 1.0;
 
             %====================%
