@@ -246,20 +246,15 @@ classdef cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
 
 
-            debug_obj = prima_mat.common.debug_mod();
+
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            infos_obj = prima_mat.common.infos_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
-            memory_obj = prima_mat.common.memory_mod();
 
-            selectx_obj = prima_mat.common.selectx_mod();
+
             preproc_obj = prima_mat.common.preproc_mod();
-            string_obj = prima_mat.common.string_mod();
+
 
             % Solver-specific modules
             cobylb_obj = prima_mat.cobyla.cobylb_mod();
@@ -297,7 +292,7 @@ classdef cobyla_mod
 
             % Local variables
             solver = "COBYLA";
-            srname = "COBYLA";
+
             info_loc = NaN;
 
 
@@ -342,21 +337,21 @@ classdef cobyla_mod
             addParameter(ipObj, 'nf', NaN);
             addParameter(ipObj, 'rhobeg', NaN);
             addParameter(ipObj, 'rhoend', NaN);
-            addParameter(ipObj, 'ftarget', NaN);
-            addParameter(ipObj, 'ctol', NaN);
-            addParameter(ipObj, 'cweight', NaN);
+            addParameter(ipObj, 'ftarget', -realmax);
+            addParameter(ipObj, 'ctol', sqrt(eps(1.0)));
+            addParameter(ipObj, 'cweight', 1.0e8);
             addParameter(ipObj, 'maxfun', NaN);
-            addParameter(ipObj, 'iprint', NaN);
+            addParameter(ipObj, 'iprint', 0);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
-            addParameter(ipObj, 'gamma1', NaN);
-            addParameter(ipObj, 'gamma2', NaN);
+            addParameter(ipObj, 'gamma1', 0.5);
+            addParameter(ipObj, 'gamma2', 2.0);
             addParameter(ipObj, 'xhist', NaN);
             addParameter(ipObj, 'fhist', NaN);
             addParameter(ipObj, 'chist', NaN);
             addParameter(ipObj, 'nlchist', NaN);
             addParameter(ipObj, 'maxhist', NaN);
-            addParameter(ipObj, 'maxfilt', NaN);
+            addParameter(ipObj, 'maxfilt', 2000);
             addParameter(ipObj, 'callback_fcn', struct());
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
@@ -374,21 +369,21 @@ classdef cobyla_mod
 
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
-            ftarget = ipObj.Results.ftarget;
-            ctol = ipObj.Results.ctol;
-            cweight = ipObj.Results.cweight;
+            ftarget_loc = ipObj.Results.ftarget;
+            ctol_loc = ipObj.Results.ctol;
+            cweight_loc = ipObj.Results.cweight;
             maxfun = ipObj.Results.maxfun;
-            iprint = ipObj.Results.iprint;
+            iprint_loc = ipObj.Results.iprint;
             eta1 = ipObj.Results.eta1;
             eta2 = ipObj.Results.eta2;
-            gamma1 = ipObj.Results.gamma1;
-            gamma2 = ipObj.Results.gamma2;
+            gamma1_loc = ipObj.Results.gamma1;
+            gamma2_loc = ipObj.Results.gamma2;
             xhist = ipObj.Results.xhist;
             fhist = ipObj.Results.fhist;
             chist = ipObj.Results.chist;
             nlchist = ipObj.Results.nlchist;
             maxhist = ipObj.Results.maxhist;
-            maxfilt = ipObj.Results.maxfilt;
+            maxfilt_loc = ipObj.Results.maxfilt;
             callback_fcn = ipObj.Results.callback_fcn;
 
             if ismember('bineq', ipObj.UsingDefaults)
@@ -404,66 +399,34 @@ classdef cobyla_mod
             if ismember('xl', ipObj.UsingDefaults)
                 mxl = 0;
             else
-                mxl = nnz(xl > -consts_obj.BOUNDMAX);
+                mxl = nnz(xl > -(0.25 * realmax));
             end
             if ismember('xu', ipObj.UsingDefaults)
                 mxu = 0;
             else
-                mxu = nnz(xu < consts_obj.BOUNDMAX);
+                mxu = nnz(xu < 0.25 * realmax);
             end
             m = mxu + mxl + 2 * meq + mineq + m_nlcon;
             n = numel(x);
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(m_nlcon >= 0, "M_NLCON >= 0", srname);
-                debug_obj.assert(n >= 1, "N >= 1", srname);
-                if nargout >= 4
-                    debug_obj.assert(numel(nlconstr) == m_nlcon, "SIZE(NLCONSTR) == M_NLCON", srname);
-                end
-                debug_obj.assert(~ismember('Aineq', ipObj.UsingDefaults) == ~ismember('bineq', ipObj.UsingDefaults), "Aineq and Bineq are both present or both absent", srname);
-                if ~ismember('Aineq', ipObj.UsingDefaults)
-                    debug_obj.assert((size(Aineq, 1) == mineq && size(Aineq, 2) == n) || (size(Aineq, 1) == 0 && size(Aineq, 2) == 0 && mineq == 0), "SIZE(Aineq) == [Mineq, N] unless Aineq and Bineq are both empty", srname);
-                end
-                debug_obj.assert(~ismember('Aeq', ipObj.UsingDefaults) == ~ismember('beq', ipObj.UsingDefaults), "Aeq and Beq are both present or both absent", srname);
-                if ~ismember('Aeq', ipObj.UsingDefaults)
-                    debug_obj.assert((size(Aeq, 1) == meq && size(Aeq, 2) == n) || (size(Aeq, 1) == 0 && size(Aeq, 2) == 0 && meq == 0), "SIZE(Aeq) == [Meq, N] unless Aeq and Beq are both empty", srname);
-                end
-                if ~ismember('xl', ipObj.UsingDefaults)
-                    debug_obj.assert(numel(xl) == n || numel(xl) == 0, "SIZE(XL) == N unless XL is empty", srname);
-                end
-                if ~ismember('xu', ipObj.UsingDefaults)
-                    debug_obj.assert(numel(xu) == n || numel(xu) == 0, "SIZE(XU) == N unless XU is empty", srname);
-                end
 
-                % N.B.: If NLCONSTR0 is present, then F0 must be present, and we assume that F(X0) = F0 even if
-                % F0 is NaN; if NLCONSTR0 is absent, then F0 must be either absent or NaN, both of which will
-                % be interpreted as F(X0) is not provided.
-                if ~ismember('nlconstr0', ipObj.UsingDefaults)
-                    debug_obj.assert(~ismember('f0', ipObj.UsingDefaults), "If NLCONSTR0 is present, then F0 is present", srname);
-                end
-                if ~ismember('f0', ipObj.UsingDefaults)
-                    debug_obj.assert(infnan_obj.is_nan_sp(f0) || ~ismember('nlconstr0', ipObj.UsingDefaults), "If F0 is present and not NaN, then NLCONSTR0 is present", srname);
-                end
-            end
 
             % Exit if the size of NLCONSTR0 is inconsistent with M_NLCON.
             if ~ismember('nlconstr0', ipObj.UsingDefaults)
                 if numel(nlconstr0) ~= m_nlcon
-                    if consts_obj.DEBUGGING
-                        debug_obj.errstop(srname, "SIZE(NLCONSTR0) /= M_NLCON. Exiting", 'code', infos_obj.INVALID_INPUT);
-                    else
-                        debug_obj.warning(srname, "SIZE(NLCONSTR0) /= M_NLCON. Exiting");
-                        return % This may be problematic, as outputs like F are undefined.
-                    end
+
+
+                    return % This may be problematic, as outputs like F are undefined.
+
                 end
             end
 
 
             % Read the inputs.
 
-            Aineq_loc = memory_obj.alloc_rmatrix_sp(mineq, n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
+            Aineq_loc = NaN(mineq, n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
             if ~ismember('Aineq', ipObj.UsingDefaults) && mineq > 0
                 % We must check Mineq > 0. Otherwise, the size of Aineq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aineq; we allow Aineq to be 0-by-0, but
@@ -471,12 +434,12 @@ classdef cobyla_mod
                 Aineq_loc = Aineq;
             end
 
-            bineq_loc = memory_obj.alloc_rvector_sp(mineq); % NOT removable even in F2003, as Bineq may be absent.
+            bineq_loc = NaN(mineq, 1); % NOT removable even in F2003, as Bineq may be absent.
             if ~ismember('bineq', ipObj.UsingDefaults)
                 bineq_loc = bineq;
             end
 
-            Aeq_loc = memory_obj.alloc_rmatrix_sp(meq, n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
+            Aeq_loc = NaN(meq, n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
             if ~ismember('Aeq', ipObj.UsingDefaults) && meq > 0
                 % We must check Meq > 0. Otherwise, the size of Aeq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aeq; we allow Aeq to be 0-by-0, but
@@ -484,36 +447,34 @@ classdef cobyla_mod
                 Aeq_loc = Aeq;
             end
 
-            beq_loc = memory_obj.alloc_rvector_sp(meq); % NOT removable even in F2003, as Beq may be absent.
+            beq_loc = NaN(meq, 1); % NOT removable even in F2003, as Beq may be absent.
             if ~ismember('beq', ipObj.UsingDefaults)
                 beq_loc = beq;
             end
 
-            xl_loc(:) = -consts_obj.BOUNDMAX;
+            xl_loc(:) = -(0.25 * realmax);
             if ~ismember('xl', ipObj.UsingDefaults)
                 if numel(xl) > 0
                     xl_loc(:) = xl;
                 end
             end
-            xl_loc(linalg_obj.trueloc(infnan_obj.is_nan_sp(xl_loc) | xl_loc < -consts_obj.BOUNDMAX)) = -consts_obj.BOUNDMAX;
-            memory_obj.alloc_ivector(mxl);
-            linalg_obj.trueloc(xl_loc > -consts_obj.BOUNDMAX);
+            xl_loc(isnan(xl_loc) | xl_loc < -(0.25 * realmax)) = -(0.25 * realmax);
 
-            xu_loc(:) = consts_obj.BOUNDMAX;
+
+            xu_loc(:) = 0.25 * realmax;
             if ~ismember('xu', ipObj.UsingDefaults)
                 if numel(xu) > 0
                     xu_loc(:) = xu;
                 end
             end
-            xu_loc(linalg_obj.trueloc(infnan_obj.is_nan_sp(xu_loc) | xu_loc > consts_obj.BOUNDMAX)) = consts_obj.BOUNDMAX;
-            memory_obj.alloc_ivector(mxu);
-            linalg_obj.trueloc(xu_loc < consts_obj.BOUNDMAX);
+            xu_loc(isnan(xu_loc) | xu_loc > 0.25 * realmax) = 0.25 * realmax;
+
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
             [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, xl_loc, xu_loc, amat, bvec);
 
             % Allocate memory for CONSTR_LOC.
-            constr_loc = memory_obj.alloc_rvector_sp(m); % NOT removable even in F2003!
+            constr_loc = NaN(m, 1); % NOT removable even in F2003!
 
             % Set [F_LOC, CONSTR_LOC] to [F(X0), CONSTR(X0)] after evaluating the latter if needed. In this way,
             % COBYLB only needs one interface.
@@ -521,10 +482,10 @@ classdef cobyla_mod
             % If NLCONSTR0 is present, then F0 must be present, and we assume that F(X0) = F0 even if F0 is NaN.
             % If NLCONSTR0 is absent, then F0 must be either absent or NaN, both of which will be interpreted as
             % F(X0) is not provided and we have to evaluate F(X0) and NLCONSTR(X0) now.
-            constr_loc(1:m - m_nlcon) = evaluate_obj.moderatec(linalg_obj.matprod12(x, amat) - bvec); % Linear and bound constraints
+            constr_loc(1:m - m_nlcon) = evaluate_obj.moderatec(amat.' * x - bvec); % Linear and bound constraints
             % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
             % bound/linear constraint values here to make CSTRV consistent.
-            if ~ismember('f0', ipObj.UsingDefaults) && ~ismember('nlconstr0', ipObj.UsingDefaults) && all(infnan_obj.is_finite(x), 'all')
+            if ~ismember('f0', ipObj.UsingDefaults) && ~ismember('nlconstr0', ipObj.UsingDefaults) && all(isfinite(x), 'all')
                 f_loc = evaluate_obj.moderatef(f0);
                 constr_loc(m - m_nlcon + 1:m) = evaluate_obj.moderatec(nlconstr0);
             else
@@ -533,7 +494,7 @@ classdef cobyla_mod
                 % N.B.: Do NOT call FMSG, SAVEHIST, or SAVEFILT for the function/constraint evaluation at X0.
                 % They will be called during the initialization, which will read the function/constraint at X0.
             end
-            cstrv_loc = linalg_obj.maximum([consts_obj.ZERO; constr_loc]);
+            cstrv_loc = max([0.0; constr_loc], [], 'all');
 
             % If RHOBEG is present, then RHOBEG_LOC is a copy of RHOBEG; otherwise, RHOBEG_LOC takes the default
             % value for RHOBEG, taking the value of RHOEND into account. Note that RHOEND is considered only if
@@ -545,94 +506,56 @@ classdef cobyla_mod
                 % combine the evaluation of PRESENT(RHOEND) and the evaluation of IS_FINITE(RHOEND) as
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
-                if infnan_obj.is_finite(rhoend) && rhoend > 0
-                    rhobeg_loc = max(consts_obj.TEN * rhoend, consts_obj.RHOBEG_DFT);
+                if isfinite(rhoend) && rhoend > 0
+                    rhobeg_loc = max(10.0 * rhoend, 1.0);
                 else
-                    rhobeg_loc = consts_obj.RHOBEG_DFT;
+                    rhobeg_loc = 1.0;
                 end
             else
-                rhobeg_loc = consts_obj.RHOBEG_DFT;
+                rhobeg_loc = 1.0;
             end
 
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(consts_obj.EPS, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg_loc, consts_obj.RHOEND_DFT));
+                rhoend_loc = max(eps(1.0), min((1.0e-6 / 1.0) * rhobeg_loc, 1.0e-6));
             else
-                rhoend_loc = consts_obj.RHOEND_DFT;
+                rhoend_loc = 1.0e-6;
             end
 
-            if ismember('ctol', ipObj.UsingDefaults)
-                ctol_loc = consts_obj.CTOL_DFT;
-            else
-                ctol_loc = ctol;
-            end
-
-            if ismember('cweight', ipObj.UsingDefaults)
-                cweight_loc = consts_obj.CWEIGHT_DFT;
-            else
-                cweight_loc = cweight;
-            end
-
-            if ismember('ftarget', ipObj.UsingDefaults)
-                ftarget_loc = consts_obj.FTARGET_DFT;
-            else
-                ftarget_loc = ftarget;
-            end
 
             if ismember('maxfun', ipObj.UsingDefaults)
-                maxfun_loc = consts_obj.MAXFUN_DIM_DFT * n;
+                maxfun_loc = 500 * n;
             else
                 maxfun_loc = maxfun;
             end
 
-            if ismember('iprint', ipObj.UsingDefaults)
-                iprint_loc = consts_obj.IPRINT_DFT;
-            else
-                iprint_loc = iprint;
-            end
 
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
             elseif ~ismember('eta2', ipObj.UsingDefaults)
                 if eta2 > 0 && eta2 < 1
-                    eta1_loc = max(consts_obj.EPS, eta2 / 7.0);
+                    eta1_loc = max(eps(1.0), eta2 / 7.0);
                 end
             else
-                eta1_loc = consts_obj.TENTH;
+                eta1_loc = 0.1;
             end
 
             if ~ismember('eta2', ipObj.UsingDefaults)
                 eta2_loc = eta2;
             elseif eta1_loc > 0 && eta1_loc < 1
-                eta2_loc = (eta1_loc + consts_obj.TWO) / 3.0;
+                eta2_loc = (eta1_loc + 2.0) / 3.0;
             else
                 eta2_loc = 0.7;
             end
 
-            if ismember('gamma1', ipObj.UsingDefaults)
-                gamma1_loc = consts_obj.HALF;
-            else
-                gamma1_loc = gamma1;
-            end
-
-            if ismember('gamma2', ipObj.UsingDefaults)
-                gamma2_loc = consts_obj.TWO;
-            else
-                gamma2_loc = gamma2;
-            end
 
             if ismember('maxhist', ipObj.UsingDefaults)
-                maxhist_loc = max([maxfun_loc, n + 2, consts_obj.MAXFUN_DIM_DFT * n], [], 'all');
+                maxhist_loc = max([maxfun_loc, n + 2, 500 * n], [], 'all');
             else
                 maxhist_loc = maxhist;
             end
 
-            if ismember('maxfilt', ipObj.UsingDefaults)
-                maxfilt_loc = consts_obj.MAXFILT_DFT;
-            else
-                maxfilt_loc = maxfilt;
-            end
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
             [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, ~, maxfilt_loc, ctol_loc, cweight_loc, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, 'm', m, 'is_constrained', (m > 0), 'ctol', ctol_loc, 'cweight', cweight_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc, 'maxfilt', maxfilt_loc);
@@ -669,7 +592,7 @@ classdef cobyla_mod
             if nargout >= 6
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                xhist = memory_obj.alloc_rmatrix_sp(n, nhist); % Removable in F2003.
+                xhist = NaN(n, nhist); % Removable in F2003.
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -693,7 +616,7 @@ classdef cobyla_mod
             if nargout >= 7
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                fhist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
+                fhist = NaN(nhist, 1); % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
@@ -704,7 +627,7 @@ classdef cobyla_mod
             if nargout >= 8
                 nhist = min(nf_loc, numel(chist_loc));
                 %--------------------------------------------------%
-                chist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
+                chist = NaN(nhist, 1); % Removable in F2003.
                 %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
@@ -721,7 +644,7 @@ classdef cobyla_mod
             if nargout >= 9
                 nhist = min(nf_loc, size(conhist_loc, 2));
                 %---------------------------------------------------------------%
-                nlchist = memory_obj.alloc_rmatrix_sp(m_nlcon, nhist); % Removable in F2003.
+                nlchist = NaN(m_nlcon, nhist); % Removable in F2003.
                 %---------------------------------------------------------------%
                 nlchist = conhist_loc(m - m_nlcon + 1:m, 1:nhist); % The same as XHIST, we must cap NLCHIST at NF_LOC.
 
@@ -730,34 +653,10 @@ classdef cobyla_mod
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if (nargout >= 6 || nargout >= 7 || nargout >= 8 || nargout >= 9) && maxhist_loc < nf_loc
-                debug_obj.warning(solver, "Only the history of the last " + string_obj.int2str(maxhist_loc) + " function evaluation(s) is recorded");
             end
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(nf_loc <= maxfun_loc, "NF <= MAXFUN", srname);
-                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
-                nhist = min(nf_loc, maxhist_loc);
-                if nargout >= 6
-                    debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == nhist, "SIZE(XHIST) == [N, NHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist), 'all'), "XHIST does not contain NaN", srname);
-                end
-                if nargout >= 7
-                    debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) | infnan_obj.is_posinf(fhist), 'all'), "FHIST does not contain NaN/+Inf", srname);
-                end
-                if nargout >= 8
-                    debug_obj.assert(numel(chist) == nhist, "SIZE(CHIST) == NHIST", srname);
-                    debug_obj.assert(~any(chist < 0 | infnan_obj.is_nan_sp(chist) | infnan_obj.is_posinf(chist), 'all'), "CHIST does not contain nonnegative values or NaN/+Inf", srname);
-                end
-                if nargout >= 9
-                    debug_obj.assert(size(nlchist, 1) == m_nlcon && size(nlchist, 2) == nhist, "SIZE(NLCHIST) == [M_NLCON, NHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan_sp(nlchist) | infnan_obj.is_posinf(nlchist), 'all'), "NLCHIST does not contain NaN/+Inf", srname);
-                end
-                if nargout >= 7 && nargout >= 8
-                    debug_obj.assert(~any(selectx_obj.isbetter10(fhist(1:nhist), chist(1:nhist), f_loc, cstrv_loc, ctol_loc), 'all'), "No point in the history is better than X", srname);
-                end
-            end
+
 
         end
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu, amat, bvec)
@@ -774,10 +673,7 @@ classdef cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
-            memory_obj = prima_mat.common.memory_mod();
+
 
 
             % Inputs
@@ -789,7 +685,7 @@ classdef cobyla_mod
 
 
             % Local variables
-            srname = "GET_LINCON";
+
 
 
             idmat = NaN(numel(xl));
@@ -798,32 +694,28 @@ classdef cobyla_mod
             n = numel(xl);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(Aineq, 1) == numel(bineq) && size(Aineq, 2) == n, "SIZE(AINEQ) == [SIZE(BINEQ), N]", srname);
-                debug_obj.assert(size(Aeq, 1) == numel(beq) && size(Aeq, 2) == n, "SIZE(AEQ) == [SIZE(BEQ), N]", srname);
-                debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == SIZE(XU) == N", srname);
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
             % Decide the number of nontrivial constraints.
-            mxl = nnz(xl > -consts_obj.BOUNDMAX);
-            mxu = nnz(xu < consts_obj.BOUNDMAX);
+            mxl = nnz(xl > -(0.25 * realmax));
+            mxu = nnz(xu < 0.25 * realmax);
             meq = numel(beq);
             mineq = numel(bineq);
             m_lcon = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
 
             % Allocate memory. Removable in F2003.
-            memory_obj.alloc_ivector(mxl);
-            memory_obj.alloc_ivector(mxu);
-            amat = memory_obj.alloc_rmatrix_sp(n, m_lcon);
-            bvec = memory_obj.alloc_rvector_sp(m_lcon);
+
+
+            amat = NaN(n, m_lcon);
+            bvec = NaN(m_lcon, 1);
 
             % Define the indices of the nontrivial bound constraints.
-            ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
-            ixu = linalg_obj.trueloc(xu < consts_obj.BOUNDMAX);
+            ixl = find(xl > -(0.25 * realmax));
+            ixu = find(xu < 0.25 * realmax);
 
             % Wrap the linear constraints.
             % The bound constraint XL <= X <= XU is handled as two constraints -X <= -XL, X <= XU.
@@ -831,7 +723,7 @@ classdef cobyla_mod
             % N.B.:
             % 1. The treatment of the equality constraints is naive. One may choose to eliminate them instead.
             % 2. The code below is quite inefficient in terms of memory, but we prefer readability.
-            idmat(:, :) = linalg_obj.eye2(n, n);
+            idmat(:, :) = eye(n);
             amat = reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), reshape(-Aeq.', 1, []), reshape(Aeq.', 1, []), reshape(Aineq.', 1, [])], size(amat));
             bvec = [-xl(ixl); xu(ixu); -beq; beq; bineq];
             %%MATLAB code:
@@ -846,9 +738,7 @@ classdef cobyla_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(amat, 1) == numel(xl) && size(amat, 2) == numel(bvec), "SIZE(AMAT) == [SIZE(X), SIZE(BVEC)]", srname);
-            end
+
         end
 
     end

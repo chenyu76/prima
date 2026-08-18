@@ -69,13 +69,12 @@ classdef bobyqb_mod
 
             % Common modules
             checkexit_obj = prima_mat.common.checkexit_mod();
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod(); %, wassert, validate
+
+            %, wassert, validate
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            infos_obj = prima_mat.common.infos_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod(); %, errquad
@@ -112,7 +111,7 @@ classdef bobyqb_mod
 
             % Local variables
             solver = "BOBYQA";
-            srname = "BOBYQB";
+
             ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
 
 
@@ -159,29 +158,11 @@ classdef bobyqb_mod
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
             % Sizes.
-            n = numel(x);
-            maxxhist = size(xhist, 2);
-            maxfhist = numel(fhist);
-            maxhist = max(maxxhist, maxfhist);
+
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(abs(iprint) <= 3, "IPRINT is 0, 1, -1, 2, -2, 3, or -3", srname);
-                debug_obj.assert(n >= 1, "N >= 1", srname);
-                debug_obj.assert(npt >= n + 2, "NPT >= N+2", srname);
-                debug_obj.assert(maxfun >= npt + 1, "MAXFUN >= NPT+1", srname);
-                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", srname);
-                debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, "0 < GAMMA1 < 1 < GAMMA2", srname);
-                debug_obj.assert(rhobeg >= rhoend && rhoend > 0, "RHOBEG >= RHOEND > 0", srname);
-                debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", srname);
-                debug_obj.assert(all(rhobeg <= (xu - xl) ./ consts_obj.TWO, 'all'), "RHOBEG <= MINVAL(XU-XL)/2", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(x), 'all'), "X is finite", srname);
-                debug_obj.assert(all(x >= xl & (x <= xl | x - xl >= rhobeg), 'all'), "X == XL or X - XL >= RHOBEG", srname);
-                debug_obj.assert(all(x <= xu & (x >= xu | xu - x >= rhobeg), 'all'), "X == XU or XU - X >= RHOBEG", srname);
-                debug_obj.assert(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", srname);
-                debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
-                debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, "SIZE(FHIST) == 0 or MAXHIST", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -199,7 +180,7 @@ classdef bobyqb_mod
             if ~ismember('callback_fcn', ipObj.UsingDefaults)
                 terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, 0);
                 if terminate
-                    subinfo = infos_obj.CALLBACK_TERMINATE;
+                    subinfo = 30;
                 end
             end
 
@@ -209,41 +190,27 @@ classdef bobyqb_mod
 
             % Finish the initialization if INITXF completed normally and CALLBACK did not request termination;
             % otherwise, do not proceed, as XPT etc may be uninitialized, leading to errors or exceptions.
-            if subinfo == infos_obj.INFO_DFT
+            if subinfo == 0
                 % Initialize [BMAT, ZMAT], representing inverse of KKT matrix of the interpolation system.
                 [bmat, zmat] = initialize_bobyqa_obj.inith(ij, xpt, bmat, zmat);
 
                 % Initialize the quadratic represented by [GOPT, HQ, PQ], so that its gradient at XBASE+XOPT is
                 % GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
                 [gopt, hq, pq] = initialize_bobyqa_obj.initq(ij, fval, xpt, gopt, hq, pq);
-                if ~(all(infnan_obj.is_finite(gopt), 'all') && all(infnan_obj.is_finite(hq), 'all') && all(infnan_obj.is_finite(pq), 'all'))
-                    subinfo = infos_obj.NAN_INF_MODEL;
+                if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                    subinfo = -3;
                 end
             end
 
             % Check whether to return due to abnormal cases that may occur during the initialization.
-            if subinfo ~= infos_obj.INFO_DFT
+            if subinfo ~= 0
                 info = subinfo;
                 % Arrange FHIST and XHIST so that they are in the chronological order.
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x);
                 % Postconditions
-                if consts_obj.DEBUGGING
-                    debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
-                    debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
-                    debug_obj.assert(all(x >= xl, 'all') && all(x <= xu, 'all'), "XL <= X <= XU", srname);
-                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
-                    debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
-                    % The last calculated X can be Inf (finite + finite can be Inf numerically).
-                    for k = 1:min(nf, maxxhist)
-                        debug_obj.assert(all(xhist(:, k) >= xl, 'all') && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
-                    end
-                    debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
-                    debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), "F is the smallest in FHIST", srname);
-                end
+
                 return
             end
 
@@ -255,13 +222,13 @@ classdef bobyqb_mod
             % No need to initialize SHORTD unless MAXTR < 1, but some compilers may complain if we do not do it.
             rho = rhobeg;
             delta = rho;
-            ebound = consts_obj.ZERO;
+            ebound = 0.0;
             rescued = false;
             shortd = false;
 
-            ratio = -consts_obj.ONE;
-            dnorm_rec(:) = consts_obj.REALMAX;
-            moderr_rec(:) = consts_obj.REALMAX;
+            ratio = -1.0;
+            dnorm_rec(:) = realmax;
+            moderr_rec(:) = realmax;
             knew_tr = 0;
             knew_geo = 0;
             itest = 0;
@@ -273,7 +240,7 @@ classdef bobyqb_mod
             % T. M. Ragonneau's thesis: "Model-Based Derivative-Free Optimization Methods and Software".
             % According to test on 20230613, for BOBYQA, this Powellful updating scheme of DELTA works better
             % than setting directly DELTA = MAX(NEW_DELTA, RHO).
-            gamma3 = max(consts_obj.ONE, min(0.75 * gamma2, 1.5));
+            gamma3 = max(1.0, min(0.75 * gamma2, 1.5));
 
             % MAXTR is the maximal number of trust-region iterations. Here, we set it to HUGE(MAXTR) - 1 so that
             % the algorithm will not terminate due to MAXTR. However, this may not be allowed in other languages
@@ -285,7 +252,7 @@ classdef bobyqb_mod
             % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop
             % https://fortran-lang.discourse.group/t/loops-dont-behave-like-they-should
             maxtr = intmax('int32') - 1; %%MATLAB: maxtr = 10 * maxfun;
-            info = infos_obj.MAXTR_REACHED;
+            info = 20;
 
             % Begin the iterative procedure.
             % After solving a trust-region subproblem, we use three boolean variables to control the workflow.
@@ -296,8 +263,8 @@ classdef bobyqb_mod
             for tr = 1:maxtr
                 % Generate the next trust region step D.
                 [crvmin, d] = trustregion_bobyqa_obj.trsbox(delta, gopt, hq, pq, sl, su, trtol, xpt(:, kopt), xpt, d);
-                dnorm = min(delta, linalg_obj.p_norm(d));
-                shortd = (dnorm <= consts_obj.HALF * rho); % `<=` works better than `<` in case of underflow.
+                dnorm = min(delta, norm(d));
+                shortd = (dnorm <= 0.5 * rho); % `<=` works better than `<` in case of underflow.
 
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
@@ -316,7 +283,7 @@ classdef bobyqb_mod
                 % When this occurs, the algorithm takes the view that the work for the current RHO is complete,
                 % and hence it will reduce RHO, which will enhance the resolution of the algorithm in general.
                 if shortd || trfail
-                    delta = consts_obj.TENTH * delta;
+                    delta = 0.1 * delta;
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
 
@@ -337,7 +304,7 @@ classdef bobyqb_mod
 
                     % Check whether to exit
                     subinfo = checkexit_obj.checkexit_unc(maxfun, nf, f, ftarget, x);
-                    if subinfo ~= infos_obj.INFO_DFT
+                    if subinfo ~= 0
                         info = subinfo;
                         break
                     end
@@ -368,7 +335,7 @@ classdef bobyqb_mod
                     % improve the performance, especially when pursing high-precision solutions.
                     vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat);
                     den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
-                    to_rescue = (ximproved && ~(infnan_obj.is_finite(sum(abs(vlag), 'all')) && any(den > max(vlag(1:npt) .^ 2, [], 'all'), 'all')));
+                    to_rescue = (ximproved && ~(isfinite(sum(abs(vlag), 'all')) && any(den > max(vlag(1:npt) .^ 2, [], 'all'), 'all')));
                     % Below are some alternatives conditions for calling RESCUE. They perform fairly well.
                     % %to_rescue = .false.  ! Do not call RESCUE at all.
                     % %to_rescue = (ximproved .and. .not. any(den > 0.25_RP * maxval(vlag(1:npt)**2)))
@@ -377,17 +344,17 @@ classdef bobyqb_mod
                     % %to_rescue = (.not. any(den > maxval(vlag(1:npt)**2)))
                     if to_rescue
                         if rescued
-                            info = infos_obj.DAMAGING_ROUNDING; % The last RESCUE did not improve the situation.
+                            info = 7; % The last RESCUE did not improve the situation.
                             break
                         end
                         [kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat, subinfo] = rescue_obj.rescue(calfun, solver, iprint, maxfun, delta, ftarget, xl, xu, kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat);
-                        if subinfo ~= infos_obj.INFO_DFT
+                        if subinfo ~= 0
                             info = subinfo;
                             break
                         end
                         rescued = true;
-                        dnorm_rec(:) = consts_obj.REALMAX;
-                        moderr_rec(:) = consts_obj.REALMAX;
+                        dnorm_rec(:) = realmax;
+                        moderr_rec(:) = realmax;
 
                         % RESCUE shifts XBASE to the best point before RESCUE. Update D, MODERR, and XIMPROVED.
                         % Do NOT calculate QRED according to this D, as it is not really a trust region step.
@@ -414,8 +381,8 @@ classdef bobyqb_mod
                         % Try whether to replace the new quadratic model with the alternative model, namely the
                         % least Frobenius norm interpolant.
                         [itest, gopt, hq, pq] = update_bobyqa_obj.tryqalt(bmat, fval - fval(kopt), ratio, sl, su, xpt(:, kopt), xpt, zmat, itest, gopt, hq, pq);
-                        if ~(all(infnan_obj.is_finite(gopt), 'all') && all(infnan_obj.is_finite(hq), 'all') && all(infnan_obj.is_finite(pq), 'all'))
-                            info = infos_obj.NAN_INF_MODEL;
+                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                            info = -3;
                             break
                         end
                     end
@@ -437,7 +404,7 @@ classdef bobyqb_mod
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
                 distsq(:) = sum((xpt - xpt(:, kopt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
-                close_itpset = all(distsq <= max(delta ^ 2, (consts_obj.TEN * rho) ^ 2), 'all');
+                close_itpset = all(distsq <= max(delta ^ 2, (10.0 * rho) ^ 2), 'all');
                 % Below are some alternative definitions of CLOSE_ITPSET.
                 % N.B.: The threshold for CLOSE_ITPSET is at least DELBAR, the trust region radius for GEOSTEP.
                 % %close_itpset = all(distsq <= max((TWO * delta)**2, (TEN * rho)**2))  ! Powell's code.
@@ -493,11 +460,11 @@ classdef bobyqb_mod
                 % Improve the geometry of the interpolation set by removing a point and adding a new one.
                 if improve_geo
                     % XPT(:, KNEW_GEO) will become XOPT + D below. KNEW_GEO /= KOPT unless there is a bug.
-                    knew_geo = fortran.maxloc(distsq, 'dim', 1);
+                    [~, knew_geo] = max(distsq);
 
                     % Set DELBAR, which will be used as the trust-region radius for the geometry-improving
                     % scheme GEOSTEP. Note that DELTA has been updated before arriving here.
-                    delbar = max(min(consts_obj.TENTH * sqrt(max(distsq, [], 'all')), delta), rho); % Powell's code
+                    delbar = max(min(0.1 * sqrt(max(distsq, [], 'all')), delta), rho); % Powell's code
                     %delbar = rho  ! Powell's UOBYQA code
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), HALF * delta), rho)  ! Powell's NEWUOA code
                     %delbar = max(TENTH * delta, rho)  ! Powell's LINCOA code
@@ -518,20 +485,20 @@ classdef bobyqb_mod
                     % KNEW_GEO, the step D will become improper as it was chosen according to the old KNEW_GEO.
                     vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat);
                     den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
-                    to_rescue = (~(infnan_obj.is_finite(sum(abs(vlag), 'all')) && den(knew_geo) > consts_obj.HALF * vlag(knew_geo) ^ 2));
+                    to_rescue = (~(isfinite(sum(abs(vlag), 'all')) && den(knew_geo) > 0.5 * vlag(knew_geo) ^ 2));
                     if to_rescue
                         if rescued
-                            info = infos_obj.DAMAGING_ROUNDING; % The last RESCUE did not improve the situation.
+                            info = 7; % The last RESCUE did not improve the situation.
                             break
                         end
                         [kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat, subinfo] = rescue_obj.rescue(calfun, solver, iprint, maxfun, delta, ftarget, xl, xu, kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat);
-                        if subinfo ~= infos_obj.INFO_DFT
+                        if subinfo ~= 0
                             info = subinfo;
                             break
                         end
                         rescued = true;
-                        dnorm_rec(:) = consts_obj.REALMAX;
-                        moderr_rec(:) = consts_obj.REALMAX;
+                        dnorm_rec(:) = realmax;
+                        moderr_rec(:) = realmax;
                     else
                         % Calculate the next value of the objective function.
                         x(:) = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % X = XBASE + XOPT + D without rounding.
@@ -546,7 +513,7 @@ classdef bobyqb_mod
 
                         % Check whether to exit
                         subinfo = checkexit_obj.checkexit_unc(maxfun, nf, f, ftarget, x);
-                        if subinfo ~= infos_obj.INFO_DFT
+                        if subinfo ~= 0
                             info = subinfo;
                             break
                         end
@@ -555,7 +522,7 @@ classdef bobyqb_mod
                         % DNORM_REC records the DNORM of the recent function evaluations with the current RHO.
                         % Powell's code does not update DNORM. Therefore, DNORM is the length of the last
                         % trust-region trial step, inconsistent with MODERR_REC. The same problem exists in NEWUOA.
-                        dnorm = min(delbar, linalg_obj.p_norm(d));
+                        dnorm = min(delbar, norm(d));
                         dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
                         % MODERR is the error of the current model in predicting the change in F due to D.
                         % MODERR_REC records the prediction errors of the recent models with the current RHO.
@@ -572,8 +539,8 @@ classdef bobyqb_mod
                         [bmat, zmat] = update_bobyqa_obj.updateh(knew_geo, kopt, d, xpt, bmat, zmat);
                         [kopt, fval, xpt] = update_bobyqa_obj.updatexf(knew_geo, ximproved, f, max(sl, min(su, xosav + d)), kopt, fval, xpt);
                         [gopt, hq, pq] = update_bobyqa_obj.updateq(knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
-                        if ~(all(infnan_obj.is_finite(gopt), 'all') && all(infnan_obj.is_finite(hq), 'all') && all(infnan_obj.is_finite(pq), 'all'))
-                            info = infos_obj.NAN_INF_MODEL;
+                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                            info = -3;
                             break
                         end
                     end
@@ -583,17 +550,17 @@ classdef bobyqb_mod
                 % by reducing RHO; update DELTA at the same time.
                 if reduce_rho
                     if rho <= rhoend
-                        info = infos_obj.SMALL_TR_RADIUS;
+                        info = 0;
                         break
                     end
-                    delta = max(consts_obj.HALF * rho, redrho_obj.redrho(rho, rhoend));
+                    delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
                     rho = redrho_obj.redrho(rho, rhoend);
                     % Print a message about the reduction of RHO according to IPRINT.
                     message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, xbase + xpt(:, kopt));
                     % DNORM_REC and MODERR_REC are corresponding to the recent function evaluations with
                     % the current RHO. Update them after reducing RHO.
-                    dnorm_rec(:) = consts_obj.REALMAX;
-                    moderr_rec(:) = consts_obj.REALMAX;
+                    dnorm_rec(:) = realmax;
+                    moderr_rec(:) = realmax;
                 end % End of IF (REDUCE_RHO). The procedure of reducing RHO ends.
 
                 % Shift XBASE if XOPT may be too far from XBASE.
@@ -603,8 +570,8 @@ classdef bobyqb_mod
                 % 2. Before a geometry step, shift XBASE if SUM(XOPT**2) >= 1.0E3*DELBAR**2.
                 if sum(xpt(:, kopt) .^ 2, 'all') >= 1000.0 * delta ^ 2
                     % Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E4*RHO**2.
-                    sl = min(sl - xpt(:, kopt), consts_obj.ZERO);
-                    su = max(su - xpt(:, kopt), consts_obj.ZERO);
+                    sl = min(sl - xpt(:, kopt), 0.0);
+                    su = max(su - xpt(:, kopt), 0.0);
                     [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq);
                     xbase(:) = max(xl, min(xu, xbase));
                 end
@@ -613,7 +580,7 @@ classdef bobyqb_mod
                 if ~ismember('callback_fcn', ipObj.UsingDefaults)
                     terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, tr);
                     if terminate
-                        info = infos_obj.CALLBACK_TERMINATE;
+                        info = 30;
                         break
                     end
                 end
@@ -621,7 +588,7 @@ classdef bobyqb_mod
             end % End of DO TR = 1, MAXTR. The iterative procedure ends.
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
-            if info == infos_obj.SMALL_TR_RADIUS && shortd && dnorm > consts_obj.TENTH * rhoend && nf < maxfun
+            if info == 0 && shortd && dnorm > 0.1 * rhoend && nf < maxfun
                 x(:) = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT + D.
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
@@ -633,7 +600,7 @@ classdef bobyqb_mod
             end
 
             % Choose the [X, F] to return: either the current [X, F] or [XBASE + XOPT, FOPT].
-            if fval(kopt) < f || infnan_obj.is_nan_sp(f)
+            if fval(kopt) < f || isnan(f)
                 x(:) = xinbd_obj.xinbd(xbase, xpt(:, kopt), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT.
                 f = fval(kopt);
             end
@@ -649,21 +616,7 @@ classdef bobyqb_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
-                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
-                debug_obj.assert(all(x >= xl, 'all') && all(x <= xu, 'all'), "XL <= X <= XU", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
-                debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
-                % The last calculated X can be Inf (finite + finite can be Inf numerically).
-                for k = 1:min(nf, maxxhist)
-                    debug_obj.assert(all(xhist(:, k) >= xl, 'all') && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
-                end
-                debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), "F is the smallest in FHIST", srname);
-            end
+
 
         end
         function ebound = errbd(~, crvmin, d, gopt, hq, moderr_rec, pq, rho, sl, su, xopt, xpt)
@@ -674,10 +627,9 @@ classdef bobyqb_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
+
             powalg_obj = prima_mat.common.powalg_mod();
 
 
@@ -689,7 +641,7 @@ classdef bobyqb_mod
             ebound = NaN;
 
             % Local variables
-            srname = "ERRBD";
+
 
 
             bfirst = NaN(numel(d), 1);
@@ -698,24 +650,11 @@ classdef bobyqb_mod
             xnew = NaN(numel(d), 1);
 
             % Sizes
-            n = size(xpt, 1);
-            npt = size(xpt, 2);
+
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(crvmin >= 0, "CRVMIN >= 0", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) == N", srname);
-                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), "HQ is n-by-n and symmetric", srname);
-                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) == NPT", srname);
-                debug_obj.assert(rho > 0, "RHO > 0", srname);
-                debug_obj.assert(numel(sl) == n && numel(su) == n, "SIZE(SL) == N == SIZE(SU)", srname);
-                debug_obj.assert(numel(xopt) == n && all(infnan_obj.is_finite(xopt), 'all'), "SIZE(XOPT) == N, XOPT is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(all(xopt >= sl & xopt <= su, 'all'), "SL <= XOPT <= SU", srname);
-                debug_obj.assert(all(xpt >= sl & xpt <= su, 'all'), "SL <= XPT <= SU", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -724,9 +663,9 @@ classdef bobyqb_mod
             xnew(:) = xopt + d;
             gnew(:) = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
             bfirst(:) = max(abs(moderr_rec), [], 'all');
-            bfirst(linalg_obj.trueloc(xnew <= sl)) = gnew(linalg_obj.trueloc(xnew <= sl)) * rho;
-            bfirst(linalg_obj.trueloc(xnew >= su)) = -gnew(linalg_obj.trueloc(xnew >= su)) * rho;
-            bsecond(:) = consts_obj.HALF * (linalg_obj.diag(hq) + linalg_obj.matprod21(xpt .^ 2, pq)) * rho ^ 2;
+            bfirst(xnew <= sl) = gnew(xnew <= sl) * rho;
+            bfirst(xnew >= su) = -gnew(xnew >= su) * rho;
+            bsecond(:) = 0.5 * (diag(hq) + xpt .^ 2 * pq) * rho ^ 2;
             ebound = min(max(bfirst, bfirst + bsecond), [], 'all');
             if crvmin > 0
                 ebound = min(ebound, 0.125 * crvmin * rho ^ 2);

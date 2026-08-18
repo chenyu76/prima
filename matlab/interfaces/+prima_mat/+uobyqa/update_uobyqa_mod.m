@@ -19,10 +19,9 @@ classdef update_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
+
             powalg_obj = prima_mat.common.powalg_mod();
 
             % Inputs
@@ -39,30 +38,18 @@ classdef update_uobyqa_mod
             % XPT(N, NPT)
 
             % Local variables
-            srname = "UPDATE";
+
 
 
             plnew = NaN(size(pl, 1), 1);
             vlag = NaN(size(xpt, 2), 1);
 
             % Sizes
-            n = size(xpt, 1);
-            npt = size(xpt, 2);
+
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(npt == (n + 1) * (n + 2) / 2, "NPT = (N+1)(N+2)/2", srname);
-                debug_obj.assert(knew >= 0 && knew <= npt, "0 <= KNEW <= NPT", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(knew >= 1 || f >= fval(kopt), "KNEW >= 1 unless X is not improved", srname);
-                debug_obj.assert(knew ~= kopt || f < fval(kopt), "KNEW /= KOPT unless X is improved", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN or +Inf", srname);
-                debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, "SIZE(PL) == [NPT-1, NPT]", srname);
-                debug_obj.assert(numel(pq) == npt - 1, "SIZE(PQ) == NPT-1", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -78,7 +65,7 @@ classdef update_uobyqa_mod
             vlag(:) = powalg_obj.calvlag_qint(pl, d, xpt(:, kopt), kopt);
             pl(:, knew) = pl(:, knew) ./ vlag(knew);
             plnew(:) = pl(:, knew);
-            pl(:, :) = pl - linalg_obj.outprod(plnew, vlag);
+            pl(:, :) = pl - plnew * vlag.';
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             pl(:, knew) = plnew;
 
@@ -100,13 +87,7 @@ classdef update_uobyqa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt && all(infnan_obj.is_finite(xpt), 'all'), "SIZE(XPT) == [N, NPT], XPT is finite", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", srname);
-                debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, "SIZE(PL) == [NPT-1, NPT]", srname);
-                debug_obj.assert(numel(pq) == npt - 1, "SIZE(PQ) == NPT-1", srname);
-            end
+
 
         end
 

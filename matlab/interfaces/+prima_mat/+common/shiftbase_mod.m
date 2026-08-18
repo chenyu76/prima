@@ -39,10 +39,7 @@ classdef shiftbase_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
 
 
             % Inputs
@@ -58,7 +55,7 @@ classdef shiftbase_mod
             % XPT(N, NPT)
 
             % Local variables
-            srname = "SHIFTBASE_LFQINT";
+
 
 
             bymat = NaN(numel(xbase));
@@ -89,22 +86,7 @@ classdef shiftbase_mod
             end
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XBASE) == N, XBASE is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(idz_loc >= 1 && idz_loc <= size(zmat, 2) + 1, "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
-                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT)==[N, NPT+N]", srname);
-                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
-                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
-                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), "HQ is an NxN symmetric matrix", srname);
-                % The following test cannot be passed.
-                %htol = max(TEN**max(-10, -MAXPOW10), min(1.0E-1_RP, TEN**min(10, MAXPOW10) * EPS)) ! Tolerance for error in H
-                %call assert(errh(idz_loc, bmat, zmat, xpt) <= htol, 'H = W^{-1} in (3.12) of the NEWUOA paper', srname)
 
-            end
 
             %====================%
             % Calculation starts %
@@ -112,42 +94,42 @@ classdef shiftbase_mod
 
             % Read XOPT.
             xopt(:) = xpt(:, kopt);
-            xoptsq = linalg_obj.inprod(xopt, xopt);
+            xoptsq = sum(xopt .* xopt, 'all');
 
             % Update BMAT. See (7.11)--(7.12) of the NEWUOA paper and the elaborations around.
             % XPTXAV corresponds to XPT - XAV in the NEWUOA paper, with XAV = (X0 + XOPT)/2.
-            xptxav(:, :) = xpt - consts_obj.HALF * xopt;
+            xptxav(:, :) = xpt - 0.5 * xopt;
             %%MATLAB: xptxav = xpt - xopt/2  % xopt should be a column! Implicit expansion
             %sxpt = matprod(xopt, xptxav)
-            sxpt(:) = linalg_obj.matprod12(xopt, xpt) - consts_obj.HALF * xoptsq; % This one seems to work better numerically.
+            sxpt(:) = xpt.' * xopt - 0.5 * xoptsq; % This one seems to work better numerically.
 
             % First, make the changes to BMAT that do not depend on ZMAT.
-            qxoptq = consts_obj.QUART * xoptsq;
+            qxoptq = 0.25 * xoptsq;
             for k = 1:npt
                 ymat(:, k) = sxpt(k) * xptxav(:, k) + qxoptq * xopt;
             end
             %%MATLAB: ymat = xptxav .* sxpt + qxoptq * xopt  % sxpt should be a row, xopt should be a column
             %ymat(:, kopt) = HALF * xoptsq * xopt ! This makes no difference according to a test on 20220406
-            bymat(:, :) = linalg_obj.matprod22(bmat(:, 1:npt), ymat.'); % BMAT(:, 1:NPT) is not updated yet.
+            bymat(:, :) = bmat(:, 1:npt) * ymat.'; % BMAT(:, 1:NPT) is not updated yet.
             bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + (bymat + bymat.');
             % Then the revisions of BMAT that depend on ZMAT are calculated.
-            yzmat(:, :) = linalg_obj.matprod22(ymat, zmat);
+            yzmat(:, :) = ymat * zmat;
             yzmat_c = yzmat;
             yzmat_c(:, 1:idz_loc - 1) = -yzmat(:, 1:idz_loc - 1); % IDZ_LOC is usually small. So this assignment is cheap.
-            bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + linalg_obj.matprod22(yzmat, yzmat_c.');
-            bmat(:, 1:npt) = bmat(:, 1:npt) + linalg_obj.matprod22(yzmat_c, zmat.');
+            bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + yzmat * yzmat_c.';
+            bmat(:, 1:npt) = bmat(:, 1:npt) + yzmat_c * zmat.';
 
             % Update the quadratic model. Note that PQ remains unchanged. For HQ, see (7.14) of the NEWUOA paper.
             %v = matprod(xptxav, pq)  ! Vector V in (7.14) of the NEWUOA paper
-            v(:) = linalg_obj.matprod21(xpt, pq) - consts_obj.HALF * sum(pq, 'all') * xopt; % This one seems to work better numerically.
-            vxopt(:, :) = linalg_obj.outprod(v, xopt); %%MATLAB: vxopt = v * xopt';  % v and xopt should be both columns
+            v(:) = xpt * pq - 0.5 * sum(pq, 'all') * xopt; % This one seems to work better numerically.
+            vxopt(:, :) = v * xopt.'; %%MATLAB: vxopt = v * xopt';  % v and xopt should be both columns
             hq(:, :) = (vxopt + vxopt.') + hq; %call r2update(hq, ONE, xopt, v)
             %call symmetrize(hq)  ! Do this if the update above does not ensure symmetry.
 
             % The following instructions complete the shift of XBASE.
             xbase(:) = xbase + xopt;
             xpt(:, :) = xpt - xopt;
-            xpt(:, kopt) = consts_obj.ZERO;
+            xpt(:, kopt) = 0.0;
             %%MATLAB: xpt = xpt - xopt; xpt(:, kopt) = 0;  % xopt should be a column! Implicit expansion
 
             %====================%
@@ -155,18 +137,7 @@ classdef shiftbase_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XBASE) == N, XBASE is finite", srname);
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(abs(xpt(:, kopt)) <= 0, 'all'), "XPT(:, KOPT) == 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT)==[N, NPT+N]", srname);
-                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
-                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), "HQ is an NxN symmetric matrix", srname);
-                % The following test cannot be passed.
-                %call assert(errh(idz_loc, bmat, zmat, xpt) <= htol, 'H = W^{-1} in (3.12) of the NEWUOA paper', srname)
 
-            end
 
         end
         function [pl, pq, xbase, xpt] = shiftbase_qint(~, kopt, pl, pq, xbase, xpt)
@@ -177,9 +148,9 @@ classdef shiftbase_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
+
             linalg_obj = prima_mat.common.linalg_mod();
 
 
@@ -193,7 +164,7 @@ classdef shiftbase_mod
             % PQ(NPT-1)
 
             % Local variables
-            srname = "SHIFTBASE_QINT";
+
 
 
             xopt = NaN(numel(xbase), 1);
@@ -203,14 +174,7 @@ classdef shiftbase_mod
             npt = size(xpt, 2);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(npt == (n + 1) * (n + 2) / 2, "NPT = (N+1)(N+2)/2", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, "SIZE(PL) == [NPT-1, NPT]", srname);
-                debug_obj.assert(numel(pq) == npt - 1, "SIZE(PQ) == NPT-1", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XOPT) == N, XOPT is finite", srname);
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt && all(infnan_obj.is_finite(xpt), 'all'), "SIZE(XPT) == [N, NPT], XPT is finite", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -220,7 +184,7 @@ classdef shiftbase_mod
             xopt(:) = xpt(:, kopt);
             xbase(:) = xbase + xopt;
             xpt(:, :) = xpt - xopt;
-            xpt(:, kopt) = consts_obj.ZERO;
+            xpt(:, kopt) = 0.0;
 
             % Update the gradient of the model
             pq(1:n) = pq(1:n) + linalg_obj.smat_mul_vec(pq(n + 1:npt - 1), xopt);
@@ -235,12 +199,7 @@ classdef shiftbase_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, "SIZE(PL) == [NPT-1, NPT]", srname);
-                debug_obj.assert(numel(pq) == npt - 1, "SIZE(PQ) == NPT-1", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XBASE) == N, XBASE is finite", srname);
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt && all(infnan_obj.is_finite(xpt), 'all'), "SIZE(XPT) == [N, NPT], XPT is finite", srname);
-            end
+
 
         end
 

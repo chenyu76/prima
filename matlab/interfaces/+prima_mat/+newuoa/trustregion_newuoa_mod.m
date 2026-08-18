@@ -40,9 +40,9 @@ classdef trustregion_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
+
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
@@ -62,7 +62,7 @@ classdef trustregion_newuoa_mod
 
 
             % Local variables
-            srname = "TRSAPP";
+
             info_loc = NaN;
             iter = NaN;
 
@@ -99,18 +99,10 @@ classdef trustregion_newuoa_mod
 
             % Sizes
             n = size(xpt, 1);
-            npt = size(xpt, 2);
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(delta > 0, "DELTA > 0", srname);
-                debug_obj.assert(numel(gopt_in) == n, "SIZE(GOPT) = N", srname);
-                debug_obj.assert(size(hq_in, 1) == n && linalg_obj.issymmetric(hq_in), "HQ is an NxN symmetric matrix", srname);
-                debug_obj.assert(numel(pq_in) == npt, "SIZE(PQ) = NPT", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(s) == n, "SIZE(S) == N", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -122,22 +114,22 @@ classdef trustregion_newuoa_mod
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
             if max(abs(gopt_in), [], 'all') > 1.0e12
                 % The threshold is empirical.
-                modscal = max(consts_obj.TWO * consts_obj.REALMIN, consts_obj.ONE / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
+                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
                 gopt(:) = gopt_in * modscal;
                 pq(:) = pq_in * modscal;
                 hq(:, :) = hq_in * modscal;
                 scaled = true;
             else
-                modscal = consts_obj.ONE; % This value is not used, but Fortran compilers may complain without it.
+                modscal = 1.0; % This value is not used, but Fortran compilers may complain without it.
                 gopt(:) = gopt_in;
                 pq(:) = pq_in;
                 hq(:, :) = hq_in;
                 scaled = false;
             end
 
-            s(:) = consts_obj.ZERO;
-            crvmin = consts_obj.ZERO;
-            qred = consts_obj.ZERO;
+            s(:) = 0.0;
+            crvmin = 0.0;
+            qred = 0.0;
             info_loc = 2; % Default exit flag is 2, i.e., MAXITER is attained
 
             % Prepare for the first line search.
@@ -146,14 +138,14 @@ classdef trustregion_newuoa_mod
             % of the trust-region model at the trust-region center X. However, GG is updated: GG = ||G + HS||^2,
             % which is the norm square of the gradient at the current iterate.
             g = gopt;
-            gg = linalg_obj.inprod(g, g);
+            gg = sum(g .* g, 'all');
             %--------------------------------------------------------------------------------------------------%
             gg0 = gg;
             d = -g;
             dd = gg;
-            ds = consts_obj.ZERO;
-            ss = consts_obj.ZERO;
-            hs(:) = consts_obj.ZERO;
+            ds = 0.0;
+            ss = 0.0;
+            hs(:) = 0.0;
             delsq = delta * delta;
             maxiter = n;
 
@@ -173,7 +165,7 @@ classdef trustregion_newuoa_mod
             % two-dimensional search, the two-dimensional subspace at each iteration being span(S, -G).
             for iter = 1:maxiter
                 % Exit if G contains NaN.
-                if infnan_obj.is_nan_sp(gg)
+                if isnan(gg)
                     info_loc = -1;
                     break
                 end
@@ -196,11 +188,11 @@ classdef trustregion_newuoa_mod
 
                     % Powell's code does not have the following two IFs.
                     %--------------------------------------------------%
-                    if dd <= consts_obj.EPS * delsq
+                    if dd <= eps(1.0) * delsq
                         info_loc = 0;
                         break
                     end
-                    if infnan_obj.is_nan_sp(ds)
+                    if isnan(ds)
                         info_loc = -1;
                         break
                     end
@@ -221,13 +213,13 @@ classdef trustregion_newuoa_mod
                 if bstep <= 0
                     break
                 end
-                if ~infnan_obj.is_finite(bstep)
+                if ~isfinite(bstep)
                     info_loc = -1;
                     break
                 end
 
                 hd(:) = powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
-                dhd = linalg_obj.inprod(d, hd);
+                dhd = sum(d .* hd, 'all');
 
                 % Set the step-length ALPHA and update CRVMIN.
                 if dhd <= 0
@@ -241,7 +233,7 @@ classdef trustregion_newuoa_mod
                     end
                 end
                 % QADD is the reduction of Q due to the new CG step.
-                qadd = alpha * (gg - consts_obj.HALF * alpha * dhd);
+                qadd = alpha * (gg - 0.5 * alpha * dhd);
                 % QRED is the reduction of Q up to now.
                 qred = qred + qadd;
                 % QADD and QRED will be used in the 2-dimensional minimization if any.
@@ -249,10 +241,10 @@ classdef trustregion_newuoa_mod
                 % Update S, HS, and GG.
                 sold(:) = s;
                 s(:) = s + alpha * d;
-                ss = linalg_obj.inprod(s, s);
+                ss = sum(s .* s, 'all');
                 hs = hs + alpha * hd;
                 ggsav = gg; % Gradient norm square before this iteration
-                gg = linalg_obj.inprod(g + hs, g + hs); % Current gradient norm square
+                gg = sum((g + hs) .* (g + hs), 'all'); % Current gradient norm square
                 % We may record g+hs for later usage:
                 % gnew = g + hs
                 % Note that we should NOT set g = g + hs, because g contains the gradient of Q at X.
@@ -261,7 +253,7 @@ classdef trustregion_newuoa_mod
                 % the 2-dimensional minimization if any.
                 % Exit in case of Inf/NaN in S. This should come the first! Otherwise, we may return an S that
                 % contains NaN and fulfills other exit conditions.
-                if ~infnan_obj.is_finite(sum(abs(s), 'all'))
+                if ~isfinite(sum(abs(s), 'all'))
                     s(:) = sold;
                     info_loc = -1;
                     break
@@ -269,7 +261,7 @@ classdef trustregion_newuoa_mod
 
                 % Exit if CG path cuts the boundary. It is the only possibility that TWOD_SEARCH is true.
                 if alpha >= bstep || ss >= delsq
-                    crvmin = consts_obj.ZERO;
+                    crvmin = 0.0;
                     twod_search = (n >= 2 && gg > (tol ^ 2) * gg0); % TWOD_SEARCH should be FALSE if N = 1.
                     break
                 end
@@ -282,8 +274,8 @@ classdef trustregion_newuoa_mod
 
                 % Prepare for the next CG iteration.
                 d = (gg / ggsav) * d - g - hs; % CG direction
-                dd = linalg_obj.inprod(d, d);
-                ds = linalg_obj.inprod(d, s);
+                dd = sum(d .* d, 'all');
+                ds = sum(d .* s, 'all');
                 if ds <= 0
                     % DS is positive in theory.
                     info_loc = -1;
@@ -291,7 +283,7 @@ classdef trustregion_newuoa_mod
                 end
             end
 
-            if ss <= 0 || infnan_obj.is_nan_sp(ss)
+            if ss <= 0 || isnan(ss)
                 % This may occur for ill-conditioned problems due to rounding.
                 info_loc = -1;
                 twod_search = false;
@@ -310,7 +302,7 @@ classdef trustregion_newuoa_mod
             % which is the norm square of the gradient at the current iterate.
             for iter = 1:maxiter
                 % Exit if G contains NaN.
-                if infnan_obj.is_nan_sp(gg)
+                if isnan(gg)
                     info_loc = -1;
                     break
                 end
@@ -319,8 +311,8 @@ classdef trustregion_newuoa_mod
                     info_loc = 0;
                     break
                 end
-                sg = linalg_obj.inprod(s, g);
-                shs = linalg_obj.inprod(s, hs);
+                sg = sum(s .* g, 'all');
+                shs = sum(s .* hs, 'all');
 
                 % Begin the 2-dimensional minimization by calculating D and HD and some scalar products.
 
@@ -346,13 +338,13 @@ classdef trustregion_newuoa_mod
                 % continue. Note that SGK is unlikely positive if everything goes well.
                 % 2. SQRT(TOL)*SQRT(GG) is less likely to encounter underflow than SQRT(TOL*GG).
                 % 3. The condition below should be non-strict so that ||D|| = 0 can trigger the exit.
-                if linalg_obj.p_norm(d) <= sqrt(tol) * sqrt(gg)
+                if norm(d) <= sqrt(tol) * sqrt(gg)
                     info_loc = 0;
                     break
                 end
-                d = (linalg_obj.p_norm(s) / linalg_obj.p_norm(d)) * d;
+                d = (norm(s) / norm(d)) * d;
                 % In precise arithmetic, INPROD(D, S) = 0 and ||D|| = ||S|| = DELTA.
-                if abs(linalg_obj.inprod(d, s)) >= consts_obj.TENTH * linalg_obj.p_norm(d) * linalg_obj.p_norm(s) || linalg_obj.p_norm(d) >= consts_obj.TWO * delta
+                if abs(sum(d .* s, 'all')) >= 0.1 * norm(d) * norm(s) || norm(d) >= 2.0 * delta
                     info_loc = -1;
                     break
                 end
@@ -361,10 +353,10 @@ classdef trustregion_newuoa_mod
 
                 % Seek the value of the angle that minimizes Q.
                 % First, calculate the coefficients of the objective function on the circle.
-                dg = linalg_obj.inprod(d, g);
-                dhd = linalg_obj.inprod(hd, d);
-                dhs = linalg_obj.inprod(hd, s);
-                args(:) = [sg, consts_obj.HALF * (shs - dhd), dg, dhs];
+                dg = sum(d .* g, 'all');
+                dhd = sum(hd .* d, 'all');
+                dhs = sum(hd .* s, 'all');
+                args(:) = [sg, 0.5 * (shs - dhd), dg, dhs];
                 % The 50 in the line below was chosen by Powell. It works the best in tests, MAGICALLY. Larger
                 % (e.g., 60, 100) or smaller (e.g., 20, 40) values will worsen the performance of NEWUOA. Why??
                 angle = univar_obj.circle_min(@(varargin) obj.circle_fun_trsapp(varargin{:}), args, 50);
@@ -376,14 +368,14 @@ classdef trustregion_newuoa_mod
                 s(:) = cth * s + sth * d;
 
                 % Exit in case of Inf/NaN in S.
-                if ~infnan_obj.is_finite(sum(abs(s), 'all'))
+                if ~isfinite(sum(abs(s), 'all'))
                     s(:) = sold;
                     info_loc = -1;
                     break
                 end
 
                 % Test for convergence.
-                reduc = obj.circle_fun_trsapp(consts_obj.ZERO, args) - obj.circle_fun_trsapp(angle, args);
+                reduc = obj.circle_fun_trsapp(0.0, args) - obj.circle_fun_trsapp(angle, args);
                 qred = qred + reduc;
                 if reduc / qred <= tol
                     info_loc = 1;
@@ -392,12 +384,12 @@ classdef trustregion_newuoa_mod
 
                 % Calculate HS.
                 hs = cth * hs + sth * hd;
-                gg = linalg_obj.inprod(g + hs, g + hs);
+                gg = sum((g + hs) .* (g + hs), 'all');
             end
 
             % Set CRVMIN to zero if it is NaN, which may happen if the problem is ill-conditioned.
-            if infnan_obj.is_nan_sp(crvmin)
-                crvmin = consts_obj.ZERO;
+            if isnan(crvmin)
+                crvmin = 0.0;
             end
 
             % Scale CRVMIN back before return. Note that the trust-region step is scale invariant.
@@ -415,20 +407,15 @@ classdef trustregion_newuoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(s) == n && all(infnan_obj.is_finite(s), 'all'), "SIZE(S) == N, S is finite", srname);
-                % Due to rounding, it may happen that ||S|| > DELTA, but ||S|| > 2*DELTA is highly improbable.
-                debug_obj.assert(linalg_obj.p_norm(s) <= consts_obj.TWO * delta, "||S|| <= 2*DELTA", srname);
-                debug_obj.assert(crvmin >= 0, "CRVMIN >= 0", srname);
-            end
+
 
         end
         function f = circle_fun_trsapp(~, theta, args)
             %--------------------------------------------------------------------------------------------------%
             % This function defines the objective function of the 2-dimensional search on a circle in TRSAPP.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
             % Inputs
 
 
@@ -437,13 +424,11 @@ classdef trustregion_newuoa_mod
             f = NaN;
 
             % Local variables
-            srname = "CIRCLE_FUN_TRSAPP";
+
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(args) == 4, "SIZE(ARGS) == 4", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -463,9 +448,7 @@ classdef trustregion_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Generic module
-            consts_obj = prima_mat.common.consts_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
 
 
             % Input
@@ -481,18 +464,10 @@ classdef trustregion_newuoa_mod
             delta = NaN;
 
             % Local variables
-            srname = "TRRAD";
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(delta_in >= dnorm && dnorm > 0, "DELTA_IN >= DNORM > 0", srname);
-                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", srname);
-                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", srname);
-                debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, "0 < GAMMA1 < 1 < GAMMA2", srname);
-                % By the definition of RATIO in ratio.f90, RATIO cannot be NaN unless the actual reduction is
-                % NaN, which should NOT happen due to the moderated extreme barrier.
-                debug_obj.assert(~infnan_obj.is_nan_sp(ratio), "RATIO is not NaN", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -529,9 +504,7 @@ classdef trustregion_newuoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(delta > 0, "DELTA > 0", srname);
-            end
+
 
         end
 

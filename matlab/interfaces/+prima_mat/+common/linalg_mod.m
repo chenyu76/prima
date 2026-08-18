@@ -158,8 +158,8 @@ classdef linalg_mod
             % A = A + ALPHA*( X*X^T ),
             % where A is an NxN matrix, ALPHA is a scalar, and X is an N-dimensional vector.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -167,16 +167,14 @@ classdef linalg_mod
             % In-outputs
             % A(SIZE(X), SIZE(X))
             % Local variables
-            srname = "R1_SYM";
+
 
 
             % Sizes
             n = numel(x);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(A, 1) == n && size(A, 2) == n, "SIZE(A) == [N, N]", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -199,9 +197,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(A, 1) == n && obj.issymmetric(A), "A is N-by-N and symmetric", srname);
-            end
+
         end
         function A = r1(obj, A, alpha, x, y)
             %--------------------------------------------------------------------------------------------------%
@@ -210,8 +206,8 @@ classdef linalg_mod
             % where A is an MxN matrix, ALPHA is a real scalar, X is an M-dimensional vector, and Y is an
             % N-dimensional vector.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -220,12 +216,10 @@ classdef linalg_mod
             % In-outputs
             % A(SIZE(X), SIZE(Y))
             % Local variables
-            srname = "R1";
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(A, 1) == numel(x) && size(A, 2) == numel(y), "SIZE(A) == [SIZE(X), SIZE(Y)]", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -245,8 +239,8 @@ classdef linalg_mod
             % A = A + ALPHA*( X*Y^T + Y*X^T ),
             % where A is an NxN matrix, X and Y are N-dimensional vectors, and alpha is a scalar.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -255,17 +249,14 @@ classdef linalg_mod
             % In-outputs
             % A(SIZE(X), SIZE(X))
             % Local variables
-            srname = "R2_SYM";
+
 
 
             % Sizes
             n = numel(x);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(y) == n, "SIZE(Y) == N", srname);
-                debug_obj.assert(size(A, 1) == n && size(A, 2) == n, "SIZE(A) == [N, N]", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -285,9 +276,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(obj.issymmetric(A), "A is symmetric", srname);
-            end
+
         end
         function A = r2(obj, A, alpha, x, y, beta, u, v)
             %--------------------------------------------------------------------------------------------------%
@@ -296,8 +285,8 @@ classdef linalg_mod
             % where A is an MxN matrix, ALPHA and BETA are real scalars, X and U are M-dimensional vectors,
             % Y and V are N-dimensional vectors.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -308,14 +297,10 @@ classdef linalg_mod
             % In-outputs
             % A(SIZE(X), SIZE(Y))
             % Local variables
-            srname = "R2";
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(u) == numel(x), "SIZE(U) == SIZE(X)", srname);
-                debug_obj.assert(numel(v) == numel(y), "SIZE(V) == SIZE(Y)", srname);
-                debug_obj.assert(size(A, 1) == numel(x) && size(A, 2) == numel(y), "SIZE(A) == [SIZE(X), SIZE(Y)]", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -334,8 +319,8 @@ classdef linalg_mod
             % This procedure calculates the matrix product of X and Y, where X is an M-dimensional vector
             % considered as a row, and Y is an M-by-N matrix.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -343,13 +328,11 @@ classdef linalg_mod
             % Outputs
             z = NaN(size(y, 2), 1);
             % Local variables
-            srname = "MATPROD12";
+
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(x) == size(y, 1), "SIZE(X) == SIZE(Y, 1)", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -367,17 +350,15 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(z) == size(y, 2), "SIZE(Z) == SIZE(Y, 2)", srname);
-            end
+
         end
         function z = matprod21(~, x, y)
             %--------------------------------------------------------------------------------------------------%
             % This procedure calculates the matrix product of X and Y, where X is an M-by-N matrix, and Y is an
             % M-dimensional vector considered as a column.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -385,19 +366,17 @@ classdef linalg_mod
             % Outputs
             z = NaN(size(x, 1), 1);
             % Local variables
-            srname = "MATPROD21";
+
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(x, 2) == numel(y), "SIZE(X, 2) == SIZE(Y)", srname);
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
-            z(:) = consts_obj.ZERO;
+            z(:) = 0.0;
             for j = 1:size(x, 2)
                 z = z + x(:, j) * y(j);
             end
@@ -407,17 +386,15 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(z) == size(x, 1), "SIZE(Z) == SIZE(X, 1)", srname);
-            end
+
         end
         function z = matprod22(~, x, y)
             %--------------------------------------------------------------------------------------------------%
             % This procedure calculates the matrix product of X and Y, where X is an M-by-P matrix, and Y is a
             % P-by-N matrix.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -425,19 +402,17 @@ classdef linalg_mod
             % Outputs
             z = NaN(size(x, 1), size(y, 2));
             % Local variables
-            srname = "MATPROD22";
+
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(x, 2) == size(y, 1), "SIZE(X, 2) == SIZE(Y, 1)", srname);
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
-            z = repmat(consts_obj.ZERO, size(z));
+            z = zeros(size(z));
             for j = 1:size(y, 2)
                 for i = 1:size(x, 2)
                     z(:, j) = z(:, j) + x(:, i) * y(i, j);
@@ -449,16 +424,14 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(z, 1) == size(x, 1) && size(z, 2) == size(y, 2), "[SIZE(Z) == SIZE(X, 1), SIZE(Y, 2)]", srname);
-            end
+
         end
         function z = inprod(~, x, y)
             %--------------------------------------------------------------------------------------------------%
             % INPROD calculates the inner product of X and Y, i.e., Z = X^T*Y, regarding X and Y as columns.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -466,19 +439,17 @@ classdef linalg_mod
             % Outputs
             z = NaN;
             % Local variables
-            srname = "INPROD";
+
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(x) == numel(y), "SIZE(X) == SIZE(Y)", srname);
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
-            z = consts_obj.ZERO;
+            z = 0.0;
             for i = 1:numel(x)
                 z = z + x(i) * y(i);
             end
@@ -491,8 +462,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % OUTPROD calculates the outer product of X and Y, i.e., Z = X*Y^T, regarding X and Y as columns.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -500,7 +471,7 @@ classdef linalg_mod
             % Outputs
             z = NaN(numel(x), numel(y));
             % Local variables
-            srname = "OUTPROD";
+
 
 
             %====================%
@@ -516,23 +487,21 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(z, 1) == numel(x) && size(z, 2) == numel(y), "SIZE(Z) == [SIZE(X), SIZE(Y)]", srname);
-            end
+
         end
         function x = eye1(~, n)
             %--------------------------------------------------------------------------------------------------%
             % EYE1 is the univariate case of EYE, a function similar to the MATLAB function with the same name.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
             % Outputs
             x = NaN(max(n, 0));
             % Local variables
-            srname = "EYE1";
+
 
 
             %====================%
@@ -540,9 +509,9 @@ classdef linalg_mod
             %====================%
 
             if size(x, 1) * size(x, 2) > 0
-                x = repmat(consts_obj.ZERO, size(x));
+                x = zeros(size(x));
                 for i = 1:min(size(x, 1), size(x, 2))
-                    x(i, i) = consts_obj.ONE;
+                    x(i, i) = 1.0;
                 end
             end
 
@@ -551,16 +520,14 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(x, 1) == max(n, 0) && size(x, 2) == max(n, 0), "SIZE(X) == [N, N]", srname);
-            end
+
         end
         function x = eye2(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % EYE2 is the bivariate case of EYE, a function similar to the MATLAB function with the same name.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -568,7 +535,7 @@ classdef linalg_mod
             % Outputs
             x = NaN(max(m, 0), max(n, 0));
             % Local variables
-            srname = "EYE2";
+
 
 
             %====================%
@@ -576,9 +543,9 @@ classdef linalg_mod
             %====================%
 
             if size(x, 1) * size(x, 2) > 0
-                x = repmat(consts_obj.ZERO, size(x));
+                x = zeros(size(x));
                 for i = 1:min(size(x, 1), size(x, 2))
-                    x(i, i) = consts_obj.ONE;
+                    x(i, i) = 1.0;
                 end
             end
 
@@ -587,9 +554,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(x, 1) == max(m, 0) && size(x, 2) == max(n, 0), "SIZE(X) == [M, N]", srname);
-            end
+
         end
         function x = solve(obj, A, b)
             %--------------------------------------------------------------------------------------------------%
@@ -597,9 +562,8 @@ classdef linalg_mod
             % and invertible, and B is a vector of length SIZE(A, 1). The implementation is NAIVE.
             % TODO: Better to implement it into several subfunctions: triu, tril, and general square.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
@@ -607,17 +571,14 @@ classdef linalg_mod
             % Outputs
             x = NaN(size(A, 2), 1);
             % Local variables
-            srname = "SOLVE";
+
 
 
             % Sizes
             n = size(A, 1);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(A, 1) == size(A, 2), "A is square", srname);
-                debug_obj.assert(numel(b) == size(A, 1), "SIZE(B) == SIZE(A, 1)", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -655,13 +616,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(x) == size(A, 2), "SIZE(X) == SIZE(A, 2)", srname);
-                if infnan_obj.is_finite(sum(abs(A), 'all') + sum(abs(b), 'all'))
-                    tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(n + 1)));
-                    debug_obj.assert(obj.p_norm(obj.matprod21(A, x) - b) <= tol * max([consts_obj.ONE, obj.p_norm(b), obj.p_norm(x)], [], 'all'), "A*X == B", srname);
-                end
-            end
+
         end
         function B = inv(obj, A)
             %--------------------------------------------------------------------------------------------------%
@@ -672,15 +627,15 @@ classdef linalg_mod
             % implement it into several subfunctions: triu with M >= N, tril with M <= N; general with M >= N,
             % general with M <= N, etc.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
             % Outputs
             B = NaN(size(A, 1));
             % Local variables
-            srname = "INV";
+
 
             InvP = NaN(size(A, 1), 1);
 
@@ -692,9 +647,7 @@ classdef linalg_mod
             n = size(A, 1);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(A, 1) == size(A, 2), "A is square", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -708,23 +661,23 @@ classdef linalg_mod
             if obj.istril(A)
                 % This case is invoked in COBYLA.
                 R(:, :) = A.'; % Take transpose to work on columns.
-                B = repmat(consts_obj.ZERO, size(B));
+                B = zeros(size(B));
                 for i = 1:n
-                    B(i, i) = consts_obj.ONE / R(i, i);
+                    B(i, i) = 1.0 / R(i, i);
                     B(1:i - 1, i) = -obj.matprod21(B(1:i - 1, 1:i - 1), R(1:i - 1, i) ./ R(i, i));
                 end
                 B = B.';
             elseif obj.istriu(A)
-                B = repmat(consts_obj.ZERO, size(B));
+                B = zeros(size(B));
                 for i = 1:n
-                    B(i, i) = consts_obj.ONE / A(i, i);
+                    B(i, i) = 1.0 / A(i, i);
                     B(1:i - 1, i) = -obj.matprod21(B(1:i - 1, 1:i - 1), A(1:i - 1, i) ./ A(i, i));
                 end
             else
                 % This is NOT the best algorithm for the inverse, but since the QR subroutine is available ...
                 [Q, R, P] = obj.qr(A);
                 R = R.'; % Take transpose to work on columns.
-                B = repmat(consts_obj.ZERO, size(B));
+                B = zeros(size(B));
                 for i = n:-1:1
                     B(:, i) = (Q(:, i) - obj.matprod21(B(:, i + 1:n), R(i + 1:n, i))) ./ R(i, i);
                 end
@@ -737,20 +690,14 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(B, 1) == n && size(B, 2) == n, "SIZE(B) == [N, N]", srname);
-                debug_obj.assert(obj.istril(B) || ~obj.istril(A), "If A is lower triangular, then so is B", srname);
-                debug_obj.assert(obj.istriu(B) || ~obj.istriu(A), "If A is upper triangular, then so is B", srname);
-                tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(10, consts_obj.MAXPOW10) * consts_obj.EPS * double(n + 1)));
-                debug_obj.assert(obj.isinv(A, B, 'tol', tol), "B = A^{-1}", srname);
-            end
+
         end
         function is_inv = isinv(obj, A, B, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This procedure tests whether A = B^{-1} up to the tolerance TOL.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -759,7 +706,7 @@ classdef linalg_mod
             % Outputs
             is_inv = false;
             % Local variables
-            srname = "ISINV";
+
 
 
             % Sizes
@@ -770,21 +717,14 @@ classdef linalg_mod
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
             tol = ipObj.Results.tol;
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(A, 1) == size(A, 2), "A is square", srname);
-                debug_obj.assert(size(B, 1) == size(B, 2), "B is square", srname);
-                debug_obj.assert(size(A, 1) == size(B, 1), "SIZE(A) == SIZE(B)", srname);
-                if ~ismember('tol', ipObj.UsingDefaults)
-                    debug_obj.assert(tol >= 0, "TOL >= 0", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
             if ismember('tol', ipObj.UsingDefaults)
-                tol_loc = min(1.0e-3, 100.0 * consts_obj.EPS * double(max(size(A, 1), size(A, 2))));
+                tol_loc = min(1.0e-3, 100.0 * eps(1.0) * double(max(size(A, 1), size(A, 2))));
             else
                 tol_loc = tol;
             end
@@ -801,8 +741,8 @@ classdef linalg_mod
             % A = Q*R (if no pivoting) or A(:, P) = Q*R (if pivoting), where the columns of Q are orthonormal,
             % and R is upper triangular.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -811,7 +751,7 @@ classdef linalg_mod
 
 
             % Local variables
-            srname = "QR";
+
 
 
             Q_loc = NaN(size(A, 1));
@@ -835,20 +775,7 @@ classdef linalg_mod
             n = size(A, 2);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                if nargout >= 1
-                    debug_obj.assert(size(Q, 1) == m && (size(Q, 2) == m || size(Q, 2) == min(m, n)), "SIZE(Q) == [M, N] .or. SIZE(Q) == [M, MIN(M, N)]", srname);
-                end
-                if nargout >= 2
-                    debug_obj.assert((size(R, 1) == m || size(R, 1) == min(m, n)) && size(R, 2) == n, "SIZE(R) == [M, N] .or. SIZE(R) == [MIN(M, N), N]", srname);
-                end
-                if nargout >= 1 && nargout >= 2
-                    debug_obj.assert(size(Q, 2) == size(R, 1), "SIZE(Q, 2) == SIZE(R, 1)", srname);
-                end
-                if nargout >= 3
-                    debug_obj.assert(numel(P) == n, "SIZE(P) == N", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
@@ -872,7 +799,7 @@ classdef linalg_mod
                 end
                 for i = m:-1:j + 1
                     G = obj.planerot(T(j, [j, i]).').';
-                    T(j, [j, i]) = [obj.hypotenuse(T(j, j), T(j, i)), consts_obj.ZERO]; %T(j, [j, i]) = [sqrt(T(j, j)**2 + T(j, i)**2), ZERO]
+                    T(j, [j, i]) = [obj.hypotenuse(T(j, j), T(j, i)), 0.0]; %T(j, [j, i]) = [sqrt(T(j, j)**2 + T(j, i)**2), ZERO]
                     T(j + 1:n, [j, i]) = obj.matprod22(T(j + 1:n, [j, i]), G);
                     Q_loc(:, [j, i]) = obj.matprod22(Q_loc(:, [j, i]), G);
                 end
@@ -890,22 +817,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(4, consts_obj.MAXPOW10) * consts_obj.EPS * double(max(m, n) + 1)));
-                debug_obj.assert(obj.isorth(Q_loc, 'tol', tol), "The columns of Q are orthonormal", srname);
-                debug_obj.assert(obj.istril(T, 'tol', tol), "R is upper triangular", srname);
-                if pivot
-                    debug_obj.assert(all(abs(obj.matprod22(Q_loc, T.') - A(:, P)) <= max(tol, tol * max(abs(A), [], 'all')), 'all'), "A(:, P) == Q*R", srname);
-                    for j = 1:min(m, n) - 1
-                        % The following test cannot be passed on ill-conditioned problems.
-                        %call assert(abs(T(j, j)) + max(tol, tol * abs(T(j, j))) >= &
-                        % & abs(T(j + 1, j + 1)), '|R(J, J)| >= |R(J + 1, J + 1)|', srname)
-                        debug_obj.assert(all(T(j, j) ^ 2 + max(tol, tol * T(j, j) ^ 2) >= sum(T(j + 1:n, j:min(m, n)) .^ 2, 2), 'all'), "R(J, J)^2 >= SUM(R(J : MIN(M, N), J + 1 : N).^2", srname);
-                    end
-                else
-                    debug_obj.assert(all(abs(obj.matprod22(Q_loc, T.') - A) <= max(tol, tol * max(abs(A), [], 'all')), 'all'), "A == Q*R", srname);
-                end
-            end
+
         end
         function x = lsqr_Rdiag(obj, A, b, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -916,8 +828,8 @@ classdef linalg_mod
             % 3. A HAS FULL COLUMN RANK;
             % 4. It seems that b (CGRAD and DNEW) is in the column space of A (not sure yet).
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
             % A(M, N)
@@ -927,7 +839,7 @@ classdef linalg_mod
             % Outputs
             x = NaN(size(A, 2), 1);
             % Local variables
-            srname = "LSQR_RDIAG";
+
 
 
             P = NaN(size(A, 2), 1);
@@ -949,18 +861,7 @@ classdef linalg_mod
             parse(ipObj, varargin{:});
             Q = ipObj.Results.Q;
             Rdiag = ipObj.Results.Rdiag;
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(b) == m, "SIZE(B) == M", srname);
-                if ~ismember('Q', ipObj.UsingDefaults)
-                    debug_obj.assert(size(Q, 1) == m && (size(Q, 2) == m || size(Q, 2) == min(m, n)), "SIZE(Q) == [M, N] .or. SIZE(Q) == [M, MIN(M, N)]", srname);
-                    tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(6, consts_obj.MAXPOW10) * consts_obj.EPS * double(max(m, n) + 1)));
-                    debug_obj.assert(obj.isorth(Q, 'tol', tol), "The columns of Q are orthogonal", srname);
-                end
-                if ~ismember('Rdiag', ipObj.UsingDefaults)
-                    debug_obj.assert(numel(Rdiag) == min(m, n), "SIZE(R) == MIN(M, N)", srname);
-                    debug_obj.assert(~ismember('Q', ipObj.UsingDefaults), "Rdiag is present only if Q is present", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
@@ -989,7 +890,7 @@ classdef linalg_mod
                 pivot = false;
             end
 
-            x(:) = consts_obj.ZERO;
+            x(:) = 0.0;
             y(:) = b; % Local copy of B; B is INTENT(IN) and should not be modified.
 
             for i = rank:-1:1
@@ -1003,7 +904,7 @@ classdef linalg_mod
                 yq = obj.inprod(y, Q_loc(:, i));
                 yqa = obj.inprod(abs(y), abs(Q_loc(:, i)));
                 if obj.isminor0(yq, yqa)
-                    x(j) = consts_obj.ZERO;
+                    x(j) = 0.0;
                 else
                     x(j) = yq / Rdiag_loc(i);
                     y = y - x(j) * A(:, j);
@@ -1028,8 +929,8 @@ classdef linalg_mod
             % 1. The economy-size QR factorization is supplied externally (Q is called QFAC and R is called RFAC);
             % 2. R is non-singular.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
             % B(M)
@@ -1038,23 +939,15 @@ classdef linalg_mod
             % Outputs
             x = NaN(size(R, 2), 1);
             % Local variables
-            srname = "LSQR_RFULL";
+
 
 
             % Sizes
-            m = size(Q, 1);
+
             n = size(R, 2);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(m >= n && n >= 0, "M >= N >= 0", srname);
-                debug_obj.assert(numel(b) == m, "SIZE(B) == M", srname);
-                debug_obj.assert(size(Q, 1) == m && size(Q, 2) == n, "SIZE(Q) == [M, N]", srname);
-                tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(6, consts_obj.MAXPOW10) * consts_obj.EPS * double(m + 1)));
-                debug_obj.assert(obj.isorth(Q, 'tol', tol), "The columns of Q are orthogonal", srname);
-                debug_obj.assert(size(R, 1) == n && size(R, 2) == n, "SIZE(R) == [N, N]", srname);
-                debug_obj.assert(obj.istriu(R), "R is upper triangular", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -1089,9 +982,8 @@ classdef linalg_mod
             % diagonal, K > 0 above the main diagonal, and K < 0 below the main diagonal. When |K| exceeds the
             % number of rows or columns in A, the function returns an empty rank-1 array.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            memory_obj = prima_mat.common.memory_mod();
+
+
 
             % Inputs
 
@@ -1099,7 +991,7 @@ classdef linalg_mod
             % Outputs
             D = NaN;
             % Local variables
-            srname = "DIAG";
+
 
 
             %====================%
@@ -1114,7 +1006,7 @@ classdef linalg_mod
 
             % DLEN is the length of D. We allow |K| to exceed the number of rows/columns in A.
             dlen = max(0, min(size(A, 1), size(A, 2)) - abs(k_loc));
-            D = memory_obj.alloc_rvector_sp(dlen);
+            D = NaN(dlen, 1);
             if k_loc >= 0
                 D = arrayfun(@(i) A(i, i + k_loc), (1:dlen)');
             else
@@ -1126,18 +1018,15 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(D) == dlen, "SIZE(D) == DLEN", srname);
-            end
+
         end
         function is_banded = isbanded(~, A, lwidth, uwidth, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether the matrix A banded within the bandwidth specified by LWIDTH and
             % UWIDTH up to the tolerance TOL.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
@@ -1146,7 +1035,7 @@ classdef linalg_mod
             % Outputs
             is_banded = false;
             % Local variables
-            srname = "ISBANDED";
+
 
 
             % Preconditions
@@ -1154,23 +1043,18 @@ classdef linalg_mod
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
             tol = ipObj.Results.tol;
-            if consts_obj.DEBUGGING
-                debug_obj.assert(lwidth >= 0 && uwidth >= 0, "LWIDTH >= 0 .and. UWIDTH >= 0", srname);
-                if ~ismember('tol', ipObj.UsingDefaults)
-                    debug_obj.assert(tol >= 0, "TOL >= 0", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
-            tol_loc = consts_obj.ZERO;
+            tol_loc = 0.0;
             if ~ismember('tol', ipObj.UsingDefaults)
                 tol_loc = max(tol, tol * max(abs(A), [], 'all'));
             end
-            if infnan_obj.is_nan_sp(tol_loc)
-                tol_loc = consts_obj.ZERO;
+            if isnan(tol_loc)
+                tol_loc = 0.0;
             end
 
             m = size(A, 1);
@@ -1192,8 +1076,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether the matrix A is lower triangular up to the tolerance TOL.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -1201,7 +1085,7 @@ classdef linalg_mod
             % Outputs
             is_tril = false;
             % Local variables
-            srname = "ISTRIL";
+
 
 
             % Preconditions
@@ -1209,18 +1093,14 @@ classdef linalg_mod
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
             tol = ipObj.Results.tol;
-            if consts_obj.DEBUGGING
-                if ~ismember('tol', ipObj.UsingDefaults)
-                    debug_obj.assert(tol >= 0, "TOL >= 0", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
             if ismember('tol', ipObj.UsingDefaults)
-                tol_loc = consts_obj.ZERO;
+                tol_loc = 0.0;
             else
                 tol_loc = tol;
             end
@@ -1235,8 +1115,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether the matrix A is upper triangular up to the tolerance TOL.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -1244,7 +1124,7 @@ classdef linalg_mod
             % Outputs
             is_triu = false;
             % Local variables
-            srname = "ISTRIU";
+
 
 
             % Preconditions
@@ -1252,18 +1132,14 @@ classdef linalg_mod
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
             tol = ipObj.Results.tol;
-            if consts_obj.DEBUGGING
-                if ~ismember('tol', ipObj.UsingDefaults)
-                    debug_obj.assert(tol >= 0, "TOL >= 0", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
             if ismember('tol', ipObj.UsingDefaults)
-                tol_loc = consts_obj.ZERO;
+                tol_loc = 0.0;
             else
                 tol_loc = tol;
             end
@@ -1278,9 +1154,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether the matrix A has orthonormal columns up to the tolerance TOL.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
@@ -1288,7 +1163,7 @@ classdef linalg_mod
             % Outputs
             is_orth = false;
             % Local variables
-            srname = "ISORTH";
+
 
 
             % Preconditions
@@ -1296,17 +1171,13 @@ classdef linalg_mod
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
             tol = ipObj.Results.tol;
-            if consts_obj.DEBUGGING
-                if ~ismember('tol', ipObj.UsingDefaults)
-                    debug_obj.assert(tol >= 0, "TOL >= 0", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
-            tol_loc = consts_obj.ORTHTOL_DFT;
+            tol_loc = realmax;
             if ~ismember('tol', ipObj.UsingDefaults)
                 tol_loc = tol;
             end
@@ -1320,9 +1191,9 @@ classdef linalg_mod
             is_orth = true;
             if n > size(A, 1)
                 is_orth = false;
-            elseif any(infnan_obj.is_nan_sp(A), 'all')
+            elseif any(isnan(A), 'all')
                 is_orth = false;
-            elseif consts_obj.ORTHTOL_DFT < consts_obj.REALMAX
+            elseif realmax < realmax
                 is_orth = all(abs(obj.matprod22(A.', A) - obj.eye1(n)) <= max(tol_loc, tol_loc * max(abs(A), [], 'all')), 'all');
             end
 
@@ -1334,9 +1205,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function returns the projection of X to SPAN(V).
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
@@ -1344,27 +1214,25 @@ classdef linalg_mod
             % Outputs
             y = NaN(numel(x), 1);
             % Local variables
-            srname = "PROJECT1";
+
             u = NaN(numel(v), 1);
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(x) == numel(v), "SIZE(X) == SIZE(V)", srname);
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
             if all(abs(x) <= 0, 'all') || all(abs(v) <= 0, 'all')
-                y(:) = consts_obj.ZERO;
-            elseif any(infnan_obj.is_nan_sp(x), 'all') || any(infnan_obj.is_nan_sp(v), 'all')
+                y(:) = 0.0;
+            elseif any(isnan(x), 'all') || any(isnan(v), 'all')
                 y(:) = sum(x, 'all') + sum(v, 'all'); % Set Y to NaN
 
-            elseif any(infnan_obj.is_inf(v), 'all')
-                u(:) = consts_obj.ZERO;
-                u(obj.trueloc(infnan_obj.is_inf(v))) = fortran.sign(consts_obj.ONE, v(obj.trueloc(infnan_obj.is_inf(v))));
+            elseif any(isinf(v), 'all')
+                u(:) = 0.0;
+                u(obj.trueloc(isinf(v))) = 1.0 .* ((v(obj.trueloc(isinf(v))) > 0) .* 2 - 1);
                 %%MATLAB: u = 0; u(isinf(v)) = sign(v(isinf(v)))
                 u = u ./ obj.p_norm(u);
                 y(:) = obj.inprod(x, u) * u;
@@ -1378,23 +1246,14 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                if infnan_obj.is_finite(obj.p_norm(x)) && infnan_obj.is_finite(obj.p_norm(v))
-                    tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(6, consts_obj.MAXPOW10) * consts_obj.EPS));
-                    debug_obj.assert(obj.p_norm(y) <= (consts_obj.ONE + tol) * obj.p_norm(x), "NORM(Y) <= NORM(X)", srname);
-                    debug_obj.assert(obj.p_norm(x - y) <= (consts_obj.ONE + tol) * obj.p_norm(x), "NORM(X - Y) <= NORM(X)", srname);
-                    % The following test may not be passed.
-                    debug_obj.assert(abs(obj.inprod(x - y, v)) <= max(tol, tol * max(obj.p_norm(x - y) * obj.p_norm(v), abs(obj.inprod(x, v)))), "X - Y is orthogonal to V", srname);
-                end
-            end
+
         end
         function y = project2(obj, x, V)
             %--------------------------------------------------------------------------------------------------%
             % This function returns the projection of X to RANGE(V).
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
@@ -1402,15 +1261,13 @@ classdef linalg_mod
             % Outputs
             y = NaN(numel(x), 1);
             % Local variables
-            srname = "PROJECT2";
+
 
             V_loc = NaN(size(V, 1), size(V, 2));
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(x) == size(V, 1), "SIZE(X) == SIZE(V, 1)", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -1419,15 +1276,15 @@ classdef linalg_mod
             if size(V, 2) == 1
                 y = obj.project1(x, V(:, 1));
             elseif all(abs(x) <= 0, 'all') || all(abs(V) <= 0, 'all')
-                y(:) = consts_obj.ZERO;
-            elseif any(infnan_obj.is_nan_sp(x), 'all') || any(infnan_obj.is_nan_sp(V), 'all')
+                y(:) = 0.0;
+            elseif any(isnan(x), 'all') || any(isnan(V), 'all')
                 y(:) = sum(x, 'all') + sum(V, 'all'); % Set Y to NaN
 
-            elseif any(infnan_obj.is_inf(V), 'all')
-                mask00 = infnan_obj.is_inf(V); %Unsupported statement inside WHERE block: StatementLineBreak 1
-                V_loc(mask00) = fortran.sign(consts_obj.ONE, V(mask00)); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            elseif any(isinf(V), 'all')
+                mask00 = isinf(V); %Unsupported statement inside WHERE block: StatementLineBreak 1
+                V_loc(mask00) = 1.0 .* ((V(mask00) > 0) .* 2 - 1); %Unsupported statement inside WHERE block: StatementLineBreak 1
                 mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
-                V_loc(mask01) = consts_obj.ZERO; %Unsupported statement inside WHERE block: StatementLineBreak 1
+                V_loc(mask01) = 0.0; %Unsupported statement inside WHERE block: StatementLineBreak 1
 
                 %%MATLAB: V_loc = 0; V_loc(isinf(V)) = sign(V);
                 U = obj.qr(V_loc);
@@ -1442,23 +1299,14 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                if infnan_obj.is_finite(obj.p_norm(x)) && infnan_obj.is_finite(sum(V .^ 2, 'all'))
-                    tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(6, consts_obj.MAXPOW10) * consts_obj.EPS));
-                    debug_obj.assert(obj.p_norm(y) <= (consts_obj.ONE + tol) * obj.p_norm(x), "NORM(Y) <= NORM(X)", srname);
-                    debug_obj.assert(obj.p_norm(x - y) <= (consts_obj.ONE + tol) * obj.p_norm(x), "NORM(X - Y) <= NORM(X)", srname);
-                    % The following test may not be passed.
-                    debug_obj.assert(obj.p_norm(obj.matprod12(x - y, V)) <= max(tol, tol * max(obj.p_norm(x - y) * obj.named_norm_mat(V, "fro"), obj.p_norm(obj.matprod12(x, V)))), "X - Y is orthogonal to V", srname);
-                end
-            end
+
         end
         function r = hypotenuse(~, x1, x2)
             %--------------------------------------------------------------------------------------------------%
             % HYPOTENUSE(X1, X2) returns SQRT(X1^2 + X2^2), handling over/underflow.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
@@ -1466,26 +1314,26 @@ classdef linalg_mod
             % Outputs
             r = NaN;
             % Local variables
-            srname = "HYPOTENUSE";
+
             y = NaN(2, 1);
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if ~infnan_obj.is_finite(x1)
+            if ~isfinite(x1)
                 r = abs(x1);
-            elseif ~infnan_obj.is_finite(x2)
+            elseif ~isfinite(x2)
                 r = abs(x2);
             else
                 y(:) = abs([x1, x2]);
                 y(:) = [min(y, [], 'all'), max(y, [], 'all')];
-                if y(1) > sqrt(consts_obj.REALMIN) && y(2) < sqrt(consts_obj.REALMAX / 2.1)
+                if y(1) > sqrt(realmin) && y(2) < sqrt(realmax / 2.1)
                     r = sqrt(sum(y .^ 2, 'all'));
                 elseif y(2) > 0
-                    r = y(2) * sqrt((y(1) / y(2)) ^ 2 + consts_obj.ONE);
+                    r = y(2) * sqrt((y(1) / y(2)) ^ 2 + 1.0);
                 else
-                    r = consts_obj.ZERO;
+                    r = 0.0;
                 end
                 % Without the following line, R > Y(1) + Y(2) or R < Y(2) may happen due to rounding errors.
                 r = min(sum(y, 'all'), max(y(2), r));
@@ -1496,13 +1344,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                if infnan_obj.is_nan_sp(x1) || infnan_obj.is_nan_sp(x2)
-                    debug_obj.assert(infnan_obj.is_nan_sp(r), "R is NaN if X1 or X2 is NaN", srname);
-                else
-                    debug_obj.assert(r >= abs(x1) && r >= abs(x2) && r <= abs(x1) + abs(x2), "MAX{ABS(X1), ABS(X2)} <= R <= ABS(X1) + ABS(X2)", srname);
-                end
-            end
+
         end
         function G = planerot(obj, x)
             %--------------------------------------------------------------------------------------------------%
@@ -1516,54 +1358,51 @@ classdef linalg_mod
             % 2. Difference from MATLAB: if X contains NaN or consists of only Inf, MATLAB returns a NaN matrix,
             % but we return an identity matrix or a matrix of +/-SQRT(2). We intend to keep G always orthogonal.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
             % Outputs
             G = NaN(2);
             % Local variables
-            srname = "PLANEROT";
+
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(x) == 2, "SIZE(X) == 2", srname);
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
             % Define C = X(1) / R and S = X(2) / R with R = HYPOT(X(1), X(2)). Handle Inf/NaN, over/underflow.
-            if any(infnan_obj.is_nan_sp(x), 'all')
+            if any(isnan(x), 'all')
                 % In this case, MATLAB sets G to NaN(2, 2). We refrain from doing so to keep G orthogonal.
-                c = consts_obj.ONE;
-                s = consts_obj.ZERO;
-            elseif all(infnan_obj.is_inf(x), 'all')
+                c = 1.0;
+                s = 0.0;
+            elseif all(isinf(x), 'all')
                 % In this case, MATLAB sets G to NaN(2, 2). We refrain from doing so to keep G orthogonal.
-                c = fortran.sign(1 / sqrt(2.0), x(1));
-                s = fortran.sign(1 / sqrt(2.0), x(2));
+                c = 1 / sqrt(2.0) .* ((x(1) > 0) .* 2 - 1);
+                s = 1 / sqrt(2.0) .* ((x(2) > 0) .* 2 - 1);
             elseif abs(x(1)) <= 0 && abs(x(2)) <= 0
                 % X(1) == 0 == X(2).
-                c = consts_obj.ONE;
-                s = consts_obj.ZERO;
-            elseif abs(x(2)) <= consts_obj.EPS * abs(x(1))
+                c = 1.0;
+                s = 0.0;
+            elseif abs(x(2)) <= eps(1.0) * abs(x(1))
                 % N.B.:
                 % 0. With <= instead of <, this case covers X(1) == 0 == X(2), which is treated above separately
                 % to avoid the confusing SIGN(., 0) (see 1).
                 % 1. SIGN(A, 0) = ABS(A) in Fortran but sign(0) = 0 in MATLAB, Python, Julia, and R!
                 % 2. Taking SIGN(X(1)) into account ensures the continuity of G with respect to X except at 0.
-                c = fortran.sign(consts_obj.ONE, x(1)); %%MATLAB: c = sign(x(1))
-                s = consts_obj.ZERO;
-            elseif abs(x(1)) <= consts_obj.EPS * abs(x(2))
+                c = 1.0 .* ((x(1) > 0) .* 2 - 1); %%MATLAB: c = sign(x(1))
+                s = 0.0;
+            elseif abs(x(1)) <= eps(1.0) * abs(x(2))
                 % N.B.: SIGN(A, X) = ABS(A) * sign of X /= A * sign of X ! Therefore, it is WRONG to define G
                 % as SIGN(RESHAPE([ZERO, -ONE, ONE, ZERO], [2, 2]), X(2)). This mistake was committed on
                 % 20211206 and took a whole day to debug! NEVER use SIGN on arrays unless you are really sure.
-                c = consts_obj.ZERO;
-                s = fortran.sign(consts_obj.ONE, x(2)); %%MATLAB: s = sign(x(2))
+                c = 0.0;
+                s = 1.0 .* ((x(2) > 0) .* 2 - 1); %%MATLAB: s = sign(x(2))
 
             else
                 % Here is the normal case. It implements the Givens rotation in a stable & continuous way as in:
@@ -1571,23 +1410,23 @@ classdef linalg_mod
                 % reliably and efficiently. ACM Transactions on Mathematical Software (TOMS), 28(2), 206-238.
                 % N.B.: 1. Modern compilers compute SQRT(REALMIN) and SQRT(REALMAX/2.1) at compilation time.
                 % 2. The direct calculation without involving T and U seems to work better; use it if possible.
-                if all(abs(x) > sqrt(consts_obj.REALMIN) & abs(x) < sqrt(consts_obj.REALMAX / 2.1), 'all')
+                if all(abs(x) > sqrt(realmin) & abs(x) < sqrt(realmax / 2.1), 'all')
                     % Do NOT use HYPOTENUSE here; the best implementation for one may be suboptimal for the other
                     r = obj.p_norm(x);
                     c = x(1) / r;
                     s = x(2) / r;
                 elseif abs(x(1)) > abs(x(2))
                     t = x(2) / x(1);
-                    u = max([consts_obj.ONE, abs(t), sqrt(consts_obj.ONE + t ^ 2)], [], 'all'); % MAXVAL: precaution against rounding error.
-                    u = fortran.sign(u, x(1)); %%MATLAB: u = sign(x(1))*sqrt(ONE + t**2)
-                    c = consts_obj.ONE / u;
+                    u = max([1.0, abs(t), sqrt(1.0 + t ^ 2)], [], 'all'); % MAXVAL: precaution against rounding error.
+                    u = u .* ((x(1) > 0) .* 2 - 1); %%MATLAB: u = sign(x(1))*sqrt(ONE + t**2)
+                    c = 1.0 / u;
                     s = t / u;
                 else
                     t = x(1) / x(2);
-                    u = max([consts_obj.ONE, abs(t), sqrt(consts_obj.ONE + t ^ 2)], [], 'all'); % MAXVAL: precaution against rounding error.
-                    u = fortran.sign(u, x(2)); %%MATLAB: u = sign(x(2))*sqrt(ONE + t**2)
+                    u = max([1.0, abs(t), sqrt(1.0 + t ^ 2)], [], 'all'); % MAXVAL: precaution against rounding error.
+                    u = u .* ((x(2) > 0) .* 2 - 1); %%MATLAB: u = sign(x(2))*sqrt(ONE + t**2)
                     c = t / u;
-                    s = consts_obj.ONE / u;
+                    s = 1.0 / u;
                 end
             end
 
@@ -1598,37 +1437,25 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(G, 1) == 2 && size(G, 2) == 2, "SIZE(G) == [2, 2]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(G), 'all'), "G is finite", srname);
-                debug_obj.assert(abs(G(1, 1) - G(2, 2)) + abs(G(1, 2) + G(2, 1)) <= 0, "G(1,1) == G(2,2), G(1,2) = -G(2,1)", srname);
-                tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, 10.0 ^ min(6, consts_obj.MAXPOW10) * consts_obj.EPS));
-                debug_obj.assert(obj.isorth(G, 'tol', tol), "G is orthonormal", srname);
-                if all(infnan_obj.is_finite(x) & abs(x) < sqrt(consts_obj.REALMAX / 2.1), 'all')
-                    r = obj.p_norm(x);
-                    debug_obj.assert(max(abs(obj.matprod21(G, x) - [r, consts_obj.ZERO]), [], 'all') <= max(tol, tol * r), "G * X = [||X||, 0]", srname);
-                end
-            end
+
         end
-        function A = symmetrize(obj, A)
+        function A = symmetrize(~, A)
             %--------------------------------------------------------------------------------------------------%
             % SYMMETRIZE(A) symmetrizes A.
             % N.B.: Here, we assume that A is a matrix that IS SUPPOSED TO BE symmetric in precise arithmetic,
             % and its asymmetry comes only from errors (e.g., rounding, noise).
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % In-outputs
 
             % Local variables
 
-            srname = "SYMMETRIZE";
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(A, 1) == size(A, 2), "A is square", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -1645,9 +1472,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(obj.issymmetric(A), "A is symmetrized", srname);
-            end
+
         end
         function is_minor = isminor0(~, x, ref)
             %--------------------------------------------------------------------------------------------------%
@@ -1657,7 +1482,7 @@ classdef linalg_mod
             % computer rounding errors according to REF.
             % Larger SENSITIVITY means the function is more strict/precise, the value TENTH being due to Powell.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
+
 
             % Inputs
 
@@ -1665,7 +1490,7 @@ classdef linalg_mod
             % Outputs
             is_minor = false;
             % Local variables
-            sensitivity = consts_obj.TENTH;
+            sensitivity = 0.1;
 
 
             %====================%
@@ -1673,7 +1498,7 @@ classdef linalg_mod
             %====================%
 
             refa = abs(ref) + sensitivity * abs(x);
-            refb = abs(ref) + consts_obj.TWO * sensitivity * abs(x);
+            refb = abs(ref) + 2.0 * sensitivity * abs(x);
             is_minor = (abs(ref) >= refa || refa >= refb);
 
             %====================%
@@ -1685,8 +1510,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether X is minor compared to REF. It is used by Powell, e.g., in COBYLA.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -1694,13 +1519,11 @@ classdef linalg_mod
             % Outputs
             is_minor = false(numel(x), 1);
             % Local variables
-            srname = "ISMINOR1";
+
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(x) == numel(ref), "SIZE(X) == SIZE(REF)", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -1713,17 +1536,14 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(is_minor) == numel(x), "SIZE(IS_MINOR) == SIZE(X)", srname);
-            end
+
         end
         function is_symmetric = issymmetric(~, A, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether A is symmetric up to TOL.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
@@ -1731,7 +1551,7 @@ classdef linalg_mod
             % Outputs
             is_symmetric = false;
             % Local variables
-            srname = "ISSYMMETRIC";
+
 
 
             % Preconditions
@@ -1739,17 +1559,13 @@ classdef linalg_mod
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
             tol = ipObj.Results.tol;
-            if consts_obj.DEBUGGING
-                if ~ismember('tol', ipObj.UsingDefaults)
-                    debug_obj.assert(tol >= 0, "TOL >= 0", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
-            tol_loc = consts_obj.SYMTOL_DFT;
+            tol_loc = 1.0e-10;
             if ~ismember('tol', ipObj.UsingDefaults)
                 tol_loc = tol;
             end
@@ -1773,8 +1589,8 @@ classdef linalg_mod
             is_symmetric = true;
             if size(A, 1) ~= size(A, 2)
                 is_symmetric = false;
-            elseif consts_obj.SYMTOL_DFT < 0.9 * consts_obj.REALMAX
-                is_symmetric = (~any(abs(A - A.') > tol_loc * max(max(abs(A), [], 'all'), consts_obj.ONE), 'all')) && all(infnan_obj.is_nan_sp(A) == infnan_obj.is_nan_sp(A.'), 'all');
+            elseif 1.0e-10 < 0.9 * realmax
+                is_symmetric = (~any(abs(A - A.') > tol_loc * max(max(abs(A), [], 'all'), 1.0), 'all')) && all(isnan(A) == isnan(A.'), 'all');
             end
 
             %====================%
@@ -1785,9 +1601,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function calculates the P-norm of a vector X.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
@@ -1795,7 +1610,7 @@ classdef linalg_mod
             % Outputs
             y = NaN;
             % Local variables
-            srname = "P_NORM";
+
 
 
             % Preconditions
@@ -1804,7 +1619,9 @@ classdef linalg_mod
             parse(ipObj, varargin{:});
             p = ipObj.Results.p;
             if ~ismember('p', ipObj.UsingDefaults)
-                debug_obj.validate(p >= 0, "P >= 0", srname);
+                if ~(p >= 0)
+                    error("P >= 0");
+                end
             end
 
             %====================%
@@ -1812,32 +1629,32 @@ classdef linalg_mod
             %====================%
 
             if ismember('p', ipObj.UsingDefaults)
-                p_loc = consts_obj.TWO;
+                p_loc = 2.0;
             else
                 p_loc = p;
             end
 
             % If SIZE(X) = 0, then MAXVAL(ABS(X)) = -HUGE(X); since we handle such a case individually,
             % it is OK to write MAXVAL(ABS(X)) below, but we append 0 for robustness.
-            maxabs = max([abs(x); consts_obj.ZERO], [], 'all');
+            maxabs = max([abs(x); 0.0], [], 'all');
 
             if numel(x) == 0
-                y = consts_obj.ZERO;
-            elseif p_loc <= 0 && ~any(infnan_obj.is_nan_sp(x), 'all')
+                y = 0.0;
+            elseif p_loc <= 0 && ~any(isnan(x), 'all')
                 y = double(nnz(abs(x) > 0));
-            elseif ~all(infnan_obj.is_finite(x), 'all')
+            elseif ~all(isfinite(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf unless P = 0.
                 y = sum(abs(x), 'all');
             elseif maxabs <= 0
                 % If MAXABS is zero, then Y is zero. Note that we do this only when X does not contain NaN.
                 % Otherwise, MAXABS = 0 does not necessarily guarantee that X is all zero.
-                y = consts_obj.ZERO;
+                y = 0.0;
             else                % Now P > 0 and X is a finite-valued nonzero vector, as we have handled the other cases above.
-                if infnan_obj.is_posinf(p_loc)
+                if isinf(p_loc) & p_loc > 0
                     y = maxabs;
-                elseif abs(p_loc - consts_obj.ONE) <= 0
+                elseif abs(p_loc - 1.0) <= 0
                     y = sum(abs(x), 'all');
-                elseif abs(p_loc - consts_obj.TWO) <= 0
+                elseif abs(p_loc - 2.0) <= 0
                     % N.B.: We may use the intrinsic NORM2. Here, we use the following naive implementation
                     % to get full control on the computation in a way similar to MATPROD and INPROD.
 
@@ -1861,20 +1678,20 @@ classdef linalg_mod
 
                     y = sqrt(sum(x .^ 2, 'all'));
                     % The following code handles over/underflow naively.
-                    if infnan_obj.is_posinf(y) || y <= 0
-                        scalmin = double(radix(consts_obj.ZERO)) ^ max(minexponent(consts_obj.ZERO) - 1, 1 - maxexponent(consts_obj.ZERO));
-                        scalmax = double(radix(consts_obj.ZERO)) ^ min(maxexponent(consts_obj.ZERO) - 1, 1 - minexponent(consts_obj.ZERO));
+                    if isinf(y) & y > 0 | y <= 0
+                        scalmin = double(radix(0.0)) ^ max(minexponent(0.0) - 1, 1 - maxexponent(0.0));
+                        scalmax = double(radix(0.0)) ^ min(maxexponent(0.0) - 1, 1 - minexponent(0.0));
                         scaling = min(max(maxabs, scalmin), scalmax);
                         y = scaling * sqrt(sum((x ./ scaling) .^ 2, 'all'));
                     end
                 else
-                    y = sum(abs(x) .^ p_loc, 'all') ^ (consts_obj.ONE / p_loc);
+                    y = sum(abs(x) .^ p_loc, 'all') ^ (1.0 / p_loc);
                     % The following code handles over/underflow naively.
-                    if infnan_obj.is_posinf(y) || y <= 0
-                        scalmin = double(radix(consts_obj.ZERO)) ^ max(minexponent(consts_obj.ZERO) - 1, 1 - maxexponent(consts_obj.ZERO));
-                        scalmax = double(radix(consts_obj.ZERO)) ^ min(maxexponent(consts_obj.ZERO) - 1, 1 - minexponent(consts_obj.ZERO));
+                    if isinf(y) & y > 0 | y <= 0
+                        scalmin = double(radix(0.0)) ^ max(minexponent(0.0) - 1, 1 - maxexponent(0.0));
+                        scalmax = double(radix(0.0)) ^ min(maxexponent(0.0) - 1, 1 - minexponent(0.0));
                         scaling = min(max(maxabs, scalmin), scalmax);
-                        y = scaling * sum(abs(x ./ scaling) .^ p_loc, 'all') ^ (consts_obj.ONE / p_loc);
+                        y = scaling * sum(abs(x ./ scaling) .^ p_loc, 'all') ^ (1.0 / p_loc);
                     end
                 end
             end
@@ -1883,22 +1700,15 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            if consts_obj.DEBUGGING
-                debug_obj.assert(y >= 0 || any(infnan_obj.is_nan_sp(x), 'all'), "Y >= 0 unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) == any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if and only if X contains NaN", srname);
-                % Even with scaling, Y may still be 0 if all entries of X are zero or subnormal.
-                debug_obj.assert(y > 0 || any(infnan_obj.is_nan_sp(x), 'all') || all(abs(x) < consts_obj.REALMIN, 'all'), "Y > 0 unless X contains NaN or all its entries are below REALMIN", srname);
-            end
+
 
         end
         function y = named_norm_vec(obj, x, nname)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates named norms of a vector X.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            string_obj = prima_mat.common.string_mod();
+
+
 
             % Inputs
 
@@ -1906,30 +1716,30 @@ classdef linalg_mod
             % Outputs
             y = NaN;
             % Local variables
-            srname = "NAMED_NORM_VEC";
+
 
             %====================%
             % Calculation starts %
             %====================%
 
             if numel(x) == 0
-                y = consts_obj.ZERO;
-            elseif ~all(infnan_obj.is_finite(x), 'all')
+                y = 0.0;
+            elseif ~all(isfinite(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf.
                 y = sum(abs(x), 'all');
             elseif ~any(abs(x) > 0, 'all')
                 % The following is incorrect without checking the last case, as X may be all NaN.
-                y = consts_obj.ZERO;
+                y = 0.0;
             else
-                switch string_obj.lower(string_obj.strip(nname))
+                switch lower(strip(nname))
                 case "fro"
                     y = obj.p_norm(x); % 2-norm, which is the default case of P_NORM.
                 case "inf"
                     % If SIZE(X) = 0, then MAXVAL(ABS(X)) = -HUGE(X); since we have handled such a case in the
                     % above, it is OK to write Y = MAXVAL(ABS(X)) below, but we append a 0 for robustness.
-                    y = max([abs(x); consts_obj.ZERO], [], 'all');
+                    y = max([abs(x); 0.0], [], 'all');
                 otherwise
-                    debug_obj.warning(srname, "Unknown name of norm: " + string_obj.strip(nname) + "; default to the L2-norm");
+
                     y = obj.p_norm(x); % 2-norm, which is the default case of P_NORM.
                 end
             end
@@ -1942,10 +1752,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function calculates named norms of a vector X.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            string_obj = prima_mat.common.string_mod();
+
+
 
             % Inputs
 
@@ -1953,7 +1761,7 @@ classdef linalg_mod
             % Outputs
             y = NaN;
             % Local variables
-            srname = "NAMED_NORM_MAT";
+
 
             %====================%
             % Calculation starts %
@@ -1962,24 +1770,24 @@ classdef linalg_mod
             % N.B.: Ideally, we should also do a scaling similar to that in P_NORM to avoid over/underflow.
 
             if size(x, 1) * size(x, 2) == 0
-                y = consts_obj.ZERO;
-            elseif ~all(infnan_obj.is_finite(x), 'all')
+                y = 0.0;
+            elseif ~all(isfinite(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf.
                 y = sum(abs(x), 'all');
             elseif ~any(abs(x) > 0, 'all')
                 % The following is incorrect without checking the last case, as X may be all NaN.
-                y = consts_obj.ZERO;
+                y = 0.0;
             else
-                switch string_obj.lower(string_obj.strip(nname))
+                switch lower(strip(nname))
                 case "fro"
                     y = sqrt(sum(x .^ 2, 'all'));
                 case "inf"
                     % If SIZE(X) = 0, then MAXVAL(SUM(ABS(X), DIM=2)) = -HUGE(X); since we have handled such a
                     % case in the above, it is OK to write Y = MAXVAL(SUM(ABS(X), DIM=2)) below, but we append
                     % a 0 for robustness.
-                    y = max([sum(abs(x), 2); consts_obj.ZERO], [], 'all');
+                    y = max([sum(abs(x), 2); 0.0], [], 'all');
                 otherwise
-                    debug_obj.warning(srname, "Unknown name of norm: " + string_obj.strip(nname) + "; default to the Frobenius norm");
+
                     y = sqrt(sum(x .^ 2, 'all'));
                 end
             end
@@ -1992,8 +1800,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function sorts X according to DIRECTION, which should be 'ascend' (default) or 'descend'.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -2001,7 +1809,7 @@ classdef linalg_mod
             % Outputs
             y = NaN(numel(x), 1);
             % Local variables
-            srname = "SORT_I1";
+
 
 
             %====================%
@@ -2037,21 +1845,14 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                if ascending
-                    debug_obj.assert(all(y(1:n - 1) <= y(2:n), 'all'), "Y is ascending", srname);
-                else
-                    debug_obj.assert(all(y(1:n - 1) >= y(2:n), 'all'), "Y is descending", srname);
-                end
-            end
+
         end
         function y = sort_i2(obj, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function sorts a matrix X according to DIM (1 or 2) and DIRECTION ('ascend' or 'descend').
             %--------------------------------------------------------------------------------------------------%
-            debug_obj = prima_mat.common.debug_mod();
-            consts_obj = prima_mat.common.consts_mod();
-            string_obj = prima_mat.common.string_mod();
+
+
 
             % Inputs
 
@@ -2060,7 +1861,7 @@ classdef linalg_mod
             % Outputs
             y = NaN(size(x, 1), size(x, 2));
             % Local variables
-            srname = "SORT_I2";
+
 
 
             %====================%
@@ -2080,7 +1881,7 @@ classdef linalg_mod
 
             direction_loc = "ascend";
             if ~ismember('direction', ipObj.UsingDefaults)
-                direction_loc = string_obj.strip(direction);
+                direction_loc = strip(direction);
             end
 
             y(:, :) = x;
@@ -2099,23 +1900,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                if dim_loc == 1
-                    n = size(y, 1);
-                    if direction_loc == "ascend" || direction_loc == "ASCEND"
-                        debug_obj.assert(all(y(1:n - 1, :) <= y(2:n, :), 'all'), "Y is ascending along dimension 1", srname);
-                    else
-                        debug_obj.assert(all(y(1:n - 1, :) >= y(2:n, :), 'all'), "Y is descending along dimension 1", srname);
-                    end
-                else
-                    n = size(y, 2);
-                    if direction_loc == "ascend" || direction_loc == "ASCEND"
-                        debug_obj.assert(all(y(:, 1:n - 1) <= y(:, 2:n), 'all'), "Y is ascending along dimension 2", srname);
-                    else
-                        debug_obj.assert(all(y(:, 1:n - 1) >= y(:, 2:n), 'all'), "Y is descending along dimension 2", srname);
-                    end
-                end
-            end
+
         end
         function y = logical_to_int(~, x)
             %--------------------------------------------------------------------------------------------------%
@@ -2141,23 +1926,22 @@ classdef linalg_mod
             % 2. If the return of TRUELOC is NOT used for indexing, its analogs in other languages are:
             % MATLAB -- find, Python -- numpy.argwhere, Julia -- findall, R -- which.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            memory_obj = prima_mat.common.memory_mod();
+
+
 
             % Inputs
 
             % Outputs
             loc = NaN; % INTEGER(IK) :: LOC(COUNT(X)) does not work with Absoft 22.0
             % Local variables
-            srname = "TRUELOC";
+
 
 
             %====================%
             % Calculation starts %
             %====================%
 
-            loc = memory_obj.alloc_ivector(nnz(x)); % Removable in F03.
+            loc = NaN(nnz(x), 1); % Removable in F03.
             n = numel(x);
             loc = feval(@(source_array, selection_mask) reshape(source_array(selection_mask & true(size(source_array))), [], 1), obj.linspace_i(1, n, n), x);
 
@@ -2166,33 +1950,27 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(all(loc >= 1 & loc <= n, 'all'), "1 <= LOC <= N", srname);
-                debug_obj.assert(numel(loc) == nnz(x), "SIZE(LOC) == COUNT(X)", srname);
-                debug_obj.assert(all(x(loc), 'all'), "X(LOC) is all TRUE", srname);
-                debug_obj.assert(all(loc(2:numel(loc)) > loc(1:numel(loc) - 1), 'all'), "LOC is strictly ascending", srname);
-            end
+
         end
         function loc = falseloc(obj, x)
             %--------------------------------------------------------------------------------------------------%
             % FALSELOC = TRUELOC(.NOT. X)
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            memory_obj = prima_mat.common.memory_mod();
+
+
 
             % Inputs
 
             % Outputs
             loc = NaN; % INTEGER(IK) :: LOC(COUNT(.NOT.X)) does not work with Absoft 22.0
             % Local variables
-            srname = "FALSELOC";
+
 
             %====================%
             % Calculation starts %
             %====================%
 
-            loc = memory_obj.alloc_ivector(nnz(~x)); % Removable in F03.
+            loc = NaN(nnz(~x), 1); % Removable in F03.
             loc = obj.trueloc(~x);
 
             %====================%
@@ -2200,12 +1978,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(all(loc >= 1 & loc <= numel(x), 'all'), "1 <= LOC <= N", srname);
-                debug_obj.assert(numel(loc) == numel(x) - nnz(x), "SIZE(LOC) == SIZE(X) - COUNT(X)", srname);
-                debug_obj.assert(all(~x(loc), 'all'), "X(LOC) is all FALSE", srname);
-                debug_obj.assert(all(loc(2:numel(loc)) > loc(1:numel(loc) - 1), 'all'), "LOC is strictly ascending", srname);
-            end
+
         end
         function y = minimum1(~, x)
             %--------------------------------------------------------------------------------------------------%
@@ -2217,16 +1990,15 @@ classdef linalg_mod
             % Julia: minimum(x)
             % R: min(x)
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
             % Outputs
             y = NaN;
             % Local variables
-            srname = "MINIMUM1";
+
 
 
             %====================%
@@ -2235,18 +2007,14 @@ classdef linalg_mod
 
             %y = merge(tsource=sum(x), fsource=minval(x), mask=any(is_nan(x)))
             nan_test = sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
-            y = fortran.merge('tsource', nan_test, 'fsource', min(x, [], 'all'), 'mask', infnan_obj.is_nan_sp(nan_test));
+            y = fortran.merge('tsource', nan_test, 'fsource', min(x, [], 'all'), 'mask', isnan(nan_test));
 
             %====================%
             %  Calculation ends  %
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(~any(x < y, 'all'), "No entry of X is smaller than Y", srname);
-                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan_sp(x), 'all'), "Y is not NaN unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if X contains NaN", srname);
-            end
+
         end
         function y = minimum2(~, x)
             %--------------------------------------------------------------------------------------------------%
@@ -2258,16 +2026,15 @@ classdef linalg_mod
             % Julia: minimum(x)
             % R: min(x)
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
             % Outputs
             y = NaN;
             % Local variables
-            srname = "MINIMUM2";
+
 
 
             %====================%
@@ -2276,18 +2043,14 @@ classdef linalg_mod
 
             %y = merge(tsource=sum(x), fsource=minval(x), mask=any(is_nan(x)))
             nan_test = sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
-            y = fortran.merge('tsource', nan_test, 'fsource', min(x, [], 'all'), 'mask', infnan_obj.is_nan_sp(nan_test));
+            y = fortran.merge('tsource', nan_test, 'fsource', min(x, [], 'all'), 'mask', isnan(nan_test));
 
             %====================%
             %  Calculation ends  %
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(~any(x < y, 'all'), "No entry of X is smaller than Y", srname);
-                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan_sp(x), 'all'), "Y is not NaN unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if X contains NaN", srname);
-            end
+
         end
         function y = maximum1(~, x)
             %--------------------------------------------------------------------------------------------------%
@@ -2299,16 +2062,15 @@ classdef linalg_mod
             % Julia: maximum(x)
             % R: max(x)
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
             % Outputs
             y = NaN;
             % Local variables
-            srname = "MAXIMUM1";
+
 
 
             %====================%
@@ -2317,18 +2079,14 @@ classdef linalg_mod
 
             %y = merge(tsource=sum(x), fsource=maxval(x), mask=any(is_nan(x)))
             nan_test = sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
-            y = fortran.merge('tsource', nan_test, 'fsource', max(x, [], 'all'), 'mask', infnan_obj.is_nan_sp(nan_test));
+            y = fortran.merge('tsource', nan_test, 'fsource', max(x, [], 'all'), 'mask', isnan(nan_test));
 
             %====================%
             %  Calculation ends  %
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(~any(x > y, 'all'), "No entry of X is larger than Y", srname);
-                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan_sp(x), 'all'), "Y is not NaN unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if X contains NaN", srname);
-            end
+
         end
         function y = maximum2(~, x)
             %--------------------------------------------------------------------------------------------------%
@@ -2340,16 +2098,15 @@ classdef linalg_mod
             % Julia: maximum(x)
             % R: max(x)
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
 
             % Inputs
 
             % Outputs
             y = NaN;
             % Local variables
-            srname = "MAXIMUM2";
+
 
 
             %====================%
@@ -2358,26 +2115,22 @@ classdef linalg_mod
 
             %y = merge(tsource=sum(x), fsource=maxval(x), mask=any(is_nan(x)))
             nan_test = sum(abs(x), 'all'); % 1. Assume: X has NaN iff NAN_TEST = NaN. 2. Avoid enormous calls to IS_NAN
-            y = fortran.merge('tsource', nan_test, 'fsource', max(x, [], 'all'), 'mask', infnan_obj.is_nan_sp(nan_test));
+            y = fortran.merge('tsource', nan_test, 'fsource', max(x, [], 'all'), 'mask', isnan(nan_test));
 
             %====================%
             %  Calculation ends  %
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(~any(x > y, 'all'), "No entry of X is larger than Y", srname);
-                debug_obj.assert((~infnan_obj.is_nan_sp(y)) || any(infnan_obj.is_nan_sp(x), 'all'), "Y is not NaN unless X contains NaN", srname);
-                debug_obj.assert(infnan_obj.is_nan_sp(y) || ~any(infnan_obj.is_nan_sp(x), 'all'), "Y is NaN if X contains NaN", srname);
-            end
+
         end
         function x = linspace_r(~, xstart, xstop, n)
             %--------------------------------------------------------------------------------------------------%
             % Similar to the function `linspace` in MATLAB and Python, this function generates N evenly spaced
             % numbers, the space between the consecutive points being (XSTOP-XSTART)/(N-1).
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -2386,7 +2139,7 @@ classdef linalg_mod
             % Outputs
             x = NaN(max(n, 0), 1);
             % Local variables
-            srname = "LINSPACE_R";
+
 
 
             %====================%
@@ -2406,7 +2159,7 @@ classdef linalg_mod
                 xunit = xstop / double(nm);
                 x(:) = xunit * double((-nm:2:nm).');
                 if mod(nm, 2) == 0
-                    x(1 + nm / 2) = consts_obj.ZERO;
+                    x(1 + nm / 2) = 0.0;
                 end
             else
                 xunit = (xstop - xstart) / double(nm);
@@ -2424,16 +2177,14 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(x) == max(n, 0), "SIZE(X) == MAX(N, 0)", srname);
-            end
+
         end
         function x = linspace_i(obj, xstart, xstop, n)
             %--------------------------------------------------------------------------------------------------%
             % This function returns INT(LINSPACE_R(REAL(XSTART, RP), REAL(XSTOP, RP), N), IK).
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -2442,7 +2193,7 @@ classdef linalg_mod
             % Outputs
             x = NaN(max(n, 0), 1);
             % Local variables
-            srname = "LINSPACE_I";
+
 
             %====================%
             % Calculation starts %
@@ -2455,9 +2206,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(x) == max(n, 0), "SIZE(X) == MAX(N, 0)", srname);
-            end
+
         end
         function [A, tdiag, tsubdiag] = hessenberg_hhd_trid(obj, A, tdiag, tsubdiag)
             %--------------------------------------------------------------------------------------------------%
@@ -2467,8 +2216,8 @@ classdef linalg_mod
             % and its lower triangular part will store the Householder vectors. The code is retrieved from
             % Powell's trust region subproblem solver in UOBYQA.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % In-outputs
 
@@ -2476,7 +2225,7 @@ classdef linalg_mod
 
 
             % Local variables
-            srname = "HESSENBERG_HHD_TRID";
+
             i = NaN;
             j = NaN;
 
@@ -2493,13 +2242,7 @@ classdef linalg_mod
             n = size(A, 1);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                % Even though we only need the lower triangular part of A, we assume that, in our project,
-                % something is wrong if this subroutine is invoked with a non-symmetric matrix A.
-                debug_obj.assert(obj.issymmetric(A), "A is symmetric", srname);
-                debug_obj.assert(numel(tdiag) == n, "SIZE(TDIAG) == N", srname);
-                debug_obj.assert(numel(tsubdiag) == max(0, n - 1), "SIZE(TDIAG) == MAX(0, N-1)", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -2515,8 +2258,8 @@ classdef linalg_mod
             scaling = max(abs(A), [], 'all');
             scaled = false;
             if scaling <= 0
-                tdiag(:) = consts_obj.ZERO;
-                tsubdiag(:) = consts_obj.ZERO;
+                tdiag(:) = 0.0;
+                tsubdiag(:) = 0.0;
                 return
             elseif scaling > 1.0e8 || scaling < 1.0e-4
                 % The thresholds are empirical.
@@ -2530,15 +2273,15 @@ classdef linalg_mod
                 colsq = sum(A(k + 2:n, k) .^ 2, 'all');
                 if colsq <= 0
                     tsubdiag(k) = A(k + 1, k); % A(K+1, K) may have been updated in previous loops.
-                    A(k + 1, k) = consts_obj.ZERO;
+                    A(k + 1, k) = 0.0;
                     continue
                 end
 
                 Asubd = A(k + 1, k);
-                tsubdiag(k) = fortran.sign(sqrt(colsq + Asubd ^ 2), Asubd);
+                tsubdiag(k) = sqrt(colsq + Asubd ^ 2) .* ((Asubd > 0) .* 2 - 1);
 
                 A(k + 1, k) = -colsq / (Asubd + tsubdiag(k));
-                w(k + 1:n) = sqrt(consts_obj.TWO / (colsq + A(k + 1, k) ^ 2)) * A(k + 1:n, k);
+                w(k + 1:n) = sqrt(2.0 / (colsq + A(k + 1, k) ^ 2)) * A(k + 1:n, k);
                 %----------------------------------------------------------------------------------------------%
                 % The two lines above are from Powell. They are equivalent to the following two lines.
                 % %A(K + 1, K) = A(K + 1, K) - ASUBD
@@ -2555,7 +2298,7 @@ classdef linalg_mod
                 end
                 wz = obj.inprod(w(k + 1:n), z(k + 1:n));
 
-                tdiag(k + 1:n) = tdiag(k + 1:n) + w(k + 1:n) .* (wz * w(k + 1:n) - consts_obj.TWO * z(k + 1:n));
+                tdiag(k + 1:n) = tdiag(k + 1:n) + w(k + 1:n) .* (wz * w(k + 1:n) - 2.0 * z(k + 1:n));
                 for j = k + 1:n
                     A(j + 1:n, j) = A(j + 1:n, j) - w(j + 1:n) * z(j) - w(j) * (z(j + 1:n) - wz * w(j + 1:n));
                 end
@@ -2571,18 +2314,15 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(tdiag) == n, "SIZE(TDIAG) == N", srname);
-                debug_obj.assert(numel(tsubdiag) == max(0, n - 1), "SIZE(TDIAG) == MAX(0, N-1)", srname);
-            end
+
         end
         function [H, Q] = hessenberg_full(obj, A, H, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine finds a Hessenberg matrix H (all entries below the subdiagonal are 0) such that
             % H = Q^T*A*Q, where Q is a orthogonal matrix that may also be returned. A will stay unchanged.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -2590,7 +2330,7 @@ classdef linalg_mod
 
 
             % Local variables
-            srname = "HESSENBERG_FULL";
+
             i = NaN;
 
 
@@ -2614,13 +2354,7 @@ classdef linalg_mod
             addParameter(ipObj, 'Q', NaN);
             parse(ipObj, varargin{:});
             Q = ipObj.Results.Q;
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(A, 1) == size(A, 2), "A is square", srname);
-                debug_obj.assert(size(H, 1) == n && size(H, 2) == n, "SIZE(H) == [N, N]", srname);
-                if nargout >= 2
-                    debug_obj.assert(size(Q, 1) == n && size(Q, 2) == n, "SIZE(Q) == [N, N]", srname);
-                end
-            end
+
 
             if n <= 0
                 % Quick return when N <= 0. Of course, N < 0 is impossible.
@@ -2651,11 +2385,11 @@ classdef linalg_mod
                 end
 
                 v(j + 1:n) = H(j + 1:n, j);
-                subd = fortran.sign(sqrt(v(j + 1) ^ 2 + colsq), v(j + 1));
+                subd = sqrt(v(j + 1) ^ 2 + colsq) .* ((v(j + 1) > 0) .* 2 - 1);
 
                 %----------------------------------------------------------------------------------------------%
                 v(j + 1) = -colsq / (v(j + 1) + subd);
-                v(j + 1:n) = sqrt(consts_obj.TWO / (colsq + v(j + 1) ^ 2)) * v(j + 1:n);
+                v(j + 1:n) = sqrt(2.0 / (colsq + v(j + 1) ^ 2)) * v(j + 1:n);
                 % The two lines above are from Powell. They are equivalent to the following two lines.
                 % %V(J + 1) = V(J + 1) - SUBD
                 % %V(J + 1:N) = sqrt(TWO) * V(J + 1:N) / NORM(V(J + 1:N))
@@ -2665,7 +2399,7 @@ classdef linalg_mod
                     H(j + 1:n, i) = H(j + 1:n, i) - obj.inprod(H(j + 1:n, i), v(j + 1:n)) * v(j + 1:n);
                 end
                 H(j + 1, j) = subd;
-                H(j + 2:n, j) = consts_obj.ZERO;
+                H(j + 2:n, j) = 0.0;
 
                 w(:) = obj.matprod21(H(:, j + 1:n), v(j + 1:n));
                 for i = j + 1:n
@@ -2689,17 +2423,7 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(H, 1) == n && size(H, 2) == n, "SIZE(H) == [N, N]", srname);
-                debug_obj.assert(obj.isbanded(H, 1, n - 1), "H is a Hessenberg matrix", srname);
-                tol = max(consts_obj.TEN ^ max(-8, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(10, consts_obj.MAXPOW10) * consts_obj.EPS * double(n)));
-                debug_obj.assert(obj.issymmetric(H, 'tol', tol) || ~obj.issymmetric(A), "H is symmetric if so is A", srname);
-                if nargout >= 2
-                    debug_obj.assert(size(Q, 1) == n && size(Q, 2) == n, "SIZE(Q) == [N, N]", srname);
-                    debug_obj.assert(obj.isorth(Q, 'tol', tol), "Q is orthogonal", srname);
-                    debug_obj.assert(all(abs(obj.matprod22(Q, H) - obj.matprod22(A, Q)) <= tol * max(abs(A), [], 'all'), 'all'), "Q*H = A*Q", srname);
-                end
-            end
+
         end
         function eig_min = eigmin_sym_trid(obj, td, tn, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -2731,8 +2455,8 @@ classdef linalg_mod
             % %crvmin = eigs(tridh, 1, 'smallestreal');
             % %% It is critical for the efficiency to use `spdiags` to construct `tridh` in the sparse form.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
 
             % Inputs
 
@@ -2741,7 +2465,7 @@ classdef linalg_mod
             % Outputs
             eig_min = NaN;
             % Local variables
-            srname = "EIGMIN";
+
 
             k = NaN;
 
@@ -2759,19 +2483,14 @@ classdef linalg_mod
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
             tol = ipObj.Results.tol;
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(tn) == n - 1, "SIZE(TN) == N - 1", srname);
-                if ~ismember('tol', ipObj.UsingDefaults)
-                    debug_obj.assert(tol >= 0, "TOL >= 0", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
             %====================%
 
             maxiter = 100;
-            tol_loc = consts_obj.TEN ^ max(-6, -consts_obj.MAXPOW10);
+            tol_loc = 10.0 ^ max(-6, -308);
             if ~ismember('tol', ipObj.UsingDefaults)
                 tol_loc = tol;
             end
@@ -2781,7 +2500,7 @@ classdef linalg_mod
             % pivots of the Cholesky factorization of the matrix (i.e., the square of the diagonal of L in LL^T,
             % or the diagonal of D in LDL^T). All the pivots are positive iff there exists a Cholesky
             % factorization with a positive diagonal, i.e., the matrix is positive definite.
-            piv(:) = -consts_obj.ONE;
+            piv(:) = -1.0;
             piv(1) = td(1);
             for k = 1:n - 1
                 if piv(k) > 0
@@ -2794,19 +2513,19 @@ classdef linalg_mod
             if all(piv >= 0, 'all')
                 % The matrix is positive semidefinite.
                 eminub = min(piv, [], 'all');
-                eminlb = consts_obj.ZERO;
+                eminlb = 0.0;
             else
                 eminub = min(td, [], 'all');
-                eminlb = -max(abs([consts_obj.ZERO; tn]) + abs(td) + abs([tn; consts_obj.ZERO]), [], 'all');
+                eminlb = -max(abs([0.0; tn]) + abs(td) + abs([tn; 0.0]), [], 'all');
             end
 
             ksav = 0;
-            pivksv = consts_obj.ZERO; % This initial value will not be used, but Fortran compilers may complain without it.
+            pivksv = 0.0; % This initial value will not be used, but Fortran compilers may complain without it.
             for iter = 1:maxiter                % Powell's code is essentially a DO WHILE loop. We impose an explicit MAXITER.
                 if eminub - eminlb <= tol_loc * max(abs(eminlb), abs(eminub))
                     break
                 end
-                eig_min = consts_obj.HALF * (eminlb + eminub);
+                eig_min = 0.5 * (eminlb + eminub);
 
                 % The following loop calculates the Sturm ratios [Q_1(EIG_MIN), ..., Q_n(EIG_MIN)]. These ratios
                 % are all positive iff all the eigenvalues of the matrix are larger than EIG_MIN, i.e., EIG_MIN
@@ -2814,7 +2533,7 @@ classdef linalg_mod
                 % Cholesky factorization of the matrix minus EIG_MIN*I (i.e., the square of the diagonal of L in
                 % LL^T, or the diagonal of D in LDL^T). All the pivots are positive iff there exists a Cholesky
                 % factorization with a positive diagonal, i.e., the matrix minus LAMBDA*I is positive definite.
-                pivnew(:) = -consts_obj.ONE;
+                pivnew(:) = -1.0;
                 pivnew(1) = td(1) - eig_min;
                 for k = 1:n - 1
                     if pivnew(k) > 0
@@ -2837,7 +2556,7 @@ classdef linalg_mod
 
                 % KSAV was initialized to 0, triggering the ELSE when ALL(PIVNEW > 0) fails for the first time.
                 if k == ksav && pivksv < 0 && piv(k) - pivnew(k) >= pivnew(k) - pivksv
-                    pivksv = consts_obj.ZERO;
+                    pivksv = 0.0;
                     eminub = (eig_min * piv(k) - eminlb * pivnew(k)) / (piv(k) - pivnew(k));
                 else
                     ksav = k;
@@ -2858,28 +2577,26 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
-        function smat = vec2smat(obj, vec)
+        function smat = vec2smat(~, vec)
             %--------------------------------------------------------------------------------------------------%
             % This function transforms a vector VEC to a symmetric matrix SMAT with the vector storing the upper
             % triangular part of the matrix column by column.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
             % Inputs
 
             % Outputs
             smat = NaN((round(sqrt(double(8 * numel(vec) + 1))) - 1) / 2);
             % Local variables
-            srname = "SMAT2VEC";
+
 
 
             % Sizes
             n = size(smat, 1);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(vec) == n * (n + 1) / 2, "SIZE(VEC) = N*(N+1)/2", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -2896,29 +2613,25 @@ classdef linalg_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(obj.issymmetric(smat), "SMAT is symmetric", srname);
-            end
+
         end
-        function vec = smat2vec(obj, smat)
+        function vec = smat2vec(~, smat)
             %--------------------------------------------------------------------------------------------------%
             % This function transforms a symmetric matrix SMAT to a vector VEC that stores the upper triangular
             % part of the matrix column by column.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
             % Inputs
 
             % Outputs
             vec = NaN((size(smat, 1) * (size(smat, 1) + 1)) / 2, 1);
             % Local variables
-            srname = "SMAT2VEC";
+
 
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(obj.issymmetric(smat), "SMAT is symmetric", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -2940,24 +2653,22 @@ classdef linalg_mod
             % This function calculates the product of a symmetric matrix and a vector X, with the upper
             % triangular part of the matrix stored in the vector SMATV column by column.
             %--------------------------------------------------------------------------------------------------%
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
             % Inputs
 
 
             % Outputs
             y = NaN(numel(x), 1);
             % Local variables
-            srname = "SMAT_MUL_VEC";
+
 
 
             % Sizes
             n = numel(x);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(smatv) == n * (n + 1) / 2, "SIZE(SMATV) = N*(N+1)/2", srname);
-            end
+
 
             %====================%
             % Calculation starts %

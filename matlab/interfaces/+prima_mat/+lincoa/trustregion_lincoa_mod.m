@@ -39,10 +39,9 @@ classdef trustregion_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
+
             powalg_obj = prima_mat.common.powalg_mod();
 
             % Solver-specific modules
@@ -70,7 +69,7 @@ classdef trustregion_lincoa_mod
 
 
             % Local variables
-            srname = "TRSTEP";
+
 
 
             jsav = NaN;
@@ -95,7 +94,7 @@ classdef trustregion_lincoa_mod
             hd = NaN(numel(gopt_in), 1);
             hq = NaN(size(hq_in, 1), size(hq_in, 2));
 
-            orthtol = NaN;
+
             pg = NaN(numel(gopt_in), 1);
             pq = NaN(numel(pq_in), 1);
             psd = NaN(numel(gopt_in), 1);
@@ -111,28 +110,10 @@ classdef trustregion_lincoa_mod
             % Sizes.
             m = size(amat, 2);
             n = numel(gopt_in);
-            npt = numel(pq_in);
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(m >= 0, "M >= 0", srname);
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(delta > 0, "DELTA > 0", srname);
-                debug_obj.assert(size(amat, 1) == n && size(amat, 2) == m, "SIZE(AMAT) == [N, M]", srname);
-                debug_obj.assert(size(hq_in, 1) == n && linalg_obj.issymmetric(hq_in), "HQ is n-by-n and symmetric", srname);
-                debug_obj.assert(numel(rescon) == m, "SIZE(RESCON) == M", srname);
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(nact >= 0 && nact <= min(m, n), "0 <= NACT <= MIN(M, N)", srname);
-                debug_obj.assert(numel(iact) == m, "SIZE(IACT) == M", srname);
-                debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), "1 <= IACT <= M", srname);
-                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                orthtol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(n)));
-                debug_obj.assert(linalg_obj.isorth(qfac, 'tol', orthtol), "QFAC is orthogonal", srname);
-                debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, "SIZE(RFAC) == [N, N]", srname);
-                debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
-                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -144,7 +125,7 @@ classdef trustregion_lincoa_mod
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
             if max(abs(gopt_in), [], 'all') > 1.0e12
                 % The threshold is empirical.
-                modscal = max(consts_obj.TWO * consts_obj.REALMIN, consts_obj.ONE / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
+                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
                 gopt(:) = gopt_in * modscal;
                 pq(:) = pq_in * modscal;
                 hq(:, :) = hq_in * modscal;
@@ -159,8 +140,8 @@ classdef trustregion_lincoa_mod
             addParameter(ipObj, 'ngetact', NaN);
             parse(ipObj, varargin{:});
             ngetact = ipObj.Results.ngetact;
-            if ~infnan_obj.is_finite(sum(abs(gopt), 'all'))
-                s(:) = consts_obj.ZERO;
+            if ~isfinite(sum(abs(gopt), 'all'))
+                s(:) = 0.0;
                 if nargout >= 6
                     ngetact = 0;
                 end
@@ -176,11 +157,11 @@ classdef trustregion_lincoa_mod
             % step up to now, calculated by a sequence of (truncated) CG iterations.
             % N.B.: The order of the following lines is important, as the later ones override the earlier.
             resnew(:) = rescon;
-            resnew(linalg_obj.trueloc(rescon >= 0)) = max(consts_obj.TINYCV, rescon(linalg_obj.trueloc(rescon >= 0)));
-            resnew(linalg_obj.trueloc(rescon >= delta)) = -consts_obj.ONE;
+            resnew(rescon >= 0) = max(1.0e-60, rescon(rescon >= 0));
+            resnew(rescon >= delta) = -1.0;
             %%MATLAB:
             %%resnew = rescon; resnew(rescon >= 0) = max(TINYCV, rescon(rescon >= 0)); resnew(rescon >= delta) = -1;
-            resnew(iact(1:nact)) = consts_obj.ZERO;
+            resnew(iact(1:nact)) = 0.0;
 
             % RESACT contains the constraint residuals of the constraints in IACT(1:NACT), namely the values
             % of B(J) - AMAT(:, J)^T*(XOPT+S) for the J in IACT(1:NACT). Here, IACT(1:NACT) is a set of
@@ -195,9 +176,9 @@ classdef trustregion_lincoa_mod
 
             g = gopt;
             delsq = delta * delta;
-            s(:) = consts_obj.ZERO;
-            ss = consts_obj.ZERO;
-            reduct = consts_obj.ZERO;
+            s(:) = 0.0;
+            ss = 0.0;
+            reduct = 0.0;
             ngetact_loc = 0;
             newact = true;
 
@@ -222,8 +203,8 @@ classdef trustregion_lincoa_mod
                     % N.B.: The magic number 0.2 appears also in GETACT (TDEL = 0.2_RP * DELTA). It works well.
                     ngetact_loc = ngetact_loc + 1;
                     [iact, nact, qfac, resact, resnew, rfac, psd] = getact_obj.getact(amat, delta, g, iact, nact, qfac, resact, resnew, rfac, psd);
-                    dd = linalg_obj.inprod(psd, psd);
-                    if dd <= consts_obj.EPS * delsq || infnan_obj.is_nan_sp(dd)
+                    dd = sum(psd .* psd, 'all');
+                    if dd <= eps(1.0) * delsq || isnan(dd)
                         % Powell's code: IF (DD <= 0) THEN
                         break
                     end
@@ -243,22 +224,22 @@ classdef trustregion_lincoa_mod
                     % MAXVAL(X) when X contains NaN, and MATLAB/Python/R/Julia behave differently in this
                     % respect. Moreover, MATLAB defines max(X) = [] if X == [], differing from mathematics
                     % and other languages.
-                    gamma = consts_obj.ZERO; % The steplength of the projection step to be taken.
+                    gamma = 0.0; % The steplength of the projection step to be taken.
                     if any(resact(1:nact) > 1.0e-4 * delta, 'all')
                         % Set DPROJ to the shortest move (projection step) from S to the boundaries of the
                         % active constraints. We will use DPROJ to modify PSD.
-                        dproj(:) = linalg_obj.matprod21(qfac(:, 1:nact), linalg_obj.solve(rfac(1:nact, 1:nact).', resact(1:nact)));
+                        dproj(:) = qfac(:, 1:nact) * (rfac(1:nact, 1:nact).' \ resact(1:nact));
                         %%MATLAB: dproj = qfac(:, 1:nact) * (rfac(1:nact, 1:nact)' \ resact(1:nact))
 
                         % The vector DPROJ is also the shortest move from S + PSD to the boundaries of the
                         % active constraints (this is because PSD is parallel to the boundaries of the active
                         % constraints). Set GAMMA to the greatest steplength of this move that satisfies both
                         % the trust region bound and the linear constraints.
-                        ds = linalg_obj.inprod(dproj, s + psd);
+                        ds = sum(dproj .* (s + psd), 'all');
                         dd = sum(dproj .^ 2, 'all');
                         resid = delsq - sum((s + psd) .^ 2, 'all');
                         % Powell's condition for the following IF: RESID > 0.
-                        if resid > 0 && dd > consts_obj.EPS * delsq && ~infnan_obj.is_nan_sp(ds)
+                        if resid > 0 && dd > eps(1.0) * delsq && ~isnan(ds)
                             % Set GAMMA to the greatest value so that S + PSD + GAMMA*DPROJ satisfies the trust
                             % region bound. SQRTD: square root of a discriminant. Powell's code for SQRTD is
                             % SQRT(DS * DS + DD * RESID), which may be below ABS(DS) due to underflow in DS*DS.
@@ -270,17 +251,17 @@ classdef trustregion_lincoa_mod
                             end
                             % GAMMA < 0 should not happen. GAMMA can be 0 or NaN when, e.g., DS or DD becomes
                             % Inf. Powell's code does not handle this.
-                            if gamma < 0 || ~infnan_obj.is_finite(gamma)
+                            if gamma < 0 || ~isfinite(gamma)
                                 gamma = 0;
                             end
 
                             % Reduce GAMMA so that the move along DPROJ also satisfies the linear constraints.
-                            ad(:) = -consts_obj.ONE;
-                            ad(linalg_obj.trueloc(resnew > 0)) = linalg_obj.matprod12(dproj, amat(:, linalg_obj.trueloc(resnew > 0)));
-                            frac(:) = consts_obj.ONE;
-                            restmp(linalg_obj.trueloc(ad > 0)) = resnew(linalg_obj.trueloc(ad > 0)) - linalg_obj.matprod12(psd, amat(:, linalg_obj.trueloc(ad > 0)));
-                            frac(linalg_obj.trueloc(ad > 0)) = restmp(linalg_obj.trueloc(ad > 0)) ./ ad(linalg_obj.trueloc(ad > 0));
-                            gamma = min([gamma; consts_obj.ONE; frac], [], 'all'); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
+                            ad(:) = -1.0;
+                            ad(find(resnew > 0)) = amat(:, find(resnew > 0)).' * dproj;
+                            frac(:) = 1.0;
+                            restmp(find(ad > 0)) = resnew(find(ad > 0)) - amat(:, find(ad > 0)).' * psd;
+                            frac(ad > 0) = restmp(ad > 0) ./ ad(ad > 0);
+                            gamma = min([gamma; 1.0; frac], [], 'all'); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
 
                         end
                     end
@@ -303,14 +284,14 @@ classdef trustregion_lincoa_mod
                 % Set ALPHA to the steplength from S along D to the trust region boundary. Return if the first
                 % derivative term of this step is sufficiently small or if no further progress is possible.
                 resid = delsq - ss;
-                dg = linalg_obj.inprod(d, g);
-                ds = linalg_obj.inprod(d, s);
-                dd = linalg_obj.inprod(d, d);
+                dg = sum(d .* g, 'all');
+                ds = sum(d .* s, 'all');
+                dd = sum(d .* d, 'all');
                 % Powell's condition for the following IF: (RESID <= 0 .OR. DG >= 0). If DD is tiny (so is DS),
                 % ALPHA may be mistakenly calculated as a huge value due to rounding errors, as observed on
                 % 20221205. Therefore, we exit when DD is small. The test for DG is covered by the IF after the
                 % calculation of ALPHA.
-                if resid <= 0 || dd <= consts_obj.EPS * delsq || infnan_obj.is_nan_sp(ds)
+                if resid <= 0 || dd <= eps(1.0) * delsq || isnan(ds)
                     break
                 end
                 % SQRTD: square root of a discriminant. Powell's code for SQRTD is SQRT(DS * DS + DD * RESID),
@@ -323,20 +304,20 @@ classdef trustregion_lincoa_mod
                 end
                 % ALPHA < 0 should not happen. ALPHA can be 0 or NaN when, e.g., DS or DD becomes Inf. Powell's
                 % code does not handle this.
-                if alpha <= 0 || ~infnan_obj.is_finite(alpha)
+                if alpha <= 0 || ~isfinite(alpha)
                     break
                 end
 
                 % Powell's condition for the following IF: -ALPHA * DG <= TOL * REDUCT. Note that the EXIT
                 % will be triggered if DG >= 0, as ALPHA >= 0.
-                if -alpha * dg <= tol * reduct || infnan_obj.is_nan_sp(alpha * dg)
+                if -alpha * dg <= tol * reduct || isnan(alpha * dg)
                     break
                 end
 
                 % Set DHD to the curvature of the model along D. Then reduce ALPHA if necessary to the value
                 % that minimizes the model.
                 hd(:) = powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
-                dhd = linalg_obj.inprod(d, hd);
+                dhd = sum(d .* hd, 'all');
                 alpht = alpha;
                 if dg + alpha * dhd > 0
                     alpha = -dg / dhd;
@@ -344,14 +325,14 @@ classdef trustregion_lincoa_mod
 
                 % Make a further reduction in ALPHA if necessary to preserve feasibility.
                 alphm = alpha;
-                ad(:) = -consts_obj.ONE;
-                ad(linalg_obj.trueloc(resnew > 0)) = linalg_obj.matprod12(d, amat(:, linalg_obj.trueloc(resnew > 0)));
+                ad(:) = -1.0;
+                ad(find(resnew > 0)) = amat(:, find(resnew > 0)).' * d;
                 frac(:) = alpha;
-                frac(linalg_obj.trueloc(ad > 0)) = resnew(linalg_obj.trueloc(ad > 0)) ./ ad(linalg_obj.trueloc(ad > 0));
-                frac(linalg_obj.trueloc(infnan_obj.is_nan_sp(frac))) = alpha;
+                frac(ad > 0) = resnew(ad > 0) ./ ad(ad > 0);
+                frac(isnan(frac)) = alpha;
                 jsav = 0;
                 if any(frac < alpha, 'all')
-                    jsav = fortran.minloc(frac, 'dim', 1);
+                    [~, jsav] = min(frac);
                     alpha = frac(jsav);
                 end
                 %----------------------------------------------------------------------------------------------%
@@ -373,13 +354,13 @@ classdef trustregion_lincoa_mod
                     % Iff GETACT has been called, and D is not PSD but a modified step.
                     % By the definition of D, ALPHA = ONE is the largest ALPHA so that S + ALPHA*D satisfies the
                     % linear and trust region constraints.
-                    alpha = consts_obj.ONE;
+                    alpha = 1.0;
                 elseif itercg == 1 && gamma <= 0
                     % Iff GETACT has been called, and D is not modified.
                     % Due to the scaling of PSD, S + D satisfies the linear and trust region constraints.
-                    alpha = max(alpha, consts_obj.ONE);
+                    alpha = max(alpha, 1.0);
                 else
-                    alpha = max(alpha, consts_obj.ZERO);
+                    alpha = max(alpha, 0.0);
                 end
 
                 % Set ALPHA to the minimum between ALPHA and ALPHM, namely the steplength obtained by minimizing
@@ -390,18 +371,18 @@ classdef trustregion_lincoa_mod
                 sold(:) = s;
                 s(:) = s + alpha * d;
                 ss = sum(s .^ 2, 'all');
-                if ~infnan_obj.is_finite(ss)
+                if ~isfinite(ss)
                     s(:) = sold;
                     break
                 end
                 g = g + alpha * hd;
-                if ~infnan_obj.is_finite(sum(abs(g), 'all'))
+                if ~isfinite(sum(abs(g), 'all'))
                     break
                 end
 
                 % Update RESNEW.
                 restmp = resnew - alpha * ad; % Only RESTMP(TRUELOC(RESNEW > 0)) is needed.
-                resnew(linalg_obj.trueloc(resnew > 0)) = max(consts_obj.TINYCV, restmp(linalg_obj.trueloc(resnew > 0)));
+                resnew(resnew > 0) = max(1.0e-60, restmp(resnew > 0));
                 %%MATLAB: mask = (resnew > 0); resnew(mask) = max(TINYCV, resnew(mask) - alpha * ad(mask));
 
                 % Update RESACT. This is done iff GETACT has been called, and D is not PSD but a modified step.
@@ -417,21 +398,21 @@ classdef trustregion_lincoa_mod
                 % In the following code, we try correcting this apparent typo, but it has little impact on the
                 % performance of LINCOA according to a test on 20220821.
                 if itercg == 0
-                    resact(1:nact) = (consts_obj.ONE - alpha * gamma) * resact(1:nact);
+                    resact(1:nact) = (1.0 - alpha * gamma) * resact(1:nact);
                     %resact(1:nact) = (ONE - gamma) * resact(1:nact)  ! Powell's code.
 
                 end
                 %----------------------------------------------------------------------------------------------%
 
                 % Update REDUCT, the reduction up to now.
-                reduct = reduct - alpha * (dg + consts_obj.HALF * alpha * dhd);
-                if reduct <= 0 || infnan_obj.is_nan_sp(reduct)
+                reduct = reduct - alpha * (dg + 0.5 * alpha * dhd);
+                if reduct <= 0 || isnan(reduct)
                     s(:) = sold;
                     break
                 end
 
                 % Test for termination.
-                if alpha >= alpht || -alphm * (dg + consts_obj.HALF * alphm * dhd) <= tol * reduct
+                if alpha >= alpht || -alphm * (dg + 0.5 * alphm * dhd) <= tol * reduct
                     break
                 end
 
@@ -465,15 +446,15 @@ classdef trustregion_lincoa_mod
                 if nact <= 0
                     pg = g;
                 else
-                    pg(:) = linalg_obj.matprod21(qfac(:, nact + 1:n), linalg_obj.matprod12(g, qfac(:, nact + 1:n)));
+                    pg(:) = qfac(:, nact + 1:n) * (qfac(:, nact + 1:n).' * g);
                     %%MATLAB: pg = qfac(:, nact+1:n) * (g' * qfac(:, nact+1:n))';
                 end
 
                 if itercg == 0
                     % Iff GETACT has been called, and D is not PSD but a modified step.
-                    beta = consts_obj.ZERO;
+                    beta = 0.0;
                 else
-                    beta = linalg_obj.inprod(pg, hd) / dhd;
+                    beta = sum(pg .* hd, 'all') / dhd;
                 end
                 d = -pg + beta * d;
             end
@@ -487,19 +468,7 @@ classdef trustregion_lincoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(s) == n && all(infnan_obj.is_finite(s), 'all'), "SIZE(S) == N, S is finite", srname);
-                % Due to rounding, it may happen that ||S|| > DELTA, but ||S|| > 2*DELTA is highly improbable.
-                debug_obj.assert(linalg_obj.p_norm(s) <= consts_obj.TWO * delta, "||S|| <= 2*DELTA", srname);
-                debug_obj.assert(nact >= 0 && nact <= min(m, n), "0 <= NACT <= MIN(M, N)", srname);
-                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                debug_obj.assert(linalg_obj.isorth(qfac, 'tol', orthtol), "QFAC is orthogonal", srname);
-                debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, "SIZE(RFAC) == [N, N]", srname);
-                debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
-                if nargout >= 6
-                    debug_obj.assert(ngetact >= 1, "NGETACT >= 1", srname);
-                end
-            end
+
 
         end
         %--------------------------------------------------------------------------------------------------%
@@ -523,9 +492,7 @@ classdef trustregion_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Generic module
-            consts_obj = prima_mat.common.consts_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
 
 
             % Input
@@ -541,18 +508,10 @@ classdef trustregion_lincoa_mod
             delta = NaN;
 
             % Local variables
-            srname = "TRRAD";
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(delta_in >= dnorm && dnorm > 0, "DELTA_IN >= DNORM > 0", srname);
-                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", srname);
-                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", srname);
-                debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, "0 < GAMMA1 < 1 < GAMMA2", srname);
-                % By the definition of RATIO in ratio.f90, RATIO cannot be NaN unless the actual reduction is
-                % NaN, which should NOT happen due to the moderated extreme barrier.
-                debug_obj.assert(~infnan_obj.is_nan_sp(ratio), "RATIO is not NaN", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -589,9 +548,7 @@ classdef trustregion_lincoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(delta > 0, "DELTA > 0", srname);
-            end
+
 
         end
 

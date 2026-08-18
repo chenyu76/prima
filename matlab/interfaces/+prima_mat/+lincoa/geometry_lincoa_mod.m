@@ -28,10 +28,9 @@ classdef geometry_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
+
             powalg_obj = prima_mat.common.powalg_mod();
 
 
@@ -50,28 +49,18 @@ classdef geometry_lincoa_mod
             knew = NaN;
 
             % Local variables
-            srname = "SETDROP_TR";
+
 
 
             distsq = NaN(size(xpt, 2), 1);
 
 
             % Sizes
-            n = size(xpt, 1);
-            npt = size(xpt, 2);
+
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(idz >= 1 && idz <= size(zmat, 2) + 1, "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(delta >= rho && rho > 0, "DELTA >= RHO > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT)==[N, NPT+N]", srname);
-                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
-                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -101,7 +90,7 @@ classdef geometry_lincoa_mod
             end
             %distsq = sum((xpt - spread(xpt(:, kopt), dim=2, ncopies=npt))**2, dim=1)  ! Powell's code
 
-            weight = max(consts_obj.ONE, distsq ./ max(consts_obj.TENTH * delta, rho) ^ 2) .^ 3; % Powell's NEWUOA code
+            weight = max(1.0, distsq ./ max(0.1 * delta, rho) ^ 2) .^ 3; % Powell's NEWUOA code
             % Other possible definitions of WEIGHT.
             % %weight = distsq**2  ! Powell's code. WRONG.
             % %weight = max(ONE, distsq / max(TENTH * delta, rho)**2)**2.5  ! Worse than power 3
@@ -147,18 +136,18 @@ classdef geometry_lincoa_mod
 
             % If the new F is not better than FVAL(KOPT), we set SCORE(KOPT) = -1 to avoid KNEW = KOPT.
             if ~ximproved
-                score(kopt) = -consts_obj.ONE;
+                score(kopt) = -1.0;
             end
 
             % SCORE(K) is NaN implies ABS(DEN(K)) is NaN, but we want ABS(DEN) to be big. So we exclude such K.
-            score(linalg_obj.trueloc(infnan_obj.is_nan_sp(score))) = -consts_obj.ONE;
+            score(isnan(score)) = -1.0;
 
             knew = 0;
             % The following IF works a bit better than `IF (ANY(SCORE > 1) .OR. ANY(SCORE > 0) .AND. XIMPROVED)`
             % from Powell's UOBYQA and NEWUOA code.
             if any(score > 0, 'all')
                 % Powell's BOBYQA and LINCOA code
-                knew = fortran.maxloc(score, 'dim', 1);
+                [~, knew] = max(score);
                 %%MATLAB: [~, knew] = max(score);
 
             end
@@ -170,7 +159,7 @@ classdef geometry_lincoa_mod
             % would be destroyed by the NaNs.
             if (ximproved && knew == 0) || knew < 0
                 % KNEW < 0 is impossible in theory.
-                knew = fortran.maxloc(distsq, 'dim', 1);
+                [~, knew] = max(distsq);
             end
 
             %====================%
@@ -178,14 +167,7 @@ classdef geometry_lincoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(knew >= 0 && knew <= npt, "0 <= KNEW <= NPT", srname);
-                debug_obj.assert(knew ~= kopt || ximproved, "KNEW /= KOPT unless XIMPROVED = TRUE", srname);
-                debug_obj.assert(knew >= 1 || ~ximproved, "KNEW >= 1 unless XIMPROVED = FALSE", srname);
-                % KNEW >= 1 when XIMPROVED = TRUE unless NaN occurs in DISTSQ, which should not happen if the
-                % starting point does not contain NaN and the trust-region/geometry steps never contain NaN.
 
-            end
         end
         function [feasible, s] = geostep(~, iact, idz, knew, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat, s)
             %--------------------------------------------------------------------------------------------------%
@@ -249,10 +231,9 @@ classdef geometry_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
+
             powalg_obj = prima_mat.common.powalg_mod();
 
 
@@ -274,7 +255,7 @@ classdef geometry_lincoa_mod
             % S(N)
 
             % Local variables
-            srname = "GEOSTEP";
+
 
 
             rstat = NaN(size(amat, 2), 1);
@@ -295,33 +276,12 @@ classdef geometry_lincoa_mod
             xopt = NaN(size(xpt, 1), 1);
 
             % Sizes.
-            m = size(amat, 2);
+
             n = size(xpt, 1);
-            npt = size(xpt, 2);
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(m >= 0, "M >= 0", srname);
-                debug_obj.assert(n >= 1, "N >= 1", srname);
-                debug_obj.assert(npt >= n + 2, "NPT >= N+2", srname);
-                debug_obj.assert(nact >= 0 && nact <= min(m, n), "0 <= NACT <= MIN(M, N)", srname);
-                debug_obj.assert(numel(iact) == m, "SIZE(IACT) == M", srname);
-                debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), "1 <= IACT <= M", srname);
-                debug_obj.assert(idz >= 1 && idz <= npt - n, "1 <= IDZ <= NPT-N", srname);
-                debug_obj.assert(knew >= 1 && knew <= npt, "1 <= KNEW <= NPT", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(knew ~= kopt, "KNEW /= KOPT", srname);
-                debug_obj.assert(size(amat, 1) == n && size(amat, 2) == m, "SIZE(AMAT) == [N, M]", srname);
-                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT) == [N, NPT+N]", srname);
-                debug_obj.assert(delbar > 0, "DELBAR> 0", srname);
-                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                tol = max(consts_obj.TEN ^ max(-10, -consts_obj.MAXPOW10), min(0.1, consts_obj.TEN ^ min(8, consts_obj.MAXPOW10) * consts_obj.EPS * double(n)));
-                debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
-                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, "SIZE(QFAC) == [N, N]", srname);
-                debug_obj.assert(numel(rescon) == m, "SIZE(RESCON) == M", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT- N-1]", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -338,31 +298,31 @@ classdef geometry_lincoa_mod
             % Maximize |LFUNC| within the trust region on the lines through XOPT and other interpolation points,
             % without considering the linear constraints. In the following, VLAGABS(K) is set to the maximum of
             % |PHI_K(t)| subject to the trust-region constraint with PHI_K(t) = LFUNC((1-t)*XOPT + t*XPT(:, K)).
-            dderiv(:) = linalg_obj.matprod12(glag, xpt) - linalg_obj.inprod(glag, xopt); % The derivatives PHI_K'(0).
+            dderiv(:) = xpt.' * glag - sum(glag .* xopt, 'all'); % The derivatives PHI_K'(0).
             distsq(:) = sum((xpt - xopt) .^ 2, 1);
             % Set DISTSQ(KOPT) to a positive artificial value. Otherwise, the calculation of STPLEN will raise a
             % floating point exception. This artificial value will NOT be used.
-            distsq(kopt) = consts_obj.ONE;
+            distsq(kopt) = 1.0;
             % For each K /= KNEW, |PHI_K(t)| is maximized by STPLEN(K), the maximum being VLAGABS(K). Note that
             % PHI_K(t) is a quadratic function with PHI_K'(0) = DDERIV(K) and PHI_K(0) = 0 = PHI_K(1).
             stplen = -delbar ./ sqrt(distsq);
-            vlagabs = abs(stplen .* (consts_obj.ONE - stplen) .* dderiv);
+            vlagabs = abs(stplen .* (1.0 - stplen) .* dderiv);
             % The maximization of |PHI_K(t)| is as follows. Note that PHI_K(t) is a quadratic function with
             % PHI_K'(0) = DDERIV(K), PHI_K(0) = 0, and PHI_K(1) = 1.
-            if dderiv(knew) * (dderiv(knew) - consts_obj.ONE) < 0
+            if dderiv(knew) * (dderiv(knew) - 1.0) < 0
                 stplen(knew) = -stplen(knew);
             end
-            vlagabs(knew) = abs(stplen(knew) * dderiv(knew)) + stplen(knew) ^ 2 * abs(dderiv(knew) - consts_obj.ONE);
+            vlagabs(knew) = abs(stplen(knew) * dderiv(knew)) + stplen(knew) ^ 2 * abs(dderiv(knew) - 1.0);
             % It does not make sense to consider "the straight line through XOPT and XPT(:, KOPT)". Thus we set
             % VLAGABS(KOPT) to -1 so that KOPT is skipped when we maximize VLAGABS.
-            vlagabs(kopt) = -consts_obj.ONE;
+            vlagabs(kopt) = -1.0;
             % Find K so that VLAGABS(K) is maximized. We define K in a way slightly different from Powell's
             % code, which sets K to MAXLOC(VLAGABS) by comparing the entries of VLAGABS sequentially.
             % 1. If VLAGABS contains only NaN, which can happen, Powell's code leaves K uninitialized.
             % 2. If VLAGABS(KNEW) = MAXVAL(VLAGABS) = VLAGABS(K) and K < KNEW, Powell's code does not set K=KNEW.
             k = knew;
             if any(vlagabs > vlagabs(knew), 'all')
-                k = fortran.maxloc(vlagabs, 'mask', (~infnan_obj.is_nan_sp(vlagabs)), 'dim', 1);
+                [~, k] = max(vlagabs, [], 'omitnan');
                 %%MATLAB: [~, k] = max(vlagabs, [], 'omitnan');
 
             end
@@ -372,15 +332,15 @@ classdef geometry_lincoa_mod
             denabs = abs(den(knew));
 
             % Replace S with a steepest ascent step from XOPT if the latter provides a larger value of DENABS.
-            gnorm = linalg_obj.p_norm(glag);
-            if gnorm > consts_obj.EPS && infnan_obj.is_finite(gnorm)
+            gnorm = norm(glag);
+            if gnorm > eps(1.0) && isfinite(gnorm)
                 gstp = (delbar / gnorm) * glag;
-                if linalg_obj.inprod(gstp, powalg_obj.hess_mul(gstp, xpt, pqlag)) < 0
+                if sum(gstp .* powalg_obj.hess_mul(gstp, xpt, pqlag), 'all') < 0
                     % <GSTP, HESS_LAG*GSTP> is negative
                     gstp = -gstp;
                 end
                 den = powalg_obj.calden(kopt, bmat, gstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
-                if abs(den(knew)) > denabs || infnan_obj.is_nan_sp(denabs)
+                if abs(den(knew)) > denabs || isnan(denabs)
                     denabs = abs(den(knew));
                     s(:) = gstp;
                 end
@@ -390,11 +350,11 @@ classdef geometry_lincoa_mod
             % constraint J is irrelevant, active, or inactive and relevant. Do NOT change the order of the lines
             % that set RSTAT, as the later lines override the earlier.
             rstat(:) = 1; % Inactive and relevant
-            rstat(linalg_obj.trueloc(abs(rescon) >= delbar)) = -1; % Irrelevant
+            rstat(abs(rescon) >= delbar) = -1; % Irrelevant
             rstat(iact(1:nact)) = 0; % Active
 
             % Set FEASIBLE for the calculated S.
-            cstrv = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0))]);
+            cstrv = max([0.0; amat(:, find(rstat >= 0)).' * s - rescon(find(rstat >= 0))], [], 'all');
             feasible = (cstrv <= 0);
 
             % If NACT <= 0 or NACT >= N, the calculation has finished. Otherwise, define PGSTP by maximizing
@@ -404,12 +364,12 @@ classdef geometry_lincoa_mod
             % This projected gradient step is preferred and will override S if it renders a denominator not too
             % small and leads to good feasibility. *** This is critical for the performance of LINCOA. ***
             % In the following, NORMG > EPS prevents floating point exception, and it implies NACT < N.
-            pglag(:) = linalg_obj.matprod21(qfac(:, nact + 1:n), linalg_obj.matprod12(glag, qfac(:, nact + 1:n)));
+            pglag(:) = qfac(:, nact + 1:n) * (qfac(:, nact + 1:n).' * glag);
             %%MATLAB: pglag = qfac(:, nact+1:n) * (glag' * qfac(:, nact+1:n))';
-            gnorm = linalg_obj.p_norm(pglag);
-            if nact > 0 && gnorm > consts_obj.EPS && infnan_obj.is_finite(gnorm)
+            gnorm = norm(pglag);
+            if nact > 0 && gnorm > eps(1.0) && isfinite(gnorm)
                 pgstp = (delbar / gnorm) * pglag;
-                if linalg_obj.inprod(pgstp, powalg_obj.hess_mul(pgstp, xpt, pqlag)) < 0
+                if sum(pgstp .* powalg_obj.hess_mul(pgstp, xpt, pqlag), 'all') < 0
                     % <PGSTP, HESS_LAG*PGSTP> is negative.
                     pgstp = -pgstp;
                 end
@@ -417,19 +377,19 @@ classdef geometry_lincoa_mod
                 % Decide whether to replace S with PGSTP and set FEASIBLE accordingly. CSTRV is the constraint
                 % violation of XOPT+PGSTP. Note that we only need to check the constraints that are inactive and
                 % relevant, as the value of the active constraints is not changed by moving along PGSTP.
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(pgstp, amat(:, linalg_obj.trueloc(rstat == 1))) - rescon(linalg_obj.trueloc(rstat == 1))]);
+                cstrv = max([0.0; amat(:, find(rstat == 1)).' * pgstp - rescon(find(rstat == 1))], [], 'all');
                 % The purpose of CVTOL below is to provide a check on feasibility that includes a tolerance for
                 % contributions from computer rounding errors.
                 % Powell's code is as follows. Note that MATPROD(PGSTP, AMAT(:, IACT(1:NACT))) is 0 in theory.
                 % %cvtol = min(0.01_RP * norm(pgstp), TEN * norm(matprod(pgstp, amat(:, iact(1:nact))), 'inf'))
                 % The following code works essentially the same as Powell's code.
-                cvtol = max(consts_obj.EPS * linalg_obj.p_norm(pgstp), consts_obj.TEN * linalg_obj.named_norm_vec(linalg_obj.matprod12(pgstp, amat(:, iact(1:nact))), "inf"));
+                cvtol = max(eps(1.0) * norm(pgstp), 10.0 * norm(amat(:, iact(1:nact)).' * pgstp, "inf"));
                 take_pgstp = false;
                 if cstrv <= cvtol
                     den = powalg_obj.calden(kopt, bmat, pgstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
-                    take_pgstp = (abs(den(knew)) > consts_obj.TENTH * denabs);
+                    take_pgstp = (abs(den(knew)) > 0.1 * denabs);
                 end
-                if take_pgstp || infnan_obj.is_nan_sp(denabs)
+                if take_pgstp || isnan(denabs)
                     s(:) = pgstp;
                     feasible = (cstrv <= cvtol);
                 end
@@ -437,11 +397,11 @@ classdef geometry_lincoa_mod
 
             % In case S is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to
             % XOPT. Powell's code does not have this.
-            if sum(abs(s), 'all') <= 0 || ~infnan_obj.is_finite(sum(abs(s), 'all'))
+            if sum(abs(s), 'all') <= 0 || ~isfinite(sum(abs(s), 'all'))
                 s(:) = xpt(:, knew) - xopt;
-                scaling = delbar / linalg_obj.p_norm(s);
-                s(:) = max(0.6 * scaling, min(consts_obj.HALF, scaling)) * s; % 0.6: ensure |D| > DELBAR/2
-                cstrv = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(s, amat(:, linalg_obj.trueloc(rstat >= 0))) - rescon(linalg_obj.trueloc(rstat >= 0))]);
+                scaling = delbar / norm(s);
+                s(:) = max(0.6 * scaling, min(0.5, scaling)) * s; % 0.6: ensure |D| > DELBAR/2
+                cstrv = max([0.0; amat(:, find(rstat >= 0)).' * s - rescon(find(rstat >= 0))], [], 'all');
                 feasible = (cstrv <= 0);
             end
 
@@ -450,13 +410,7 @@ classdef geometry_lincoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(s) == n, "SIZE(S) == N", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(s), 'all'), "S is finite", srname);
-                % In theory, ||S|| = DELBAR. Considering rounding errors, we check that DELBAR/2 < ||S|| < 2*DELBAR.
-                % It is crucial to ensure that the geometry step is nonzero.
-                debug_obj.assert(linalg_obj.p_norm(s) > consts_obj.HALF * delbar && linalg_obj.p_norm(s) < consts_obj.TWO * delbar, "DELBAR/2 < ||S|| < 2*DELBAR", srname);
-            end
+
 
         end
 

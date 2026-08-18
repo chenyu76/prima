@@ -24,10 +24,7 @@ classdef geometry_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
 
 
             % Inputs
@@ -42,7 +39,7 @@ classdef geometry_cobyla_mod
             jdrop = NaN;
 
             % Local variables
-            srname = "SETDROP_TR";
+
 
             distsq = NaN(size(sim, 2), 1);
 
@@ -51,23 +48,13 @@ classdef geometry_cobyla_mod
             %real(RP) :: sigbar(size(sim, 1))
             %real(RP) :: veta(size(sim, 1))
             %real(RP) :: vsig(size(sim, 1))
-            itol = consts_obj.TENTH;
+
 
             % Sizes
             n = size(sim, 1);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1, "N >= 1", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(delta >= rho && rho > 0, "DELTA >= RHO > 0", srname);
-                debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, "SIZE(SIM) == [N, N+1]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
-                debug_obj.assert(all(sum(abs(sim(:, 1:n)), 1) > 0, 'all'), "SIM(:, 1:N) has no zero column", srname);
-                debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, "SIZE(SIMI) == [N, N]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
-                debug_obj.assert(linalg_obj.isinv(sim(:, 1:n), simi, 'tol', itol), "SIMI = SIM(:, 1:N)^{-1}", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -138,10 +125,10 @@ classdef geometry_cobyla_mod
                 distsq(n + 1) = sum(d .^ 2, 'all');
             else
                 distsq(1:n) = sum(sim(:, 1:n) .^ 2, 1);
-                distsq(n + 1) = consts_obj.ZERO;
+                distsq(n + 1) = 0.0;
             end
 
-            weight = max(consts_obj.ONE, distsq ./ max(rho, consts_obj.TENTH * delta) ^ 2); % Similar to Powell's NEWUOA code
+            weight = max(1.0, distsq ./ max(rho, 0.1 * delta) ^ 2); % Similar to Powell's NEWUOA code
             % Other possible definitions of WEIGHT.
             % %weight = distsq  ! Similar to Powell's LINCOA code, but WRONG. See comments in LINCOA/geometry.f90.
             % %weight = max(ONE, 25.0_RP * distsq / delta**2)  ! Similar to Powell's BOBYQA code, works well
@@ -152,30 +139,30 @@ classdef geometry_cobyla_mod
             % If 1 <= J <= N, SIMID(J) is the value of the J-th Lagrange function at D; the value of the
             % (N+1)-th Lagrange function is 1 - SUM(SIMID). [SIMID, 1 - SUM(SIMID)] is the counterpart of
             % VLAG in UOBYQA and DEN in NEWUOA/BOBYQA/LINCOA.
-            simid(:) = linalg_obj.matprod21(simi, d);
-            score = weight .* abs([simid; consts_obj.ONE - sum(simid, 'all')]);
+            simid(:) = simi * d;
+            score = weight .* abs([simid; 1.0 - sum(simid, 'all')]);
 
             % If XIMPROVED = FALSE (D does not render a better X), set SCORE(N+1) = -1 to avoid JDROP = N+1.
             if ~ximproved
-                score(n + 1) = -consts_obj.ONE;
+                score(n + 1) = -1.0;
             end
 
             % SCORE(J) is NaN implies SIMID(J) is NaN, but we want ABS(SIMID) to be big. So we exclude such J.
-            score(linalg_obj.trueloc(infnan_obj.is_nan_sp(score))) = -consts_obj.ONE;
+            score(isnan(score)) = -1.0;
 
             jdrop = 0;
             % The following IF works a bit better than `IF (ANY(SCORE > 1) .OR. ANY(SCORE > 0) .AND. XIMPROVED)`
             % from Powell's UOBYQA and NEWUOA code.
             if any(score > 0, 'all')
                 % Powell's BOBYQA and LINCOA code
-                jdrop = fortran.maxloc(score, 'dim', 1);
+                [~, jdrop] = max(score);
                 %%MATLAB: [~, jdrop] = max(score);
 
             end
 
             if (ximproved && jdrop == 0) || jdrop < 0
                 % JDROP < 0 is impossible in theory.
-                jdrop = fortran.maxloc(distsq, 'dim', 1);
+                [~, jdrop] = max(distsq);
             end
 
             %====================%
@@ -183,14 +170,7 @@ classdef geometry_cobyla_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(jdrop >= 0 && jdrop <= n + 1, "0 <= JDROP <= N+1", srname);
-                debug_obj.assert(jdrop <= n || ximproved, "JDROP <= n unless IMPROVEX = TRUE", srname);
-                debug_obj.assert(jdrop >= 1 || ~ximproved, "JDROP >= 1 unless IMPROVEX = FALSE", srname);
-                % JDROP >= 1 when XIMPROVED = TRUE unless NaN occurs in DISTSQ, which should not happen if the
-                % starting point does not contain NaN and the trust-region/geometry steps never contain NaN.
 
-            end
 
         end
         function d = geostep(~, jdrop, amat, bvec, conmat, cpen, cval, delbar, fval, simi)
@@ -200,10 +180,7 @@ classdef geometry_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
 
 
             % Inputs
@@ -221,7 +198,7 @@ classdef geometry_cobyla_mod
             d = NaN(size(simi, 1), 1); % D(N)
 
             % Local variables
-            srname = "GEOSTEP";
+
 
 
             A = NaN(size(simi, 1), size(conmat, 1));
@@ -235,19 +212,7 @@ classdef geometry_cobyla_mod
             n = size(simi, 1);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(m >= m_lcon && m >= 0, "M >= 0", srname);
-                debug_obj.assert(n >= 1, "N >= 1", srname);
-                debug_obj.assert(delbar > 0, "DELBAR > 0", srname);
-                debug_obj.assert(cpen > 0, "CPEN > 0", srname);
-                debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, "SIZE(SIMI) == [N, N]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
-                debug_obj.assert(numel(fval) == n + 1 && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
-                debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, "SIZE(CONMAT) == [M, N+1]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) | infnan_obj.is_posinf(conmat), 'all'), "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(numel(cval) == n + 1 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) | infnan_obj.is_posinf(cval), 'all'), "SIZE(CVAL) == NPT and CVAL does not contain negative NaN/+Inf", srname);
-                debug_obj.assert(jdrop >= 1 && jdrop <= n, "1 <= JDROP <= N", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -256,7 +221,7 @@ classdef geometry_cobyla_mod
             % SIMI(JDROP, :) is a vector perpendicular to the face of the simplex to the opposite of vertex
             % JDROP. Set D to the vector in this direction and with length DELBAR.
             d(:) = simi(jdrop, :);
-            d = delbar * (d ./ linalg_obj.p_norm(d));
+            d = delbar * (d ./ norm(d));
 
             % The code below chooses the direction of D according to an approximation of the merit function.
             % See (17) of the COBYLA paper and  line 225 of Powell's cobylb.f.
@@ -264,15 +229,15 @@ classdef geometry_cobyla_mod
             % Calculate the coefficients of the linear approximations to the objective and constraint functions.
             % N.B.: CONMAT and SIMI have been updated after the last trust-region step, but G and A have not.
             % So we cannot pass G and A from outside.
-            g(:) = linalg_obj.matprod12(fval(1:n) - fval(n + 1), simi);
+            g(:) = simi.' * (fval(1:n) - fval(n + 1));
             A(:, 1:m_lcon) = amat;
-            A(:, m_lcon + 1:m) = linalg_obj.matprod22(conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1), simi).';
+            A(:, m_lcon + 1:m) = ((conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1)) * simi).';
             %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
             % CVPD and CVND are the predicted constraint violation of D and -D by the linear models.
-            cvpd = linalg_obj.maximum([consts_obj.ZERO; conmat(:, n + 1) + linalg_obj.matprod12(d, A)]);
-            cvnd = linalg_obj.maximum([consts_obj.ZERO; conmat(:, n + 1) - linalg_obj.matprod12(d, A)]);
+            cvpd = max([0.0; conmat(:, n + 1) + A.' * d], [], 'all');
+            cvnd = max([0.0; conmat(:, n + 1) - A.' * d], [], 'all');
             % Take -D if the linear models predict that its merit function value is lower.
-            if -linalg_obj.inprod(d, g) + cpen * cvnd < linalg_obj.inprod(d, g) + cpen * cvpd
+            if -sum(d .* g, 'all') + cpen * cvnd < sum(d .* g, 'all') + cpen * cvpd
                 d = -d;
             end
 
@@ -281,12 +246,7 @@ classdef geometry_cobyla_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), "SIZE(D) == N, D is finite", srname);
-                % In theory, ||S|| == DELBAR, which may be false due to rounding, but not too far.
-                % It is crucial to ensure that the geometry step is nonzero, which holds in theory.
-                debug_obj.assert(linalg_obj.p_norm(d) > 0.9 * delbar && linalg_obj.p_norm(d) <= 1.1 * delbar, "||D|| == DELBAR", srname);
-            end
+
         end
 
     end

@@ -44,13 +44,12 @@ classdef newuob_mod
 
             % Common modules
             checkexit_obj = prima_mat.common.checkexit_mod();
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            infos_obj = prima_mat.common.infos_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
@@ -82,7 +81,7 @@ classdef newuob_mod
 
             % Local variables
             solver = "NEWUOA";
-            srname = "NEWUOB";
+
             idz = NaN;
             ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
 
@@ -125,24 +124,11 @@ classdef newuob_mod
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
             % Sizes
-            n = numel(x);
-            maxxhist = size(xhist, 2);
-            maxfhist = numel(fhist);
-            maxhist = max(maxxhist, maxfhist);
+
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(abs(iprint) <= 3, "IPRINT is 0, 1, -1, 2, -2, 3, or -3", srname);
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(maxfun >= npt + 1, "MAXFUN >= NPT + 1", srname);
-                debug_obj.assert(rhobeg >= rhoend && rhoend > 0, "RHOBEG >= RHOEND > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(x), 'all'), "X is finite", srname);
-                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", srname);
-                debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, "0 < GAMMA1 < 1 < GAMMA2", srname);
-                debug_obj.assert(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", srname);
-                debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, "SIZE(FHIST) == 0 or MAXHIST", srname);
-                debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -160,7 +146,7 @@ classdef newuob_mod
             if ~ismember('callback_fcn', ipObj.UsingDefaults)
                 terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, 0);
                 if terminate
-                    subinfo = infos_obj.CALLBACK_TERMINATE;
+                    subinfo = 30;
                 end
             end
 
@@ -170,7 +156,7 @@ classdef newuob_mod
 
             % Finish the initialization if INITXF completed normally and CALLBACK did not request termination;
             % otherwise, do not proceed, as XPT etc may be uninitialized, leading to errors or exceptions.
-            if subinfo == infos_obj.INFO_DFT
+            if subinfo == 0
                 % Initialize [BMAT, ZMAT, IDZ], representing inverse of KKT matrix of the interpolation
                 % system.
                 [idz, bmat, zmat] = initialize_newuoa_obj.inith(ij, xpt, bmat, zmat);
@@ -178,30 +164,20 @@ classdef newuob_mod
                 % Initialize the quadratic represented by [GOPT, HQ, PQ], so that its gradient at XBASE+XOPT is
                 % GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
                 [gopt, hq, pq] = initialize_newuoa_obj.initq(ij, fval, xpt, gopt, hq, pq);
-                if ~(all(infnan_obj.is_finite(gopt), 'all') && all(infnan_obj.is_finite(hq), 'all') && all(infnan_obj.is_finite(pq), 'all'))
-                    subinfo = infos_obj.NAN_INF_MODEL;
+                if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                    subinfo = -3;
                 end
             end
 
             % Check whether to return due to abnormal cases that may occur during the initialization.
-            if subinfo ~= infos_obj.INFO_DFT
+            if subinfo ~= 0
                 info = subinfo;
                 % Arrange FHIST and XHIST so that they are in the chronological order.
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x);
                 % Postconditions
-                if consts_obj.DEBUGGING
-                    debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
-                    debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
-                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
-                    debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
-                    % The last calculated X can be Inf (finite + finite can be Inf numerically).
-                    debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
-                    debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), "F is the smallest in FHIST", srname);
-                end
+
                 return
             end
 
@@ -215,9 +191,9 @@ classdef newuob_mod
             delta = rho;
             shortd = false;
 
-            ratio = -consts_obj.ONE;
-            dnorm_rec(:) = consts_obj.REALMAX;
-            moderr_rec(:) = consts_obj.REALMAX;
+            ratio = -1.0;
+            dnorm_rec(:) = realmax;
+            moderr_rec(:) = realmax;
             knew_tr = 0;
             knew_geo = 0;
             itest = 0;
@@ -229,7 +205,7 @@ classdef newuob_mod
             % T. M. Ragonneau's thesis: "Model-Based Derivative-Free Optimization Methods and Software".
             % According to test on 20230613, for NEWUOA, this Powellful updating scheme of DELTA works slightly
             % better than setting directly DELTA = MAX(NEW_DELTA, RHO).
-            gamma3 = max(consts_obj.ONE, min(0.75 * gamma2, 1.5));
+            gamma3 = max(1.0, min(0.75 * gamma2, 1.5));
 
             % MAXTR is the maximal number of trust-region iterations. Here, we set it to HUGE(MAXTR) - 1 so that
             % the algorithm will not terminate due to MAXTR. However, this may not be allowed in other languages
@@ -241,7 +217,7 @@ classdef newuob_mod
             % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop
             % https://fortran-lang.discourse.group/t/loops-dont-behave-like-they-should
             maxtr = intmax('int32') - 1; %%MATLAB: maxtr = 10 * maxfun;
-            info = infos_obj.MAXTR_REACHED;
+            info = 20;
 
             % Begin the iterative procedure.
             % After solving a trust-region subproblem, we use three boolean variables to control the workflow.
@@ -252,12 +228,12 @@ classdef newuob_mod
             for tr = 1:maxtr
                 % Generate the next trust region step D.
                 [crvmin, d] = trustregion_newuoa_obj.trsapp(delta, gopt, hq, pq, trtol, xpt, d);
-                dnorm = min(delta, linalg_obj.p_norm(d));
+                dnorm = min(delta, norm(d));
 
                 % Check whether D is too short to invoke a function evaluation.
                 % SHORTD corresponds to Box 3 of the NEWUOA paper. N.B.: we compare DNORM with RHO, not DELTA.
                 % HALF seems to work better than TENTH or QUART.
-                shortd = (dnorm <= consts_obj.HALF * rho); % `<=` works better than `<` in case of underflow.
+                shortd = (dnorm <= 0.5 * rho); % `<=` works better than `<` in case of underflow.
 
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
@@ -269,7 +245,7 @@ classdef newuob_mod
                     % N.B.: 1. This value of DELTA will be discarded if REDUCE_RHO turns out TRUE later.
                     % 2. Without shrinking DELTA, the algorithm may be stuck in an infinite cycling, because
                     % both REDUCE_RHO and IMPROVE_GEO may end up with FALSE in this case.
-                    delta = consts_obj.TENTH * delta;
+                    delta = 0.1 * delta;
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
 
@@ -281,7 +257,7 @@ classdef newuob_mod
                     x(:) = xbase + (xpt(:, kopt) + d);
                     distsq(:) = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
-                    k = fortran.minloc(distsq, 'dim', 1);
+                    [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-3 * rhoend) ^ 2
                         f = fval(k);
                     else
@@ -354,15 +330,15 @@ classdef newuob_mod
                         % has been revised after the last function evaluation.
                         % 5. Powell's code tries Q_alt only when DELTA == RHO.
                         [itest, gopt, hq, pq] = update_newuoa_obj.tryqalt(idz, bmat, fval - fval(kopt), ratio, xpt(:, kopt), xpt, zmat, itest, gopt, hq, pq);
-                        if ~(all(infnan_obj.is_finite(gopt), 'all') && all(infnan_obj.is_finite(hq), 'all') && all(infnan_obj.is_finite(pq), 'all'))
-                            info = infos_obj.NAN_INF_MODEL;
+                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                            info = -3;
                             break
                         end
                     end
 
                     % Check whether to exit
                     subinfo = checkexit_obj.checkexit_unc(maxfun, nf, f, ftarget, x);
-                    if subinfo ~= infos_obj.INFO_DFT
+                    if subinfo ~= 0
                         info = subinfo;
                         break
                     end
@@ -509,12 +485,12 @@ classdef newuob_mod
                 % Improve the geometry of the interpolation set by removing a point and adding a new one.
                 if improve_geo
                     % XPT(:, KNEW_GEO) will become XOPT + D below. KNEW_GEO /= KOPT unless there is a bug.
-                    knew_geo = fortran.maxloc(distsq, 'dim', 1);
+                    [~, knew_geo] = max(distsq);
 
                     % Set DELBAR, which will be used as the trust-region radius for the geometry-improving
                     % scheme GEOSTEP. Note that DELTA has been updated before arriving here. See the comments
                     % above the definition of IMPROVE_GEO.
-                    delbar = max(min(consts_obj.TENTH * sqrt(max(distsq, [], 'all')), consts_obj.HALF * delta), rho); % Powell's code
+                    delbar = max(min(0.1 * sqrt(max(distsq, [], 'all')), 0.5 * delta), rho); % Powell's code
                     %delbar = rho  ! Powell's UOBYQA code
                     %delbar = max(TENTH * delta, rho)  ! Powell's LINCOA code
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), delta), rho)  ! Powell's BOBYQA code
@@ -529,7 +505,7 @@ classdef newuob_mod
                     x(:) = xbase + (xpt(:, kopt) + d);
                     distsq(:) = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
-                    k = fortran.minloc(distsq, 'dim', 1);
+                    [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-3 * rhoend) ^ 2
                         f = fval(k);
                     else
@@ -545,7 +521,7 @@ classdef newuob_mod
 
                     % Update DNORM_REC and MODERR_REC. (Should we?)
                     % DNORM_REC contains the DNORM of the recent function evaluations with the current RHO.
-                    dnorm = min(delbar, linalg_obj.p_norm(d)); % In theory, DNORM = DELBAR in this case.
+                    dnorm = min(delbar, norm(d)); % In theory, DNORM = DELBAR in this case.
                     dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
 
                     % MODERR is the error of the current model in predicting the change in F due to D.
@@ -569,14 +545,14 @@ classdef newuob_mod
                     [idz, bmat, zmat] = powalg_obj.updateh(knew_geo, kopt, d, xpt, idz, bmat, zmat);
                     [kopt, fval, xpt] = update_newuoa_obj.updatexf(knew_geo, ximproved, f, xosav + d, kopt, fval, xpt);
                     [gopt, hq, pq] = update_newuoa_obj.updateq(idz, knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
-                    if ~(all(infnan_obj.is_finite(gopt), 'all') && all(infnan_obj.is_finite(hq), 'all') && all(infnan_obj.is_finite(pq), 'all'))
-                        info = infos_obj.NAN_INF_MODEL;
+                    if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                        info = -3;
                         break
                     end
 
                     % Check whether to exit
                     subinfo = checkexit_obj.checkexit_unc(maxfun, nf, f, ftarget, x);
-                    if subinfo ~= infos_obj.INFO_DFT
+                    if subinfo ~= 0
                         info = subinfo;
                         break
                     end
@@ -586,17 +562,17 @@ classdef newuob_mod
                 % by reducing RHO; update DELTA at the same time.
                 if reduce_rho
                     if rho <= rhoend
-                        info = infos_obj.SMALL_TR_RADIUS;
+                        info = 0;
                         break
                     end
-                    delta = max(consts_obj.HALF * rho, redrho_obj.redrho(rho, rhoend));
+                    delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
                     rho = redrho_obj.redrho(rho, rhoend);
                     % Print a message about the reduction of RHO according to IPRINT.
                     message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, xbase + xpt(:, kopt));
                     % DNORM_REC and MODERR_REC are corresponding to the recent function evaluations with
                     % the current RHO. Update them after reducing RHO.
-                    dnorm_rec(:) = consts_obj.REALMAX;
-                    moderr_rec(:) = consts_obj.REALMAX;
+                    dnorm_rec(:) = realmax;
+                    moderr_rec(:) = realmax;
                 end % End of IF (REDUCE_RHO). The procedure of reducing RHO ends.
 
                 % Shift XBASE if XOPT may be too far from XBASE.
@@ -613,7 +589,7 @@ classdef newuob_mod
                 if ~ismember('callback_fcn', ipObj.UsingDefaults)
                     terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, tr);
                     if terminate
-                        info = infos_obj.CALLBACK_TERMINATE;
+                        info = 30;
                         break
                     end
                 end
@@ -622,7 +598,7 @@ classdef newuob_mod
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             x(:) = xbase + (xpt(:, kopt) + d);
-            if info == infos_obj.SMALL_TR_RADIUS && shortd && linalg_obj.p_norm(x - (xbase + xpt(:, kopt))) > consts_obj.TENTH * rhoend && nf < maxfun
+            if info == 0 && shortd && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 % Save X, F into the history.
@@ -651,17 +627,7 @@ classdef newuob_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
-                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN/+Inf", srname);
-                debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), 'all'), "XHIST does not contain NaN", srname);
-                % The last calculated X can be Inf (finite + finite can be Inf numerically).
-                debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), 'all'), "FHIST does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), "F is the smallest in FHIST", srname);
-            end
+
 
         end
 

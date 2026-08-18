@@ -18,9 +18,7 @@ classdef update_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
 
 
             % Inputs
@@ -35,25 +33,15 @@ classdef update_lincoa_mod
             % XPT(N, NPT)
 
             % Local variables
-            srname = "UPDATEXF";
+
 
 
             % Sizes
-            n = size(xpt, 1);
-            npt = size(xpt, 2);
+
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(knew >= 0 && knew <= npt, "0 <= KNEW <= NPT", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(knew >= 1 || ~ximproved, "KNEW >= 1 unless X is not improved", srname);
-                debug_obj.assert(knew ~= kopt || ximproved, "KNEW /= KOPT unless X is improved", srname);
-                debug_obj.assert(numel(xnew) == n && all(infnan_obj.is_finite(xnew), 'all'), "SIZE(XNEW) == N, XNEW is finite", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), "F is not NaN or +Inf", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -77,10 +65,7 @@ classdef update_lincoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt && all(infnan_obj.is_finite(xpt), 'all'), "SIZE(XPT) == [N, NPT], XPT is finite", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-            end
+
 
         end
         function [gopt, hq, pq] = updateq(~, idz, knew, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq)
@@ -94,9 +79,9 @@ classdef update_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
+
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
@@ -119,29 +104,17 @@ classdef update_lincoa_mod
             % PQ(NPT)
 
             % Local variables
-            srname = "UPDATEQ";
+
 
 
             pqinc = NaN(numel(pq), 1);
 
             % Sizes
-            n = numel(gopt);
-            npt = numel(pq);
+
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(idz >= 1 && idz <= size(zmat, 2) + 1, "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
-                debug_obj.assert(knew >= 0 && knew <= npt, "0 <= KNEW <= NPT", srname);
-                debug_obj.assert(knew >= 1 || ~ximproved, "KNEW >= 1 unless X is not improved", srname);
-                debug_obj.assert(numel(xdrop) == n && all(infnan_obj.is_finite(xdrop), 'all'), "SIZE(XDROP) == N, XDROP is finite", srname);
-                debug_obj.assert(numel(xosav) == n && all(infnan_obj.is_finite(xosav), 'all'), "SIZE(XOSAV) == N, XOSAV is finite", srname);
-                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT)==[N, NPT+N]", srname);
-                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
-                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), "HQ is an NxN symmetric matrix", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -159,7 +132,7 @@ classdef update_lincoa_mod
             % Absorb PQ(KNEW)*XDROP*XDROP^T into the explicit part of the Hessian.
             % Implement R1UPDATE properly so that it ensures that HQ is symmetric.
             hq = linalg_obj.r1_sym(hq, pq(knew), xdrop);
-            pq(knew) = consts_obj.ZERO;
+            pq(knew) = 0.0;
 
             % Update the implicit part of the Hessian.
             pqinc(:) = moderr * powalg_obj.omega_col(idz, zmat, knew);
@@ -178,11 +151,7 @@ classdef update_lincoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
-                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), "HQ is an NxN symmetric matrix", srname);
-                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
-            end
+
 
         end
         function [qalt_better, gopt, pq, hq, galt, pqalt] = tryqalt(~, idz, bmat, fval, xopt, xpt, zmat, qalt_better, gopt, pq, hq, galt, pqalt)
@@ -194,10 +163,9 @@ classdef update_lincoa_mod
             % XOPT + D, i.e., if ALL(QALT_BETTER) = TRUE.
             %--------------------------------------------------------------------------------------------------%
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
+
             powalg_obj = prima_mat.common.powalg_mod();
 
 
@@ -220,29 +188,15 @@ classdef update_lincoa_mod
             % PQALT(NPT)
 
             % Local variables
-            srname = "TRYQALT";
+
 
 
             % Sizes
-            n = size(xpt, 1);
+
             npt = size(xpt, 2);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(idz >= 1 && idz <= size(zmat, 2) + 1, "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
-                debug_obj.assert(numel(xopt) == n && all(infnan_obj.is_finite(xopt), 'all'), "SIZE(XOPT) == N, XOPT is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
-                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT)==[N, NPT+N]", srname);
-                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
-                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
-                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), "HQ is an NxN symmetric matrix", srname);
-                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
-                debug_obj.assert(numel(galt) == n, "SIZE(GALT) = N", srname);
-                debug_obj.assert(numel(pqalt) == npt, "SIZE(PQALT) = NPT", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -250,13 +204,13 @@ classdef update_lincoa_mod
 
             % Establish the alternative model, which is the least Frobenius norm interpolant.
             pqalt(:) = powalg_obj.omega_mul(idz, zmat, fval);
-            galt(:) = linalg_obj.matprod21(bmat(:, 1:npt), fval) + powalg_obj.hess_mul(xopt, xpt, pqalt);
+            galt(:) = bmat(:, 1:npt) * fval + powalg_obj.hess_mul(xopt, xpt, pqalt);
 
             % Replace the current model with the alternative model if ALL(QALT_BETTER) = TRUE, i.e., the
             % recent few alternative models are more accurate in predicting the function value of XOPT + D.
             if all(qalt_better, 'all')
                 pq(:) = pqalt;
-                hq = repmat(consts_obj.ZERO, size(hq));
+                hq = zeros(size(hq));
                 gopt(:) = galt;
                 qalt_better(:) = false;
             end
@@ -266,13 +220,7 @@ classdef update_lincoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
-                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), "HQ is an NxN symmetric matrix", srname);
-                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
-                debug_obj.assert(numel(galt) == n, "SIZE(GALT) = N", srname);
-                debug_obj.assert(numel(pqalt) == npt, "SIZE(PQALT) = NPT", srname);
-            end
+
 
         end
         function rescon = updateres(~, ximproved, amat, b, delta, dnorm, xopt, rescon)
@@ -287,10 +235,7 @@ classdef update_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
 
 
             % Inputs
@@ -305,29 +250,18 @@ classdef update_lincoa_mod
             % RESCON(M)
 
             % Local variables
-            srname = "UPDATERES";
+
 
 
             mask = false(numel(b), 1);
             ax = NaN(numel(b), 1);
 
             % Sizes
-            m = numel(b);
-            n = numel(xopt);
+
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(amat, 1) == n && size(amat, 2) == m, "SIZE(AMAT) == [N, M]", srname);
-                debug_obj.assert(delta > 0, "DELTA > 0", srname);
-                debug_obj.assert(dnorm > 0, "DNORM > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xopt), 'all'), "XOPT is finite", srname);
-                debug_obj.assert(numel(rescon) == m, "SIZE(RESCON) == M", srname);
-                % Zaikun 20221115: The following cannot pass?! Is it due to the update of DELTA? Did we
-                % misunderstand Powell's definition of RESCON?
-                %call assert(all((rescon >= 0 .and. rescon <= delta) .or. rescon <= -delta), &
-                %    & '0 <= RESCON <= DELTA or RESCON <= -DELTA', srname)
 
-            end
 
             %====================%
             % Calculation starts %
@@ -340,13 +274,13 @@ classdef update_lincoa_mod
             end
 
             mask(:) = (abs(rescon) < dnorm + delta);
-            ax(linalg_obj.trueloc(mask)) = linalg_obj.matprod12(xopt, amat(:, linalg_obj.trueloc(mask)));
+            ax(find(mask)) = amat(:, find(mask)).' * xopt;
             mask00 = mask; %Unsupported statement inside WHERE block: StatementLineBreak 1
-            rescon(mask00) = max(b(mask00) - ax(mask00), consts_obj.ZERO); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            rescon(mask00) = max(b(mask00) - ax(mask00), 0.0); %Unsupported statement inside WHERE block: StatementLineBreak 1
             mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
             rescon(mask01) = min(-abs(rescon(mask01)) + dnorm, -delta); %Unsupported statement inside WHERE block: StatementLineBreak 1
 
-            rescon(linalg_obj.trueloc(rescon >= delta)) = -rescon(linalg_obj.trueloc(rescon >= delta));
+            rescon(rescon >= delta) = -rescon(rescon >= delta);
 
             %%MATLAB:
             %%mask = (abs(rescon) < delta + dnorm);
@@ -359,12 +293,7 @@ classdef update_lincoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(rescon) == m, "SIZE(RESCON) == M", srname);
-                %call assert(all((rescon >= 0 .and. rescon <= delta) .or. rescon <= -delta), &
-                %    & '0 <= RESCON <= DELTA or RESCON <= -DELTA', srname)
 
-            end
         end
 
     end

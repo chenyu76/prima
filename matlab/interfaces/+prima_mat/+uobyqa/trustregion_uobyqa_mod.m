@@ -50,9 +50,8 @@ classdef trustregion_uobyqa_mod
             % Nonlinear Programming, 1998, 3--28.
             %--------------------------------------------------------------------------------------------------%
 
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
+
+
             linalg_obj = prima_mat.common.linalg_mod();
 
 
@@ -67,7 +66,7 @@ classdef trustregion_uobyqa_mod
 
 
             % Local variables
-            srname = "TRSTEP";
+
             i = NaN;
 
             k = NaN;
@@ -112,12 +111,7 @@ classdef trustregion_uobyqa_mod
             n = numel(g);
 
             % Preconditions.
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1, "N >= 1", srname);
-                debug_obj.assert(delta > 0, "DELTA > 0", srname);
-                debug_obj.assert(size(h, 1) == n && linalg_obj.issymmetric(h), "H is n-by-n and symmetric", srname);
-                debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -125,9 +119,9 @@ classdef trustregion_uobyqa_mod
 
             % The initial values of DSQ, PHIU, and PHIL are unused but to entertain Fortran compilers.
             % TODO: Check that DSQ, PHIU, PHIL have been initialized before used.
-            dsq = consts_obj.ZERO;
-            phiu = consts_obj.ZERO;
-            phil = consts_obj.ZERO;
+            dsq = 0.0;
+            phiu = 0.0;
+            phil = 0.0;
 
             % Scale the problem if G contains large values. Otherwise, floating point exceptions may occur. In
             % the sequel, GG and HH are used instead of G and H, which are INTENT(IN) and hence cannot be
@@ -136,25 +130,25 @@ classdef trustregion_uobyqa_mod
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
             if max(abs(g), [], 'all') > 1.0e8
                 % The threshold is empirical.
-                modscal = max(consts_obj.TWO * consts_obj.REALMIN, consts_obj.ONE / max(abs(g), [], 'all')); % MAX: precaution against underflow.
+                modscal = max(2.0 * realmin, 1.0 / max(abs(g), [], 'all')); % MAX: precaution against underflow.
                 gg(:) = g * modscal;
                 hh(:, :) = h * modscal;
                 scaled = true;
             else
-                modscal = consts_obj.ONE; % This value is not used, but Fortran compilers may complain without it.
+                modscal = 1.0; % This value is not used, but Fortran compilers may complain without it.
                 gg(:) = g;
                 hh(:, :) = h;
                 scaled = false;
             end
 
             % Initialize D and CRVMIN.
-            d(:) = consts_obj.ZERO;
-            crvmin = consts_obj.ZERO;
+            d(:) = 0.0;
+            crvmin = 0.0;
 
             gsq = sum(gg .^ 2, 'all');
             gnorm = sqrt(gsq);
 
-            if infnan_obj.is_nan_sp(gsq)
+            if isnan(gsq)
                 return
             end
             if ~any(abs(hh) > 0, 'all')
@@ -169,7 +163,7 @@ classdef trustregion_uobyqa_mod
             % encounters memory errors). This is indeed why the original UOBYQA code constantly terminates with
             % "a trust region step has failed to reduce the quadratic model" when applied to univariate problems.
             if n == 1
-                d(:) = fortran.sign(delta, -g); %%MATLAB: d = -delta * sign(g)
+                d(:) = delta .* ((-g > 0) .* 2 - 1); %%MATLAB: d = -delta * sign(g)
                 if h(1, 1) > 0
                     dnewton(:) = -g ./ h(1, 1);
                     if abs(dnewton(1)) <= delta
@@ -189,7 +183,7 @@ classdef trustregion_uobyqa_mod
 
             % Form GG by applying the similarity transformation.
             for k = 1:n - 1
-                gg(k + 1:n) = gg(k + 1:n) - linalg_obj.inprod(gg(k + 1:n), hh(k + 1:n, k)) * hh(k + 1:n, k);
+                gg(k + 1:n) = gg(k + 1:n) - sum(gg(k + 1:n) .* hh(k + 1:n, k), 'all') * hh(k + 1:n, k);
             end
             %%MATLAB: gg = (gg'*P)';  % gg = P'*gg;
 
@@ -201,26 +195,26 @@ classdef trustregion_uobyqa_mod
             % This is probably because the behavior of MAX is undefined if it receives NaN (if GNORM and HNORM
             % are both Inf, then GNORM/DELTA - HNORM = NaN).
             %--------------------------------------------------------------------------------------------------%
-            if ~infnan_obj.is_finite(sum(abs(gg), 'all') + sum(abs(hh), 'all') + sum(abs(td), 'all') + sum(abs(tn), 'all'))
+            if ~isfinite(sum(abs(gg), 'all') + sum(abs(hh), 'all') + sum(abs(td), 'all') + sum(abs(tn), 'all'))
                 return
             end
 
             % Begin the trust region calculation with a tridiagonal matrix by calculating the L_1-norm of the
             % Hessenberg form of H, which is an upper bound for the spectral norm of H.
-            hnorm = max(abs([consts_obj.ZERO; tn]) + abs(td) + abs([tn; consts_obj.ZERO]), [], 'all');
+            hnorm = max(abs([0.0; tn]) + abs(td) + abs([tn; 0.0]), [], 'all');
             delsq = delta * delta;
 
             % Set the initial values of PAR and its bounds.
             % N.B.: PAR is the parameter LAMBDA in More-Sorensen (1983) and Powell (1997), as well as the THETA
             % in Section 2 of the UOBYQA paper. The algorithm looks for the optimal PAR characterized in Lemmas
             % 2.1--2.3 of More-Sorensen (1983).
-            parl = max([consts_obj.ZERO, -min(td, [], 'all'), gnorm / delta - hnorm], [], 'all'); % Lower bound for the optimal PAR
+            parl = max([0.0, -min(td, [], 'all'), gnorm / delta - hnorm], [], 'all'); % Lower bound for the optimal PAR
             parlest = parl; % Estimation for PARL
             par = parl;
-            paru = consts_obj.ZERO; % Upper bound for the optimal PAR ??? The initial value is less than PARL. Why?
-            paruest = consts_obj.ZERO; % Estimation for PARU
+            paru = 0.0; % Upper bound for the optimal PAR ??? The initial value is less than PARL. Why?
+            paruest = 0.0; % Estimation for PARU
             posdef = false;
-            dold(:) = consts_obj.ZERO;
+            dold(:) = 0.0;
 
             maxiter = min(1000, 100 * n); % Unlikely to be reached.
             % Zaikun 26-06-2019: Powell's original code can encounter infinite cycling, which did happen when
@@ -228,7 +222,7 @@ classdef trustregion_uobyqa_mod
             % and NaN appear in D due to extremely large values in the Hessian matrix (up to 10^219).
 
             for iter = 1:maxiter
-                if infnan_obj.is_finite(sum(abs(d), 'all'))
+                if isfinite(sum(abs(d), 'all'))
                     dold(:) = d;
                 else
                     d(:) = dold;
@@ -244,7 +238,7 @@ classdef trustregion_uobyqa_mod
                 % H + PAR*I easily: it is L*diag(PIV)*L^T, where diag(PIV) is the diagonal matrix with PIV being
                 % the diagonal, and L is the lower triangular matrix with all the diagonal entries being 1, the
                 % subdiagonal being the vector TN/PIV(1:N-1) (entrywise), and all the other entries being 0.
-                piv(:) = consts_obj.ZERO; % Initialize PIV, so that we know that any NaN in PIV is due to the loop below.
+                piv(:) = 0.0; % Initialize PIV, so that we know that any NaN in PIV is due to the loop below.
                 piv(1) = td(1) + par;
                 % Powell implemented the loop by a GOTO, and K = N when the loop exits. It may not be true here.
                 for k = 1:n - 1
@@ -259,7 +253,7 @@ classdef trustregion_uobyqa_mod
                 end
 
                 % Zaikun 20220509
-                if any(infnan_obj.is_nan_sp(piv), 'all')
+                if any(isnan(piv), 'all')
                     break % Better action to take???
 
                 end
@@ -284,10 +278,10 @@ classdef trustregion_uobyqa_mod
                     % a nonempty array when NEGCRV is TRUE, and hence K <= N; however, the Fortran code may not
                     % behave in this way when compiled with aggressive optimization options; on 20221220, it is
                     % observed that K = HUGE(K) = 32767 with Flang -Ofast.
-                    k = min([n; linalg_obj.trueloc(piv < 0 | (piv <= 0 & abs([tn; 0.0]) > 0))], [], 'all');
+                    k = min([n; find(piv < 0 | (piv <= 0 & abs([tn; 0.0]) > 0))], [], 'all');
                 else
                     % Set K to the last index corresponding to a zero curvature; K = 0 if no such curvature exits.
-                    k = max([0; linalg_obj.trueloc(abs(piv) + abs([tn; 0.0]) <= 0)], [], 'all');
+                    k = max([0; find(abs(piv) + abs([tn; 0.0]) <= 0)], [], 'all');
                 end
 
                 % At this point, K == 0 iff H + PAR*I is positive definite.
@@ -299,10 +293,10 @@ classdef trustregion_uobyqa_mod
                     % Zaikun 20220512: Powell's code does not include the following initialization. Consequently,
                     % D(KSAV+1:N) or D(KSAV+2:N) will not be initialized but inherit values from the previous
                     % iteration. Is this intended?
-                    d(:) = consts_obj.ZERO;
+                    d(:) = 0.0;
                     %------------------------------------------------------------------------------------------%
 
-                    d(k) = consts_obj.ONE; % Zaikun 20220512: D(K+1:N) = ?
+                    d(k) = 1.0; % Zaikun 20220512: D(K+1:N) = ?
 
                     %------------------------------------------------------------------------------------------%
                     % The code until "Terminate with D set to a multiple of the current D ..." sets only D(1:KSAV)
@@ -323,8 +317,8 @@ classdef trustregion_uobyqa_mod
                             % PIV(K+1) was named as "TEMP" in Powell's code. Is PIV(K+1) consistent with the meaning of PIV?
                             piv(k + 1) = td(k + 1) + par;
                             if piv(k + 1) <= abs(piv(k))
-                                d(k + 1) = fortran.sign(consts_obj.ONE, -tn(k)); %%MATLAB: d(k + 1) = -sing(tn(k))
-                                dhd = piv(k) + piv(k + 1) - consts_obj.TWO * abs(tn(k));
+                                d(k + 1) = 1.0 .* ((-tn(k) > 0) .* 2 - 1); %%MATLAB: d(k + 1) = -sing(tn(k))
+                                dhd = piv(k) + piv(k + 1) - 2.0 * abs(tn(k));
                             else
                                 d(k + 1) = -tn(k) / piv(k + 1);
                                 dhd = piv(k) + tn(k) * d(k + 1);
@@ -339,7 +333,7 @@ classdef trustregion_uobyqa_mod
                         if abs(tn(i)) > 0
                             d(i) = -tn(i) * d(i + 1) / piv(i);
                         else
-                            d(1:i) = consts_obj.ZERO;
+                            d(1:i) = 0.0;
                             break
                         end
                     end
@@ -355,7 +349,7 @@ classdef trustregion_uobyqa_mod
 
                     % Terminate with D set to a multiple of the current D if the following test suggests so.
                     if gsq <= 0
-                        partmp = paruest * (consts_obj.ONE - tol);
+                        partmp = paruest * (1.0 - tol);
                     else
                         partmp = paruest;
                     end
@@ -372,7 +366,7 @@ classdef trustregion_uobyqa_mod
                         % Is this intended?
                         %--------------------------------------------------------------------------------------%
 
-                        dtg = linalg_obj.inprod(d, gg);
+                        dtg = sum(d .* gg, 'all');
                         if dtg > 0
                             % Has DSQ got the correct value?
                             d(:) = -(delta / sqrt(dsq)) * d;
@@ -395,13 +389,13 @@ classdef trustregion_uobyqa_mod
                     for k = 1:n - 1
                         d(k + 1) = -(gg(k + 1) + tn(k) * d(k)) / piv(k + 1);
                     end
-                    wsq = linalg_obj.inprod(piv, d .^ 2); % GG^T*(H+PAR*I)^{-1}*GG. Needed in the convergence test.
+                    wsq = sum(piv .* d .^ 2, 'all'); % GG^T*(H+PAR*I)^{-1}*GG. Needed in the convergence test.
                     % The loop sets D = L^{-T}*D = -L^{-T}*PIV^{-1}*L^{-1}*GG = -(H+PAR*I)^{-1}*GG.
                     for k = n - 1:-1:1
                         d(k) = d(k) - tn(k) * d(k + 1) / piv(k);
                     end
 
-                    if ~infnan_obj.is_finite(sum(abs(d), 'all'))
+                    if ~isfinite(sum(abs(d), 'all'))
                         d(:) = dold;
                         break
                     end
@@ -422,8 +416,8 @@ classdef trustregion_uobyqa_mod
                     % Make the usual test for acceptability of a full trust region step.
                     dnorm = sqrt(dsq);
 
-                    phi = consts_obj.ONE / dnorm - consts_obj.ONE / delta;
-                    if tol * (consts_obj.ONE + par * dsq / wsq) - dsq * phi * phi >= 0
+                    phi = 1.0 / dnorm - 1.0 / delta;
+                    if tol * (1.0 + par * dsq / wsq) - dsq * phi * phi >= 0
                         d(:) = (delta / dnorm) * d;
                         break
                     end
@@ -449,7 +443,7 @@ classdef trustregion_uobyqa_mod
                             slope = (phiu - phi) / (paru - par); % Has PHIU got the correct value?
 
                         else
-                            slope = consts_obj.ONE / gnorm;
+                            slope = 1.0 / gnorm;
                         end
                         partmp = par - phi / slope;
                         if paruest > 0
@@ -467,28 +461,28 @@ classdef trustregion_uobyqa_mod
                         % in Math. Program.; in the DAMTP 2000/NA14 report, it is below (2.8) in Section 2). The two
                         % loops below find Z using the LDL factorization of the (tridiagonalized) H + PAR*I.
                         if ~posdef
-                            z(1) = consts_obj.ONE / piv(1);
+                            z(1) = 1.0 / piv(1);
                             for k = 1:n - 1
                                 tnz = tn(k) * z(k);
                                 if tnz > 0
-                                    z(k + 1) = -(consts_obj.ONE + tnz) / piv(k + 1);
+                                    z(k + 1) = -(1.0 + tnz) / piv(k + 1);
                                 else
-                                    z(k + 1) = (consts_obj.ONE - tnz) / piv(k + 1);
+                                    z(k + 1) = (1.0 - tnz) / piv(k + 1);
                                 end
                             end
-                            wwsq = linalg_obj.inprod(piv, z .^ 2); % Needed in the convergence test.
+                            wwsq = sum(piv .* z .^ 2, 'all'); % Needed in the convergence test.
                             for k = n - 1:-1:1
                                 z(k) = z(k) - tn(k) * z(k + 1) / piv(k);
                             end
 
                             zsq = sum(z .^ 2, 'all');
-                            dtz = linalg_obj.inprod(d, z);
+                            dtz = sum(d .* z, 'all');
 
                             % Apply the alternative test for convergence.
                             tempa = abs(delsq - dsq);
                             tempb = sqrt(dtz * dtz + tempa * zsq);
                             if abs(dtz) > 0
-                                gam = tempa / (fortran.sign(tempb, dtz) + dtz); %%MATLAB: gam = tempa / (sign(dtz)*tempb + dtz)
+                                gam = tempa / (tempb .* ((dtz > 0) .* 2 - 1) + dtz); %%MATLAB: gam = tempa / (sign(dtz)*tempb + dtz)
 
                             else                                % This ELSE covers the unlikely yet possible case where DTZ is zero or even NaN.
                                 gam = sqrt(tempa / zsq);
@@ -501,7 +495,7 @@ classdef trustregion_uobyqa_mod
                         end
 
                         % Complete the iteration when PHI is positive.
-                        slope = consts_obj.ONE / gnorm;
+                        slope = 1.0 / gnorm;
                         if paru > 0
                             if phi >= phiu
                                 break % Has PHIU got the correct value?
@@ -523,9 +517,9 @@ classdef trustregion_uobyqa_mod
                 % Pick the value of PAR for the next iteration.
                 if paru <= 0
                     % PARU == 0
-                    par = consts_obj.TWO * parlest + gnorm / delta;
+                    par = 2.0 * parlest + gnorm / delta;
                 else
-                    par = consts_obj.HALF * (parl + paru);
+                    par = 0.5 * (parl + paru);
                     par = max(par, parlest);
                 end
                 if paruest > 0
@@ -535,19 +529,19 @@ classdef trustregion_uobyqa_mod
 
             % Apply the inverse Householder transformations to recover D.
             for k = n - 1:-1:1
-                d(k + 1:n) = d(k + 1:n) - linalg_obj.inprod(d(k + 1:n), hh(k + 1:n, k)) * hh(k + 1:n, k);
+                d(k + 1:n) = d(k + 1:n) - sum(d(k + 1:n) .* hh(k + 1:n, k), 'all') * hh(k + 1:n, k);
             end
             %%MATLAB: d = P*d;
 
             % If the More-Sorensen algorithm breaks down abnormally (e.g., NaN in the computation), then ||D||
             % may be (much) more than DELTA. This is handled in the following naive way.
-            if linalg_obj.p_norm(d) > delta
-                d(:) = (delta / linalg_obj.p_norm(d)) * d;
+            if norm(d) > delta
+                d(:) = (delta / norm(d)) * d;
             end
 
             % Set CRVMIN to zero if it is NaN, which may happen if the problem is ill-conditioned.
-            if infnan_obj.is_nan_sp(crvmin)
-                crvmin = consts_obj.ZERO;
+            if isnan(crvmin)
+                crvmin = 0.0;
             end
 
             % Scale CRVMIN back before return. Note that the trust-region step is scale invariant.
@@ -560,12 +554,7 @@ classdef trustregion_uobyqa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), "SIZE(D) == N, D is finite", srname);
-                % Due to rounding, it may happen that ||D|| > DELTA, but ||D|| > 2*DELTA is highly improbable.
-                debug_obj.assert(linalg_obj.p_norm(d) <= consts_obj.TWO * delta, "||D|| <= 2*DELTA", srname);
-                debug_obj.assert(crvmin >= 0, "CRVMIN >= 0", srname);
-            end
+
 
         end
         function delta = trrad(~, delta_in, dnorm, eta1, eta2, gamma1, gamma2, ratio)
@@ -574,9 +563,7 @@ classdef trustregion_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Generic module
-            consts_obj = prima_mat.common.consts_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
 
 
             % Input
@@ -592,18 +579,10 @@ classdef trustregion_uobyqa_mod
             delta = NaN;
 
             % Local variables
-            srname = "TRRAD";
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(delta_in >= dnorm && dnorm > 0, "DELTA_IN >= DNORM > 0", srname);
-                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", srname);
-                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", srname);
-                debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, "0 < GAMMA1 < 1 < GAMMA2", srname);
-                % By the definition of RATIO in ratio.f90, RATIO cannot be NaN unless the actual reduction is
-                % NaN, which should NOT happen due to the moderated extreme barrier.
-                debug_obj.assert(~infnan_obj.is_nan_sp(ratio), "RATIO is not NaN", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -638,9 +617,7 @@ classdef trustregion_uobyqa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(delta > 0, "DELTA > 0", srname);
-            end
+
 
         end
 

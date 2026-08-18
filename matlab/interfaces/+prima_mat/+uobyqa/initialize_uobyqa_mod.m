@@ -20,13 +20,12 @@ classdef initialize_uobyqa_mod
 
             % Common modules
             checkexit_obj = prima_mat.common.checkexit_mod();
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            infos_obj = prima_mat.common.infos_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
             message_obj = prima_mat.common.message_mod();
 
 
@@ -49,7 +48,6 @@ classdef initialize_uobyqa_mod
 
             % Local variables
             solver = "UOBYQA";
-            srname = "INITXF";
 
 
             kk = NaN(numel(x0), 1);
@@ -63,23 +61,10 @@ classdef initialize_uobyqa_mod
             % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
-            maxxhist = size(xhist, 2);
-            maxfhist = numel(fhist);
-            maxhist = max(maxxhist, maxfhist);
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(abs(iprint) <= 3, "IPRINT is 0, 1, -1, 2, -2, 3, or -3", srname);
-                debug_obj.assert(n >= 1 && npt == (n + 1) * (n + 2) / 2, "N >= 1, NPT == (N+1)*(N+2)/2", srname);
-                debug_obj.assert(maxfun >= npt + 1, "MAXFUN >= NPT + 1", srname);
-                debug_obj.assert(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", srname);
-                debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, "SIZE(FHIST) == 0 or MAXHIST", srname);
-                debug_obj.assert(numel(fval) == npt, "SIZE(FVAL) == NPT", srname);
-                debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
-                debug_obj.assert(rhobeg > 0, "RHOBEG > 0", srname);
-                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite(x0), 'all'), "SIZE(X0) == N, X0 is finite", srname);
-                debug_obj.assert(numel(xbase) == n, "SIZE(XBASE) == N", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -87,7 +72,7 @@ classdef initialize_uobyqa_mod
 
             % Initialize INFO to the default value. At return, an INFO different from this value will indicate
             % an abnormal return.
-            info = infos_obj.INFO_DFT;
+            info = 0;
 
             % Initialize XBASE to X0.
             xbase(:) = x0;
@@ -103,14 +88,14 @@ classdef initialize_uobyqa_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-consts_obj.REALMAX, size(xhist));
-            fhist(:) = consts_obj.REALMAX;
-            fval(:) = consts_obj.REALMAX;
+            xhist = repmat(-realmax, size(xhist));
+            fhist(:) = realmax;
+            fval(:) = realmax;
 
             % Set XPT(:, 1 : 2*N+1) and FVAL(:, 1 : 2*N+1).
-            xpt = repmat(consts_obj.ZERO, size(xpt));
-            kk(:) = linalg_obj.linspace_i(2, 2 * n, n);
-            xpt(:, kk) = rhobeg * linalg_obj.eye1(n);
+            xpt = zeros(size(xpt));
+            kk(:) = linspace(2, 2 * n, n).';
+            xpt(:, kk) = rhobeg * eye(n);
             for k = 1:2 * n + 1
                 x(:) = xpt(:, k) + xbase;
                 f = evaluate_obj.evaluatef(calfun, x);
@@ -132,7 +117,7 @@ classdef initialize_uobyqa_mod
                 % first model is built.
                 if mod(k, 2) == 0
                     if fval(k) < fval(1)
-                        xpt(:, k + 1) = consts_obj.TWO * xpt(:, k); % XPT(K / 2, K + 1) = TWO * RHOBEG
+                        xpt(:, k + 1) = 2.0 * xpt(:, k); % XPT(K / 2, K + 1) = TWO * RHOBEG
 
                     else
                         xpt(:, k + 1) = -xpt(:, k); % XPT(K / 2, K + 1) = -RHOBEG
@@ -141,15 +126,15 @@ classdef initialize_uobyqa_mod
 
                 % Check whether to exit.
                 subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                if subinfo ~= infos_obj.INFO_DFT
+                if subinfo ~= 0
                     info = subinfo;
                     break
                 end
             end
 
-            if info == infos_obj.INFO_DFT
+            if info == 0
                 xw(:) = -rhobeg;
-                xw(linalg_obj.trueloc(fval(kk) < fval(1))) = rhobeg;
+                xw(fval(kk) < fval(1)) = rhobeg;
                 % See (42)--(43) of the UOBYQA paper for IP and IQ.
                 ip = 0;
                 iq = 2;
@@ -175,7 +160,7 @@ classdef initialize_uobyqa_mod
 
                     % Check whether to exit.
                     subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                    if subinfo ~= infos_obj.INFO_DFT
+                    if subinfo ~= 0
                         info = subinfo;
                         break
                     end
@@ -191,17 +176,7 @@ classdef initialize_uobyqa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(nf <= npt, "NF <= NPT", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XBASE) == N, XBASE is finite", srname);
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
-                debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", srname);
-                debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-            end
+
 
         end
         function [pq, info] = initq(~, fval, xpt, pq, varargin)
@@ -212,10 +187,7 @@ classdef initialize_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            infos_obj = prima_mat.common.infos_mod();
+
 
 
             % Inputs
@@ -227,7 +199,7 @@ classdef initialize_uobyqa_mod
             % PQ((N + 1) * (N + 2) / 2 - 1)
 
             % Local variables
-            srname = "INITQ";
+
 
 
             deriv = NaN(size(xpt, 1), 1);
@@ -238,12 +210,7 @@ classdef initialize_uobyqa_mod
             npt = size(xpt, 2);
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt == (n + 1) * (n + 2) / 2, "N >= 1, NPT == (N+1)*(N+2)/2", srname);
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any((infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -261,11 +228,11 @@ classdef initialize_uobyqa_mod
                 ih = n + k * (k + 1) / 2;
                 if xpt(k, k1) > 0
                     % XPT(K, K1) = 2*RHO
-                    deriv(k) = (fbase + fval(k1) - consts_obj.TWO * fval(k0)) / rhosq;
-                    pq(k) = (4.0 * fval(k0) - 3.0 * fbase - fval(k1)) / (consts_obj.TWO * rhobeg);
+                    deriv(k) = (fbase + fval(k1) - 2.0 * fval(k0)) / rhosq;
+                    pq(k) = (4.0 * fval(k0) - 3.0 * fbase - fval(k1)) / (2.0 * rhobeg);
                 else                    % XPT(K, K1) = -RHO
-                    deriv(k) = (fval(k0) + fval(k1) - consts_obj.TWO * fbase) / rhosq;
-                    pq(k) = (fval(k0) - fval(k1)) / (consts_obj.TWO * rhobeg);
+                    deriv(k) = (fval(k0) + fval(k1) - 2.0 * fbase) / rhosq;
+                    pq(k) = (fval(k0) - fval(k1)) / (2.0 * rhobeg);
                 end
                 pq(ih) = deriv(k);
             end
@@ -281,7 +248,7 @@ classdef initialize_uobyqa_mod
                 end
                 % Find the (IQ, IP) entry of the Hessian.
                 ih = n + (iq - 1) * iq / 2 + ip;
-                pq(ih) = (fval(k) - fbase - xpt(ip, k) * pq(ip) - xpt(iq, k) * pq(iq) - consts_obj.HALF * rhosq * (deriv(ip) + deriv(iq))) / (xpt(ip, k) * xpt(iq, k));
+                pq(ih) = (fval(k) - fbase - xpt(ip, k) * pq(ip) - xpt(iq, k) * pq(iq) - 0.5 * rhosq * (deriv(ip) + deriv(iq))) / (xpt(ip, k) * xpt(iq, k));
             end
 
             ipObj = inputParser();
@@ -289,10 +256,10 @@ classdef initialize_uobyqa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 2
-                if any(infnan_obj.is_nan_sp(pq), 'all')
-                    info = infos_obj.NAN_INF_MODEL;
+                if any(isnan(pq), 'all')
+                    info = -3;
                 else
-                    info = infos_obj.INFO_DFT;
+                    info = 0;
                 end
             end
 
@@ -301,9 +268,7 @@ classdef initialize_uobyqa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(pq) == npt - 1, "SIZE(PQ) == NPT - 1", srname);
-            end
+
 
         end
         function [pl, info] = initl(~, xpt, pl, varargin)
@@ -314,10 +279,7 @@ classdef initialize_uobyqa_mod
             % See Section 4 of the UOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            infos_obj = prima_mat.common.infos_mod();
+
 
 
             % Inputs
@@ -328,7 +290,7 @@ classdef initialize_uobyqa_mod
             % PL((N + 1) * (N + 2) / 2 - 1, (N + 1) * (N + 2) / 2)
 
             % Local variables
-            srname = "INITL";
+
 
 
             % Sizes
@@ -336,11 +298,7 @@ classdef initialize_uobyqa_mod
             npt = size(xpt, 2);
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt == (n + 1) * (n + 2) / 2, "N >= 1, NPT == (N+1)*(N+2)/2", srname);
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -349,7 +307,7 @@ classdef initialize_uobyqa_mod
             rhobeg = max(abs(xpt(:, 2)), [], 'all');
             rhosq = rhobeg ^ 2;
 
-            pl = repmat(consts_obj.ZERO, size(pl));
+            pl = zeros(size(pl));
 
             % Form the gradient and diagonal second derivatives of the Lagrange functions.
             for k = 1:n
@@ -359,16 +317,16 @@ classdef initialize_uobyqa_mod
                 if xpt(k, k1) > 0
                     % XPT(K, K1) = 2*RHO
                     pl(k, 1) = -1.5 / rhobeg;
-                    pl(ih, 1) = consts_obj.ONE / rhosq;
-                    pl(k, k0) = consts_obj.TWO / rhobeg;
-                    pl(ih, k0) = -consts_obj.TWO / rhosq;
+                    pl(ih, 1) = 1.0 / rhosq;
+                    pl(k, k0) = 2.0 / rhobeg;
+                    pl(ih, k0) = -2.0 / rhosq;
                 else                    % XPT(K, K1) = -RHO
-                    pl(ih, 1) = -consts_obj.TWO / rhosq;
-                    pl(k, k0) = consts_obj.HALF / rhobeg;
-                    pl(ih, k0) = consts_obj.ONE / rhosq;
+                    pl(ih, 1) = -2.0 / rhosq;
+                    pl(k, k0) = 0.5 / rhobeg;
+                    pl(ih, k0) = 1.0 / rhosq;
                 end
-                pl(k, k1) = -consts_obj.HALF / rhobeg;
-                pl(ih, k1) = consts_obj.ONE / rhosq;
+                pl(k, k1) = -0.5 / rhobeg;
+                pl(ih, k1) = 1.0 / rhosq;
             end
 
             % Form the off-diagonal second derivatives of the Lagrange functions.
@@ -382,7 +340,7 @@ classdef initialize_uobyqa_mod
                 end
 
                 % Find the (IQ, IP) entry of the Hessian.
-                temp = consts_obj.ONE / (xpt(ip, k) * xpt(iq, k));
+                temp = 1.0 / (xpt(ip, k) * xpt(iq, k));
                 ih = n + (iq - 1) * iq / 2 + ip;
 
                 pl(ih, 1) = temp;
@@ -406,10 +364,10 @@ classdef initialize_uobyqa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 2
-                if any(infnan_obj.is_nan_sp(pl), 'all')
-                    info = infos_obj.NAN_INF_MODEL;
+                if any(isnan(pl), 'all')
+                    info = -3;
                 else
-                    info = infos_obj.INFO_DFT;
+                    info = 0;
                 end
             end
 
@@ -418,9 +376,7 @@ classdef initialize_uobyqa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, "SIZE(PL) == [NPT - 1, NPT]", srname);
-            end
+
 
         end
 

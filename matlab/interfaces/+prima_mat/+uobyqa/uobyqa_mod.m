@@ -146,17 +146,15 @@ classdef uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
 
 
-            debug_obj = prima_mat.common.debug_mod();
+
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            memory_obj = prima_mat.common.memory_mod();
+
 
             preproc_obj = prima_mat.common.preproc_mod();
-            string_obj = prima_mat.common.string_mod();
+
 
             % Solver-specific modules
             uobyqb_obj = prima_mat.uobyqa.uobyqb_mod();
@@ -179,7 +177,7 @@ classdef uobyqa_mod
 
             % Local variables
             solver = "UOBYQA";
-            srname = "UOBYQA";
+
             info_loc = NaN;
 
 
@@ -198,7 +196,9 @@ classdef uobyqa_mod
             % Sizes
             n = numel(x);
             npt = (n + 1) * (n + 2) / 2;
-            debug_obj.validate(npt > 0, "NPT > 0", srname); % Validate that NPT does not overflow.
+            if ~(npt > 0)
+                error("NPT > 0");
+            end % Validate that NPT does not overflow.
 
             % Replace any NaN in X by ZERO and Inf/-Inf in X by REALMAX/-REALMAX.
             x(:) = evaluate_obj.moderatex(x);
@@ -213,13 +213,13 @@ classdef uobyqa_mod
             addParameter(ipObj, 'nf', NaN);
             addParameter(ipObj, 'rhobeg', NaN);
             addParameter(ipObj, 'rhoend', NaN);
-            addParameter(ipObj, 'ftarget', NaN);
+            addParameter(ipObj, 'ftarget', -realmax);
             addParameter(ipObj, 'maxfun', NaN);
-            addParameter(ipObj, 'iprint', NaN);
+            addParameter(ipObj, 'iprint', 0);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
-            addParameter(ipObj, 'gamma1', NaN);
-            addParameter(ipObj, 'gamma2', NaN);
+            addParameter(ipObj, 'gamma1', 0.5);
+            addParameter(ipObj, 'gamma2', 2.0);
             addParameter(ipObj, 'xhist', NaN);
             addParameter(ipObj, 'fhist', NaN);
             addParameter(ipObj, 'maxhist', NaN);
@@ -230,13 +230,13 @@ classdef uobyqa_mod
 
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
-            ftarget = ipObj.Results.ftarget;
+            ftarget_loc = ipObj.Results.ftarget;
             maxfun = ipObj.Results.maxfun;
-            iprint = ipObj.Results.iprint;
+            iprint_loc = ipObj.Results.iprint;
             eta1 = ipObj.Results.eta1;
             eta2 = ipObj.Results.eta2;
-            gamma1 = ipObj.Results.gamma1;
-            gamma2 = ipObj.Results.gamma2;
+            gamma1_loc = ipObj.Results.gamma1;
+            gamma2_loc = ipObj.Results.gamma2;
             xhist = ipObj.Results.xhist;
             fhist = ipObj.Results.fhist;
             maxhist = ipObj.Results.maxhist;
@@ -249,73 +249,52 @@ classdef uobyqa_mod
                 % combine the evaluation of PRESENT(RHOEND) and the evaluation of IS_FINITE(RHOEND) as
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
-                if infnan_obj.is_finite(rhoend) && rhoend > 0
-                    rhobeg_loc = max(consts_obj.TEN * rhoend, consts_obj.RHOBEG_DFT);
+                if isfinite(rhoend) && rhoend > 0
+                    rhobeg_loc = max(10.0 * rhoend, 1.0);
                 else
-                    rhobeg_loc = consts_obj.RHOBEG_DFT;
+                    rhobeg_loc = 1.0;
                 end
             else
-                rhobeg_loc = consts_obj.RHOBEG_DFT;
+                rhobeg_loc = 1.0;
             end
 
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(consts_obj.EPS, min((consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT) * rhobeg_loc, consts_obj.RHOEND_DFT));
+                rhoend_loc = max(eps(1.0), min((1.0e-6 / 1.0) * rhobeg_loc, 1.0e-6));
             else
-                rhoend_loc = consts_obj.RHOEND_DFT;
+                rhoend_loc = 1.0e-6;
             end
 
-            if ismember('ftarget', ipObj.UsingDefaults)
-                ftarget_loc = consts_obj.FTARGET_DFT;
-            else
-                ftarget_loc = ftarget;
-            end
 
             if ismember('maxfun', ipObj.UsingDefaults)
-                maxfun_loc = max(consts_obj.MAXFUN_DIM_DFT * n, npt + 1);
+                maxfun_loc = max(500 * n, npt + 1);
             else
                 maxfun_loc = maxfun;
             end
 
-            if ismember('iprint', ipObj.UsingDefaults)
-                iprint_loc = consts_obj.IPRINT_DFT;
-            else
-                iprint_loc = iprint;
-            end
 
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
             elseif ~ismember('eta2', ipObj.UsingDefaults)
                 if eta2 > 0 && eta2 < 1
-                    eta1_loc = max(consts_obj.EPS, eta2 / 7.0);
+                    eta1_loc = max(eps(1.0), eta2 / 7.0);
                 end
             else
-                eta1_loc = consts_obj.TENTH;
+                eta1_loc = 0.1;
             end
 
             if ~ismember('eta2', ipObj.UsingDefaults)
                 eta2_loc = eta2;
             elseif eta1_loc > 0 && eta1_loc < 1
-                eta2_loc = (eta1_loc + consts_obj.TWO) / 3.0;
+                eta2_loc = (eta1_loc + 2.0) / 3.0;
             else
                 eta2_loc = 0.7;
             end
 
-            if ismember('gamma1', ipObj.UsingDefaults)
-                gamma1_loc = consts_obj.HALF;
-            else
-                gamma1_loc = gamma1;
-            end
-
-            if ismember('gamma2', ipObj.UsingDefaults)
-                gamma2_loc = consts_obj.TWO;
-            else
-                gamma2_loc = gamma2;
-            end
 
             if ismember('maxhist', ipObj.UsingDefaults)
-                maxhist_loc = max([maxfun_loc, npt + 1, consts_obj.MAXFUN_DIM_DFT * n], [], 'all');
+                maxhist_loc = max([maxfun_loc, npt + 1, 500 * n], [], 'all');
             else
                 maxhist_loc = maxhist;
             end
@@ -347,7 +326,7 @@ classdef uobyqa_mod
             if nargout >= 4
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                xhist = memory_obj.alloc_rmatrix_sp(n, nhist); % Removable in F2003.
+                xhist = NaN(n, nhist); % Removable in F2003.
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -371,7 +350,7 @@ classdef uobyqa_mod
             if nargout >= 5
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                fhist = memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
+                fhist = NaN(nhist, 1); % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
@@ -380,24 +359,10 @@ classdef uobyqa_mod
 
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
             if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
-                debug_obj.warning(solver, "Only the history of the last " + string_obj.int2str(maxhist_loc) + " function evaluation(s) is recorded");
             end
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(nf_loc <= maxfun_loc, "NF <= MAXFUN", srname);
-                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), "SIZE(X) == N, X does not contain NaN", srname);
-                nhist = min(nf_loc, maxhist_loc);
-                if nargout >= 4
-                    debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == nhist, "SIZE(XHIST) == [N, NHIST]", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist), 'all'), "XHIST does not contain NaN", srname);
-                end
-                if nargout >= 5
-                    debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
-                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) | infnan_obj.is_posinf(fhist), 'all'), "FHIST does not contain NaN/+Inf", srname);
-                    debug_obj.assert(~any(fhist < f_loc, 'all'), "F is the smallest in FHIST", srname);
-                end
-            end
+
 
         end
 

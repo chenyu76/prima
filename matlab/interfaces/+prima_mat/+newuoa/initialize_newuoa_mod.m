@@ -36,13 +36,12 @@ classdef initialize_newuoa_mod
 
             % Common modules
             checkexit_obj = prima_mat.common.checkexit_mod();
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
+
+
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            infos_obj = prima_mat.common.infos_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
@@ -68,7 +67,6 @@ classdef initialize_newuoa_mod
 
             % Local variables
             solver = "NEWUOA";
-            srname = "INITXF";
 
 
             evaluated = false(numel(fval), 1);
@@ -78,24 +76,10 @@ classdef initialize_newuoa_mod
             % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
-            maxxhist = size(xhist, 2);
-            maxfhist = numel(fhist);
-            maxhist = max(maxxhist, maxfhist);
+
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(abs(iprint) <= 3, "IPRINT is 0, 1, -1, 2, -2, 3, or -3", srname);
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(maxfun >= npt + 1, "MAXFUN >= NPT + 1", srname);
-                debug_obj.assert(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", srname);
-                debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, "SIZE(FHIST) == 0 or MAXHIST", srname);
-                debug_obj.assert(numel(fval) == npt, "SIZE(FVAL) == NPT", srname);
-                debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
-                debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
-                debug_obj.assert(rhobeg > 0, "RHOBEG > 0", srname);
-                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite(x0), 'all'), "SIZE(X0) == N, X0 is finite", srname);
-                debug_obj.assert(numel(xbase) == n, "SIZE(XBASE) == N", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -103,7 +87,7 @@ classdef initialize_newuoa_mod
 
             % Initialize INFO to the default value. At return, an INFO different from this value will indicate
             % an abnormal return.
-            info = infos_obj.INFO_DFT;
+            info = 0;
 
             % Initialize XBASE to X0.
             xbase(:) = x0;
@@ -119,16 +103,16 @@ classdef initialize_newuoa_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-consts_obj.REALMAX, size(xhist));
-            fhist(:) = consts_obj.REALMAX;
-            fval(:) = consts_obj.REALMAX;
+            xhist = repmat(-realmax, size(xhist));
+            fhist(:) = realmax;
+            fval(:) = realmax;
 
             % Initialize XPT(:, 1: MIN(2*N + 1, NPT)).
-            xpt(:, 1) = consts_obj.ZERO;
-            xpt(:, 2:n + 1) = rhobeg * linalg_obj.eye1(n);
+            xpt(:, 1) = 0.0;
+            xpt(:, 2:n + 1) = rhobeg * eye(n);
             % After the following line, XPT(:, 2*N+2 : NPT) = ZERO if it is nonempty. It will be revised later
             % according to FVAL(2 : 2*N + 1).
-            xpt(:, n + 2:npt) = -rhobeg * linalg_obj.eye2(n, npt - n - 1);
+            xpt(:, n + 2:npt) = -rhobeg * eye(n, npt - n - 1);
 
             % Set FVAL(1 : min(2*N + 1, NPT)) by evaluating F. Totally parallelizable except for FMSG.
             for k = 1:min(npt, 2 * n + 1)
@@ -145,7 +129,7 @@ classdef initialize_newuoa_mod
 
                 % Check whether to exit.
                 subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                if subinfo ~= infos_obj.INFO_DFT
+                if subinfo ~= 0
                     info = subinfo;
                     break
                 end
@@ -182,7 +166,7 @@ classdef initialize_newuoa_mod
             xpt(:, 2 * n + 2:npt) = xpt(:, ij(1, :) + 1) + xpt(:, ij(2, :) + 1);
 
             % Set FVAL(2*N + 2 : NPT) by evaluating F. Totally parallelizable except for FMSG.
-            if info == infos_obj.INFO_DFT
+            if info == 0
                 for k = 2 * n + 2:npt
                     x(:) = xpt(:, k) + xbase;
                     f = evaluate_obj.evaluatef(calfun, x);
@@ -197,7 +181,7 @@ classdef initialize_newuoa_mod
 
                     % Check whether to exit.
                     subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                    if subinfo ~= infos_obj.INFO_DFT
+                    if subinfo ~= 0
                         info = subinfo;
                         break
                     end
@@ -214,20 +198,7 @@ classdef initialize_newuoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
-                debug_obj.assert(all(ij >= 1 & ij <= 2 * n, 'all'), "1 <= IJ <= 2*N", srname);
-                debug_obj.assert(all(ij(1, :) ~= ij(2, :), 'all'), "IJ(1, :) /= IJ(:, 2)", srname);
-                debug_obj.assert(nf <= npt, "NF <= NPT", srname);
-                debug_obj.assert(kopt >= 1 && kopt <= nf, "1 <= KOPT <= NF", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), "SIZE(XBASE) == N, XBASE is finite", srname);
-                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(evaluated & (infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval)), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
-                debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", srname);
-                debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
-                debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, "SIZE(XHIST) == [N, MAXXHIST]", srname);
-            end
+
 
         end
         function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, gopt, hq, pq, varargin)
@@ -237,11 +208,7 @@ classdef initialize_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            infos_obj = prima_mat.common.infos_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
 
 
             % Inputs
@@ -256,7 +223,7 @@ classdef initialize_newuoa_mod
             % PQ(NPT)
 
             % Local variables
-            srname = "INITQ";
+
 
 
             % Sizes
@@ -264,17 +231,7 @@ classdef initialize_newuoa_mod
             npt = size(xpt, 2);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(numel(fval) == npt && ~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), 'all'), "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
-                debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
-                debug_obj.assert(all(ij >= 1 & ij <= 2 * n, 'all'), "1 <= IJ <= 2*N", srname);
-                debug_obj.assert(all(ij(1, :) ~= ij(2, :), 'all'), "IJ(1, :) /= IJ(2, :)", srname);
-                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
-                debug_obj.assert(size(hq, 1) == n && size(hq, 2) == n, "SIZE(HQ) = [N, N]", srname);
-                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -292,12 +249,12 @@ classdef initialize_newuoa_mod
             ndiag = min(npt - n - 1, n);
 
             % Revise GOPT(1:NDIAG) to the value provided by the central finite difference.
-            gopt(1:ndiag) = consts_obj.HALF * (gopt(1:ndiag) + (fbase - fval(n + 2:n + 1 + ndiag)) ./ rhobeg);
+            gopt(1:ndiag) = 0.5 * (gopt(1:ndiag) + (fbase - fval(n + 2:n + 1 + ndiag)) ./ rhobeg);
 
             % Set the diagonal of HQ by the 2nd-order central finite difference. If we do this before the
             % revision of GOPT(1:NDIAG), we can avoid the calculation of FVAL(K + 1) - FBASE) / RHOBEG. But we
             % prefer to decouple the initialization of GOPT and HQ. We are not concerned by this amount of flops.
-            hq = repmat(consts_obj.ZERO, size(hq));
+            hq = zeros(size(hq));
             for k = 1:ndiag
                 hq(k, k) = ((fval(k + 1) - fbase) / rhobeg - (fbase - fval(k + n + 1)) / rhobeg) / rhobeg;
             end
@@ -324,22 +281,22 @@ classdef initialize_newuoa_mod
                 hq(j, i) = hq(i, j);
             end
 
-            kopt = fortran.minloc(fval, 'dim', 1);
+            [~, kopt] = min(fval);
             if kopt ~= 1
-                gopt(:) = gopt + linalg_obj.matprod21(hq, xpt(:, kopt));
+                gopt(:) = gopt + hq * xpt(:, kopt);
             end
 
-            pq(:) = consts_obj.ZERO;
+            pq(:) = 0.0;
 
             ipObj = inputParser();
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 4
-                if any(infnan_obj.is_nan_sp(gopt), 'all') || any(infnan_obj.is_nan_sp(hq), 'all')
-                    info = infos_obj.NAN_INF_MODEL;
+                if any(isnan(gopt), 'all') || any(isnan(hq), 'all')
+                    info = -3;
                 else
-                    info = infos_obj.INFO_DFT;
+                    info = 0;
                 end
             end
 
@@ -348,11 +305,7 @@ classdef initialize_newuoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
-                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), "HQ is an NxN symmetric matrix", srname);
-                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
-            end
+
 
         end
         function [idz, bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat, varargin)
@@ -362,11 +315,9 @@ classdef initialize_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Common modules
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            infnan_obj = prima_mat.common.infnan_mod();
-            infos_obj = prima_mat.common.infos_mod();
-            linalg_obj = prima_mat.common.linalg_mod();
+
+
+
             %use, non_intrinsic :: powalg_mod, only : errh
 
 
@@ -383,7 +334,7 @@ classdef initialize_newuoa_mod
             % ZMAT(NPT, NPT - N - 1)
 
             % Local variables
-            srname = "INITH";
+
 
 
             % Sizes
@@ -391,15 +342,7 @@ classdef initialize_newuoa_mod
             npt = size(xpt, 2);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
-                debug_obj.assert(all(ij >= 1 & ij <= 2 * n, 'all'), "1 <= IJ <= 2*N", srname);
-                debug_obj.assert(all(ij(1, :) ~= ij(2, :), 'all'), "IJ(1, :) /= IJ(2, :)", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
-                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT)==[N, NPT+N]", srname);
-                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-            end
+
 
             %====================%
             % Calculation starts %
@@ -409,38 +352,38 @@ classdef initialize_newuoa_mod
             rhosq = rhobeg ^ 2;
 
             % Set BMAT.
-            recip = consts_obj.ONE / rhobeg;
-            reciq = consts_obj.HALF / rhobeg;
-            bmat = repmat(consts_obj.ZERO, size(bmat));
+            recip = 1.0 / rhobeg;
+            reciq = 0.5 / rhobeg;
+            bmat = zeros(size(bmat));
             if npt <= 2 * n + 1
                 % Set BMAT(1 : NPT-N-1, :)
-                bmat(1:npt - n - 1, 2:npt - n) = reciq * linalg_obj.eye1(npt - n - 1);
-                bmat(1:npt - n - 1, n + 2:npt) = -reciq * linalg_obj.eye1(npt - n - 1);
+                bmat(1:npt - n - 1, 2:npt - n) = reciq * eye(npt - n - 1);
+                bmat(1:npt - n - 1, n + 2:npt) = -reciq * eye(npt - n - 1);
                 % Set BMAT(NPT-N : N, :)
                 bmat(npt - n:n, 1) = -recip;
-                bmat(npt - n:n, npt - n + 1:n + 1) = recip * linalg_obj.eye1(2 * n - npt + 1);
-                bmat(npt - n:n, 2 * npt - n:npt + n) = -(consts_obj.HALF * rhosq) * linalg_obj.eye1(2 * n - npt + 1);
+                bmat(npt - n:n, npt - n + 1:n + 1) = recip * eye(2 * n - npt + 1);
+                bmat(npt - n:n, 2 * npt - n:npt + n) = -(0.5 * rhosq) * eye(2 * n - npt + 1);
             else
-                bmat(:, 2:n + 1) = reciq * linalg_obj.eye1(n);
-                bmat(:, n + 2:2 * n + 1) = -reciq * linalg_obj.eye1(n);
+                bmat(:, 2:n + 1) = reciq * eye(n);
+                bmat(:, n + 2:2 * n + 1) = -reciq * eye(n);
             end
 
             % Set ZMAT.
-            recip = consts_obj.ONE / rhosq;
-            reciq = sqrt(consts_obj.HALF) / rhosq;
-            zmat = repmat(consts_obj.ZERO, size(zmat));
+            recip = 1.0 / rhosq;
+            reciq = sqrt(0.5) / rhosq;
+            zmat = zeros(size(zmat));
             if npt <= 2 * n + 1
                 zmat(1, :) = -reciq - reciq;
-                zmat(2:npt - n, :) = reciq * linalg_obj.eye1(npt - n - 1);
-                zmat(n + 2:npt, :) = reciq * linalg_obj.eye1(npt - n - 1);
+                zmat(2:npt - n, :) = reciq * eye(npt - n - 1);
+                zmat(n + 2:npt, :) = reciq * eye(npt - n - 1);
             else
                 % Set ZMAT(:, 1:N).
                 zmat(1, 1:n) = -reciq - reciq;
-                zmat(2:n + 1, 1:n) = reciq * linalg_obj.eye1(n);
-                zmat(n + 2:2 * n + 1, 1:n) = reciq * linalg_obj.eye1(n);
+                zmat(2:n + 1, 1:n) = reciq * eye(n);
+                zmat(n + 2:2 * n + 1, 1:n) = reciq * eye(n);
                 % Set ZMAT(:, N+1 : NPT-N-1).
                 zmat(1, n + 1:npt - n - 1) = recip;
-                zmat(2 * n + 2:npt, n + 1:npt - n - 1) = recip * linalg_obj.eye1(npt - 2 * n - 1);
+                zmat(2 * n + 2:npt, n + 1:npt - n - 1) = recip * eye(npt - 2 * n - 1);
                 for k = 1:npt - 2 * n - 1
                     zmat(ij(:, k) + 1, k + n) = -recip;
                 end
@@ -454,10 +397,10 @@ classdef initialize_newuoa_mod
             parse(ipObj, varargin{:});
             info = ipObj.Results.info;
             if nargout >= 4
-                if any(infnan_obj.is_nan_sp(bmat), 'all') || any(infnan_obj.is_nan_sp(zmat), 'all')
-                    info = infos_obj.NAN_INF_MODEL;
+                if any(isnan(bmat), 'all') || any(isnan(zmat), 'all')
+                    info = -3;
                 else
-                    info = infos_obj.INFO_DFT;
+                    info = 0;
                 end
             end
 
@@ -466,15 +409,7 @@ classdef initialize_newuoa_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                debug_obj.assert(idz >= 1 && idz <= size(zmat, 2) + 1, "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
-                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, "SIZE(BMAT)==[N, NPT+N]", srname);
-                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
-                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-                %call assert(errh(idz, bmat, zmat, xpt) <= max(1.0E-3_RP, 1.0E2_RP * real(npt, RP) * EPS), &
-                %    & '[IDZ, BMA, ZMAT] represents H = W^{-1}', srname)
 
-            end
 
         end
 

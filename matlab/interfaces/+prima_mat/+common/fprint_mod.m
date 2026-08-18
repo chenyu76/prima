@@ -17,9 +17,7 @@ classdef fprint_mod
 
     methods
         function fprint(~, string, varargin)
-            consts_obj = prima_mat.common.consts_mod();
-            debug_obj = prima_mat.common.debug_mod();
-            string_obj = prima_mat.common.string_mod();
+
 
             % Inputs
 
@@ -27,7 +25,6 @@ classdef fprint_mod
 
             % Local variables
             newline_custom = newline;
-            srname = "FPRINT";
 
 
             fexist = false;
@@ -41,17 +38,7 @@ classdef fprint_mod
             funit = ipObj.Results.funit;
             fname = ipObj.Results.fname;
             faction = ipObj.Results.faction;
-            if consts_obj.DEBUGGING
-                if ~ismember('funit', ipObj.UsingDefaults)
-                    debug_obj.assert(funit ~= consts_obj.STDIN, "The file unit is not STDIN", srname);
-                    if ~ismember('fname', ipObj.UsingDefaults)
-                        debug_obj.assert((strlength(fname) == 0) == (funit == consts_obj.STDOUT || funit == consts_obj.STDERR), "The file name is empty if and only if the file unit is either STDOUT or STDERR", srname);
-                    end
-                end
-                if ~ismember('faction', ipObj.UsingDefaults)
-                    debug_obj.assert(faction == "write" || faction == "w" || faction == "append" || faction == "a", "FACTION is either ""write (w)"" or ""append (a)""", srname);
-                end
-            end
+
 
             %====================%
             % Calculation starts %
@@ -60,7 +47,7 @@ classdef fprint_mod
             % Decide the file storage unit.
             if ismember('funit', ipObj.UsingDefaults)
                 if ismember('fname', ipObj.UsingDefaults)
-                    funit_loc = consts_obj.STDOUT; % Print the message to the standard out.
+                    funit_loc = 1; % Print the message to the standard out.
                 else
                     funit_loc = -1; % This value will not be used.
 
@@ -72,15 +59,12 @@ classdef fprint_mod
             % Decide the file name.
             if ~ismember('fname', ipObj.UsingDefaults)
                 fname_loc = fname;
-            elseif funit_loc ~= consts_obj.STDOUT && funit_loc ~= consts_obj.STDERR
-                fname_loc = "fort." + string_obj.int2str(funit_loc);
+            elseif funit_loc ~= 1 && funit_loc ~= 2
+                fname_loc = "fort." + int2str(funit_loc);
             else
                 fname_loc = "";
             end
 
-            if consts_obj.DEBUGGING
-                debug_obj.assert((strlength(fname_loc) == 0) == (funit_loc == consts_obj.STDOUT || funit_loc == consts_obj.STDERR), "The file name is empty if and only if the file unit is either STDOUT or STDERR", srname);
-            end
 
             % Open the file if necessary.
             iostat = 0;
@@ -94,7 +78,7 @@ classdef fprint_mod
                     case {"append", "a"}
 
                     otherwise
-                        debug_obj.warning(srname, "Unknown file action """ + faction + """");
+
                     end
                 end
                 % Check whether the file is already existing.
@@ -105,7 +89,6 @@ classdef fprint_mod
                 funit_loc = fopen(fname_loc, 'w');
 
                 if iostat ~= 0
-                    debug_obj.warning(srname, "Failed to open file " + fname_loc);
                     return
                 end
             end
