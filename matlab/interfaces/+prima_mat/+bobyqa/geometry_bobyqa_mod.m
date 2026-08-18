@@ -30,14 +30,9 @@ classdef geometry_bobyqa_mod
             % landscape of the function sufficiently.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-
-            % Inputs
 
 
             % BMAT(N, NPT + N)
@@ -47,21 +42,11 @@ classdef geometry_bobyqa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
-            % Outputs
+
             knew = NaN;
-
-            % Local variables
-
 
 
             distsq = NaN(size(xpt, 2), 1);
-
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -146,7 +131,6 @@ classdef geometry_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -169,14 +153,9 @@ classdef geometry_bobyqa_mod
             %   is a bound-constrained version of the Cauchy step within the trust region.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-
-            % Inputs
 
 
             % BMAT(N, NPT + N)
@@ -186,10 +165,9 @@ classdef geometry_bobyqa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT-N-1)
 
-            % Outputs
+
             d = NaN(size(xpt, 1), 1); % D(N)
 
-            % Local variables
 
 
             ilbd = NaN;
@@ -239,11 +217,9 @@ classdef geometry_bobyqa_mod
             xopt = NaN(size(xpt, 1), 1);
             xtemp = NaN(size(xpt, 1), 1);
 
-            % Sizes.
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -554,7 +530,6 @@ classdef geometry_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

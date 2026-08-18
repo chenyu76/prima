@@ -55,20 +55,16 @@ classdef trustregion_cobyla_mod
             % 3. There are probably better algorithms available for the trust-region linear programming problem.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
 
-
-            % Inputs
             % A(N, M)
             % B(M)
 
             % G(N)
 
-            % Outputs
+
             d = NaN(size(A, 1), 1); % D(N)
 
-            % Local variables
 
 
             iact = NaN(numel(b) + 1, 1);
@@ -81,11 +77,9 @@ classdef trustregion_cobyla_mod
             vmultc = NaN(numel(b) + 1, 1);
             z = NaN(numel(d));
 
-            % Sizes
+
             m = size(A, 2);
             n = size(A, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -119,7 +113,7 @@ classdef trustregion_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function [iact, nact, d, vmultc, z] = trstlp_sub(~, iact, nact, stage, A, b, delta, d, vmultc, z)
@@ -134,27 +128,22 @@ classdef trustregion_cobyla_mod
             % 5. STEP. STEP <= CVIOL in stage 1.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % Inputs
 
             % A(N, MCON)
             % B(M)
 
 
-            % In-outputs
+
             % IACT(MCON)
 
             % D(N)
             % VMULTC(MCON)
             % Z(N, N)
-
-            % Local variables
 
 
 
@@ -180,11 +169,9 @@ classdef trustregion_cobyla_mod
             zdasav = NaN(size(z, 2), 1);
             zdota = NaN(size(z, 2), 1);
 
-            % Sizes
+
             mcon = size(A, 2);
             n = size(A, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -526,7 +513,6 @@ classdef trustregion_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -548,13 +534,8 @@ classdef trustregion_cobyla_mod
             % Expansion factor
             % Reduction ratio
 
-            % Outputs
+
             delta = NaN;
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -591,7 +572,6 @@ classdef trustregion_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

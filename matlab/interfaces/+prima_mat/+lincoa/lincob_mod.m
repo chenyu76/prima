@@ -85,7 +85,6 @@ classdef lincob_mod
             update_lincoa_obj = prima_mat.lincoa.update_lincoa_mod();
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
@@ -99,10 +98,8 @@ classdef lincob_mod
 
 
 
-            % In-outputs
             % X(N)
 
-            % Outputs
 
 
             % CHIST(MAXCHIST)
@@ -111,7 +108,7 @@ classdef lincob_mod
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "LINCOA";
 
             iact = NaN(numel(bvec), 1);
@@ -168,12 +165,9 @@ classdef lincob_mod
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
-            % Sizes.
+
             m = numel(bvec);
             n = numel(x);
-
-
-            % Preconditions
 
 
             %====================%
@@ -257,7 +251,7 @@ classdef lincob_mod
                 message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, 'constr', constr);
                 % Arrange CHIST, FHIST, and XHIST so that they are in the chronological order.
                 [xhist, fhist, chist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist);
-                % Postconditions
+
 
                 return
             end
@@ -663,7 +657,6 @@ classdef lincob_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

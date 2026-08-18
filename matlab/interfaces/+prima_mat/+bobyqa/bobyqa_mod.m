@@ -184,8 +184,6 @@ classdef bobyqa_mod
             %   %--------------------------------------------------------------------------%
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             evaluate_obj = prima_mat.common.evaluate_mod();
@@ -217,7 +215,7 @@ classdef bobyqa_mod
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "BOBYQA";
 
 
@@ -234,10 +232,10 @@ classdef bobyqa_mod
             % FHIST_LOC(MAXFHIST)
             % XHIST_LOC(N, MAXXHIST)
 
-            % Sizes
+
             n = numel(x);
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'f', NaN);
             addParameter(ipObj, 'xl', NaN);
@@ -457,8 +455,6 @@ classdef bobyqa_mod
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
             end
-
-            % Postconditions
 
 
         end

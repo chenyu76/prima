@@ -245,8 +245,6 @@ classdef cobyla_mod
             %   %--------------------------------------------------------------------------%
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             evaluate_obj = prima_mat.common.evaluate_mod();
@@ -290,7 +288,7 @@ classdef cobyla_mod
             % NLCHIST(M_NLCON, MAXCONHIST)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "COBYLA";
 
             info_loc = NaN;
@@ -321,7 +319,7 @@ classdef cobyla_mod
             % FHIST_LOC(MAXFHIST)
             % XHIST_LOC(N, MAXXHIST)
 
-            % Sizes
+
             ipObj = inputParser();
             addParameter(ipObj, 'f', NaN);
             addParameter(ipObj, 'cstrv', NaN);
@@ -408,9 +406,6 @@ classdef cobyla_mod
             end
             m = mxu + mxl + 2 * meq + mineq + m_nlcon;
             n = numel(x);
-
-
-            % Preconditions
 
 
             % Exit if the size of NLCONSTR0 is inconsistent with M_NLCON.
@@ -655,8 +650,6 @@ classdef cobyla_mod
             if (nargout >= 6 || nargout >= 7 || nargout >= 8 || nargout >= 9) && maxhist_loc < nf_loc
             end
 
-            % Postconditions
-
 
         end
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu, amat, bvec)
@@ -672,28 +665,12 @@ classdef cobyla_mod
             % However, COBYLA does not do this.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
-
-
-            % Inputs
-
-
-
-            % Outputs
-
-
-
-            % Local variables
-
 
 
             idmat = NaN(numel(xl));
 
-            % Sizes
-            n = numel(xl);
 
-            % Preconditions
+            n = numel(xl);
 
 
             %====================%
@@ -737,7 +714,7 @@ classdef cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

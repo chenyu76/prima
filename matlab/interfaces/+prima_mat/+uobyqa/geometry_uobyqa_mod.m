@@ -30,14 +30,9 @@ classdef geometry_uobyqa_mod
             % landscape of the function sufficiently.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-
-            % Inputs
 
 
             % D(N)
@@ -45,23 +40,13 @@ classdef geometry_uobyqa_mod
 
             % XPT(N, NPT)
 
-            % Outputs
+
             knew = NaN;
-
-            % Local variables
-
 
 
             distsq = NaN(size(xpt, 2), 1);
 
             vlag = NaN(size(xpt, 2), 1);
-
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -146,7 +131,6 @@ classdef geometry_uobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -171,25 +155,18 @@ classdef geometry_uobyqa_mod
             % N.B.: In Powell's UOBYQA code, DELBAR = RHO. We take the DELBAR of NEWUOA, which works better.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
 
-            % Inputs
-
-
-
             % PL(NPT-1, NPT)
             % XPT(N, NPT)
 
-            % Outputs
+
             d = NaN(size(xpt, 1), 1); % D(N)
 
-            % Local variables
 
 
             dcauchy = NaN(size(xpt, 1), 1);
@@ -208,11 +185,9 @@ classdef geometry_uobyqa_mod
 
             xopt = NaN(size(xpt, 1), 1);
 
-            % Sizes.
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions.
 
 
             %====================%
@@ -397,7 +372,7 @@ classdef geometry_uobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

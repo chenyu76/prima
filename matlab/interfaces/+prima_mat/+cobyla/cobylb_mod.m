@@ -30,7 +30,7 @@ classdef cobylb_mod
             % arguments in subroutine COBYLA.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
+
             checkexit_obj = prima_mat.common.checkexit_mod();
 
 
@@ -51,7 +51,6 @@ classdef cobylb_mod
             update_cobyla_obj = prima_mat.cobyla.update_cobyla_mod();
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
@@ -61,13 +60,11 @@ classdef cobylb_mod
 
 
 
-            % In-outputs
             % On entry, [X, F, CONSTR] = [X0, F(X0), CONSTR(X0)]
             % CONSTR(M)
 
             % X(N)
 
-            % Outputs
 
 
             % CHIST(MAXCHIST)
@@ -76,7 +73,7 @@ classdef cobylb_mod
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "COBYLA";
 
             j = NaN;
@@ -126,13 +123,10 @@ classdef cobylb_mod
             % to PREREC in this case, which is crucial for feasibility problems.
             cpenmin = eps(1.0);
 
-            % Sizes
+
             m_lcon = numel(bvec);
             m = numel(constr);
             n = numel(x);
-
-
-            % Preconditions
 
 
             %====================%
@@ -180,7 +174,7 @@ classdef cobylb_mod
                 [xhist, fhist, chist, conhist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist, 'conhist', conhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, 'constr', constr);
-                % Postconditions
+
 
                 return
             end
@@ -619,7 +613,6 @@ classdef cobylb_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -629,8 +622,6 @@ classdef cobylb_mod
             % See the discussions around equation (9) of the COBYLA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             % Solver-specific modules
@@ -638,15 +629,7 @@ classdef cobylb_mod
             update_cobyla_obj = prima_mat.cobyla.update_cobyla_mod();
 
 
-            % Inputs
-
-
-
-            % Outputs
             cpen = NaN;
-
-            % Local variables
-
 
 
             A = NaN(size(sim_in, 1), size(conmat_in, 1));
@@ -661,12 +644,9 @@ classdef cobylb_mod
             simi = NaN(size(simi_in, 1), size(simi_in, 2));
 
 
-            % Sizes
             m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(sim, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -738,7 +718,7 @@ classdef cobylb_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function r = fcratio(~, conmat, fval)
@@ -749,19 +729,15 @@ classdef cobylb_mod
 
 
 
-            % Inputs
             % CONMAT(M, N+1)
             % FVAL(N+1)
 
-            % Outputs
+
             r = NaN;
 
-            % Local variables
+
             cmax = NaN(size(conmat, 1), 1);
             cmin = NaN(size(conmat, 1), 1);
-
-
-            % Preconditions
 
 
             %====================%
@@ -788,7 +764,7 @@ classdef cobylb_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

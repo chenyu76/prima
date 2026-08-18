@@ -32,7 +32,7 @@ classdef initialize_lincoa_mod
             % INFO = NAN_INF_F: return because F is either NaN or +Inf
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
+
             checkexit_obj = prima_mat.common.checkexit_mod();
 
 
@@ -45,7 +45,6 @@ classdef initialize_lincoa_mod
             powalg_obj = prima_mat.common.powalg_mod();
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
@@ -61,10 +60,10 @@ classdef initialize_lincoa_mod
             % XU(N)
             % X0(N)
 
-            % In-outputs
+
             % B(M)
 
-            % Outputs
+
 
             % IJ(2, MAX(0_IK, NPT-2*N-1))
 
@@ -78,7 +77,7 @@ classdef initialize_lincoa_mod
             % XHIST(N, MAXXHIST)
             % XPT(N, NPT)
 
-            % Local variables
+
             solver = "LINCOA";
 
 
@@ -89,13 +88,9 @@ classdef initialize_lincoa_mod
 
             x = NaN(numel(x0), 1);
 
-            % Sizes.
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-
-            % Preconditions
 
 
             %====================%
@@ -217,7 +212,6 @@ classdef initialize_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -226,34 +220,27 @@ classdef initialize_lincoa_mod
             % This subroutine initializes [IDZ, BMAT, ZMAT] which represents the matrix H in (3.12) of the
             % NEWUOA paper (see also (2.7) of the BOBYQA paper).
             %--------------------------------------------------------------------------------------------------%
-            % Common modules
 
 
 
             %use, non_intrinsic :: powalg_mod, only : errh
 
 
-            % Inputs
+
             % IJ(2, MAX(0_IK, NPT - 2_IK * N - 1_IK))
             % XPT(N, NPT)
             % N.B.: XPT is essentially only used for debugging, to test the error in the initial H. The initial
             % ZMAT and BMAT are completely defined by RHOBEG and IJ.
 
-            % Outputs
 
 
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
 
-            % Local variables
 
 
-
-            % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -320,7 +307,6 @@ classdef initialize_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

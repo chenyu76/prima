@@ -19,17 +19,12 @@ classdef fprint_mod
         function fprint(~, string, varargin)
 
 
-            % Inputs
-
-
-
-            % Local variables
             newline_custom = newline;
 
 
             fexist = false;
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'funit', NaN);
             addParameter(ipObj, 'fname', "");

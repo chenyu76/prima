@@ -23,11 +23,7 @@ classdef geometry_cobyla_mod
             % Note that UPDATEXFC should be revised accordingly.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
-
-
-            % Inputs
 
             % D(N)
 
@@ -35,10 +31,8 @@ classdef geometry_cobyla_mod
             % SIM(N, N+1)
             % SIMI(N, N)
 
-            % Outputs
-            jdrop = NaN;
 
-            % Local variables
+            jdrop = NaN;
 
 
             distsq = NaN(size(sim, 2), 1);
@@ -50,10 +44,8 @@ classdef geometry_cobyla_mod
             %real(RP) :: vsig(size(sim, 1))
 
 
-            % Sizes
-            n = size(sim, 1);
 
-            % Preconditions
+            n = size(sim, 1);
 
 
             %====================%
@@ -169,7 +161,6 @@ classdef geometry_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -178,12 +169,6 @@ classdef geometry_cobyla_mod
             % This function calculates a geometry step so that the geometry of the interpolation set is improved
             % when SIM(:, JDRO_GEO) is replaced with SIM(:, N+1) + D. See (15)--(17) of the COBYLA paper.
             %--------------------------------------------------------------------------------------------------%
-
-            % Common modules
-
-
-
-            % Inputs
 
 
 
@@ -194,10 +179,8 @@ classdef geometry_cobyla_mod
             % FVAL(N+1)
             % SIMI(N, N)
 
-            % Outputs
-            d = NaN(size(simi, 1), 1); % D(N)
 
-            % Local variables
+            d = NaN(size(simi, 1), 1); % D(N)
 
 
 
@@ -206,12 +189,10 @@ classdef geometry_cobyla_mod
 
             g = NaN(size(simi, 1), 1);
 
-            % Sizes
+
             m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(simi, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -245,7 +226,7 @@ classdef geometry_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

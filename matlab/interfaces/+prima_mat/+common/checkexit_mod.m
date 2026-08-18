@@ -23,21 +23,9 @@ classdef checkexit_mod
             % This module checks whether to exit the solver in the unconstrained case.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
 
-
-            % Inputs
-
-
-
-            % Outputs
             info = NaN;
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -69,7 +57,6 @@ classdef checkexit_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -78,21 +65,9 @@ classdef checkexit_mod
             % This module checks whether to exit the solver in the constrained case.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
 
-
-            % Inputs
-
-
-
-            % Outputs
             info = NaN;
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -124,7 +99,6 @@ classdef checkexit_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

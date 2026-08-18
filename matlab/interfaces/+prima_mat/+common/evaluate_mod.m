@@ -24,9 +24,6 @@ classdef evaluate_mod
 
 
 
-            % Inputs
-
-            % Outputs
             y = NaN(numel(x), 1);
 
             y(:) = x;
@@ -39,11 +36,6 @@ classdef evaluate_mod
             % value above FUNCMAX by FUNCMAX.
             %--------------------------------------------------------------------------------------------------%
 
-
-
-            % Inputs
-
-            % Outputs
 
 
             y = f;
@@ -63,9 +55,6 @@ classdef evaluate_mod
 
 
 
-            % Inputs
-
-            % Outputs
             y = NaN(numel(c), 1);
 
             y(:) = c;
@@ -77,21 +66,14 @@ classdef evaluate_mod
             % This function evaluates CALFUN at X, setting F to the objective function value. Nan/Inf are
             % handled by a moderated extreme barrier.
             %--------------------------------------------------------------------------------------------------%
-            % Common modules
 
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
             % Output
 
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -115,7 +97,6 @@ classdef evaluate_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -124,22 +105,11 @@ classdef evaluate_mod
             % This function evaluates CALCFC at X, setting F to the objective function value and CONSTR to the
             % constraint value. Nan/Inf are handled by a moderated extreme barrier.
             %--------------------------------------------------------------------------------------------------%
-            % Common modules
 
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
-
-            % Outputs
-
-
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -164,7 +134,6 @@ classdef evaluate_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

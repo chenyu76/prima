@@ -153,8 +153,6 @@ classdef newuoa_mod
             %   %--------------------------------------------------------------------------%
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             evaluate_obj = prima_mat.common.evaluate_mod();
@@ -180,7 +178,6 @@ classdef newuoa_mod
 
 
 
-            % Local variables
             solver = "NEWUOA";
 
             info_loc = NaN;
@@ -194,7 +191,6 @@ classdef newuoa_mod
             f_loc = NaN;
 
 
-            % Sizes
             n = numel(x);
 
             % Replace any NaN in X by ZERO and Inf/-Inf in X by REALMAX/-REALMAX.
@@ -368,8 +364,6 @@ classdef newuoa_mod
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
             if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
             end
-
-            % Postconditions
 
 
         end

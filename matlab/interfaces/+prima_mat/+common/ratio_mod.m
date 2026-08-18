@@ -17,18 +17,10 @@ classdef ratio_mod
 
 
 
-            % Inputs
-
-
             % When RATIO <= RSHRINK, DELTA will be shrunk.
 
-            % Outputs
+
             ratio = NaN;
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -63,7 +55,6 @@ classdef ratio_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

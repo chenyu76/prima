@@ -17,11 +17,7 @@ classdef update_cobyla_mod
             % This subroutine revises the simplex by updating the elements of SIM, SIMI, FVAL, CONMAT, and CVAL.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
-
-
-            % Inputs
 
             % CONSTR(M)
 
@@ -29,17 +25,12 @@ classdef update_cobyla_mod
             % D(N)
 
 
-            % In-outputs
+
             % CONMAT(M, N+1)
             % CVAL(N+1)
             % FVAL(N+1)
             % SIM(N, N+1)
             % SIMI(N, N)
-
-            % Outputs
-
-
-            % Local variables
 
 
 
@@ -51,11 +42,8 @@ classdef update_cobyla_mod
             sum_simi = NaN(size(simi, 2), 1);
             itol = 1.0;
 
-            % Sizes
 
             n = size(sim, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -115,7 +103,7 @@ classdef update_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function [conmat, cval, fval, sim, simi, info] = updatepole(obj, cpen, conmat, cval, fval, sim, simi)
@@ -145,24 +133,13 @@ classdef update_cobyla_mod
             % after each invocation of REDRHO.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
 
-
-            % Inputs
-
-
-            % In-outputs
             % CONMAT(M, N+1)
             % CVAL(N+1)
             % FVAL(N+1)
             % SIM(N, N+1)
             % SIMI(N, N)
-
-            % Outputs
-
-
-            % Local variables
 
 
 
@@ -172,11 +149,8 @@ classdef update_cobyla_mod
             simi_test = NaN(size(simi, 1), size(simi, 2));
             itol = 1.0;
 
-            % Sizes
 
             n = size(sim, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -242,7 +216,6 @@ classdef update_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -252,19 +225,13 @@ classdef update_cobyla_mod
             % function PHI = F + CPEN * CSTRV.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
-
-
-            % Inputs
 
             % CVAL(N+1)
             % FVAL(N+1)
 
-            % Outputs
-            jopt = NaN;
 
-            % Local variables
+            jopt = NaN;
 
 
             phi = NaN(numel(cval), 1);
@@ -272,8 +239,6 @@ classdef update_cobyla_mod
 
             % Size
 
-
-            % Preconditions
 
 
             %====================%
@@ -296,7 +261,7 @@ classdef update_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

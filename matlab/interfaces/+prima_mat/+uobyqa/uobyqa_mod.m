@@ -145,8 +145,6 @@ classdef uobyqa_mod
             %   %--------------------------------------------------------------------------%
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             evaluate_obj = prima_mat.common.evaluate_mod();
@@ -175,7 +173,7 @@ classdef uobyqa_mod
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "UOBYQA";
 
             info_loc = NaN;
@@ -193,7 +191,7 @@ classdef uobyqa_mod
             % XHIST_LOC(N, MAXXHIST)
 
 
-            % Sizes
+
             n = numel(x);
             npt = (n + 1) * (n + 2) / 2;
             if ~(npt > 0)
@@ -360,8 +358,6 @@ classdef uobyqa_mod
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
             if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
             end
-
-            % Postconditions
 
 
         end

@@ -35,7 +35,7 @@ classdef uobyqb_mod
             %   XBASE + XOPT + D is the vector of variables for the next call of CALFUN.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
+
             checkexit_obj = prima_mat.common.checkexit_mod();
 
 
@@ -59,22 +59,18 @@ classdef uobyqb_mod
             update_uobyqa_obj = prima_mat.uobyqa.update_uobyqa_mod();
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
 
-            % In-outputs
             % X(N)
-
-            % Outputs
 
 
 
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "UOBYQA";
 
             k = NaN;
@@ -114,16 +110,13 @@ classdef uobyqb_mod
             pl = NaN;
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
-            % Sizes.
+
             n = numel(x);
             npt = (n + 1) * (n + 2) / 2;
             if ~(npt > 0)
                 error("NPT > 0");
             end % Validate that NPT does not overflow.
 
-
-
-            % Preconditions.
 
 
             %====================%
@@ -175,7 +168,7 @@ classdef uobyqb_mod
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x);
-                % Postconditions
+
 
                 return
             end
@@ -538,7 +531,6 @@ classdef uobyqb_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

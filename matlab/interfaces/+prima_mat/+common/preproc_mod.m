@@ -40,9 +40,6 @@ classdef preproc_mod
 
 
 
-            % Local variables
-
-
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
 
@@ -54,7 +51,7 @@ classdef preproc_mod
 
             x0_in = NaN(n, 1);
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'm', NaN);
             addParameter(ipObj, 'npt', NaN);
@@ -287,15 +284,15 @@ classdef preproc_mod
                     % N.B.: The following revision is valid only if XL <= X0 <= XU and RHOBEG <= MINVAL(XU-XL)/2,
                     % which should hold at this point due to the revision of RHOBEG and moderation of X0.
                     % The cases below are mutually exclusive in precise arithmetic as MINVAL(XU-XL) >= 2*RHOBEG.
-                    mask00 = x0 <= xl + 0.5 * rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
-                    x0(mask00) = xl(mask00); %Unsupported statement inside WHERE block: StatementLineBreak 1
-                    mask01 = ~mask00 & x0 < xl + rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
-                    x0(mask01) = xl(mask01) + rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
+                    mask00 = x0 <= xl + 0.5 * rhobeg;
+                    x0(mask00) = xl(mask00);
+                    mask01 = ~mask00 & x0 < xl + rhobeg;
+                    x0(mask01) = xl(mask01) + rhobeg;
 
-                    mask00 = x0 >= xu - 0.5 * rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
-                    x0(mask00) = xu(mask00); %Unsupported statement inside WHERE block: StatementLineBreak 1
-                    mask01 = ~mask00 & x0 > xu - rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
-                    x0(mask01) = xu(mask01) - rhobeg; %Unsupported statement inside WHERE block: StatementLineBreak 1
+                    mask00 = x0 >= xu - 0.5 * rhobeg;
+                    x0(mask00) = xu(mask00);
+                    mask01 = ~mask00 & x0 > xu - rhobeg;
+                    x0(mask01) = xu(mask01) - rhobeg;
 
                     %%MATLAB code:
                     %%lbx = (x0 <= xl + 0.5 * rhobeg);
@@ -357,7 +354,6 @@ classdef preproc_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

@@ -23,28 +23,18 @@ classdef update_bobyqa_mod
             % column of H are not stored as they are unnecessary for the calculation.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
 
-            % Inputs
-
-
             % D(N)
             % XPT(N, NPT)
 
-            % In-outputs
+
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT-N-1)
-
-            % Outputs
-
-
-            % Local variables
 
 
 
@@ -55,11 +45,9 @@ classdef update_bobyqa_mod
             v2 = NaN(size(bmat, 1), 1);
             vlag = NaN(size(bmat, 2), 1);
 
-            % Sizes.
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -140,7 +128,7 @@ classdef update_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function [kopt, fval, xpt] = updatexf(~, knew, ximproved, f, xnew, kopt, fval, xpt)
@@ -148,30 +136,15 @@ classdef update_bobyqa_mod
             % This subroutine updates [XPT, FVAL, KOPT] so that XPT(:, KNEW) is updated to XNEW.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
-
-
-            % Inputs
 
 
             % XNEW(N)
 
-            % In-outputs
 
 
             % FVAL(NPT)
             % XPT(N, NPT)
 
-            % Local variables
-
-
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -197,7 +170,6 @@ classdef update_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -211,15 +183,10 @@ classdef update_bobyqa_mod
             % after UPDATEXF being called. Indeed, we only need BMAT(:, KNEW) instead of the entire matrix.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
-
-            % Inputs
 
 
             % BMAT(N, NPT + N)
@@ -230,22 +197,14 @@ classdef update_bobyqa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
-            % In-outputs
+
             % GOPT(N)
             % HQ(N, N)
             % PQ(NPT)
 
-            % Local variables
-
 
 
             pqinc = NaN(numel(pq), 1);
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -282,7 +241,6 @@ classdef update_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -294,14 +252,11 @@ classdef update_bobyqa_mod
             % the BOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
 
 
-            % Inputs
             % BMAT(N, NPT+N)
             % FVAL(NPT)
 
@@ -323,8 +278,6 @@ classdef update_bobyqa_mod
             % which is the case for HQ and PQ when ITEST < 3 at exit. In addition, the information in GOPT is
             % needed for defining ITEST, so it must be INTENT(INOUT).
 
-            % Local variables
-
 
 
             galt = NaN(numel(gopt), 1);
@@ -335,11 +288,9 @@ classdef update_bobyqa_mod
             % Debugging variables
             %real(RP) :: intp_tol
 
-            % Sizes
+
 
             npt = numel(pq);
-
-            % Preconditions
 
 
             %====================%
@@ -381,7 +332,6 @@ classdef update_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

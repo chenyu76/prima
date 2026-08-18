@@ -18,7 +18,7 @@ classdef initialize_uobyqa_mod
             % See Section 4 of the UOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
+
             checkexit_obj = prima_mat.common.checkexit_mod();
 
 
@@ -29,14 +29,11 @@ classdef initialize_uobyqa_mod
             message_obj = prima_mat.common.message_mod();
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
 
             % X0(N)
-
-            % Outputs
 
 
 
@@ -46,7 +43,7 @@ classdef initialize_uobyqa_mod
             % XHIST(N, MAXXHIST)
             % XPT(N, NPT)
 
-            % Local variables
+
             solver = "UOBYQA";
 
 
@@ -58,12 +55,9 @@ classdef initialize_uobyqa_mod
             x = NaN(numel(x0), 1);
             xw = NaN(numel(x0), 1);
 
-            % Sizes
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-
-            % Preconditions
 
 
             %====================%
@@ -175,7 +169,6 @@ classdef initialize_uobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -186,30 +179,22 @@ classdef initialize_uobyqa_mod
             % triangular part of the Hessian, column by column. See Section 4 of the UOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
 
-
-            % Inputs
             % XPT(N, NPT)
             % XPT(N, NPT)
 
-            % Outputs
+
 
             % PQ((N + 1) * (N + 2) / 2 - 1)
-
-            % Local variables
 
 
 
             deriv = NaN(size(xpt, 1), 1);
 
 
-            % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Postconditions
 
 
             %====================%
@@ -267,7 +252,6 @@ classdef initialize_uobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -278,26 +262,19 @@ classdef initialize_uobyqa_mod
             % PL(N+1 : NPT-1, K) containing the upper triangular part of the Hessian, column by column.
             % See Section 4 of the UOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
-            % Common modules
 
 
 
-            % Inputs
             % XPT(N, NPT)
 
-            % Outputs
+
 
             % PL((N + 1) * (N + 2) / 2 - 1, (N + 1) * (N + 2) / 2)
 
-            % Local variables
 
 
-
-            % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Postconditions
 
 
             %====================%
@@ -375,7 +352,6 @@ classdef initialize_uobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

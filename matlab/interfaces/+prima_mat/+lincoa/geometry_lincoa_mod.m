@@ -27,15 +27,9 @@ classdef geometry_lincoa_mod
             % landscape of the function sufficiently.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-
-            % Inputs
-
 
 
             % BMAT(N, NPT + N)
@@ -45,21 +39,11 @@ classdef geometry_lincoa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
-            % Outputs
+
             knew = NaN;
-
-            % Local variables
-
 
 
             distsq = NaN(size(xpt, 2), 1);
-
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -166,7 +150,7 @@ classdef geometry_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function [feasible, s] = geostep(~, iact, idz, knew, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat, s)
@@ -230,14 +214,11 @@ classdef geometry_lincoa_mod
             % restriction on the length of S, which is never greater than the current trust region radius DELTA.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
 
 
-            % Inputs
             % IACT(M)
 
 
@@ -250,11 +231,9 @@ classdef geometry_lincoa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT-N-1)
 
-            % Outputs
+
 
             % S(N)
-
-            % Local variables
 
 
 
@@ -275,12 +254,8 @@ classdef geometry_lincoa_mod
 
             xopt = NaN(size(xpt, 1), 1);
 
-            % Sizes.
 
             n = size(xpt, 1);
-
-
-            % Preconditions
 
 
             %====================%
@@ -409,7 +384,6 @@ classdef geometry_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

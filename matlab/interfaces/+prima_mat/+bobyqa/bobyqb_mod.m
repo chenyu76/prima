@@ -67,7 +67,7 @@ classdef bobyqb_mod
             %   XBASE + XOPT + D is the vector of variables for the next call of CALFUN.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
+
             checkexit_obj = prima_mat.common.checkexit_mod();
 
             %, wassert, validate
@@ -91,7 +91,6 @@ classdef bobyqb_mod
             update_bobyqa_obj = prima_mat.bobyqa.update_bobyqa_mod();
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
@@ -99,17 +98,15 @@ classdef bobyqb_mod
             % XL(N)
             % XU(N)
 
-            % In-outputs
-            % X(N)
 
-            % Outputs
+            % X(N)
 
 
 
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "BOBYQA";
 
             ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
@@ -157,11 +154,6 @@ classdef bobyqb_mod
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
-            % Sizes.
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -209,7 +201,7 @@ classdef bobyqb_mod
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x);
-                % Postconditions
+
 
                 return
             end
@@ -615,7 +607,6 @@ classdef bobyqb_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -626,34 +617,18 @@ classdef bobyqb_mod
             % paragraphs surrounding (6.8)--(6.11).
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
 
 
-            % Inputs
-
-
-
-            % Outputs
             ebound = NaN;
-
-            % Local variables
-
 
 
             bfirst = NaN(numel(d), 1);
             bsecond = NaN(numel(d), 1);
             gnew = NaN(numel(d), 1);
             xnew = NaN(numel(d), 1);
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%

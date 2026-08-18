@@ -31,7 +31,7 @@ classdef initialize_bobyqa_mod
             % INFO = NAN_INF_F: return because F is either NaN or +Inf
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
+
             checkexit_obj = prima_mat.common.checkexit_mod();
 
 
@@ -45,7 +45,6 @@ classdef initialize_bobyqa_mod
             xinbd_obj = prima_mat.common.xinbd_mod();
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
@@ -53,10 +52,10 @@ classdef initialize_bobyqa_mod
             % XL(N)
             % XU(N)
 
-            % In-outputs
+
             % X(N)
 
-            % Outputs
+
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
 
 
@@ -68,7 +67,7 @@ classdef initialize_bobyqa_mod
             % XHIST(N, MAXXHIST)
             % XPT(N, NPT)
 
-            % Local variables
+
             solver = "BOBYQA";
 
 
@@ -76,12 +75,9 @@ classdef initialize_bobyqa_mod
 
             x = NaN(size(xpt, 1), 1);
 
-            % Sizes.
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-
-            % Preconditions
 
 
             %====================%
@@ -99,19 +95,19 @@ classdef initialize_bobyqa_mod
             % than -RHOBEG, while SU >= 0 and the nonzeros of SU should be larger than RHOBEG. However, this may
             % not be true due to rounding. The following lines revise SL and SU to ensure it. X0 is also revised
             % accordingly. In precise arithmetic, the "revisions" do not change SL, SU, or X0.
-            mask00 = sl < 0; %Unsupported statement inside WHERE block: StatementLineBreak 1
-            sl(mask00) = min(sl(mask00), -rhobeg); %Unsupported statement inside WHERE block: StatementLineBreak 1
-            mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
-            x0(mask01) = xl(mask01); %Unsupported statement inside WHERE block: StatementLineBreak 1
-            sl(mask01) = 0.0; %Unsupported statement inside WHERE block: StatementLineBreak 1
-            su(mask01) = xu(mask01) - xl(mask01); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            mask00 = sl < 0;
+            sl(mask00) = min(sl(mask00), -rhobeg);
+            mask01 = ~mask00;
+            x0(mask01) = xl(mask01);
+            sl(mask01) = 0.0;
+            su(mask01) = xu(mask01) - xl(mask01);
 
-            mask00 = su > 0; %Unsupported statement inside WHERE block: StatementLineBreak 1
-            su(mask00) = max(su(mask00), rhobeg); %Unsupported statement inside WHERE block: StatementLineBreak 1
-            mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
-            x0(mask01) = xu(mask01); %Unsupported statement inside WHERE block: StatementLineBreak 1
-            sl(mask01) = xl(mask01) - xu(mask01); %Unsupported statement inside WHERE block: StatementLineBreak 1
-            su(mask01) = 0.0; %Unsupported statement inside WHERE block: StatementLineBreak 1
+            mask00 = su > 0;
+            su(mask00) = max(su(mask00), rhobeg);
+            mask01 = ~mask00;
+            x0(mask01) = xu(mask01);
+            sl(mask01) = xl(mask01) - xu(mask01);
+            su(mask01) = 0.0;
 
             %%MATLAB code for revising X, SL, and SU:
             %%sl(sl < 0) = min(sl(sl < 0), -rhobeg);
@@ -247,7 +243,6 @@ classdef initialize_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -257,22 +252,17 @@ classdef initialize_bobyqa_mod
             % at XBASE + XPT(:, KOPT) is GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
 
-
-            % Inputs
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
             % FVAL(NPT)
             % XPT(N, NPT)
 
-            % Outputs
+
 
             % GOPT(N)
             % HQ(N, N)
             % PQ(NPT)
-
-            % Local variables
 
 
 
@@ -280,11 +270,8 @@ classdef initialize_bobyqa_mod
             xb = NaN(numel(xa), 1);
 
 
-            % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -350,7 +337,6 @@ classdef initialize_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -360,34 +346,28 @@ classdef initialize_bobyqa_mod
             % paper (see also (3.12) of the NEWUOA paper).
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             %use, non_intrinsic :: powalg_mod, only : errh
 
 
-            % Inputs
+
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
             % XPT(N, NPT)
 
-            % Outputs
+
 
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
-
-            % Local variables
 
 
 
             xa = NaN(min(size(xpt, 1), size(xpt, 2) - size(xpt, 1) - 1), 1);
             xb = NaN(numel(xa), 1);
 
-            % Sizes
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -447,7 +427,6 @@ classdef initialize_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

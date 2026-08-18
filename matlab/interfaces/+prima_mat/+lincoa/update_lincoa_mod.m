@@ -17,30 +17,15 @@ classdef update_lincoa_mod
             % This subroutine updates [XPT, FVAL, KOPT] so that XPT(:, KNEW) is updated to XNEW.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
-
-
-            % Inputs
 
 
             % XNEW(N)
 
-            % In-outputs
 
 
             % FVAL(NPT)
             % XPT(N, NPT)
 
-            % Local variables
-
-
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -64,7 +49,6 @@ classdef update_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -78,16 +62,10 @@ classdef update_lincoa_mod
             % after UPDATEXF being called. Indeed, we only need BMAT(:, KNEW) instead of the entire matrix.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
-
-            % Inputs
-
 
 
             % BMAT(N, NPT + N)
@@ -98,22 +76,14 @@ classdef update_lincoa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
-            % In-outputs
+
             % GOPT(N)
             % HQ(N, N)
             % PQ(NPT)
 
-            % Local variables
-
 
 
             pqinc = NaN(numel(pq), 1);
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -150,7 +120,6 @@ classdef update_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -162,14 +131,11 @@ classdef update_lincoa_mod
             % if the recent few (three) alternative models are more accurate in predicting the function value of
             % XOPT + D, i.e., if ALL(QALT_BETTER) = TRUE.
             %--------------------------------------------------------------------------------------------------%
-            % Common modules
 
 
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-
-            % Inputs
 
             % BMAT(N, NPT + N)
             % FVAL(NPT)
@@ -183,19 +149,13 @@ classdef update_lincoa_mod
             % PQ(NPT)
             % HQ(N, N)
 
-            % Outputs
+
             % GALT(N)
             % PQALT(NPT)
 
-            % Local variables
 
-
-
-            % Sizes
 
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -219,7 +179,6 @@ classdef update_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -234,11 +193,7 @@ classdef update_lincoa_mod
             % we only need to evaluate the constraints that are nearly active.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
-
-
-            % Inputs
 
             % AMAT(N, M)
             % B(M)
@@ -246,21 +201,13 @@ classdef update_lincoa_mod
             % Norm of D
             % XOPT(N); the updated value of XOPT
 
-            % In-outputs
-            % RESCON(M)
 
-            % Local variables
+            % RESCON(M)
 
 
 
             mask = false(numel(b), 1);
             ax = NaN(numel(b), 1);
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -275,10 +222,10 @@ classdef update_lincoa_mod
 
             mask(:) = (abs(rescon) < dnorm + delta);
             ax(find(mask)) = amat(:, find(mask)).' * xopt;
-            mask00 = mask; %Unsupported statement inside WHERE block: StatementLineBreak 1
-            rescon(mask00) = max(b(mask00) - ax(mask00), 0.0); %Unsupported statement inside WHERE block: StatementLineBreak 1
-            mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
-            rescon(mask01) = min(-abs(rescon(mask01)) + dnorm, -delta); %Unsupported statement inside WHERE block: StatementLineBreak 1
+            mask00 = mask;
+            rescon(mask00) = max(b(mask00) - ax(mask00), 0.0);
+            mask01 = ~mask00;
+            rescon(mask01) = min(-abs(rescon(mask01)) + dnorm, -delta);
 
             rescon(rescon >= delta) = -rescon(rescon >= delta);
 
@@ -292,7 +239,7 @@ classdef update_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

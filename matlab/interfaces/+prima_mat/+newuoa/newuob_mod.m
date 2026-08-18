@@ -42,7 +42,7 @@ classdef newuob_mod
             % See Section 2 of the NEWUOA paper for more information about these variables.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
+
             checkexit_obj = prima_mat.common.checkexit_mod();
 
 
@@ -64,22 +64,18 @@ classdef newuob_mod
             update_newuoa_obj = prima_mat.newuoa.update_newuoa_mod();
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
 
-            % In-outputs
             % X(N)
-
-            % Outputs
 
 
 
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "NEWUOA";
 
             idz = NaN;
@@ -123,11 +119,6 @@ classdef newuob_mod
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -176,7 +167,7 @@ classdef newuob_mod
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x);
-                % Postconditions
+
 
                 return
             end
@@ -626,7 +617,6 @@ classdef newuob_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

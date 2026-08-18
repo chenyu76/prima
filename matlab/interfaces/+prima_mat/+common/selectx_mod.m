@@ -34,21 +34,17 @@ classdef selectx_mod
 
 
 
-            % Inputs
-
-
-
             % N
             % M
 
-            % In-outputs
+
 
             % MAXFILT
             % MAXFILT
             % (N, MAXFILT)
             % (M, MAXFILT)
 
-            % Local variables
+
 
             index_to_keep = NaN(numel(ffilt), 1);
 
@@ -60,7 +56,6 @@ classdef selectx_mod
             phi = NaN(numel(ffilt), 1);
 
 
-            % Sizes
             ipObj = inputParser();
             addParameter(ipObj, 'constr', NaN);
             addParameter(ipObj, 'confilt', NaN);
@@ -70,8 +65,6 @@ classdef selectx_mod
 
 
             maxfilt = numel(ffilt);
-
-            % Preconditions
 
 
             %====================%
@@ -145,7 +138,6 @@ classdef selectx_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -161,14 +153,7 @@ classdef selectx_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             kopt = NaN;
-
-            % Local variables
 
 
             chist_shifted = NaN(numel(fhist), 1);
@@ -177,10 +162,7 @@ classdef selectx_mod
             phi = NaN(numel(fhist), 1);
 
 
-            % Sizes
             nhist = numel(fhist);
-
-            % Preconditions
 
 
             %====================%
@@ -247,7 +229,6 @@ classdef selectx_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -263,18 +244,7 @@ classdef selectx_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             is_better = false;
-
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -297,28 +267,16 @@ classdef selectx_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
         function is_better = isbetter10(obj, f1, c1, f2, c2, ctol)
 
 
-            % Inputs
-
-
-
-            % Outputs
             is_better = false(1, 1);
 
-            % Local variables
 
-
-
-            % Sizes
             nfc = numel(f1);
-
-            % Preconditions
 
 
             %====================%
@@ -332,28 +290,16 @@ classdef selectx_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
         function is_better = isbetter01(obj, f1, c1, f2, c2, ctol)
 
 
-            % Inputs
-
-
-
-            % Outputs
             is_better = false(1, 1);
 
-            % Local variables
 
-
-
-            % Sizes
             nfc = numel(f2);
-
-            % Preconditions
 
 
             %====================%
@@ -367,7 +313,6 @@ classdef selectx_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

@@ -20,15 +20,7 @@ classdef redrho_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             rho = NaN;
-
-
-            % Preconditions
 
 
             %====================%
@@ -49,7 +41,7 @@ classdef redrho_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

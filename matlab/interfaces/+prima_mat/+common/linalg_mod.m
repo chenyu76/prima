@@ -161,19 +161,11 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % In-outputs
             % A(SIZE(X), SIZE(X))
-            % Local variables
 
 
 
-            % Sizes
             n = numel(x);
-
-            % Preconditions
 
 
             %====================%
@@ -196,7 +188,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function A = r1(obj, A, alpha, x, y)
@@ -209,16 +201,8 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-
-            % In-outputs
             % A(SIZE(X), SIZE(Y))
-            % Local variables
 
-
-            % Preconditions
 
 
             %====================%
@@ -242,20 +226,11 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-
-            % In-outputs
             % A(SIZE(X), SIZE(X))
-            % Local variables
 
 
 
-            % Sizes
             n = numel(x);
-
-            % Preconditions
 
 
             %====================%
@@ -275,7 +250,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function A = r2(obj, A, alpha, x, y, beta, u, v)
@@ -288,18 +263,11 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-
             % U(SIZE(X))
             % V(SIZE(Y))
-            % In-outputs
+
             % A(SIZE(X), SIZE(Y))
-            % Local variables
 
-
-            % Preconditions
 
 
             %====================%
@@ -322,16 +290,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             z = NaN(size(y, 2), 1);
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -349,7 +308,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function z = matprod21(~, x, y)
@@ -360,16 +319,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             z = NaN(size(x, 1), 1);
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -385,7 +335,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function z = matprod22(~, x, y)
@@ -396,16 +346,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             z = NaN(size(x, 1), size(y, 2));
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -423,7 +364,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function z = inprod(~, x, y)
@@ -433,16 +374,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             z = NaN;
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -465,13 +397,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             z = NaN(numel(x), numel(y));
-            % Local variables
-
 
 
             %====================%
@@ -486,7 +412,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function x = eye1(~, n)
@@ -496,12 +422,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
             x = NaN(max(n, 0));
-            % Local variables
-
 
 
             %====================%
@@ -519,7 +440,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function x = eye2(~, m, n)
@@ -529,13 +450,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             x = NaN(max(m, 0), max(n, 0));
-            % Local variables
-
 
 
             %====================%
@@ -553,7 +468,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function x = solve(obj, A, b)
@@ -565,19 +480,10 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             x = NaN(size(A, 2), 1);
-            % Local variables
 
 
-
-            % Sizes
             n = size(A, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -615,7 +521,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function B = inv(obj, A)
@@ -630,11 +536,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
             B = NaN(size(A, 1));
-            % Local variables
 
 
             InvP = NaN(size(A, 1), 1);
@@ -643,10 +545,7 @@ classdef linalg_mod
             R = NaN(size(A, 1));
 
 
-            % Sizes
             n = size(A, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -689,7 +588,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function is_inv = isinv(obj, A, B, varargin)
@@ -699,20 +598,12 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             is_inv = false;
-            % Local variables
 
 
-
-            % Sizes
             n = size(A, 1);
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -744,16 +635,6 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
-
-
-
-            % Local variables
-
-
-
             Q_loc = NaN(size(A, 1));
             T = NaN(size(A, 2), size(A, 1));
 
@@ -770,11 +651,9 @@ classdef linalg_mod
                 return
             end
 
-            % Sizes
+
             m = size(A, 1);
             n = size(A, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -816,7 +695,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function x = lsqr_Rdiag(obj, A, b, varargin)
@@ -831,15 +710,12 @@ classdef linalg_mod
 
 
 
-            % Inputs
             % A(M, N)
             % B(M)
             % Q(M, :), SIZE(Q, 2) = M or MIN(M, N)
             % Rdiag(MIN(M, N))
-            % Outputs
-            x = NaN(size(A, 2), 1);
-            % Local variables
 
+            x = NaN(size(A, 2), 1);
 
 
             P = NaN(size(A, 2), 1);
@@ -850,11 +726,10 @@ classdef linalg_mod
             y = NaN(numel(b), 1);
 
 
-            % Sizes
             m = size(A, 1);
             n = size(A, 2);
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'Q', NaN);
             addParameter(ipObj, 'Rdiag', NaN);
@@ -932,21 +807,14 @@ classdef linalg_mod
 
 
 
-            % Inputs
             % B(M)
             % Q(M, N)
             % R(N, N)
-            % Outputs
+
             x = NaN(size(R, 2), 1);
-            % Local variables
 
-
-
-            % Sizes
 
             n = size(R, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -985,13 +853,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             D = NaN;
-            % Local variables
-
 
 
             %====================%
@@ -1017,7 +879,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function is_banded = isbanded(~, A, lwidth, uwidth, varargin)
@@ -1028,17 +890,9 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             is_banded = false;
-            % Local variables
 
 
-
-            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -1079,16 +933,9 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             is_tril = false;
-            % Local variables
 
 
-
-            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -1118,16 +965,9 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             is_triu = false;
-            % Local variables
 
 
-
-            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -1157,16 +997,9 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             is_orth = false;
-            % Local variables
 
 
-
-            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -1208,17 +1041,10 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             y = NaN(numel(x), 1);
-            % Local variables
+
 
             u = NaN(numel(v), 1);
-
-
-            % Preconditions
 
 
             %====================%
@@ -1245,7 +1071,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function y = project2(obj, x, V)
@@ -1255,18 +1081,10 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             y = NaN(numel(x), 1);
-            % Local variables
 
 
             V_loc = NaN(size(V, 1), size(V, 2));
-
-
-            % Preconditions
 
 
             %====================%
@@ -1281,10 +1099,10 @@ classdef linalg_mod
                 y(:) = sum(x, 'all') + sum(V, 'all'); % Set Y to NaN
 
             elseif any(isinf(V), 'all')
-                mask00 = isinf(V); %Unsupported statement inside WHERE block: StatementLineBreak 1
-                V_loc(mask00) = 1.0 .* ((V(mask00) > 0) .* 2 - 1); %Unsupported statement inside WHERE block: StatementLineBreak 1
-                mask01 = ~mask00; %Unsupported statement inside WHERE block: StatementLineBreak 1
-                V_loc(mask01) = 0.0; %Unsupported statement inside WHERE block: StatementLineBreak 1
+                mask00 = isinf(V);
+                V_loc(mask00) = 1.0 .* ((V(mask00) > 0) .* 2 - 1);
+                mask01 = ~mask00;
+                V_loc(mask01) = 0.0;
 
                 %%MATLAB: V_loc = 0; V_loc(isinf(V)) = sign(V);
                 U = obj.qr(V_loc);
@@ -1298,7 +1116,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function r = hypotenuse(~, x1, x2)
@@ -1308,12 +1126,8 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             r = NaN;
-            % Local variables
+
 
             y = NaN(2, 1);
 
@@ -1343,7 +1157,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function G = planerot(obj, x)
@@ -1361,15 +1175,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
             G = NaN(2);
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -1436,7 +1242,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function A = symmetrize(~, A)
@@ -1446,15 +1252,6 @@ classdef linalg_mod
             % and its asymmetry comes only from errors (e.g., rounding, noise).
             %--------------------------------------------------------------------------------------------------%
 
-
-
-            % In-outputs
-
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -1471,7 +1268,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function is_minor = isminor0(~, x, ref)
@@ -1484,12 +1281,9 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % Inputs
 
-
-            % Outputs
             is_minor = false;
-            % Local variables
+
             sensitivity = 0.1;
 
 
@@ -1513,16 +1307,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             is_minor = false(numel(x), 1);
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -1535,7 +1320,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function is_symmetric = issymmetric(~, A, varargin)
@@ -1545,16 +1330,9 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             is_symmetric = false;
-            % Local variables
 
 
-
-            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -1604,16 +1382,9 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             y = NaN;
-            % Local variables
 
 
-
-            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'p', NaN);
             parse(ipObj, varargin{:});
@@ -1710,12 +1481,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             y = NaN;
-            % Local variables
 
 
             %====================%
@@ -1755,12 +1521,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             y = NaN;
-            % Local variables
 
 
             %====================%
@@ -1803,13 +1564,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-            % Outputs
             y = NaN(numel(x), 1);
-            % Local variables
-
 
 
             %====================%
@@ -1844,7 +1599,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function y = sort_i2(obj, x, varargin)
@@ -1854,14 +1609,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             y = NaN(size(x, 1), size(x, 2));
-            % Local variables
-
 
 
             %====================%
@@ -1899,7 +1647,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function y = logical_to_int(~, x)
@@ -1907,10 +1655,6 @@ classdef linalg_mod
             % LOGICAL_TO_INT(.TRUE.) = 1, LOGICAL_TO_INT(.FALSE.) = 0
             %--------------------------------------------------------------------------------------------------%
 
-
-            % Inputs
-
-            % Outputs
 
 
             y = fortran.merge('tsource', 1, 'fsource', 0, 'mask', x);
@@ -1929,11 +1673,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
             loc = NaN; % INTEGER(IK) :: LOC(COUNT(X)) does not work with Absoft 22.0
-            % Local variables
 
 
 
@@ -1949,7 +1689,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function loc = falseloc(obj, x)
@@ -1959,11 +1699,8 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
             loc = NaN; % INTEGER(IK) :: LOC(COUNT(.NOT.X)) does not work with Absoft 22.0
-            % Local variables
+
 
 
             %====================%
@@ -1977,7 +1714,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function y = minimum1(~, x)
@@ -1993,12 +1730,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
             y = NaN;
-            % Local variables
-
 
 
             %====================%
@@ -2013,7 +1745,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function y = minimum2(~, x)
@@ -2029,12 +1761,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
             y = NaN;
-            % Local variables
-
 
 
             %====================%
@@ -2049,7 +1776,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function y = maximum1(~, x)
@@ -2065,12 +1792,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
             y = NaN;
-            % Local variables
-
 
 
             %====================%
@@ -2085,7 +1807,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function y = maximum2(~, x)
@@ -2101,12 +1823,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-            % Outputs
             y = NaN;
-            % Local variables
-
 
 
             %====================%
@@ -2121,7 +1838,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function x = linspace_r(~, xstart, xstop, n)
@@ -2132,14 +1849,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             x = NaN(max(n, 0), 1);
-            % Local variables
-
 
 
             %====================%
@@ -2176,7 +1886,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function x = linspace_i(obj, xstart, xstop, n)
@@ -2186,13 +1896,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             x = NaN(max(n, 0), 1);
-            % Local variables
 
 
             %====================%
@@ -2205,7 +1909,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function [A, tdiag, tsubdiag] = hessenberg_hhd_trid(obj, A, tdiag, tsubdiag)
@@ -2219,13 +1923,6 @@ classdef linalg_mod
 
 
 
-            % In-outputs
-
-            % Outputs
-
-
-            % Local variables
-
             i = NaN;
             j = NaN;
 
@@ -2238,10 +1935,7 @@ classdef linalg_mod
             z = NaN(size(A, 1), 1);
 
 
-            % Sizes
             n = size(A, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -2313,7 +2007,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function [H, Q] = hessenberg_full(obj, A, H, varargin)
@@ -2323,13 +2017,6 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
-            % Inputs
-
-            % Outputs
-
-
-            % Local variables
 
             i = NaN;
 
@@ -2342,14 +2029,14 @@ classdef linalg_mod
             % Debugging variables
 
 
-            % Sizes
+
             n = size(A, 1);
 
             %====================%
             % Calculation starts %
             %====================%
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'Q', NaN);
             parse(ipObj, varargin{:});
@@ -2422,7 +2109,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function eig_min = eigmin_sym_trid(obj, td, tn, varargin)
@@ -2458,13 +2145,7 @@ classdef linalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             eig_min = NaN;
-            % Local variables
 
 
             k = NaN;
@@ -2475,10 +2156,9 @@ classdef linalg_mod
             pivnew = NaN(numel(td), 1);
 
 
-            % Sizes
             n = numel(td);
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
             parse(ipObj, varargin{:});
@@ -2584,18 +2264,11 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % Inputs
 
-            % Outputs
             smat = NaN((round(sqrt(double(8 * numel(vec) + 1))) - 1) / 2);
-            % Local variables
 
 
-
-            % Sizes
             n = size(smat, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -2612,7 +2285,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function vec = smat2vec(~, smat)
@@ -2622,15 +2295,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % Inputs
 
-            % Outputs
             vec = NaN((size(smat, 1) * (size(smat, 1) + 1)) / 2, 1);
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -2655,19 +2321,11 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % Inputs
 
-
-            % Outputs
             y = NaN(numel(x), 1);
-            % Local variables
 
 
-
-            % Sizes
             n = numel(x);
-
-            % Preconditions
 
 
             %====================%

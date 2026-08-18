@@ -39,8 +39,6 @@ classdef trustregion_newuoa_mod
             % - INFO = -1: too much rounding error to continue.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
@@ -48,20 +46,17 @@ classdef trustregion_newuoa_mod
             univar_obj = prima_mat.common.univar_mod();
 
 
-            % Inputs
-
             % GOPT_IN(N)
             % HQ_IN(N, N)
             % PQ_IN(NPT)
 
             % XPT(N, NPT)
 
-            % Outputs
+
 
             % S(N)
 
 
-            % Local variables
 
             info_loc = NaN;
             iter = NaN;
@@ -97,11 +92,8 @@ classdef trustregion_newuoa_mod
 
             sth = NaN;
 
-            % Sizes
+
             n = size(xpt, 1);
-
-
-            % Preconditions
 
 
             %====================%
@@ -406,7 +398,6 @@ classdef trustregion_newuoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -416,18 +407,8 @@ classdef trustregion_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % Inputs
 
-
-
-            % Outputs
             f = NaN;
-
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -460,13 +441,8 @@ classdef trustregion_newuoa_mod
             % Expansion factor
             % Reduction ratio
 
-            % Outputs
+
             delta = NaN;
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -503,7 +479,6 @@ classdef trustregion_newuoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

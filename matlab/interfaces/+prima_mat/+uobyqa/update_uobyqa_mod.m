@@ -18,37 +18,24 @@ classdef update_uobyqa_mod
             % See Section 4 of the UOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % Inputs
 
             % D(N)
 
 
-
-            % In-outputs
 
             % FVAL(NPT)
             % PL(NPT-1, NPT)
             % PQ(NPT-1)
             % XPT(N, NPT)
 
-            % Local variables
-
 
 
             plnew = NaN(size(pl, 1), 1);
             vlag = NaN(size(xpt, 2), 1);
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -86,7 +73,6 @@ classdef update_uobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

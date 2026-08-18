@@ -41,15 +41,11 @@ classdef message_mod
 
 
 
-            % Local variables
             newline_custom = newline;
 
 
             funit = NaN; % File storage unit for the writing. Should be an integer of default kind.
 
-
-
-            % Preconditions
 
 
             %====================%
@@ -178,7 +174,6 @@ classdef message_mod
 
 
 
-            % Local variables
             newline_custom = newline;
 
 
@@ -287,7 +282,7 @@ classdef message_mod
             % Optional inputs
 
 
-            % Local variables
+
             newline_custom = newline;
 
 
@@ -348,7 +343,6 @@ classdef message_mod
 
 
 
-            % Local variables
             newline_custom = newline;
 
 

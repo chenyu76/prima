@@ -34,24 +34,13 @@ classdef univar_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             angle = NaN;
-
-            % Local variables
-
 
 
             agrid = NaN(grid_size + 1, 1);
 
 
             fgrid = NaN(grid_size, 1);
-
-
-            % Preconditions
 
 
             %====================%
@@ -93,7 +82,6 @@ classdef univar_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -110,24 +98,13 @@ classdef univar_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             angle = NaN;
-
-            % Local variables
-
 
 
             agrid = NaN(grid_size + 1, 1);
 
 
             fgrid = NaN(grid_size, 1);
-
-
-            % Preconditions
 
 
             %====================%
@@ -165,8 +142,6 @@ classdef univar_mod
                 angle = agrid(kopt);
             end
 
-            % Postconditions
-
 
         end
         function x = interval_max(~, fun, lb, ub, args, grid_size)
@@ -180,23 +155,13 @@ classdef univar_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             x = NaN;
-
-            % Local variables
-
 
 
             fgrid = NaN(grid_size, 1);
 
 
             xgrid = NaN(grid_size, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -246,7 +211,6 @@ classdef univar_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

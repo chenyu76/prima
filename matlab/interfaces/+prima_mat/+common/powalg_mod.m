@@ -91,15 +91,13 @@ classdef powalg_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
+
             % C(M)
 
-            % In-outputs
+
 
             % Q(M, M)
             % MIN(M, N+1) <= SIZE(Rdiag) <= M
-
-            % Local variables
 
 
 
@@ -112,10 +110,8 @@ classdef powalg_mod
             % Debugging only
             %------------------------------------------------------------%
 
-            % Sizes
-            m = size(Q, 2);
 
-            % Preconditions
+            m = size(Q, 2);
 
 
             %====================%
@@ -165,7 +161,7 @@ classdef powalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function [Q, R, n] = qradd_Rfull(~, c, Q, R, n)            % Used in LINCOA
@@ -182,15 +178,13 @@ classdef powalg_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
+
             % C(M)
 
-            % In-outputs
+
 
             % Q(M, M)
             % R(M, :), N+1 <= SIZE(R, 2) <= M
-
-            % Local variables
 
 
 
@@ -203,7 +197,7 @@ classdef powalg_mod
             % Debugging only
             %------------------------------------------------------------%
 
-            % Sizes
+
             m = size(Q, 1);
 
 
@@ -249,17 +243,14 @@ classdef powalg_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
+
             % A(M, N)
 
-            % In-outputs
+
             % Q(M, :), N <= SIZE(Q, 2) <= M
             % Rdiag(N)
 
 
-            % Local variables
-
-
 
             %------------------------------------------------------------%
             % Debugging only
@@ -269,11 +260,9 @@ classdef powalg_mod
             % Debugging only
             %------------------------------------------------------------%
 
-            % Sizes
+
 
             n = size(A, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -319,7 +308,7 @@ classdef powalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function [Q, R] = qrexc_Rfull(~, Q, R, i)            % Used in LINCOA
@@ -337,15 +326,10 @@ classdef powalg_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
 
-
-            % In-outputs
             % Q(M, :), SIZE(Q, 2) <= M
             % R(:, N), SIZE(R, 1) >= N
 
-            % Local variables
-
 
 
             %------------------------------------------------------------%
@@ -355,11 +339,9 @@ classdef powalg_mod
             % Debugging only
             %------------------------------------------------------------%
 
-            % Sizes
+
 
             n = size(R, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -418,7 +400,6 @@ classdef powalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -434,7 +415,6 @@ classdef powalg_mod
 
 
 
-            % Inputs
             % D(N)
             % XPT(N, NPT)
             % GQ(N)
@@ -450,11 +430,7 @@ classdef powalg_mod
 
             dxpt = NaN(numel(pq), 1);
 
-            % Sizes
 
-
-
-            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'hq', NaN);
             parse(ipObj, varargin{:});
@@ -522,23 +498,14 @@ classdef powalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             qinc = NaN;
-            % Local variables
-
 
 
             s = NaN(numel(x), 1);
             w = NaN(numel(ghv), 1);
 
-            % Sizes
-            n = numel(x);
 
-            % Preconditions
+            n = numel(x);
 
 
             %====================%
@@ -574,7 +541,6 @@ classdef powalg_mod
 
 
 
-            % Inputs
             % FVAL(NPT)
             % XPT(N, NPT)
             % GQ(N)
@@ -582,21 +548,17 @@ classdef powalg_mod
             % HQ(N, N)
 
 
-            % Outputs
+
             err = NaN;
-
-            % Local variables
-
 
 
             fmq = NaN(size(xpt, 2), 1);
             qval = NaN(size(xpt, 2), 1);
 
-            % Sizes
 
             npt = size(xpt, 2);
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'kref', NaN);
             parse(ipObj, varargin{:});
@@ -639,24 +601,18 @@ classdef powalg_mod
 
 
 
-            % Inputs
             % X(N)
             % XPT(N, NPT)
             % PQ(NPT)
             % HQ(N, N)
 
-            % Outputs
+
             y = NaN(numel(x), 1);
 
-            % Local variables
 
-
-
-            % Sizes
             n = size(xpt, 1);
 
 
-            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'hq', NaN);
             parse(ipObj, varargin{:});
@@ -691,18 +647,10 @@ classdef powalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             y = NaN(size(zmat, 1), 1);
 
-            % Local variables
 
             zk = NaN(size(zmat, 2), 1);
-
-            % Preconditions
 
 
             %====================%
@@ -727,18 +675,10 @@ classdef powalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             y = NaN(size(zmat, 1), 1);
 
-            % Local variables
 
             xz = NaN(size(zmat, 2), 1);
-
-            % Preconditions
 
 
             %====================%
@@ -763,19 +703,11 @@ classdef powalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             p = NaN;
 
-            % Local variables
 
             xz = NaN(size(zmat, 2), 1);
             yz = NaN(size(zmat, 2), 1);
-
-            % Preconditions
 
 
             %====================%
@@ -803,15 +735,7 @@ classdef powalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             err = NaN;
-
-            % Local variables
-
 
 
             A = NaN(size(xpt, 2));
@@ -824,11 +748,9 @@ classdef powalg_mod
 
             t = NaN(size(xpt, 2), 1);
 
-            % Sizes
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -894,28 +816,19 @@ classdef powalg_mod
             % However, as observed on 20220412, such an implementation can lead to significant errors in H!
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod(); %, r2update
 
 
-            % Inputs
-
 
             % D(N)
             % XPT(N, NPT)
 
-            % In-outputs
+
 
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
-
-            % Outputs
-
-
-            % Local variables
 
 
 
@@ -933,11 +846,9 @@ classdef powalg_mod
             %real(RP), allocatable :: vlag_test(:)
             %real(RP), allocatable :: xpt_test(:, :)
 
-            % Sizes
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -1159,7 +1070,7 @@ classdef powalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         %--------------------------------------------------------------------------------------------------%
@@ -1237,11 +1148,7 @@ classdef powalg_mod
             % point as well as the center of the trust region. See (4.25) of the NEWUOA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
-
-
-            % Inputs
 
             % BMAT(N, NPT + N)
             % D(N)
@@ -1249,10 +1156,8 @@ classdef powalg_mod
             % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
-            % Outputs
-            vlag = NaN(size(xpt, 1) + size(xpt, 2), 1); % VLAG(NPT + N)
 
-            % Local variables
+            vlag = NaN(size(xpt, 1) + size(xpt, 2), 1); % VLAG(NPT + N)
 
 
 
@@ -1260,7 +1165,7 @@ classdef powalg_mod
             wcheck = NaN(size(zmat, 1), 1);
             xref = NaN(size(xpt, 1), 1);
 
-            % Sizes
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
 
@@ -1273,8 +1178,6 @@ classdef powalg_mod
             if ~ismember('idz', ipObj.UsingDefaults)
                 idz_loc = idz;
             end
-
-            % Preconditions
 
 
             %====================%
@@ -1300,7 +1203,6 @@ classdef powalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -1311,11 +1213,7 @@ classdef powalg_mod
             % point as well as the center of the trust region. See (4.12) and (4.26) of the NEWUOA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
-
-
-            % Inputs
 
             % BMAT(N, NPT + N)
             % D(N)
@@ -1323,11 +1221,8 @@ classdef powalg_mod
             % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
-            % Outputs
+
             beta = NaN;
-
-            % Local variables
-
 
 
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
@@ -1337,7 +1232,6 @@ classdef powalg_mod
             xref = NaN(size(xpt, 1), 1);
 
 
-            % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
 
@@ -1350,8 +1244,6 @@ classdef powalg_mod
             if ~ismember('idz', ipObj.UsingDefaults)
                 idz_loc = idz;
             end
-
-            % Preconditions
 
 
             %====================%
@@ -1420,11 +1312,7 @@ classdef powalg_mod
             % trust region.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
-
-
-            % Inputs
 
             % BMAT(N, NPT + N)
             % D(N)
@@ -1432,17 +1320,12 @@ classdef powalg_mod
             % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
-            % Outputs
+
             den = NaN(size(xpt, 2), 1);
-
-            % Local variables
-
 
 
             hdiag = NaN(size(xpt, 2), 1);
 
-
-            % Sizes
 
             npt = size(xpt, 2);
 
@@ -1455,8 +1338,6 @@ classdef powalg_mod
             if ~ismember('idz', ipObj.UsingDefaults)
                 idz_loc = idz;
             end
-
-            % Preconditions
 
 
             %====================%
@@ -1490,23 +1371,14 @@ classdef powalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             vlag = NaN(size(pl, 2), 1);
-            % Local variables
-
 
 
             s = NaN(numel(xref), 1);
             w = NaN(size(pl, 1), 1);
 
-            % Sizes
-            n = numel(xref);
 
-            % Preconditions
+            n = numel(xref);
 
 
             %====================%
@@ -1547,18 +1419,10 @@ classdef powalg_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             ij = NaN(2, max(0, npt - 2 * n - 1));
-            % Local variables
 
 
             ell = NaN(max(0, npt - 2 * n - 1), 1);
-
-            % Preconditions
 
 
             %====================%
@@ -1588,7 +1452,7 @@ classdef powalg_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

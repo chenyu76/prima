@@ -10,26 +10,13 @@ classdef xinbd_mod
             % 3. SL = XL - XBASE, SU = XU - XBASE;
             % 4. X should be between XL and XU.
             %--------------------------------------------------------------------------------------------------%
-            % Common modules
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             x = NaN(numel(xbase), 1);
-
-            % Local variables
 
 
             s = NaN(numel(xbase), 1);
-
-            % Sizes
-
-
-            % Preconditions
 
 
             %====================%

@@ -38,8 +38,6 @@ classdef trustregion_lincoa_mod
             % RESACT holds the residuals of the active constraints, which may be positive.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
@@ -48,7 +46,6 @@ classdef trustregion_lincoa_mod
             getact_obj = prima_mat.lincoa.getact_mod();
 
 
-            % Inputs
             % AMAT(N, M)
 
             % GOPT_IN(N)
@@ -58,17 +55,14 @@ classdef trustregion_lincoa_mod
 
             % XPT(N, NPT)
 
-            % In-outputs
+
             % IACT(M); Will be updated in GETACT
             % Will be updated in GETACT
             % QFAC(N, N); Will be updated in GETACT
             % RFAC(N, N); Will be updated in GETACT
 
-            % Outputs
+
             % S(N)
-
-
-            % Local variables
 
 
 
@@ -107,12 +101,8 @@ classdef trustregion_lincoa_mod
             sqrtd = NaN;
 
 
-            % Sizes.
             m = size(amat, 2);
             n = numel(gopt_in);
-
-
-            % Preconditions
 
 
             %====================%
@@ -332,8 +322,7 @@ classdef trustregion_lincoa_mod
                 frac(isnan(frac)) = alpha;
                 jsav = 0;
                 if any(frac < alpha, 'all')
-                    [~, jsav] = min(frac);
-                    alpha = frac(jsav);
+                    [alpha, jsav] = min(frac);
                 end
                 %----------------------------------------------------------------------------------------------%
                 % Alternatively, JSAV and ALPHA can be calculated as below.
@@ -467,7 +456,6 @@ classdef trustregion_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -504,13 +492,8 @@ classdef trustregion_lincoa_mod
             % Expansion factor
             % Reduction ratio
 
-            % Outputs
+
             delta = NaN;
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -547,7 +530,6 @@ classdef trustregion_lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

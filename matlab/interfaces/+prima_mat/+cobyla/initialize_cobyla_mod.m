@@ -17,7 +17,7 @@ classdef initialize_cobyla_mod
             % This subroutine does the initialization concerning X, function values, and constraints.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
+
             checkexit_obj = prima_mat.common.checkexit_mod();
 
 
@@ -28,7 +28,6 @@ classdef initialize_cobyla_mod
             message_obj = prima_mat.common.message_mod();
 
 
-            % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
 
@@ -40,7 +39,6 @@ classdef initialize_cobyla_mod
 
             % X0(N)
 
-            % Outputs
 
 
             % EVALUATED(N+1)
@@ -54,7 +52,7 @@ classdef initialize_cobyla_mod
             % SIMI(N, N)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "COBYLA";
 
 
@@ -64,13 +62,9 @@ classdef initialize_cobyla_mod
             x = NaN(numel(x0), 1);
 
 
-            % Sizes
             m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(sim, 1);
-
-
-            % Preconditions
 
 
             %====================%
@@ -166,7 +160,6 @@ classdef initialize_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -180,32 +173,15 @@ classdef initialize_cobyla_mod
             % 2. We decouple INITXFC and INITFILT so that it is easier to parallelize the former if needed.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             selectx_obj = prima_mat.common.selectx_mod();
 
-            % Inputs
-
-
-
-            % In-outputs
-
-
-
-            % Local variables
-
-
 
             x = NaN(size(sim, 1), 1);
 
-            % Sizes
 
             n = size(sim, 1);
-
-
-            % Preconditions
 
 
             %====================%
@@ -228,7 +204,7 @@ classdef initialize_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

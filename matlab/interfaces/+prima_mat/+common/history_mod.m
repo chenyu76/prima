@@ -21,23 +21,10 @@ classdef history_mod
 
 
 
-            % Inputs
-
-
-
-            % In-outputs
-
-
-            % Outputs
-
-
-
-            % Local variables
-
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
 
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'output_chist', false);
             addParameter(ipObj, 'chist', NaN);
@@ -96,7 +83,7 @@ classdef history_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function [xhist, fhist, chist, conhist] = savehist(~, nf, x, xhist, f, fhist, varargin)
@@ -106,19 +93,6 @@ classdef history_mod
 
 
 
-            % Inputs
-
-
-
-            % In-outputs
-
-
-
-            % Local variables
-
-
-
-            % Sizes
             maxxhist = size(xhist, 2);
             maxfhist = numel(fhist);
             ipObj = inputParser();
@@ -141,9 +115,6 @@ classdef history_mod
             else
                 maxconhist = 0;
             end
-
-
-            % Preconditions
 
 
             %====================%
@@ -174,7 +145,6 @@ classdef history_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -184,19 +154,6 @@ classdef history_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
-            % Inputs
-
-
-            % In-outputs
-
-
-
-            % Local variables
-
-
-
-            % Sizes
 
             maxxhist = size(xhist, 2);
             maxfhist = numel(fhist);
@@ -218,9 +175,6 @@ classdef history_mod
 
                 maxconhist = 0;
             end
-
-
-            % Preconditions
 
 
             %====================%
@@ -261,7 +215,6 @@ classdef history_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

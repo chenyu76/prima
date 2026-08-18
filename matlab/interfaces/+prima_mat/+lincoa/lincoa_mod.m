@@ -208,8 +208,6 @@ classdef lincoa_mod
             %   %--------------------------------------------------------------------------%
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             evaluate_obj = prima_mat.common.evaluate_mod();
@@ -249,7 +247,7 @@ classdef lincoa_mod
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
-            % Local variables
+
             solver = "LINCOA";
 
             info_loc = NaN;
@@ -278,7 +276,7 @@ classdef lincoa_mod
             % FHIST_LOC(MAXFHIST)
             % XHIST_LOC(N, MAXXHIST)
 
-            % Sizes
+
             ipObj = inputParser();
             addParameter(ipObj, 'f', NaN);
             addParameter(ipObj, 'cstrv', NaN);
@@ -348,8 +346,6 @@ classdef lincoa_mod
                 meq = numel(beq);
             end
             n = numel(x);
-
-            % Preconditions
 
 
             % Read the inputs
@@ -546,8 +542,6 @@ classdef lincoa_mod
             if (nargout >= 5 || nargout >= 6 || nargout >= 7) && maxhist_loc < nf_loc
             end
 
-            % Postconditions
-
 
         end
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, rhoend, xl, xu, x0, amat, bvec)
@@ -567,20 +561,6 @@ classdef lincoa_mod
             % is essential for LINCOA.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
-
-
-            % Inputs
-
-
-
-            % Outputs
-
-
-
-            % Local variables
-
 
 
             Aeq_norm = NaN(size(Aeq, 1), 1);
@@ -590,10 +570,7 @@ classdef lincoa_mod
             idmat = NaN(numel(x0));
 
 
-            % Sizes
             n = numel(x0);
-
-            % Preconditions
 
 
             %====================%
@@ -663,7 +640,7 @@ classdef lincoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

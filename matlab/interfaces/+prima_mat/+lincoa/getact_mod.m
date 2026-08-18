@@ -69,19 +69,16 @@ classdef getact_mod
             % See Section 3 of Powell (2015) for more information.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
 
 
-            % Inputs
             % AMAT(N, M)
 
             % G(N)
 
-            % In-outputs
+
             % IACT(M)
 
             % QFAC(N, N)
@@ -89,10 +86,10 @@ classdef getact_mod
             % RESNEW(M)
             % RFAC(N, N)
 
-            % Outputs
+
             % PSD(N)
 
-            % Local variables
+
 
             icon = NaN;
 
@@ -115,11 +112,9 @@ classdef getact_mod
             vmu = NaN(numel(g), 1);
             vmult = NaN;
 
-            % Sizes.
+
             m = size(amat, 2);
             n = numel(g);
-
-            % Preconditions
 
 
             %====================%
@@ -352,7 +347,6 @@ classdef getact_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -367,11 +361,10 @@ classdef getact_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % Inputs
 
             % C(N)
 
-            % In-outputs
+
             % IACT(M)
 
             % QFAC(N, N)
@@ -382,13 +375,6 @@ classdef getact_mod
 
             % Local variables (debugging only)
 
-
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -414,7 +400,6 @@ classdef getact_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -428,10 +413,7 @@ classdef getact_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % Inputs
 
-
-            % In-outputs
             % IACT(M)
 
             % QFAC(N, N)
@@ -442,14 +424,6 @@ classdef getact_mod
 
             % Local variables (debugging only)
 
-
-
-            % Sizes
-
-
-
-            % Preconditions
-            % Preconditions
 
 
             %====================%
@@ -475,7 +449,6 @@ classdef getact_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

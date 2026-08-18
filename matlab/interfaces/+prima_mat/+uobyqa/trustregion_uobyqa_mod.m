@@ -55,17 +55,14 @@ classdef trustregion_uobyqa_mod
             linalg_obj = prima_mat.common.linalg_mod();
 
 
-            % Inputs
-
             % G(N)
             % H(N, N)
 
 
-            % In-outputs
+
             % D(N)
 
 
-            % Local variables
 
             i = NaN;
 
@@ -107,10 +104,8 @@ classdef trustregion_uobyqa_mod
             z = NaN(numel(g), 1);
             zsq = NaN;
 
-            % Sizes.
-            n = numel(g);
 
-            % Preconditions.
+            n = numel(g);
 
 
             %====================%
@@ -553,7 +548,6 @@ classdef trustregion_uobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -575,13 +569,8 @@ classdef trustregion_uobyqa_mod
             % Expansion factor
             % Reduction ratio
 
-            % Outputs
+
             delta = NaN;
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -616,7 +605,6 @@ classdef trustregion_uobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

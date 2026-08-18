@@ -38,23 +38,17 @@ classdef shiftbase_mod
             % rounding errors are handled by the RESCUE subroutine (Sec. 5 of the BOBYQA paper).
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
 
-
-
-            % Inputs
 
             % PQ(NPT)
             % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
-            % In-outputs
+
             % BMAT(N, NPT + N)
             % HQ(N, N)
             % XBASE(N)
             % XPT(N, NPT)
-
-            % Local variables
 
 
 
@@ -71,7 +65,6 @@ classdef shiftbase_mod
             yzmat = NaN(numel(xbase), size(zmat, 2));
 
 
-            % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
 
@@ -84,8 +77,6 @@ classdef shiftbase_mod
             if ~ismember('idz', ipObj.UsingDefaults)
                 idz_loc = idz;
             end
-
-            % Preconditions
 
 
             %====================%
@@ -136,7 +127,6 @@ classdef shiftbase_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -147,33 +137,23 @@ classdef shiftbase_mod
             % below (40) of the UOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
 
 
-            % Inputs
-
-
-            % In-outputs
             % XBASE(N)
             % XPT(N, NPT)
             % PL(NPT-1, NPT)
             % PQ(NPT-1)
 
-            % Local variables
-
 
 
             xopt = NaN(numel(xbase), 1);
 
-            % Sizes
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -198,7 +178,6 @@ classdef shiftbase_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

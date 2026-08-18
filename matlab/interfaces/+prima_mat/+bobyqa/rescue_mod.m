@@ -82,7 +82,7 @@ classdef rescue_mod
             %   PTSAUX(2, IQ)*e_IQ in the cases IQ=0 or  IP=0, respectively.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
+
             checkexit_obj = prima_mat.common.checkexit_mod();
 
 
@@ -98,14 +98,9 @@ classdef rescue_mod
             xinbd_obj = prima_mat.common.xinbd_mod();
 
 
-            % Inputs
-
-
-
             % XL(N)
             % XU(N)
 
-            % In-outputs
 
 
             % FHIST(MAXFHIST)
@@ -119,12 +114,12 @@ classdef rescue_mod
             % XHIST(N, MAXXHIST)
             % XPT(N, NPT)
 
-            % Outputs
+
 
             %  BMAT(N, NPT + N)
             % ZMAT(NPT, NPT-N-1)
 
-            % Local variables
+
 
             ij = NaN(2, max(0, size(xpt, 2) - 2 * size(xpt, 1) - 1));
             ip = NaN;
@@ -166,9 +161,6 @@ classdef rescue_mod
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-
-            % Preconditions
 
 
             %====================%
@@ -554,7 +546,6 @@ classdef rescue_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -570,26 +561,16 @@ classdef rescue_mod
             % column of H are not stored as they are unnecessary for the calculation.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
 
 
-            % Inputs
-
-
             % VLAG(NPT + N)
 
-            % In-outputs
+
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT-N-1)
-
-            % Outputs
-
-
-            % Local variables
 
 
 
@@ -601,11 +582,8 @@ classdef rescue_mod
             vlag = NaN(numel(vlag_in), 1);
 
 
-            % Sizes.
             n = size(bmat, 1);
             npt = size(bmat, 2) - size(bmat, 1);
-
-            % Preconditions
 
 
             %====================%
@@ -680,7 +658,7 @@ classdef rescue_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
 

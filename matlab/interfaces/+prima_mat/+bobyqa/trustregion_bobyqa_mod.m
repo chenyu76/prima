@@ -45,15 +45,11 @@ classdef trustregion_bobyqa_mod
             % The arrays S and HS hold the current search direction and the change in the gradient of Q along S.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
 
-
-            % Inputs
 
             % GOPT_IN(N)
             % HQ_IN(N, N)
@@ -64,11 +60,9 @@ classdef trustregion_bobyqa_mod
             % XOPT(N)
             % XPT(N, NPT)
 
-            % Outputs
+
 
             % D(N)
-
-            % Local variables
 
 
 
@@ -117,11 +111,8 @@ classdef trustregion_bobyqa_mod
             tanbd = NaN(numel(gopt_in), 1);
             xnew = NaN(numel(gopt_in), 1);
 
-            % Sizes
+
             n = numel(gopt_in);
-
-
-            % Preconditions
 
 
             %====================%
@@ -287,8 +278,7 @@ classdef trustregion_bobyqa_mod
                 sbound(isnan(sbound)) = stplen; % Needed? No if we are sure that D and S are finite.
                 iact = 0;
                 if any(sbound < stplen, 'all')
-                    [~, iact] = min(sbound);
-                    stplen = sbound(iact);
+                    [stplen, iact] = min(sbound);
                     %%MATLAB: [stplen, iact] = min(sbound);
 
                 end
@@ -472,8 +462,7 @@ classdef trustregion_bobyqa_mod
                 iact = 0;
                 hangt_bd = 1.0;
                 if any(tanbd < 1, 'all')
-                    [~, iact] = min(tanbd);
-                    hangt_bd = tanbd(iact);
+                    [hangt_bd, iact] = min(tanbd);
                     %%MATLAB: [hangt_bd, iact] = min(tanbd);
 
                 end
@@ -553,7 +542,6 @@ classdef trustregion_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -565,18 +553,7 @@ classdef trustregion_bobyqa_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             f = NaN;
-
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -614,13 +591,8 @@ classdef trustregion_bobyqa_mod
             % Expansion factor
             % Reduction ratio
 
-            % Outputs
+
             delta = NaN;
-
-            % Local variables
-
-
-            % Preconditions
 
 
             %====================%
@@ -655,7 +627,6 @@ classdef trustregion_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

@@ -17,30 +17,15 @@ classdef update_newuoa_mod
             % This subroutine updates [XPT, FVAL, KOPT] so that XPT(:, KNEW) is updated to XNEW.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
-
-
-            % Inputs
 
 
             % XNEW(N)
 
-            % In-outputs
 
 
             % FVAL(NPT)
             % XPT(N, NPT)
 
-            % Local variables
-
-
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -66,7 +51,6 @@ classdef update_newuoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -85,16 +69,10 @@ classdef update_newuoa_mod
             % use GOPT instead of GQ.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
-
-            % Inputs
-
 
 
             % BMAT(N, NPT + N)
@@ -105,22 +83,14 @@ classdef update_newuoa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
-            % In-outputs
+
             % GOPT(N)
             % HQ(N, N)
             % PQ(NPT)
 
-            % Local variables
-
 
 
             pqinc = NaN(numel(pq), 1);
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -157,7 +127,6 @@ classdef update_newuoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -169,14 +138,10 @@ classdef update_newuoa_mod
             % the NEWUOA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-
-            % Inputs
 
             % BMAT(N, NPT+N)
             % FVAL(NPT)
@@ -197,18 +162,13 @@ classdef update_newuoa_mod
             % which is the case for HQ and PQ when ITEST < 3 at exit. In addition, the information in GOPT is
             % needed for defining ITEST, so it must be INTENT(INOUT).
 
-            % Local variables
-
 
 
             galt = NaN(numel(gopt), 1);
             pqalt = NaN(numel(pq), 1);
 
-            % Sizes
 
             npt = numel(pq);
-
-            % Preconditions
 
 
             %====================%
@@ -239,7 +199,6 @@ classdef update_newuoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end

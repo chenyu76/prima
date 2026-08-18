@@ -29,15 +29,9 @@ classdef geometry_newuoa_mod
             % landscape of the function sufficiently.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-
-            % Inputs
-
 
 
             % BMAT(N, NPT + N)
@@ -47,21 +41,11 @@ classdef geometry_newuoa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
-            % Outputs
+
             knew = NaN;
-
-            % Local variables
-
 
 
             distsq = NaN(size(xpt, 2), 1);
-
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -134,7 +118,6 @@ classdef geometry_newuoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -151,14 +134,9 @@ classdef geometry_newuoa_mod
             % D will be set to the step from X to the new point.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-            % Inputs
-
 
 
             % BMAT(N, NPT + N)
@@ -166,21 +144,12 @@ classdef geometry_newuoa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
-            % Outputs
-            d = NaN(size(xpt, 1), 1); % D(N)
 
-            % Local variables
+            d = NaN(size(xpt, 1), 1); % D(N)
 
 
 
             pqlag = NaN(size(xpt, 2), 1);
-
-
-            % Sizes
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -233,7 +202,6 @@ classdef geometry_newuoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -246,16 +214,11 @@ classdef geometry_newuoa_mod
             % where LFUNC is the KNEW-th Lagrange function. See Section 6 of the NEWUOA paper.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
-
-
-            % Inputs
 
 
             % BMAT(N, NPT + N)
@@ -264,10 +227,8 @@ classdef geometry_newuoa_mod
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
-            % Outputs
-            d = NaN(size(xpt, 1), 1); % D(N)
 
-            % Local variables
+            d = NaN(size(xpt, 1), 1); % D(N)
 
 
 
@@ -290,11 +251,8 @@ classdef geometry_newuoa_mod
 
             w = NaN(numel(x), 1);
 
-            % Sizes
+
             n = size(xpt, 1);
-
-
-            % Preconditions
 
 
             %====================%
@@ -412,7 +370,6 @@ classdef geometry_newuoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -432,8 +389,6 @@ classdef geometry_newuoa_mod
             % no difference mathematically, but the computed VLAG/BETA will change slightly due to rounding.
             %--------------------------------------------------------------------------------------------------%
 
-            % Common modules
-
 
 
             linalg_obj = prima_mat.common.linalg_mod();
@@ -441,16 +396,12 @@ classdef geometry_newuoa_mod
             univar_obj = prima_mat.common.univar_mod();
 
 
-            % Inputs
-
-
-
             % BMAT(N, NPT+N)
 
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
-            % Outputs
+
             d = NaN(size(xpt, 1), 1); % D(N)
 
             % Local variable
@@ -496,11 +447,9 @@ classdef geometry_newuoa_mod
             yd = NaN;
             ysq = NaN;
 
-            % Sizes
+
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
-            % Preconditions
 
 
             %====================%
@@ -708,7 +657,6 @@ classdef geometry_newuoa_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
 
 
         end
@@ -718,18 +666,8 @@ classdef geometry_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % Inputs
 
-
-
-            % Outputs
             f = NaN;
-
-            % Local variables
-
-
-
-            % Preconditions
 
 
             %====================%
@@ -751,18 +689,10 @@ classdef geometry_newuoa_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             f = NaN;
 
-            % Local variables
 
             par = NaN(numel(args), 1);
-
-            % Preconditions
 
 
             %====================%

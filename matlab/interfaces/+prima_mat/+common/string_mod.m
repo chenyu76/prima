@@ -100,21 +100,14 @@ classdef string_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             s = "";
-            % Local variables
-
 
 
             % The number of decimal digits to print
             % The number of digits in the exponent
             % The width of the printed X
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'ndgt', NaN);
             addParameter(ipObj, 'nexp', NaN);
@@ -159,7 +152,7 @@ classdef string_mod
             %  Calculation ends  %
             %====================%
 
-            % Postconditions
+
 
         end
         function s = real2str_vector(obj, x, varargin)
@@ -171,13 +164,8 @@ classdef string_mod
 
 
 
-            % Inputs
-
-
-
-            % Outputs
             s = "";
-            % Local variables
+
 
             spaces = "  "; % The spaces between two entries in a row
 
@@ -190,7 +178,7 @@ classdef string_mod
             % The length of the string
             % The width of each entry in X
 
-            % Preconditions
+
             ipObj = inputParser();
             addParameter(ipObj, 'ndgt', NaN);
             addParameter(ipObj, 'nexp', NaN);
