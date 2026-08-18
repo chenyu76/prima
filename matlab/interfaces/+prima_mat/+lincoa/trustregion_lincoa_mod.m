@@ -39,12 +39,10 @@ classdef trustregion_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
 
             % Solver-specific modules
             getact_obj = prima_mat.lincoa.getact_mod();
-
 
             % AMAT(N, M)
 
@@ -65,9 +63,7 @@ classdef trustregion_lincoa_mod
             % S(N)
 
 
-
             jsav = NaN;
-
 
             ad = NaN(size(amat, 2), 1);
             alpha = NaN;
@@ -75,7 +71,6 @@ classdef trustregion_lincoa_mod
             alpht = NaN;
             beta = NaN;
             d = NaN(numel(gopt_in), 1);
-
 
             dg = NaN;
             dhd = NaN;
@@ -88,7 +83,6 @@ classdef trustregion_lincoa_mod
             hd = NaN(numel(gopt_in), 1);
             hq = NaN(size(hq_in, 1), size(hq_in, 2));
 
-
             pg = NaN(numel(gopt_in), 1);
             pq = NaN(numel(pq_in), 1);
             psd = NaN(numel(gopt_in), 1);
@@ -100,10 +94,8 @@ classdef trustregion_lincoa_mod
             sold = NaN(numel(s), 1);
             sqrtd = NaN;
 
-
             m = size(amat, 2);
             n = numel(gopt_in);
-
 
             %====================%
             % Calculation starts %
@@ -457,7 +449,6 @@ classdef trustregion_lincoa_mod
             %====================%
 
 
-
         end
         %--------------------------------------------------------------------------------------------------%
         % Zaikun 20220417:
@@ -479,11 +470,7 @@ classdef trustregion_lincoa_mod
             % This function updates the trust region radius according to RATIO and DNORM.
             %--------------------------------------------------------------------------------------------------%
 
-            % Generic module
 
-
-
-            % Input
             % Current trust-region radius
             % Norm of current trust-region step
             % Ratio threshold for contraction
@@ -494,7 +481,6 @@ classdef trustregion_lincoa_mod
 
 
             delta = NaN;
-
 
             %====================%
             % Calculation starts %
@@ -529,7 +515,6 @@ classdef trustregion_lincoa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

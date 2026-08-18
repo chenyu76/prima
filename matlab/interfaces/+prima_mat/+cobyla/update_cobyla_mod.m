@@ -18,12 +18,10 @@ classdef update_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % CONSTR(M)
 
 
             % D(N)
-
 
 
             % CONMAT(M, N+1)
@@ -31,7 +29,6 @@ classdef update_cobyla_mod
             % FVAL(N+1)
             % SIM(N, N+1)
             % SIMI(N, N)
-
 
 
             sim_old = NaN(size(sim, 1), size(sim, 2));
@@ -42,9 +39,7 @@ classdef update_cobyla_mod
             sum_simi = NaN(size(simi, 2), 1);
             itol = 1.0;
 
-
             n = size(sim, 1);
-
 
             %====================%
             % Calculation starts %
@@ -104,7 +99,6 @@ classdef update_cobyla_mod
             %====================%
 
 
-
         end
         function [conmat, cval, fval, sim, simi, info] = updatepole(obj, cpen, conmat, cval, fval, sim, simi)
             %--------------------------------------------------------------------------------------------------%
@@ -134,13 +128,11 @@ classdef update_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % CONMAT(M, N+1)
             % CVAL(N+1)
             % FVAL(N+1)
             % SIM(N, N+1)
             % SIMI(N, N)
-
 
 
             sim_jopt = NaN(size(sim, 1), 1);
@@ -149,9 +141,7 @@ classdef update_cobyla_mod
             simi_test = NaN(size(simi, 1), size(simi, 2));
             itol = 1.0;
 
-
             n = size(sim, 1);
-
 
             %====================%
             % Calculation starts %
@@ -217,7 +207,6 @@ classdef update_cobyla_mod
             %====================%
 
 
-
         end
         function jopt = findpole(~, cpen, cval, fval)
             %--------------------------------------------------------------------------------------------------%
@@ -226,20 +215,13 @@ classdef update_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % CVAL(N+1)
             % FVAL(N+1)
 
 
             jopt = NaN;
 
-
             phi = NaN(numel(cval), 1);
-
-
-            % Size
-
-
 
             %====================%
             % Calculation starts %
@@ -260,7 +242,6 @@ classdef update_cobyla_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

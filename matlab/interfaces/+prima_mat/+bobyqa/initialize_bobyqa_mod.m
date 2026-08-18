@@ -34,20 +34,13 @@ classdef initialize_bobyqa_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
 
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
             xinbd_obj = prima_mat.common.xinbd_mod();
-
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
 
             % XL(N)
             % XU(N)
@@ -57,7 +50,6 @@ classdef initialize_bobyqa_mod
 
 
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
-
 
 
             % FVAL(NPT)
@@ -70,15 +62,12 @@ classdef initialize_bobyqa_mod
 
             solver = "BOBYQA";
 
-
             evaluated = false(size(xpt, 2), 1);
 
             x = NaN(size(xpt, 1), 1);
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -244,7 +233,6 @@ classdef initialize_bobyqa_mod
             %====================%
 
 
-
         end
         function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, gopt, hq, pq, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -253,11 +241,9 @@ classdef initialize_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
             % FVAL(NPT)
             % XPT(N, NPT)
-
 
 
             % GOPT(N)
@@ -265,14 +251,11 @@ classdef initialize_bobyqa_mod
             % PQ(NPT)
 
 
-
             xa = NaN(min(size(xpt, 1), size(xpt, 2) - size(xpt, 1) - 1), 1);
             xb = NaN(numel(xa), 1);
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -338,7 +321,6 @@ classdef initialize_bobyqa_mod
             %====================%
 
 
-
         end
         function [bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -347,28 +329,22 @@ classdef initialize_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             %use, non_intrinsic :: powalg_mod, only : errh
-
 
 
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
             % XPT(N, NPT)
 
 
-
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
-
 
 
             xa = NaN(min(size(xpt, 1), size(xpt, 2) - size(xpt, 1) - 1), 1);
             xb = NaN(numel(xa), 1);
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -426,7 +402,6 @@ classdef initialize_bobyqa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

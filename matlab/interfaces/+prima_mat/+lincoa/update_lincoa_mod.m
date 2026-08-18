@@ -18,14 +18,11 @@ classdef update_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % XNEW(N)
-
 
 
             % FVAL(NPT)
             % XPT(N, NPT)
-
 
 
             %====================%
@@ -50,7 +47,6 @@ classdef update_lincoa_mod
             %====================%
 
 
-
         end
         function [gopt, hq, pq] = updateq(~, idz, knew, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
@@ -63,10 +59,8 @@ classdef update_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT + N)
             % D(:)
@@ -82,9 +76,7 @@ classdef update_lincoa_mod
             % PQ(NPT)
 
 
-
             pqinc = NaN(numel(pq), 1);
-
 
             %====================%
             % Calculation starts %
@@ -121,7 +113,6 @@ classdef update_lincoa_mod
             %====================%
 
 
-
         end
         function [qalt_better, gopt, pq, hq, galt, pqalt] = tryqalt(~, idz, bmat, fval, xopt, xpt, zmat, qalt_better, gopt, pq, hq, galt, pqalt)
             %--------------------------------------------------------------------------------------------------%
@@ -133,9 +124,7 @@ classdef update_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT + N)
             % FVAL(NPT)
@@ -154,9 +143,7 @@ classdef update_lincoa_mod
             % PQALT(NPT)
 
 
-
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -180,7 +167,6 @@ classdef update_lincoa_mod
             %====================%
 
 
-
         end
         function rescon = updateres(~, ximproved, amat, b, delta, dnorm, xopt, rescon)
             %--------------------------------------------------------------------------------------------------%
@@ -194,7 +180,6 @@ classdef update_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % AMAT(N, M)
             % B(M)
 
@@ -205,10 +190,8 @@ classdef update_lincoa_mod
             % RESCON(M)
 
 
-
             mask = false(numel(b), 1);
             ax = NaN(numel(b), 1);
-
 
             %====================%
             % Calculation starts %
@@ -238,7 +221,6 @@ classdef update_lincoa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

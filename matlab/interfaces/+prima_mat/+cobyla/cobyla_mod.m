@@ -246,25 +246,16 @@ classdef cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
-
             preproc_obj = prima_mat.common.preproc_mod();
-
 
             % Solver-specific modules
             cobylb_obj = prima_mat.cobyla.cobylb_mod();
 
-
-            % Compulsory arguments
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
             % X(N)
             % Number of constraints defined in CALCFC
-
-            % Optional inputs
-
 
 
             % Aeq(Meq, N)
@@ -274,12 +265,8 @@ classdef cobyla_mod
             % NLCONSTR0(M_NLCON)
 
 
-
             % XL(N)
             % XU(N)
-
-            % Optional outputs
-
 
 
             % NLCONSTR(M_NLCON)
@@ -293,17 +280,13 @@ classdef cobyla_mod
 
             info_loc = NaN;
 
-
             nf_loc = NaN;
 
-
             cstrv_loc = NaN;
-
 
             eta1_loc = NaN;
 
             f_loc = NaN;
-
 
             xl_loc = NaN(numel(x), 1);
             xu_loc = NaN(numel(x), 1);
@@ -353,7 +336,6 @@ classdef cobyla_mod
             addParameter(ipObj, 'callback_fcn', struct());
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-
 
             nlconstr = ipObj.Results.nlconstr;
             Aineq = ipObj.Results.Aineq;
@@ -407,17 +389,14 @@ classdef cobyla_mod
             m = mxu + mxl + 2 * meq + mineq + m_nlcon;
             n = numel(x);
 
-
             % Exit if the size of NLCONSTR0 is inconsistent with M_NLCON.
             if ~ismember('nlconstr0', ipObj.UsingDefaults)
                 if numel(nlconstr0) ~= m_nlcon
-
 
                     return % This may be problematic, as outputs like F are undefined.
 
                 end
             end
-
 
             % Read the inputs.
 
@@ -455,7 +434,6 @@ classdef cobyla_mod
             end
             xl_loc(isnan(xl_loc) | xl_loc < -(0.25 * realmax)) = -(0.25 * realmax);
 
-
             xu_loc(:) = 0.25 * realmax;
             if ~ismember('xu', ipObj.UsingDefaults)
                 if numel(xu) > 0
@@ -463,7 +441,6 @@ classdef cobyla_mod
                 end
             end
             xu_loc(isnan(xu_loc) | xu_loc > 0.25 * realmax) = 0.25 * realmax;
-
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
             [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, xl_loc, xu_loc, amat, bvec);
@@ -518,13 +495,11 @@ classdef cobyla_mod
                 rhoend_loc = 1.0e-6;
             end
 
-
             if ismember('maxfun', ipObj.UsingDefaults)
                 maxfun_loc = 500 * n;
             else
                 maxfun_loc = maxfun;
             end
-
 
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
@@ -544,13 +519,11 @@ classdef cobyla_mod
                 eta2_loc = 0.7;
             end
 
-
             if ismember('maxhist', ipObj.UsingDefaults)
                 maxhist_loc = max([maxfun_loc, n + 2, 500 * n], [], 'all');
             else
                 maxhist_loc = maxhist;
             end
-
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
             [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, ~, maxfilt_loc, ctol_loc, cweight_loc, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, 'm', m, 'is_constrained', (m > 0), 'ctol', ctol_loc, 'cweight', cweight_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc, 'maxfilt', maxfilt_loc);
@@ -560,7 +533,6 @@ classdef cobyla_mod
             % CHIST = NaN(1, MAXFUN), NLCHIST = NaN(M_NLCON, MAXFUN), FHIST = NaN(1, MAXFUN), XHIST =
             % NaN(N, MAXFUN) if they are requested; replace MAXFUN with 0 for the history not requested.
             [maxhist_loc, xhist_loc, fhist_loc, chist_loc, conhist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 6, nargout >= 7, 'output_chist', nargout >= 8, 'm', m, 'output_conhist', nargout >= 9);
-
 
             %-------------------- Call COBYLB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
@@ -573,15 +545,12 @@ classdef cobyla_mod
             % Deallocate variables not needed any more. We prefer explicit deallocation to the automatic one.
 
 
-
             % Write the outputs.
-
 
 
             if nargout >= 4
                 nlconstr = constr_loc(m - m_nlcon + 1:m);
             end
-
 
             % Copy XHIST_LOC to XHIST if needed.
             if nargout >= 6
@@ -617,7 +586,6 @@ classdef cobyla_mod
 
             end
 
-
             % Copy CHIST_LOC to CHIST if needed.
             if nargout >= 8
                 nhist = min(nf_loc, numel(chist_loc));
@@ -627,7 +595,6 @@ classdef cobyla_mod
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
             end
-
 
             % Copy CONHIST_LOC to NLCHIST if needed.
             % N.B.: We need only the nonlinear part of the history. Therefore, one may modify COBYLB so that it
@@ -645,11 +612,9 @@ classdef cobyla_mod
 
             end
 
-
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if (nargout >= 6 || nargout >= 7 || nargout >= 8 || nargout >= 9) && maxhist_loc < nf_loc
             end
-
 
         end
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu, amat, bvec)
@@ -666,12 +631,9 @@ classdef cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             idmat = NaN(numel(xl));
 
-
             n = numel(xl);
-
 
             %====================%
             % Calculation starts %
@@ -713,7 +675,6 @@ classdef cobyla_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

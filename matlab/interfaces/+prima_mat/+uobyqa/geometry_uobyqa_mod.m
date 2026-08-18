@@ -31,9 +31,7 @@ classdef geometry_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % D(N)
             % PL(NPT-1, NPT)
@@ -43,11 +41,9 @@ classdef geometry_uobyqa_mod
 
             knew = NaN;
 
-
             distsq = NaN(size(xpt, 2), 1);
 
             vlag = NaN(size(xpt, 2), 1);
-
 
             %====================%
             % Calculation starts %
@@ -132,7 +128,6 @@ classdef geometry_uobyqa_mod
             %====================%
 
 
-
         end
         function d = geostep(~, knew, kopt, delbar, pl, xpt)
             %--------------------------------------------------------------------------------------------------%
@@ -156,10 +151,8 @@ classdef geometry_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % PL(NPT-1, NPT)
             % XPT(N, NPT)
@@ -168,27 +161,20 @@ classdef geometry_uobyqa_mod
             d = NaN(size(xpt, 1), 1); % D(N)
 
 
-
             dcauchy = NaN(size(xpt, 1), 1);
 
-
             g = NaN(size(xpt, 1), 1);
-
 
             h = NaN(size(xpt, 1));
             hv = NaN(size(xpt, 1), 1);
 
-
             vlag = NaN(size(xpt, 2), 1);
             vlagc = NaN(size(xpt, 2), 1);
 
-
             xopt = NaN(size(xpt, 1), 1);
-
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -371,7 +357,6 @@ classdef geometry_uobyqa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

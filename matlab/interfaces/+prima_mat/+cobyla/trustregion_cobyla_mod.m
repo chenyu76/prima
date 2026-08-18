@@ -56,7 +56,6 @@ classdef trustregion_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % A(N, M)
             % B(M)
 
@@ -66,9 +65,7 @@ classdef trustregion_cobyla_mod
             d = NaN(size(A, 1), 1); % D(N)
 
 
-
             iact = NaN(numel(b) + 1, 1);
-
 
             nact = NaN;
             A_aug = NaN(size(A, 1), size(A, 2) + 1);
@@ -77,10 +74,8 @@ classdef trustregion_cobyla_mod
             vmultc = NaN(numel(b) + 1, 1);
             z = NaN(numel(d));
 
-
             m = size(A, 2);
             n = size(A, 1);
-
 
             %====================%
             % Calculation starts %
@@ -114,7 +109,6 @@ classdef trustregion_cobyla_mod
             %====================%
 
 
-
         end
         function [iact, nact, d, vmultc, z] = trstlp_sub(~, iact, nact, stage, A, b, delta, d, vmultc, z)
             %--------------------------------------------------------------------------------------------------%
@@ -129,14 +123,11 @@ classdef trustregion_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
-
             % A(N, MCON)
             % B(M)
-
 
 
             % IACT(MCON)
@@ -146,9 +137,7 @@ classdef trustregion_cobyla_mod
             % Z(N, N)
 
 
-
             nactsav = NaN;
-
 
             %real(RP) :: cvold
             cvsabs = NaN(numel(b), 1);
@@ -159,7 +148,6 @@ classdef trustregion_cobyla_mod
             frac = NaN;
             fracmult = NaN(numel(vmultc), 1);
 
-
             sd = NaN;
             sdirn = NaN(numel(d), 1);
             sqrtd = NaN;
@@ -169,10 +157,8 @@ classdef trustregion_cobyla_mod
             zdasav = NaN(size(z, 2), 1);
             zdota = NaN(size(z, 2), 1);
 
-
             mcon = size(A, 2);
             n = size(A, 1);
-
 
             %====================%
             % Calculation starts %
@@ -514,18 +500,13 @@ classdef trustregion_cobyla_mod
             %====================%
 
 
-
         end
         function delta = trrad(~, delta_in, dnorm, eta1, eta2, gamma1, gamma2, ratio)
             %--------------------------------------------------------------------------------------------------%
             % This function updates the trust region radius according to RATIO and DNORM.
             %--------------------------------------------------------------------------------------------------%
 
-            % Generic module
 
-
-
-            % Input
             % Current trust-region radius
             % Norm of current trust-region step
             % Ratio threshold for contraction
@@ -536,7 +517,6 @@ classdef trustregion_cobyla_mod
 
 
             delta = NaN;
-
 
             %====================%
             % Calculation starts %
@@ -571,7 +551,6 @@ classdef trustregion_cobyla_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

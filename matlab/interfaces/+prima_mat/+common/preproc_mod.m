@@ -23,34 +23,17 @@ classdef preproc_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
-            % Compulsory inputs
-
-
-
-            % Optional inputs
-
-
-
-            % Compulsory in-outputs
-
-
-
             % Optional in-outputs
 
 
-
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
-
 
 
             lbx = false(n, 1);
             ubx = false(n, 1);
 
-
             x0_in = NaN(n, 1);
-
 
             ipObj = inputParser();
             addParameter(ipObj, 'm', NaN);
@@ -84,7 +67,6 @@ classdef preproc_mod
             xl = ipObj.Results.xl;
             xu = ipObj.Results.xu;
             x0 = ipObj.Results.x0;
-
 
             %====================%
             % Calculation starts %
@@ -236,7 +218,6 @@ classdef preproc_mod
 
             rhobeg_in = rhobeg;
 
-
             % Revise the default values for RHOBEG/RHOEND according to the solver.
             if lower(solver) == "bobyqa"
                 rhobeg_default = max(eps(1.0), min(1.0, min(xu - xl, [], 'all') / 4.0));
@@ -353,7 +334,6 @@ classdef preproc_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

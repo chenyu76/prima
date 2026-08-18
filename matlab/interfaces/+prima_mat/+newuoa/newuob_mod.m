@@ -45,10 +45,8 @@ classdef newuob_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
 
             message_obj = prima_mat.common.message_mod();
 
@@ -63,13 +61,7 @@ classdef newuob_mod
             trustregion_newuoa_obj = prima_mat.newuoa.trustregion_newuoa_mod();
             update_newuoa_obj = prima_mat.newuoa.update_newuoa_mod();
 
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
-
             % X(N)
-
 
 
             % FHIST(MAXFHIST)
@@ -83,7 +75,6 @@ classdef newuob_mod
 
             k = NaN;
 
-
             accurate_mod = false;
             adequate_geo = false;
             bad_trstep = false;
@@ -92,7 +83,6 @@ classdef newuob_mod
             reduce_rho = false;
 
             small_trrad = false;
-
 
             ximproved = false;
             bmat = NaN(numel(x), npt + numel(x));
@@ -111,14 +101,12 @@ classdef newuob_mod
             moderr_rec = NaN(numel(dnorm_rec), 1);
             pq = NaN(npt, 1);
 
-
             xbase = NaN(numel(x), 1);
             xdrop = NaN(numel(x), 1);
             xosav = NaN(numel(x), 1);
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
-
 
 
             %====================%
@@ -167,7 +155,6 @@ classdef newuob_mod
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x);
-
 
                 return
             end
@@ -616,7 +603,6 @@ classdef newuob_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

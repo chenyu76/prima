@@ -85,10 +85,8 @@ classdef rescue_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
 
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
@@ -97,10 +95,8 @@ classdef rescue_mod
 
             xinbd_obj = prima_mat.common.xinbd_mod();
 
-
             % XL(N)
             % XU(N)
-
 
 
             % FHIST(MAXFHIST)
@@ -115,22 +111,18 @@ classdef rescue_mod
             % XPT(N, NPT)
 
 
-
             %  BMAT(N, NPT + N)
             % ZMAT(NPT, NPT-N-1)
-
 
 
             ij = NaN(2, max(0, size(xpt, 2) - 2 * size(xpt, 1) - 1));
             ip = NaN;
             iq = NaN;
 
-
             k = NaN;
 
             korig = NaN;
             kprov = NaN;
-
 
             subinfo = NaN;
             mask = false(size(xpt, 1), 1);
@@ -139,14 +131,12 @@ classdef rescue_mod
             den = NaN(size(xpt, 2), 1);
             f = NaN;
 
-
             hdiag = NaN(size(xpt, 2), 1);
             moderr = NaN;
             pqinc = NaN(size(xpt, 2), 1);
             ptsaux = NaN(2, size(xpt, 1));
             ptsid = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
-
 
             v = NaN(size(xpt, 1), 1);
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
@@ -161,7 +151,6 @@ classdef rescue_mod
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -547,7 +536,6 @@ classdef rescue_mod
             %====================%
 
 
-
         end
         function [bmat, zmat, info] = updateh_rsc(~, knew, beta, vlag_in, bmat, zmat, varargin)
             % %%% N.B.: UPDATEH_RSC is only used by RESCUE.
@@ -562,9 +550,7 @@ classdef rescue_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
-
 
             % VLAG(NPT + N)
 
@@ -573,18 +559,14 @@ classdef rescue_mod
             % ZMAT(NPT, NPT-N-1)
 
 
-
             hcol = NaN(size(bmat, 2), 1);
-
 
             v1 = NaN(size(bmat, 1), 1);
             v2 = NaN(size(bmat, 1), 1);
             vlag = NaN(numel(vlag_in), 1);
 
-
             n = size(bmat, 1);
             npt = size(bmat, 2) - size(bmat, 1);
-
 
             %====================%
             % Calculation starts %
@@ -657,7 +639,6 @@ classdef rescue_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

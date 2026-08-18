@@ -33,10 +33,8 @@ classdef selectx_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % N
             % M
-
 
 
             % MAXFILT
@@ -45,16 +43,12 @@ classdef selectx_mod
             % (M, MAXFILT)
 
 
-
             index_to_keep = NaN(numel(ffilt), 1);
-
 
             keep = false(nfilt, 1);
             cfilt_shifted = NaN(numel(ffilt), 1);
 
-
             phi = NaN(numel(ffilt), 1);
-
 
             ipObj = inputParser();
             addParameter(ipObj, 'constr', NaN);
@@ -63,9 +57,7 @@ classdef selectx_mod
             constr = ipObj.Results.constr;
             confilt = ipObj.Results.confilt;
 
-
             maxfilt = numel(ffilt);
-
 
             %====================%
             % Calculation starts %
@@ -139,7 +131,6 @@ classdef selectx_mod
             %====================%
 
 
-
         end
         function kopt = selectx(~, fhist, chist, cweight, ctol)
             %--------------------------------------------------------------------------------------------------%
@@ -152,18 +143,13 @@ classdef selectx_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             kopt = NaN;
-
 
             chist_shifted = NaN(numel(fhist), 1);
 
-
             phi = NaN(numel(fhist), 1);
 
-
             nhist = numel(fhist);
-
 
             %====================%
             % Calculation starts %
@@ -230,7 +216,6 @@ classdef selectx_mod
             %====================%
 
 
-
         end
         function is_better = isbetter00(~, f1, c1, f2, c2, ctol)
             %--------------------------------------------------------------------------------------------------%
@@ -243,9 +228,7 @@ classdef selectx_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             is_better = false;
-
 
             %====================%
             % Calculation starts %
@@ -268,16 +251,12 @@ classdef selectx_mod
             %====================%
 
 
-
         end
         function is_better = isbetter10(obj, f1, c1, f2, c2, ctol)
 
-
             is_better = false(1, 1);
 
-
             nfc = numel(f1);
-
 
             %====================%
             % Calculation starts %
@@ -291,16 +270,12 @@ classdef selectx_mod
             %====================%
 
 
-
         end
         function is_better = isbetter01(obj, f1, c1, f2, c2, ctol)
 
-
             is_better = false(1, 1);
 
-
             nfc = numel(f2);
-
 
             %====================%
             % Calculation starts %
@@ -312,7 +287,6 @@ classdef selectx_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

@@ -33,10 +33,8 @@ classdef cobylb_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
 
             message_obj = prima_mat.common.message_mod();
 
@@ -50,21 +48,14 @@ classdef cobylb_mod
             trustregion_cobyla_obj = prima_mat.cobyla.trustregion_cobyla_mod();
             update_cobyla_obj = prima_mat.cobyla.update_cobyla_mod();
 
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
-
             % AMAT(N, M_LCON)
             % BVEC(M_LCON)
-
 
 
             % On entry, [X, F, CONSTR] = [X0, F(X0), CONSTR(X0)]
             % CONSTR(M)
 
             % X(N)
-
 
 
             % CHIST(MAXCHIST)
@@ -78,13 +69,11 @@ classdef cobylb_mod
 
             j = NaN;
 
-
             bad_trstep = false;
             adequate_geo = false;
             evaluated = false(numel(x) + 1, 1);
             improve_geo = false;
             reduce_rho = false;
-
 
             ximproved = false;
             A = NaN(numel(x), numel(constr)); % A contains the approximate gradient for the constraints
@@ -123,11 +112,9 @@ classdef cobylb_mod
             % to PREREC in this case, which is crucial for feasibility problems.
             cpenmin = eps(1.0);
 
-
             m_lcon = numel(bvec);
             m = numel(constr);
             n = numel(x);
-
 
             %====================%
             % Calculation starts %
@@ -174,7 +161,6 @@ classdef cobylb_mod
                 [xhist, fhist, chist, conhist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist, 'conhist', conhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, 'constr', constr);
-
 
                 return
             end
@@ -614,7 +600,6 @@ classdef cobylb_mod
             %====================%
 
 
-
         end
         function cpen = getcpen(~, amat, bvec, conmat_in, cpen_in, cval_in, delta, fval_in, sim_in, simi_in)
             %--------------------------------------------------------------------------------------------------%
@@ -623,14 +608,11 @@ classdef cobylb_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % Solver-specific modules
             trustregion_cobyla_obj = prima_mat.cobyla.trustregion_cobyla_mod();
             update_cobyla_obj = prima_mat.cobyla.update_cobyla_mod();
 
-
             cpen = NaN;
-
 
             A = NaN(size(sim_in, 1), size(conmat_in, 1));
             conmat = NaN(size(conmat_in, 1), size(conmat_in, 2));
@@ -639,15 +621,12 @@ classdef cobylb_mod
             fval = NaN(numel(fval_in), 1);
             g = NaN(size(sim_in, 1), 1);
 
-
             sim = NaN(size(sim_in, 1), size(sim_in, 2));
             simi = NaN(size(simi_in, 1), size(simi_in, 2));
-
 
             m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(sim, 1);
-
 
             %====================%
             % Calculation starts %
@@ -719,7 +698,6 @@ classdef cobylb_mod
             %====================%
 
 
-
         end
         function r = fcratio(~, conmat, fval)
             %--------------------------------------------------------------------------------------------------%
@@ -728,17 +706,14 @@ classdef cobylb_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % CONMAT(M, N+1)
             % FVAL(N+1)
 
 
             r = NaN;
 
-
             cmax = NaN(size(conmat, 1), 1);
             cmin = NaN(size(conmat, 1), 1);
-
 
             %====================%
             % Calculation starts %
@@ -763,7 +738,6 @@ classdef cobylb_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

@@ -35,18 +35,12 @@ classdef initialize_lincoa_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
 
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
 
             % AMAT(Meq, N)
             % AMAT(Mineq, N)
@@ -55,14 +49,12 @@ classdef initialize_lincoa_mod
             % Bineq(M)
 
 
-
             % XL(N)
             % XU(N)
             % X0(N)
 
 
             % B(M)
-
 
 
             % IJ(2, MAX(0_IK, NPT-2*N-1))
@@ -80,18 +72,14 @@ classdef initialize_lincoa_mod
 
             solver = "LINCOA";
 
-
             feasible = false(size(xpt, 2), 1);
             constr = NaN(nnz(xl > -(0.25 * realmax)) + nnz(xu < 0.25 * realmax) + 2 * numel(beq) + numel(bineq), 1);
             constr_leq = NaN(numel(beq), 1);
 
-
             x = NaN(numel(x0), 1);
-
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -213,7 +201,6 @@ classdef initialize_lincoa_mod
             %====================%
 
 
-
         end
         function [idz, bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -222,9 +209,7 @@ classdef initialize_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             %use, non_intrinsic :: powalg_mod, only : errh
-
 
 
             % IJ(2, MAX(0_IK, NPT - 2_IK * N - 1_IK))
@@ -233,15 +218,12 @@ classdef initialize_lincoa_mod
             % ZMAT and BMAT are completely defined by RHOBEG and IJ.
 
 
-
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
 
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -306,7 +288,6 @@ classdef initialize_lincoa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

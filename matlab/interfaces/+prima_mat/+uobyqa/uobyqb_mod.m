@@ -38,10 +38,8 @@ classdef uobyqb_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
 
             linalg_obj = prima_mat.common.linalg_mod();
 
@@ -58,13 +56,7 @@ classdef uobyqb_mod
             trustregion_uobyqa_obj = prima_mat.uobyqa.trustregion_uobyqa_mod();
             update_uobyqa_obj = prima_mat.uobyqa.update_uobyqa_mod();
 
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
-
             % X(N)
-
 
 
             % FHIST(MAXFHIST)
@@ -75,7 +67,6 @@ classdef uobyqb_mod
 
             k = NaN;
 
-
             accurate_mod = false;
             adequate_geo = false;
             bad_trstep = false;
@@ -84,7 +75,6 @@ classdef uobyqb_mod
             reduce_rho = false;
 
             small_trrad = false;
-
 
             ximproved = false;
 
@@ -103,7 +93,6 @@ classdef uobyqb_mod
             moderr_rec = NaN(numel(dnorm_rec), 1);
             pq = NaN(numel(distsq) + -1, 1);
 
-
             xbase = NaN(numel(x), 1);
             xdrop = NaN(numel(x), 1);
             xpt = NaN(numel(x), numel(distsq));
@@ -116,7 +105,6 @@ classdef uobyqb_mod
             if ~(npt > 0)
                 error("NPT > 0");
             end % Validate that NPT does not overflow.
-
 
 
             %====================%
@@ -168,7 +156,6 @@ classdef uobyqb_mod
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x);
-
 
                 return
             end
@@ -530,7 +517,6 @@ classdef uobyqb_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

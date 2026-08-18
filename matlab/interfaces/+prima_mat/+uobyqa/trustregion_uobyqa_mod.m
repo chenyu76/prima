@@ -51,26 +51,20 @@ classdef trustregion_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
-
 
             % G(N)
             % H(N, N)
 
 
-
             % D(N)
-
 
 
             i = NaN;
 
             k = NaN;
 
-
             negcrv = false;
-
 
             dhd = NaN;
             dnewton = NaN(numel(g), 1); % Newton-Raphson step; only calculated when N = 1.
@@ -82,15 +76,11 @@ classdef trustregion_uobyqa_mod
             gam = NaN;
             gg = NaN(numel(g), 1);
 
-
             hh = NaN(numel(g));
-
 
             partmp = NaN;
 
-
             phi = NaN;
-
 
             piv = NaN(numel(g), 1);
             slope = NaN;
@@ -104,9 +94,7 @@ classdef trustregion_uobyqa_mod
             z = NaN(numel(g), 1);
             zsq = NaN;
 
-
             n = numel(g);
-
 
             %====================%
             % Calculation starts %
@@ -549,18 +537,13 @@ classdef trustregion_uobyqa_mod
             %====================%
 
 
-
         end
         function delta = trrad(~, delta_in, dnorm, eta1, eta2, gamma1, gamma2, ratio)
             %--------------------------------------------------------------------------------------------------%
             % This function updates the trust region radius according to RATIO and DNORM.
             %--------------------------------------------------------------------------------------------------%
 
-            % Generic module
 
-
-
-            % Input
             % Current trust-region radius
             % Norm of current trust-region step
             % Ratio threshold for contraction
@@ -571,7 +554,6 @@ classdef trustregion_uobyqa_mod
 
 
             delta = NaN;
-
 
             %====================%
             % Calculation starts %
@@ -604,7 +586,6 @@ classdef trustregion_uobyqa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

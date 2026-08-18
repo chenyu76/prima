@@ -37,25 +37,17 @@ classdef initialize_newuoa_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
 
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
-
             % X0(N)
 
 
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
-
 
 
             % FHIST(MAXFHIST)
@@ -67,15 +59,12 @@ classdef initialize_newuoa_mod
 
             solver = "NEWUOA";
 
-
             evaluated = false(numel(fval), 1);
 
             x = NaN(numel(x0), 1);
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -194,7 +183,6 @@ classdef initialize_newuoa_mod
             %====================%
 
 
-
         end
         function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, gopt, hq, pq, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -203,11 +191,9 @@ classdef initialize_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % IJ(2, MAX(0_IK, NPT - 2_IK * N - 1_IK))
             % FVAL(NPT)
             % XPT(N, NPT)
-
 
 
             % GOPT(N)
@@ -215,10 +201,8 @@ classdef initialize_newuoa_mod
             % PQ(NPT)
 
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -292,7 +276,6 @@ classdef initialize_newuoa_mod
             %====================%
 
 
-
         end
         function [idz, bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -301,9 +284,7 @@ classdef initialize_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             %use, non_intrinsic :: powalg_mod, only : errh
-
 
 
             % IJ(2, MAX(0_IK, NPT - 2_IK * N - 1_IK))
@@ -312,15 +293,12 @@ classdef initialize_newuoa_mod
             % ZMAT and BMAT are completely defined by RHOBEG and IJ.
 
 
-
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
 
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -385,7 +363,6 @@ classdef initialize_newuoa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

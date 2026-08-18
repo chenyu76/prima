@@ -74,7 +74,6 @@ classdef bobyqb_mod
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
-
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod(); %, errquad
@@ -90,17 +89,11 @@ classdef bobyqb_mod
             trustregion_bobyqa_obj = prima_mat.bobyqa.trustregion_bobyqa_mod();
             update_bobyqa_obj = prima_mat.bobyqa.update_bobyqa_mod();
 
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
-
             % XL(N)
             % XU(N)
 
 
             % X(N)
-
 
 
             % FHIST(MAXFHIST)
@@ -111,14 +104,12 @@ classdef bobyqb_mod
 
             ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
 
-
             accurate_mod = false;
             adequate_geo = false;
             bad_trstep = false;
             close_itpset = false;
             improve_geo = false;
             reduce_rho = false;
-
 
             small_trrad = false;
 
@@ -143,7 +134,6 @@ classdef bobyqb_mod
             moderr_rec = NaN(numel(dnorm_rec), 1);
             pq = NaN(npt, 1);
 
-
             sl = NaN(numel(x), 1);
             su = NaN(numel(x), 1);
             vlag = NaN(npt + numel(x), 1);
@@ -153,7 +143,6 @@ classdef bobyqb_mod
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
-
 
 
             %====================%
@@ -201,7 +190,6 @@ classdef bobyqb_mod
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
                 % Print a return message according to IPRINT.
                 message_obj.retmsg(solver, info, iprint, nf, f, x);
-
 
                 return
             end
@@ -608,7 +596,6 @@ classdef bobyqb_mod
             %====================%
 
 
-
         end
         function ebound = errbd(~, crvmin, d, gopt, hq, moderr_rec, pq, rho, sl, su, xopt, xpt)
             %--------------------------------------------------------------------------------------------------%
@@ -618,18 +605,14 @@ classdef bobyqb_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
 
-
             ebound = NaN;
-
 
             bfirst = NaN(numel(d), 1);
             bsecond = NaN(numel(d), 1);
             gnew = NaN(numel(d), 1);
             xnew = NaN(numel(d), 1);
-
 
             %====================%
             % Calculation starts %

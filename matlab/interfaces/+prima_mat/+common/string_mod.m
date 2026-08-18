@@ -24,30 +24,11 @@ classdef string_mod
         end
         function varargout = num2str_custom(obj, varargin)
             if numel(varargin) == 1 && (isinteger(varargin{1}) || isnumeric(varargin{1}) && (isreal(varargin{1}) && all(fix(varargin{1}) == varargin{1}, 'all'))) && isscalar(varargin{1})
-                [varargout{1:nargout}] = obj.int2str(varargin{:});
+                [varargout{1:nargout}] = int2str(varargin{:});
             elseif numel(varargin) >= 1 && numel(varargin) <= 3 && isfloat(varargin{1}) && isscalar(varargin{1})
                 [varargout{1:nargout}] = obj.real2str_scalar(varargin{:});
             else
                 [varargout{1:nargout}] = obj.real2str_vector(varargin{:});
-            end
-        end
-        function y = lower(~, x)
-            %--------------------------------------------------------------------------------------------------%
-            % This function maps the characters of a string to the lower case, if applicable.
-            %--------------------------------------------------------------------------------------------------%
-
-
-
-            y = pad(" ", strlength(x));
-
-            dist = 'A' - 'a';
-
-
-            y = x;
-            for i = 1:strlength(y)
-                if extractBetween(y, i, i) >= "A" && extractBetween(y, i, i) <= "Z"
-                    y = replaceBetween(y, i, i, char(double(unicode2native(extractBetween(y, i, i))) - dist));
-                end
             end
         end
         function y = upper(~, x)
@@ -56,11 +37,9 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             y = pad(" ", strlength(x));
 
             dist = 'A' - 'a';
-
 
             y = x;
             for i = 1:strlength(y)
@@ -69,17 +48,6 @@ classdef string_mod
                 end
             end
         end
-        function y = strip(~, x)
-            %--------------------------------------------------------------------------------------------------%
-            % This function removes the leading and trailing spaces of a string.
-            %--------------------------------------------------------------------------------------------------%
-
-
-
-            y = pad(" ", strlength(strtrim(strjust(x, 'left'))));
-
-            y = strtrim(strjust(x, 'left'));
-        end
         function y = istr(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function converts a string to an integer array.
@@ -87,7 +55,6 @@ classdef string_mod
 
 
             y = NaN(strlength(x), 1);
-
 
             y(:) = arrayfun(@(i) fix(double(unicode2native(extractBetween(x, i, i)))), (1:fix(strlength(x)))');
 
@@ -99,9 +66,7 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             s = "";
-
 
             % The number of decimal digits to print
             % The number of digits in the exponent
@@ -114,7 +79,6 @@ classdef string_mod
             parse(ipObj, varargin{:});
             ndgt = ipObj.Results.ndgt;
             nexp = ipObj.Results.nexp;
-
 
             %====================%
             % Calculation starts %
@@ -137,21 +101,20 @@ classdef string_mod
             if isfinite(x)
                 wx = ndgt_loc + nexp_loc + 5;
                 if ~(wx <= obj.MAX_NUM_STR_LEN)
-                    error("The width of the printed number is at most " + obj.int2str(obj.MAX_NUM_STR_LEN));
+                    error("The width of the printed number is at most " + int2str(obj.MAX_NUM_STR_LEN));
                 end
-                "(1PE" + obj.int2str(wx) + "." + obj.int2str(ndgt_loc) + "E" + obj.int2str(nexp_loc) + ")";
+
                 str = sprintf('%s \n', num2str(x));
                 s = strtrim(str); % Remove the trailing spaces, but keep the leading ones, if any.
             else
                 str = sprintf('%s \n', num2str(x));
-                s = obj.strip(str); % Remove the leading and trailing spaces, if any.
+                s = strip(str); % Remove the leading and trailing spaces, if any.
 
             end
 
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end
@@ -163,9 +126,7 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             s = "";
-
 
             spaces = "  "; % The spaces between two entries in a row
 
@@ -187,7 +148,6 @@ classdef string_mod
             ndgt = ipObj.Results.ndgt;
             nexp = ipObj.Results.nexp;
             nx = ipObj.Results.nx;
-
 
             %====================%
             % Calculation starts %
@@ -257,27 +217,9 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             x = NaN;
 
-
             x = sscanf(s, '%s');
-        end
-        function s = int2str(obj, x)
-            %--------------------------------------------------------------------------------------------------%
-            % This function converts an integer scalar to a string.
-            %--------------------------------------------------------------------------------------------------%
-
-
-
-            s = "";
-
-            % In the following, 'I0' means to use the minimum number of digits needed to print.
-            % It should work also if we use * instead of I0. However, this sometimes lead to a segmentation
-            % fault on Windows Server 2022 with gcc/gfortran 13.
-            str = sprintf('%d\n', x);
-            s = obj.strip(str);
-
         end
         function x = str2int(~, s)
             %--------------------------------------------------------------------------------------------------%
@@ -285,9 +227,7 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             x = NaN;
-
 
             x = sscanf(s, '%s');
         end

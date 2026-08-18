@@ -39,7 +39,6 @@ classdef shiftbase_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % PQ(NPT)
             % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
@@ -49,7 +48,6 @@ classdef shiftbase_mod
             % HQ(N, N)
             % XBASE(N)
             % XPT(N, NPT)
-
 
 
             bymat = NaN(numel(xbase));
@@ -64,7 +62,6 @@ classdef shiftbase_mod
             ymat = NaN(size(xpt, 1), size(xpt, 2));
             yzmat = NaN(numel(xbase), size(zmat, 2));
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
 
@@ -77,7 +74,6 @@ classdef shiftbase_mod
             if ~ismember('idz', ipObj.UsingDefaults)
                 idz_loc = idz;
             end
-
 
             %====================%
             % Calculation starts %
@@ -128,7 +124,6 @@ classdef shiftbase_mod
             %====================%
 
 
-
         end
         function [pl, pq, xbase, xpt] = shiftbase_qint(~, kopt, pl, pq, xbase, xpt)
             %--------------------------------------------------------------------------------------------------%
@@ -138,9 +133,7 @@ classdef shiftbase_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
-
 
             % XBASE(N)
             % XPT(N, NPT)
@@ -148,13 +141,10 @@ classdef shiftbase_mod
             % PQ(NPT-1)
 
 
-
             xopt = NaN(numel(xbase), 1);
-
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -177,7 +167,6 @@ classdef shiftbase_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

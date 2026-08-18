@@ -40,11 +40,9 @@ classdef trustregion_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
-
 
             % GOPT_IN(N)
             % HQ_IN(N, N)
@@ -53,14 +51,11 @@ classdef trustregion_newuoa_mod
             % XPT(N, NPT)
 
 
-
             % S(N)
-
 
 
             info_loc = NaN;
             iter = NaN;
-
 
             alpha = NaN;
             angle = NaN;
@@ -68,11 +63,9 @@ classdef trustregion_newuoa_mod
             bstep = NaN;
             cth = NaN;
 
-
             dg = NaN;
             dhd = NaN;
             dhs = NaN;
-
 
             ggsav = NaN;
             gopt = NaN(numel(gopt_in), 1);
@@ -92,9 +85,7 @@ classdef trustregion_newuoa_mod
 
             sth = NaN;
 
-
             n = size(xpt, 1);
-
 
             %====================%
             % Calculation starts %
@@ -393,11 +384,9 @@ classdef trustregion_newuoa_mod
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
 
-
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end
@@ -407,9 +396,7 @@ classdef trustregion_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             f = NaN;
-
 
             %====================%
             % Calculation starts %
@@ -428,11 +415,7 @@ classdef trustregion_newuoa_mod
             % This function updates the trust region radius according to RATIO and DNORM.
             %--------------------------------------------------------------------------------------------------%
 
-            % Generic module
 
-
-
-            % Input
             % Current trust-region radius
             % Norm of current trust-region step
             % Ratio threshold for contraction
@@ -443,7 +426,6 @@ classdef trustregion_newuoa_mod
 
 
             delta = NaN;
-
 
             %====================%
             % Calculation starts %
@@ -478,7 +460,6 @@ classdef trustregion_newuoa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

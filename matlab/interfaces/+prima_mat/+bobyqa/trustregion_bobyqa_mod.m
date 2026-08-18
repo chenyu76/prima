@@ -46,10 +46,8 @@ classdef trustregion_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
-
 
             % GOPT_IN(N)
             % HQ_IN(N, N)
@@ -61,14 +59,11 @@ classdef trustregion_bobyqa_mod
             % XPT(N, NPT)
 
 
-
             % D(N)
-
 
 
             xbdi = NaN(numel(gopt_in), 1);
             grid_size = NaN;
-
 
             bstep = NaN;
             cth = NaN;
@@ -79,7 +74,6 @@ classdef trustregion_bobyqa_mod
             dredg = NaN;
 
             ds = NaN;
-
 
             hangt = NaN;
             hangt_bd = NaN;
@@ -111,9 +105,7 @@ classdef trustregion_bobyqa_mod
             tanbd = NaN(numel(gopt_in), 1);
             xnew = NaN(numel(gopt_in), 1);
 
-
             n = numel(gopt_in);
-
 
             %====================%
             % Calculation starts %
@@ -543,7 +535,6 @@ classdef trustregion_bobyqa_mod
             %====================%
 
 
-
         end
         function f = interval_fun_trsbox(~, hangt, args)
             %--------------------------------------------------------------------------------------------------%
@@ -552,9 +543,7 @@ classdef trustregion_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             f = NaN;
-
 
             %====================%
             % Calculation starts %
@@ -578,11 +567,7 @@ classdef trustregion_bobyqa_mod
             % This function updates the trust region radius according to RATIO and DNORM.
             %--------------------------------------------------------------------------------------------------%
 
-            % Generic module
 
-
-
-            % Input
             % Current trust-region radius
             % Norm of current trust-region step
             % Ratio threshold for contraction
@@ -593,7 +578,6 @@ classdef trustregion_bobyqa_mod
 
 
             delta = NaN;
-
 
             %====================%
             % Calculation starts %
@@ -626,7 +610,6 @@ classdef trustregion_bobyqa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

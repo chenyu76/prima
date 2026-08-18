@@ -31,9 +31,7 @@ classdef geometry_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT + N)
             % D(N)
@@ -45,9 +43,7 @@ classdef geometry_bobyqa_mod
 
             knew = NaN;
 
-
             distsq = NaN(size(xpt, 2), 1);
-
 
             %====================%
             % Calculation starts %
@@ -132,7 +128,6 @@ classdef geometry_bobyqa_mod
             %====================%
 
 
-
         end
         function d = geostep(~, knew, kopt, bmat, delbar, sl, su, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
@@ -154,9 +149,7 @@ classdef geometry_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT + N)
 
@@ -169,21 +162,17 @@ classdef geometry_bobyqa_mod
             d = NaN(size(xpt, 1), 1); % D(N)
 
 
-
             ilbd = NaN;
             isbd = NaN(3, size(xpt, 2));
 
             iubd = NaN;
             k = NaN;
 
-
             mask_fixl = false(size(xpt, 1), 1);
             mask_fixu = false(size(xpt, 1), 1);
 
-
             curv = NaN;
             dderiv = NaN(size(xpt, 2), 1);
-
 
             distsq = NaN(size(xpt, 2), 1);
 
@@ -217,10 +206,8 @@ classdef geometry_bobyqa_mod
             xopt = NaN(size(xpt, 1), 1);
             xtemp = NaN(size(xpt, 1), 1);
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -330,7 +317,6 @@ classdef geometry_bobyqa_mod
                     %%iubd = iubd * sign(xdiff(iubd));
 
                 end
-
 
                 % Now, define the step length STPM between SLBD and SUBD by finding the critical point of the
                 % function PHI_K(t) = LFUNC((1-t)*XOPT + t*XPT(:,K)) mentioned above. It is a quadratic since
@@ -529,7 +515,6 @@ classdef geometry_bobyqa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

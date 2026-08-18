@@ -18,14 +18,11 @@ classdef update_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % XNEW(N)
-
 
 
             % FVAL(NPT)
             % XPT(N, NPT)
-
 
 
             %====================%
@@ -52,7 +49,6 @@ classdef update_newuoa_mod
             %====================%
 
 
-
         end
         function [gopt, hq, pq] = updateq(~, idz, knew, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
@@ -70,10 +66,8 @@ classdef update_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT + N)
             % D(:)
@@ -89,9 +83,7 @@ classdef update_newuoa_mod
             % PQ(NPT)
 
 
-
             pqinc = NaN(numel(pq), 1);
-
 
             %====================%
             % Calculation starts %
@@ -128,7 +120,6 @@ classdef update_newuoa_mod
             %====================%
 
 
-
         end
         function [itest, gopt, hq, pq] = tryqalt(~, idz, bmat, fval, ratio, xopt, xpt, zmat, itest, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
@@ -139,9 +130,7 @@ classdef update_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT+N)
             % FVAL(NPT)
@@ -150,7 +139,6 @@ classdef update_newuoa_mod
             % XOPT(N, NPT)
             % ZMAT(NPT, NPT-N-1)
 
-            % In-output
 
             % GOPT(N)
             % HQ(N, N)
@@ -163,13 +151,10 @@ classdef update_newuoa_mod
             % needed for defining ITEST, so it must be INTENT(INOUT).
 
 
-
             galt = NaN(numel(gopt), 1);
             pqalt = NaN(numel(pq), 1);
 
-
             npt = numel(pq);
-
 
             %====================%
             % Calculation starts %
@@ -198,7 +183,6 @@ classdef update_newuoa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

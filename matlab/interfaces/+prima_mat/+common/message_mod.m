@@ -30,22 +30,11 @@ classdef message_mod
 
             fprint_obj = prima_mat.common.fprint_mod();
 
-
             string_obj = prima_mat.common.string_mod();
-
-            % Compulsory inputs
-
-
-
-            % Optional inputs
-
-
 
             newline_custom = newline;
 
-
             funit = NaN; % File storage unit for the writing. Should be an integer of default kind.
-
 
 
             %====================%
@@ -166,19 +155,9 @@ classdef message_mod
 
             string_obj = prima_mat.common.string_mod();
 
-            % Compulsory inputs
-
-
-
-            % Optional inputs
-
-
-
             newline_custom = newline;
 
-
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
-
 
 
             %====================%
@@ -275,16 +254,7 @@ classdef message_mod
             fprint_obj = prima_mat.common.fprint_mod();
             string_obj = prima_mat.common.string_mod();
 
-            % Compulsory inputs
-
-
-
-            % Optional inputs
-
-
-
             newline_custom = newline;
-
 
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
 
@@ -332,22 +302,13 @@ classdef message_mod
 
             string_obj = prima_mat.common.string_mod();
 
-            % Compulsory inputs
-
             % `state` is a string indicating the solver's state when the function evaluation is invoked. Its
             % value can be 'Initialization', 'Trust region', 'Geometry', or 'Rescue'.
 
 
-
-            % Optional inputs
-
-
-
             newline_custom = newline;
 
-
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
-
 
 
             %====================%

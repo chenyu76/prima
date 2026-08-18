@@ -23,7 +23,6 @@ classdef evaluate_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             y = NaN(numel(x), 1);
 
             y(:) = x;
@@ -35,7 +34,6 @@ classdef evaluate_mod
             % This function moderates the function value of a MINIMIZATION problem. It replaces NaN and any
             % value above FUNCMAX by FUNCMAX.
             %--------------------------------------------------------------------------------------------------%
-
 
 
             y = f;
@@ -54,7 +52,6 @@ classdef evaluate_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             y = NaN(numel(c), 1);
 
             y(:) = c;
@@ -66,14 +63,6 @@ classdef evaluate_mod
             % This function evaluates CALFUN at X, setting F to the objective function value. Nan/Inf are
             % handled by a moderated extreme barrier.
             %--------------------------------------------------------------------------------------------------%
-
-
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
-            % Output
-
 
 
             %====================%
@@ -92,11 +81,9 @@ classdef evaluate_mod
                 f = obj.moderatef(f);
             end
 
-
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end
@@ -105,11 +92,6 @@ classdef evaluate_mod
             % This function evaluates CALCFC at X, setting F to the objective function value and CONSTR to the
             % constraint value. Nan/Inf are handled by a moderated extreme barrier.
             %--------------------------------------------------------------------------------------------------%
-
-
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
 
 
             %====================%
@@ -133,7 +115,6 @@ classdef evaluate_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

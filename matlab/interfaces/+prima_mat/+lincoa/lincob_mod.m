@@ -65,10 +65,8 @@ classdef lincob_mod
             % Generic models
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
 
             message_obj = prima_mat.common.message_mod();
 
@@ -84,11 +82,6 @@ classdef lincob_mod
             trustregion_lincoa_obj = prima_mat.lincoa.trustregion_lincoa_mod();
             update_lincoa_obj = prima_mat.lincoa.update_lincoa_mod();
 
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
-
             % Aeq(Meq, N)
             % Aineq(Mineq, N)
             % AMAT(N, M)
@@ -97,9 +90,7 @@ classdef lincob_mod
             % BVEC(M)
 
 
-
             % X(N)
-
 
 
             % CHIST(MAXCHIST)
@@ -115,7 +106,6 @@ classdef lincob_mod
             idz = NaN;
             ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
 
-
             accurate_mod = false;
             adequate_geo = false;
             bad_trstep = false;
@@ -127,7 +117,6 @@ classdef lincob_mod
             reduce_rho = false;
 
             small_trrad = false;
-
 
             ximproved = false;
             b = NaN(numel(bvec), 1);
@@ -154,7 +143,6 @@ classdef lincob_mod
             pqalt = NaN(npt, 1);
             qfac = NaN(numel(x));
 
-
             rfac = NaN(numel(x));
 
             xbase = NaN(numel(x), 1);
@@ -168,7 +156,6 @@ classdef lincob_mod
 
             m = numel(bvec);
             n = numel(x);
-
 
             %====================%
             % Calculation starts %
@@ -251,7 +238,6 @@ classdef lincob_mod
                 message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, 'constr', constr);
                 % Arrange CHIST, FHIST, and XHIST so that they are in the chronological order.
                 [xhist, fhist, chist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist);
-
 
                 return
             end
@@ -656,7 +642,6 @@ classdef lincob_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

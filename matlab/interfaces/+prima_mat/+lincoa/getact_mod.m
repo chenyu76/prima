@@ -70,9 +70,7 @@ classdef getact_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
-
 
             % AMAT(N, M)
 
@@ -90,11 +88,9 @@ classdef getact_mod
             % PSD(N)
 
 
-
             icon = NaN;
 
             l = NaN;
-
 
             mask = false(size(amat, 2), 1);
             apsd = NaN(size(amat, 2), 1);
@@ -105,17 +101,14 @@ classdef getact_mod
             frac = NaN(numel(g), 1);
             psdsav = NaN(numel(psd), 1);
 
-
             v = NaN(numel(g), 1);
             violmx = NaN;
             vlam = NaN(numel(g), 1);
             vmu = NaN(numel(g), 1);
             vmult = NaN;
 
-
             m = size(amat, 2);
             n = numel(g);
-
 
             %====================%
             % Calculation starts %
@@ -348,7 +341,6 @@ classdef getact_mod
             %====================%
 
 
-
         end
         function [iact, nact, qfac, resact, resnew, rfac, vlam] = addact(~, l, c, iact, nact, qfac, resact, resnew, rfac, vlam)
             %--------------------------------------------------------------------------------------------------%
@@ -358,9 +350,7 @@ classdef getact_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % C(N)
 
@@ -374,7 +364,6 @@ classdef getact_mod
             % VLAM(N)
 
             % Local variables (debugging only)
-
 
 
             %====================%
@@ -401,7 +390,6 @@ classdef getact_mod
             %====================%
 
 
-
         end
         function [iact, nact, qfac, resact, resnew, rfac, vlam] = delact(~, icon, iact, nact, qfac, resact, resnew, rfac, vlam)
             %--------------------------------------------------------------------------------------------------%
@@ -410,9 +398,7 @@ classdef getact_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % IACT(M)
 
@@ -423,7 +409,6 @@ classdef getact_mod
             % VLAM(N)
 
             % Local variables (debugging only)
-
 
 
             %====================%
@@ -448,7 +433,6 @@ classdef getact_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

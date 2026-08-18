@@ -154,42 +154,23 @@ classdef newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
-
             preproc_obj = prima_mat.common.preproc_mod();
-
 
             % Solver-specific modules
             newuob_obj = prima_mat.newuoa.newuob_mod();
-
-
-            % Compulsory arguments
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
-            % Optional inputs
-
-
-
-            % Optional outputs
-
-
 
             solver = "NEWUOA";
 
             info_loc = NaN;
 
-
             nf_loc = NaN;
-
 
             eta1_loc = NaN;
 
             f_loc = NaN;
-
 
             n = numel(x);
 
@@ -220,7 +201,6 @@ classdef newuoa_mod
             addParameter(ipObj, 'callback_fcn', struct());
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-
 
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
@@ -261,7 +241,6 @@ classdef newuoa_mod
                 rhoend_loc = 1.0e-6;
             end
 
-
             if ismember('maxfun', ipObj.UsingDefaults)
                 maxfun_loc = 500 * n;
             else
@@ -276,7 +255,6 @@ classdef newuoa_mod
             else
                 npt_loc = 2 * n + 1;
             end
-
 
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
@@ -296,7 +274,6 @@ classdef newuoa_mod
                 eta2_loc = 0.7;
             end
 
-
             if ismember('maxhist', ipObj.UsingDefaults)
                 maxhist_loc = max([maxfun_loc, n + 3, 500 * n], [], 'all');
             else
@@ -312,7 +289,6 @@ classdef newuoa_mod
             % the history that is not requested.
             [maxhist_loc, xhist_loc, fhist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 4, nargout >= 5);
 
-
             %-------------------- Call NEWUOB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
                 [x, nf_loc, f_loc, fhist_loc, xhist_loc, info_loc] = newuob_obj.newuob(calfun, iprint_loc, maxfun_loc, npt_loc, eta1_loc, eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, x, fhist_loc, xhist_loc);
@@ -323,7 +299,6 @@ classdef newuoa_mod
 
 
             % Write the outputs.
-
 
 
             % Copy XHIST_LOC to XHIST if needed.
@@ -360,11 +335,9 @@ classdef newuoa_mod
 
             end
 
-
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
             if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
             end
-
 
         end
 

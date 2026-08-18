@@ -20,25 +20,17 @@ classdef initialize_cobyla_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
-
             message_obj = prima_mat.common.message_mod();
-
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
 
             % AMAT(N, M_LCON)
             % BVEC(M_LCON)
             % CONSTR0(M)
 
 
-
             % X0(N)
-
 
 
             % EVALUATED(N+1)
@@ -55,17 +47,13 @@ classdef initialize_cobyla_mod
 
             solver = "COBYLA";
 
-
             constr = NaN(size(conmat, 1), 1);
 
-
             x = NaN(numel(x0), 1);
-
 
             m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(sim, 1);
-
 
             %====================%
             % Calculation starts %
@@ -161,7 +149,6 @@ classdef initialize_cobyla_mod
             %====================%
 
 
-
         end
         function [nfilt, cfilt, confilt, ffilt, xfilt] = initfilt(~, conmat, ctol, cweight, cval, fval, sim, evaluated, cfilt, confilt, ffilt, xfilt)
             %--------------------------------------------------------------------------------------------------%
@@ -174,15 +161,11 @@ classdef initialize_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             selectx_obj = prima_mat.common.selectx_mod();
-
 
             x = NaN(size(sim, 1), 1);
 
-
             n = size(sim, 1);
-
 
             %====================%
             % Calculation starts %
@@ -203,7 +186,6 @@ classdef initialize_cobyla_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

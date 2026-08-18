@@ -24,7 +24,6 @@ classdef geometry_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % D(N)
 
 
@@ -34,9 +33,7 @@ classdef geometry_cobyla_mod
 
             jdrop = NaN;
 
-
             distsq = NaN(size(sim, 2), 1);
-
 
             simid = NaN(size(simi, 1), 1);
             %real(RP) :: sigbar(size(sim, 1))
@@ -44,9 +41,7 @@ classdef geometry_cobyla_mod
             %real(RP) :: vsig(size(sim, 1))
 
 
-
             n = size(sim, 1);
-
 
             %====================%
             % Calculation starts %
@@ -162,14 +157,12 @@ classdef geometry_cobyla_mod
             %====================%
 
 
-
         end
         function d = geostep(~, jdrop, amat, bvec, conmat, cpen, cval, delbar, fval, simi)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates a geometry step so that the geometry of the interpolation set is improved
             % when SIM(:, JDRO_GEO) is replaced with SIM(:, N+1) + D. See (15)--(17) of the COBYLA paper.
             %--------------------------------------------------------------------------------------------------%
-
 
 
             % CONMAT(M, N+1)
@@ -183,17 +176,13 @@ classdef geometry_cobyla_mod
             d = NaN(size(simi, 1), 1); % D(N)
 
 
-
             A = NaN(size(simi, 1), size(conmat, 1));
 
-
             g = NaN(size(simi, 1), 1);
-
 
             m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(simi, 1);
-
 
             %====================%
             % Calculation starts %
@@ -225,7 +214,6 @@ classdef geometry_cobyla_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

@@ -209,24 +209,15 @@ classdef lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
-
             preproc_obj = prima_mat.common.preproc_mod();
-
 
             % Solver-specific modules
             lincob_obj = prima_mat.lincoa.lincob_mod();
 
-
-            % Compulsory arguments
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
             % X(N)
-
-            % Optional inputs
-
 
 
             % Aeq(Meq, N)
@@ -235,12 +226,8 @@ classdef lincoa_mod
             % Bineq(Mineq)
 
 
-
             % XL(N)
             % XU(N)
-
-            % Optional outputs
-
 
 
             % CHIST(MAXCHIST)
@@ -252,17 +239,13 @@ classdef lincoa_mod
 
             info_loc = NaN;
 
-
             nf_loc = NaN;
 
-
             cstrv_loc = NaN;
-
 
             eta1_loc = NaN;
 
             f_loc = NaN;
-
 
             xl_loc = NaN(numel(x), 1);
             xu_loc = NaN(numel(x), 1);
@@ -308,7 +291,6 @@ classdef lincoa_mod
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
 
-
             Aineq = ipObj.Results.Aineq;
             bineq = ipObj.Results.bineq;
             Aeq = ipObj.Results.Aeq;
@@ -346,7 +328,6 @@ classdef lincoa_mod
                 meq = numel(beq);
             end
             n = numel(x);
-
 
             % Read the inputs
 
@@ -421,7 +402,6 @@ classdef lincoa_mod
                 rhoend_loc = 1.0e-6;
             end
 
-
             if ismember('maxfun', ipObj.UsingDefaults)
                 maxfun_loc = 500 * n;
             else
@@ -436,7 +416,6 @@ classdef lincoa_mod
             else
                 npt_loc = 2 * n + 1;
             end
-
 
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
@@ -456,13 +435,11 @@ classdef lincoa_mod
                 eta2_loc = 0.7;
             end
 
-
             if ismember('maxhist', ipObj.UsingDefaults)
                 maxhist_loc = max([maxfun_loc, n + 3, 500 * n], [], 'all');
             else
                 maxhist_loc = maxhist;
             end
-
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
             [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, npt_loc, maxfilt_loc, ctol_loc, cweight_loc, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, 'npt', npt_loc, 'ctol', ctol_loc, 'cweight', cweight_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc, 'maxfilt', maxfilt_loc);
@@ -487,9 +464,7 @@ classdef lincoa_mod
             % Deallocate variables not needed any more. We prefer explicit deallocation to the automatic one.
 
 
-
             % Write the outputs.
-
 
 
             % Copy XHIST_LOC to XHIST if needed.
@@ -526,7 +501,6 @@ classdef lincoa_mod
 
             end
 
-
             % Copy CHIST_LOC to CHIST if needed.
             if nargout >= 7
                 nhist = min(nf_loc, numel(chist_loc));
@@ -537,11 +511,9 @@ classdef lincoa_mod
 
             end
 
-
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if (nargout >= 5 || nargout >= 6 || nargout >= 7) && maxhist_loc < nf_loc
             end
-
 
         end
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, rhoend, xl, xu, x0, amat, bvec)
@@ -562,16 +534,13 @@ classdef lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             Aeq_norm = NaN(size(Aeq, 1), 1);
             Aeqx0 = NaN(size(Aeq, 1), 1);
             Aineq_norm = NaN(size(Aineq, 1), 1);
             Aineqx0 = NaN(size(Aineq, 1), 1);
             idmat = NaN(numel(x0));
 
-
             n = numel(x0);
-
 
             %====================%
             % Calculation starts %
@@ -593,10 +562,8 @@ classdef lincoa_mod
             % Allocate memory. Removable in F2003.
 
 
-
             amat = NaN(n, m);
             bvec = NaN(m, 1);
-
 
             % Define the indices of the valid and nontrivial constraints.
             ixl = find(xl > -(0.25 * realmax));
@@ -639,7 +606,6 @@ classdef lincoa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

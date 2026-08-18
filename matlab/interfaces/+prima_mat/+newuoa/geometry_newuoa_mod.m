@@ -30,9 +30,7 @@ classdef geometry_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT + N)
             % D(N)
@@ -44,9 +42,7 @@ classdef geometry_newuoa_mod
 
             knew = NaN;
 
-
             distsq = NaN(size(xpt, 2), 1);
-
 
             %====================%
             % Calculation starts %
@@ -119,7 +115,6 @@ classdef geometry_newuoa_mod
             %====================%
 
 
-
         end
         function d = geostep(obj, idz, knew, kopt, bmat, delbar, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
@@ -135,9 +130,7 @@ classdef geometry_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT + N)
 
@@ -148,9 +141,7 @@ classdef geometry_newuoa_mod
             d = NaN(size(xpt, 1), 1); % D(N)
 
 
-
             pqlag = NaN(size(xpt, 2), 1);
-
 
             %====================%
             % Calculation starts %
@@ -203,7 +194,6 @@ classdef geometry_newuoa_mod
             %====================%
 
 
-
         end
         function d = biglag(obj, idz, knew, bmat, delbar, x, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
@@ -215,11 +205,9 @@ classdef geometry_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
-
 
             % BMAT(N, NPT + N)
 
@@ -231,19 +219,15 @@ classdef geometry_newuoa_mod
             d = NaN(size(xpt, 1), 1); % D(N)
 
 
-
             angle = NaN;
             cf = NaN(5, 1);
             cth = NaN;
 
-
             dold = NaN(numel(x), 1);
             gc = NaN(numel(x), 1);
 
-
             pqlag = NaN(size(xpt, 2), 1);
             s = NaN(numel(x), 1);
-
 
             sth = NaN;
 
@@ -251,9 +235,7 @@ classdef geometry_newuoa_mod
 
             w = NaN(numel(x), 1);
 
-
             n = size(xpt, 1);
-
 
             %====================%
             % Calculation starts %
@@ -371,7 +353,6 @@ classdef geometry_newuoa_mod
             %====================%
 
 
-
         end
         function d = bigden(obj, idz, knew, kopt, bmat, d0, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
@@ -390,11 +371,9 @@ classdef geometry_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
-
 
             % BMAT(N, NPT+N)
 
@@ -404,17 +383,13 @@ classdef geometry_newuoa_mod
 
             d = NaN(size(xpt, 1), 1); % D(N)
 
-            % Local variable
-
 
             j = NaN;
             k = NaN;
 
-
             nw = NaN;
 
             angle = NaN;
-
 
             den = NaN(9, 1);
             denex = NaN(9, 1);
@@ -447,10 +422,8 @@ classdef geometry_newuoa_mod
             yd = NaN;
             ysq = NaN;
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -658,7 +631,6 @@ classdef geometry_newuoa_mod
             %====================%
 
 
-
         end
         function f = circle_fun_biglag(~, theta, args)
             %--------------------------------------------------------------------------------------------------%
@@ -666,9 +638,7 @@ classdef geometry_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             f = NaN;
-
 
             %====================%
             % Calculation starts %
@@ -688,12 +658,9 @@ classdef geometry_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             f = NaN;
 
-
             par = NaN(numel(args), 1);
-
 
             %====================%
             % Calculation starts %

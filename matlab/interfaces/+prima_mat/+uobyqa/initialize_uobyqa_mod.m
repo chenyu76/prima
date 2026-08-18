@@ -21,20 +21,12 @@ classdef initialize_uobyqa_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
-
             message_obj = prima_mat.common.message_mod();
 
-
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
-
             % X0(N)
-
 
 
             % FHIST(MAXFHIST)
@@ -46,19 +38,15 @@ classdef initialize_uobyqa_mod
 
             solver = "UOBYQA";
 
-
             kk = NaN(numel(x0), 1);
-
 
             evaluated = false(size(xpt, 2), 1);
 
             x = NaN(numel(x0), 1);
             xw = NaN(numel(x0), 1);
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -170,7 +158,6 @@ classdef initialize_uobyqa_mod
             %====================%
 
 
-
         end
         function [pq, info] = initq(~, fval, xpt, pq, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -180,22 +167,17 @@ classdef initialize_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % XPT(N, NPT)
             % XPT(N, NPT)
-
 
 
             % PQ((N + 1) * (N + 2) / 2 - 1)
 
 
-
             deriv = NaN(size(xpt, 1), 1);
-
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -253,7 +235,6 @@ classdef initialize_uobyqa_mod
             %====================%
 
 
-
         end
         function [pl, info] = initl(~, xpt, pl, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -264,18 +245,14 @@ classdef initialize_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % XPT(N, NPT)
-
 
 
             % PL((N + 1) * (N + 2) / 2 - 1, (N + 1) * (N + 2) / 2)
 
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -351,7 +328,6 @@ classdef initialize_uobyqa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

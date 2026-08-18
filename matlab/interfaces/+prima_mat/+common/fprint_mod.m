@@ -18,12 +18,9 @@ classdef fprint_mod
     methods
         function fprint(~, string, varargin)
 
-
             newline_custom = newline;
 
-
             fexist = false;
-
 
             ipObj = inputParser();
             addParameter(ipObj, 'funit', NaN);
@@ -33,7 +30,6 @@ classdef fprint_mod
             funit = ipObj.Results.funit;
             fname = ipObj.Results.fname;
             faction = ipObj.Results.faction;
-
 
             %====================%
             % Calculation starts %
@@ -59,7 +55,6 @@ classdef fprint_mod
             else
                 fname_loc = "";
             end
-
 
             % Open the file if necessary.
             iostat = 0;

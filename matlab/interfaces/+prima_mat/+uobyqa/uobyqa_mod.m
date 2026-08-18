@@ -146,28 +146,15 @@ classdef uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
-
             preproc_obj = prima_mat.common.preproc_mod();
-
 
             % Solver-specific modules
             uobyqb_obj = prima_mat.uobyqa.uobyqb_mod();
 
-
-            % Compulsory arguments
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
             % X(N)
-
-            % Optional inputs
-
-
-
-            % Optional outputs
-
 
 
             % FHIST(MAXFHIST)
@@ -178,18 +165,14 @@ classdef uobyqa_mod
 
             info_loc = NaN;
 
-
             nf_loc = NaN;
-
 
             eta1_loc = NaN;
 
             f_loc = NaN;
 
-
             % FHIST_LOC(MAXFHIST)
             % XHIST_LOC(N, MAXXHIST)
-
 
 
             n = numel(x);
@@ -224,7 +207,6 @@ classdef uobyqa_mod
             addParameter(ipObj, 'callback_fcn', struct());
             addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-
 
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
@@ -264,13 +246,11 @@ classdef uobyqa_mod
                 rhoend_loc = 1.0e-6;
             end
 
-
             if ismember('maxfun', ipObj.UsingDefaults)
                 maxfun_loc = max(500 * n, npt + 1);
             else
                 maxfun_loc = maxfun;
             end
-
 
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
@@ -290,7 +270,6 @@ classdef uobyqa_mod
                 eta2_loc = 0.7;
             end
 
-
             if ismember('maxhist', ipObj.UsingDefaults)
                 maxhist_loc = max([maxfun_loc, npt + 1, 500 * n], [], 'all');
             else
@@ -306,7 +285,6 @@ classdef uobyqa_mod
             % the history that is not requested.
             [maxhist_loc, xhist_loc, fhist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 4, nargout >= 5);
 
-
             %-------------------- Call UOBYQB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
                 [x, nf_loc, f_loc, fhist_loc, xhist_loc, info_loc] = uobyqb_obj.uobyqb(calfun, iprint_loc, maxfun_loc, eta1_loc, eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, x, fhist_loc, xhist_loc);
@@ -317,7 +295,6 @@ classdef uobyqa_mod
 
 
             % Write the outputs.
-
 
 
             % Copy XHIST_LOC to XHIST if needed.
@@ -354,11 +331,9 @@ classdef uobyqa_mod
 
             end
 
-
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
             if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
             end
-
 
         end
 

@@ -24,10 +24,8 @@ classdef update_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % D(N)
             % XPT(N, NPT)
@@ -37,18 +35,14 @@ classdef update_bobyqa_mod
             % ZMAT(NPT, NPT-N-1)
 
 
-
             hcol = NaN(size(bmat, 2), 1);
-
 
             v1 = NaN(size(bmat, 1), 1);
             v2 = NaN(size(bmat, 1), 1);
             vlag = NaN(size(bmat, 2), 1);
 
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
-
 
             %====================%
             % Calculation starts %
@@ -129,7 +123,6 @@ classdef update_bobyqa_mod
             %====================%
 
 
-
         end
         function [kopt, fval, xpt] = updatexf(~, knew, ximproved, f, xnew, kopt, fval, xpt)
             %--------------------------------------------------------------------------------------------------%
@@ -137,14 +130,11 @@ classdef update_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % XNEW(N)
-
 
 
             % FVAL(NPT)
             % XPT(N, NPT)
-
 
 
             %====================%
@@ -171,7 +161,6 @@ classdef update_bobyqa_mod
             %====================%
 
 
-
         end
         function [gopt, hq, pq] = updateq(~, knew, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
@@ -184,10 +173,8 @@ classdef update_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT + N)
             % D(:)
@@ -203,9 +190,7 @@ classdef update_bobyqa_mod
             % PQ(NPT)
 
 
-
             pqinc = NaN(numel(pq), 1);
-
 
             %====================%
             % Calculation starts %
@@ -242,7 +227,6 @@ classdef update_bobyqa_mod
             %====================%
 
 
-
         end
         function [itest, gopt, hq, pq] = tryqalt(~, bmat, fval, ratio, sl, su, xopt, xpt, zmat, itest, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
@@ -253,9 +237,7 @@ classdef update_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT+N)
             % FVAL(NPT)
@@ -266,7 +248,6 @@ classdef update_bobyqa_mod
             % XOPT(N, NPT)
             % ZMAT(NPT, NPT-N-1)
 
-            % In-output
 
             % GOPT(N)
             % HQ(N, N)
@@ -279,7 +260,6 @@ classdef update_bobyqa_mod
             % needed for defining ITEST, so it must be INTENT(INOUT).
 
 
-
             galt = NaN(numel(gopt), 1);
 
             pgopt = NaN(numel(gopt), 1);
@@ -289,9 +269,7 @@ classdef update_bobyqa_mod
             %real(RP) :: intp_tol
 
 
-
             npt = numel(pq);
-
 
             %====================%
             % Calculation starts %
@@ -331,7 +309,6 @@ classdef update_bobyqa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

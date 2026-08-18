@@ -20,9 +20,7 @@ classdef history_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
-
 
 
             ipObj = inputParser();
@@ -37,7 +35,6 @@ classdef history_mod
             m = ipObj.Results.m;
             output_conhist = ipObj.Results.output_conhist;
             conhist = ipObj.Results.conhist;
-
 
             %====================%
             % Calculation starts %
@@ -84,13 +81,11 @@ classdef history_mod
             %====================%
 
 
-
         end
         function [xhist, fhist, chist, conhist] = savehist(~, nf, x, xhist, f, fhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine saves X, F, CSTRV, and CONSTR into XHIST, FHIST, CHIST, and CONHIST respectively.
             %--------------------------------------------------------------------------------------------------%
-
 
 
             maxxhist = size(xhist, 2);
@@ -115,7 +110,6 @@ classdef history_mod
             else
                 maxconhist = 0;
             end
-
 
             %====================%
             % Calculation starts %
@@ -146,13 +140,11 @@ classdef history_mod
             %====================%
 
 
-
         end
         function [xhist, fhist, chist, conhist] = rangehist(~, nf, xhist, fhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine arranges FHIST, XHIST, CHIST, and CONHIST in the chronological order.
             %--------------------------------------------------------------------------------------------------%
-
 
 
             maxxhist = size(xhist, 2);
@@ -175,7 +167,6 @@ classdef history_mod
 
                 maxconhist = 0;
             end
-
 
             %====================%
             % Calculation starts %
@@ -214,7 +205,6 @@ classdef history_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

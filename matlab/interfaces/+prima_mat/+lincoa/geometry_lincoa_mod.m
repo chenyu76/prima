@@ -28,9 +28,7 @@ classdef geometry_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
-
 
             % BMAT(N, NPT + N)
             % D(N)
@@ -42,9 +40,7 @@ classdef geometry_lincoa_mod
 
             knew = NaN;
 
-
             distsq = NaN(size(xpt, 2), 1);
-
 
             %====================%
             % Calculation starts %
@@ -151,7 +147,6 @@ classdef geometry_lincoa_mod
             %====================%
 
 
-
         end
         function [feasible, s] = geostep(~, iact, idz, knew, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat, s)
             %--------------------------------------------------------------------------------------------------%
@@ -215,12 +210,9 @@ classdef geometry_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
 
-
             % IACT(M)
-
 
 
             % AMAT(N, M)
@@ -232,31 +224,23 @@ classdef geometry_lincoa_mod
             % ZMAT(NPT, NPT-N-1)
 
 
-
             % S(N)
-
 
 
             rstat = NaN(size(amat, 2), 1);
 
-
             dderiv = NaN(size(xpt, 2), 1);
-
 
             distsq = NaN(size(xpt, 2), 1);
             glag = NaN(size(xpt, 1), 1);
-
 
             pglag = NaN(size(xpt, 1), 1);
 
             pqlag = NaN(size(xpt, 2), 1);
 
-
             xopt = NaN(size(xpt, 1), 1);
 
-
             n = size(xpt, 1);
-
 
             %====================%
             % Calculation starts %
@@ -383,7 +367,6 @@ classdef geometry_lincoa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

@@ -185,31 +185,19 @@ classdef bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
-
             preproc_obj = prima_mat.common.preproc_mod();
-
 
             % Solver-specific modules
             bobyqb_obj = prima_mat.bobyqa.bobyqb_mod();
 
-
-            % Compulsory arguments
-            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
             % X(N)
-
-            % Optional inputs
-
 
 
             % XL(N)
             % XU(N)
-
-            % Optional outputs
-
 
 
             % FHIST(MAXFHIST)
@@ -218,14 +206,11 @@ classdef bobyqa_mod
 
             solver = "BOBYQA";
 
-
             nf_loc = NaN;
-
 
             eta1_loc = NaN;
 
             f_loc = NaN;
-
 
             xl_loc = NaN(numel(x), 1);
             xu_loc = NaN(numel(x), 1);
@@ -234,7 +219,6 @@ classdef bobyqa_mod
 
 
             n = numel(x);
-
 
             ipObj = inputParser();
             addParameter(ipObj, 'f', NaN);
@@ -278,7 +262,6 @@ classdef bobyqa_mod
             honour_x0 = ipObj.Results.honour_x0;
             callback_fcn = ipObj.Results.callback_fcn;
             info = ipObj.Results.info;
-
 
             % Read the inputs
 
@@ -339,7 +322,6 @@ classdef bobyqa_mod
                 rhoend_loc = 1.0e-6;
             end
 
-
             if ismember('maxfun', ipObj.UsingDefaults)
                 maxfun_loc = 500 * n;
             else
@@ -354,7 +336,6 @@ classdef bobyqa_mod
             else
                 npt_loc = 2 * n + 1;
             end
-
 
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
@@ -374,7 +355,6 @@ classdef bobyqa_mod
                 eta2_loc = 0.7;
             end
 
-
             if ismember('maxhist', ipObj.UsingDefaults)
                 maxhist_loc = max([maxfun_loc, n + 3, 500 * n], [], 'all');
             else
@@ -390,7 +370,6 @@ classdef bobyqa_mod
                 honour_x0_loc = (~(isfinite(rhobeg) && rhobeg > 0));
             end
 
-
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
             [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, npt_loc, ~, ~, ~, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc, x] = preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, 'npt', npt_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc, 'has_rhobeg', has_rhobeg, 'honour_x0', honour_x0_loc, 'xl', xl_loc, 'xu', xu_loc, 'x0', x);
 
@@ -399,7 +378,6 @@ classdef bobyqa_mod
             % FHIST = NaN(1, MAXFUN), XHIST = NaN(N, MAXFUN)
             % if they are requested; replace MAXFUN with 0 for the history that is not requested.
             [maxhist_loc, xhist_loc, fhist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 4, nargout >= 5);
-
 
             %-------------------- Call BOBYQB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
@@ -410,7 +388,6 @@ classdef bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Write the outputs.
-
 
 
             if nargout >= 6
@@ -451,11 +428,9 @@ classdef bobyqa_mod
 
             end
 
-
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
             end
-
 
         end
 

@@ -33,15 +33,11 @@ classdef univar_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             angle = NaN;
-
 
             agrid = NaN(grid_size + 1, 1);
 
-
             fgrid = NaN(grid_size, 1);
-
 
             %====================%
             % Calculation starts %
@@ -83,7 +79,6 @@ classdef univar_mod
             %====================%
 
 
-
         end
         function angle = circle_maxabs(~, fun, args, grid_size)
             %--------------------------------------------------------------------------------------------------%
@@ -97,15 +92,11 @@ classdef univar_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             angle = NaN;
-
 
             agrid = NaN(grid_size + 1, 1);
 
-
             fgrid = NaN(grid_size, 1);
-
 
             %====================%
             % Calculation starts %
@@ -142,7 +133,6 @@ classdef univar_mod
                 angle = agrid(kopt);
             end
 
-
         end
         function x = interval_max(~, fun, lb, ub, args, grid_size)
             %--------------------------------------------------------------------------------------------------%
@@ -154,15 +144,11 @@ classdef univar_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             x = NaN;
-
 
             fgrid = NaN(grid_size, 1);
 
-
             xgrid = NaN(grid_size, 1);
-
 
             %====================%
             % Calculation starts %
@@ -210,7 +196,6 @@ classdef univar_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end

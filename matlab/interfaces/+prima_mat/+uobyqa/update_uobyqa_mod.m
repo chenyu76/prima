@@ -19,12 +19,9 @@ classdef update_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-
             powalg_obj = prima_mat.common.powalg_mod();
 
-
             % D(N)
-
 
 
             % FVAL(NPT)
@@ -33,10 +30,8 @@ classdef update_uobyqa_mod
             % XPT(N, NPT)
 
 
-
             plnew = NaN(size(pl, 1), 1);
             vlag = NaN(size(xpt, 2), 1);
-
 
             %====================%
             % Calculation starts %
@@ -72,7 +67,6 @@ classdef update_uobyqa_mod
             %====================%
             %  Calculation ends  %
             %====================%
-
 
 
         end
