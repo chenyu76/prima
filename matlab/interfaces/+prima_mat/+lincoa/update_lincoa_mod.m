@@ -18,13 +18,6 @@ classdef update_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % XNEW(N)
-
-
-            % FVAL(NPT)
-            % XPT(N, NPT)
-
-
             %====================%
             % Calculation starts %
             %====================%
@@ -61,20 +54,6 @@ classdef update_lincoa_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
-            % BMAT(N, NPT + N)
-            % D(:)
-
-            % XDROP(N)
-            % XOSAV(N)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
-
-            % GOPT(N)
-            % HQ(N, N)
-            % PQ(NPT)
-
 
             pqinc = NaN(size(pq));
 
@@ -126,21 +105,7 @@ classdef update_lincoa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % BMAT(N, NPT + N)
-            % FVAL(NPT)
-            % XOPT(N)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
             % In-outptuts
-            % QALT_BETTER(3)
-            % GOPT(N)
-            % PQ(NPT)
-            % HQ(N, N)
-
-
-            % GALT(N)
-            % PQALT(NPT)
 
 
             npt = size(xpt, 2);
@@ -180,14 +145,8 @@ classdef update_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % AMAT(N, M)
-            % B(M)
-
             % Norm of D
             % XOPT(N); the updated value of XOPT
-
-
-            % RESCON(M)
 
 
             ax = NaN(size(b));

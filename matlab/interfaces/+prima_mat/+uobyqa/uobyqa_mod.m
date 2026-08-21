@@ -154,20 +154,9 @@ classdef uobyqa_mod
             % Solver-specific modules
             uobyqb_obj = prima_mat.uobyqa.uobyqb_mod();
 
-            % X(N)
-
-
-            % FHIST(MAXFHIST)
-            % XHIST(N, MAXXHIST)
-
-
             solver = "UOBYQA";
 
             eta1_loc = NaN;
-
-            % FHIST_LOC(MAXFHIST)
-            % XHIST_LOC(N, MAXXHIST)
-
 
             n = numel(x);
             npt = (n + 1) * (n + 2) / 2;
@@ -295,7 +284,7 @@ classdef uobyqa_mod
             if nargout >= 4
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                % Removable in F2003.
+
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -319,15 +308,14 @@ classdef uobyqa_mod
             if nargout >= 5
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                % Removable in F2003.
+
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
 
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
-            if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
-            end
+
 
         end
 

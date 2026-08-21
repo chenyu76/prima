@@ -44,23 +44,10 @@ classdef trustregion_lincoa_mod
             % Solver-specific modules
             getact_obj = prima_mat.lincoa.getact_mod();
 
-            % AMAT(N, M)
-
-            % GOPT_IN(N)
-            % HQ_IN(N, N)
-            % PQ_IN(NPT)
-            % RESCON(M)
-
-            % XPT(N, NPT)
-
-
             % IACT(M); Will be updated in GETACT
             % Will be updated in GETACT
             % QFAC(N, N); Will be updated in GETACT
             % RFAC(N, N); Will be updated in GETACT
-
-
-            % S(N)
 
 
             jsav = NaN;

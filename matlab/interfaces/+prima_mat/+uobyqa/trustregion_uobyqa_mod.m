@@ -53,13 +53,6 @@ classdef trustregion_uobyqa_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % G(N)
-            % H(N, N)
-
-
-            % D(N)
-
-
             i = NaN;
 
             k = NaN;

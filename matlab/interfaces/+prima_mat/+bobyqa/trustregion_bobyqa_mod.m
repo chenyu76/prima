@@ -49,19 +49,6 @@ classdef trustregion_bobyqa_mod
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
 
-            % GOPT_IN(N)
-            % HQ_IN(N, N)
-            % PQ_IN(NPT)
-            % SL(N)
-            % SU(N)
-
-            % XOPT(N)
-            % XPT(N, NPT)
-
-
-            % D(N)
-
-
             xbdi = NaN(size(gopt_in));
             grid_size = NaN;
 

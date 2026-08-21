@@ -193,17 +193,6 @@ classdef bobyqa_mod
             % Solver-specific modules
             bobyqb_obj = prima_mat.bobyqa.bobyqb_mod();
 
-            % X(N)
-
-
-            % XL(N)
-            % XU(N)
-
-
-            % FHIST(MAXFHIST)
-            % XHIST(N, MAXXHIST)
-
-
             solver = "BOBYQA";
 
             nf_loc = NaN;
@@ -214,9 +203,6 @@ classdef bobyqa_mod
 
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
-            % FHIST_LOC(MAXFHIST)
-            % XHIST_LOC(N, MAXXHIST)
-
 
             n = numel(x);
 
@@ -398,7 +384,7 @@ classdef bobyqa_mod
             if nargout >= 4
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                % Removable in F2003.
+
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -422,15 +408,14 @@ classdef bobyqa_mod
             if nargout >= 5
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                % Removable in F2003.
+
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
-            if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
-            end
+
 
         end
 

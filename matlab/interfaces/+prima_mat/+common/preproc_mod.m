@@ -56,8 +56,7 @@ classdef preproc_mod
             eta2 = ipObj.Results.eta2;
             gamma1 = ipObj.Results.gamma1;
             gamma2 = ipObj.Results.gamma2;
-            is_constrained = ipObj.Results.is_constrained;
-            has_rhobeg = ipObj.Results.has_rhobeg;
+
             honour_x0 = ipObj.Results.honour_x0;
             xl = ipObj.Results.xl;
             xu = ipObj.Results.xu;
@@ -75,11 +74,7 @@ classdef preproc_mod
             end
 
             % Decide whether the problem is truly constrained
-            if ismember('is_constrained', ipObj.UsingDefaults)
-                is_constrained_loc = (m_loc > 0);
-            else
-                is_constrained_loc = is_constrained;
-            end
+
 
             % Validate IPRINT
             if abs(iprint) > 3
@@ -139,7 +134,7 @@ classdef preproc_mod
 
             % Validate MAXFILT
             if ~ismember('maxfilt', ipObj.UsingDefaults) || nargout >= 8
-                maxfilt_in = maxfilt;
+
                 if maxfilt <= 0
                     maxfilt = 2000;
                 else
@@ -161,12 +156,7 @@ classdef preproc_mod
 
                 end
                 maxfilt = min(maxfun, max(200, maxfilt));
-                if is_constrained_loc
-                    if maxfilt_in <= 0
-                    elseif maxfilt_in < min(maxfun, 200)
-                    elseif maxfilt < min(maxfilt_in, maxfun)
-                    end
-                end
+
             end
 
             % Validate ETA1 and ETA2
@@ -256,7 +246,7 @@ classdef preproc_mod
             if lower(solver) == "bobyqa"
                 % Revise X0 if allowed and needed.
                 if ~honour_x0
-                    x0_in = x0; % Recorded to see whether X0 is really revised.
+                    % Recorded to see whether X0 is really revised.
                     % N.B.: The following revision is valid only if XL <= X0 <= XU and RHOBEG <= MINVAL(XU-XL)/2,
                     % which should hold at this point due to the revision of RHOBEG and moderation of X0.
                     % The cases below are mutually exclusive in precise arithmetic as MINVAL(XU-XL) >= 2*RHOBEG.
@@ -280,8 +270,7 @@ classdef preproc_mod
                     %%x0(ubx) = xu(ubx);
                     %%x0(ubx_minus) = xu(ubx_minus) - rhobeg;
 
-                    if any(abs(x0_in - x0) > 0, 'all')
-                    end
+
                 end
 
                 % Revise RHOBEG if needed.
@@ -294,8 +283,7 @@ classdef preproc_mod
                 rhobeg = max(eps(1.0), min([rhobeg; x0(find(~lbx)) - xl(find(~lbx)); xu(find(~ubx)) - x0(find(~ubx))], [], 'all'));
                 if rhobeg_in - rhobeg > eps(1.0) * max(1.0, rhobeg_in)
                     rhoend = max(eps(1.0), min((rhoend / rhobeg_in) * rhobeg, rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
-                    if has_rhobeg
-                    end
+
                 end
             end
 
@@ -310,8 +298,7 @@ classdef preproc_mod
                     % CTOL = NaN falls into this case.
 
                     ctol = sqrt(eps(1.0));
-                    if is_constrained_loc
-                    end
+
                 end
             end
 
@@ -321,8 +308,7 @@ classdef preproc_mod
                     % CWEIGHT = NaN falls into this case.
 
                     cweight = 1.0e8;
-                    if is_constrained_loc
-                    end
+
                 end
             end
 

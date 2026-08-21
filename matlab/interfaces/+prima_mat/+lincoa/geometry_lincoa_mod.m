@@ -30,14 +30,6 @@ classdef geometry_lincoa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % BMAT(N, NPT + N)
-            % D(N)
-
-
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
-
             distsq = NaN(size(xpt, 2), 1);
 
             %====================%
@@ -209,21 +201,6 @@ classdef geometry_lincoa_mod
 
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-            % IACT(M)
-
-
-            % AMAT(N, M)
-            % BMAT(N, NPT+N)
-
-            % QFAC(N, N)
-            % RESCON(M)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT-N-1)
-
-
-            % S(N)
-
 
             rstat = NaN(size(amat, 2), 1);
 

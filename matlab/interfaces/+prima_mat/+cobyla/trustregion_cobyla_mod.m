@@ -56,14 +56,7 @@ classdef trustregion_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % A(N, M)
-            % B(M)
-
-            % G(N)
-
-
-            d = NaN(size(A, 1), 1); % D(N)
-
+            d = NaN(size(A, 1), 1);
 
             iact = NaN(numel(b) + 1, 1);
 
@@ -125,17 +118,6 @@ classdef trustregion_cobyla_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
-            % A(N, MCON)
-            % B(M)
-
-
-            % IACT(MCON)
-
-            % D(N)
-            % VMULTC(MCON)
-            % Z(N, N)
-
 
             nactsav = NaN;
 

@@ -26,16 +26,6 @@ classdef initialize_uobyqa_mod
 
             message_obj = prima_mat.common.message_mod();
 
-            % X0(N)
-
-
-            % FHIST(MAXFHIST)
-
-            % XBASE(N)
-            % XHIST(N, MAXXHIST)
-            % XPT(N, NPT)
-
-
             solver = "UOBYQA";
 
             kk = NaN(size(x0));
@@ -166,13 +156,6 @@ classdef initialize_uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % XPT(N, NPT)
-            % XPT(N, NPT)
-
-
-            % PQ((N + 1) * (N + 2) / 2 - 1)
-
-
             deriv = NaN(size(xpt, 1), 1);
 
             n = size(xpt, 1);
@@ -242,12 +225,6 @@ classdef initialize_uobyqa_mod
             % PL(N+1 : NPT-1, K) containing the upper triangular part of the Hessian, column by column.
             % See Section 4 of the UOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
-
-
-            % XPT(N, NPT)
-
-
-            % PL((N + 1) * (N + 2) / 2 - 1, (N + 1) * (N + 2) / 2)
 
 
             n = size(xpt, 1);

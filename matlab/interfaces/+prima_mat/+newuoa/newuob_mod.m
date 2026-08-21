@@ -61,13 +61,6 @@ classdef newuob_mod
             trustregion_newuoa_obj = prima_mat.newuoa.trustregion_newuoa_mod();
             update_newuoa_obj = prima_mat.newuoa.update_newuoa_mod();
 
-            % X(N)
-
-
-            % FHIST(MAXFHIST)
-            % XHIST(N, MAXXHIST)
-
-
             solver = "NEWUOA";
 
             idz = NaN;

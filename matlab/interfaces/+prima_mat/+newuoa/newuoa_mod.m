@@ -299,7 +299,7 @@ classdef newuoa_mod
             if nargout >= 4
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                % Removable in F2003.
+
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -323,15 +323,14 @@ classdef newuoa_mod
             if nargout >= 5
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                % Removable in F2003.
+
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
 
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
-            if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
-            end
+
 
         end
 

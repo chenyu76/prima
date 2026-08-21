@@ -254,26 +254,7 @@ classdef cobyla_mod
             % Solver-specific modules
             cobylb_obj = prima_mat.cobyla.cobylb_mod();
 
-            % X(N)
             % Number of constraints defined in CALCFC
-
-
-            % Aeq(Meq, N)
-            % Aineq(Mineq, N)
-            % Beq(Meq)
-            % Bineq(Mineq)
-            % NLCONSTR0(M_NLCON)
-
-
-            % XL(N)
-            % XU(N)
-
-
-            % NLCONSTR(M_NLCON)
-            % CHIST(MAXCHIST)
-            % FHIST(MAXFHIST)
-            % NLCHIST(M_NLCON, MAXCONHIST)
-            % XHIST(N, MAXXHIST)
 
 
             solver = "COBYLA";
@@ -290,18 +271,11 @@ classdef cobyla_mod
 
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
-            % Aeq_LOC(Meq, N)
-            % Aineq_LOC(Mineq, N)
-            amat = NaN; % AMAT(N, M_LCON); each column corresponds to a linear constraint
-            % Beq_LOC(Meq)
-            % Bineq_LOC(Mineq)
-            bvec = NaN; % BVEC(M_LCON)
-            % CHIST_LOC(MAXCHIST)
-            % CONHIST_LOC(M, MAXCONHIST)
-            % CONSTR_LOC(M)
-            % FHIST_LOC(MAXFHIST)
-            % XHIST_LOC(N, MAXXHIST)
 
+            amat = NaN; % AMAT(N, M_LCON); each column corresponds to a linear constraint
+
+
+            bvec = NaN;
 
             ipObj = inputParser();
             addParameter(ipObj, 'f', NaN);
@@ -541,8 +515,6 @@ classdef cobyla_mod
             end
             %--------------------------------------------------------------------------------------------------%
 
-            % Deallocate variables not needed any more. We prefer explicit deallocation to the automatic one.
-
 
             % Write the outputs.
 
@@ -555,7 +527,7 @@ classdef cobyla_mod
             if nargout >= 6
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                % Removable in F2003.
+
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -579,7 +551,7 @@ classdef cobyla_mod
             if nargout >= 7
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                % Removable in F2003.
+
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
@@ -589,7 +561,7 @@ classdef cobyla_mod
             if nargout >= 8
                 nhist = min(nf_loc, numel(chist_loc));
                 %--------------------------------------------------%
-                % Removable in F2003.
+
                 %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
@@ -605,15 +577,14 @@ classdef cobyla_mod
             if nargout >= 9
                 nhist = min(nf_loc, size(conhist_loc, 2));
                 %---------------------------------------------------------------%
-                % Removable in F2003.
+
                 %---------------------------------------------------------------%
                 nlchist = conhist_loc(m - m_nlcon + 1:m, 1:nhist); % The same as XHIST, we must cap NLCHIST at NF_LOC.
 
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
-            if (nargout >= 6 || nargout >= 7 || nargout >= 8 || nargout >= 9) && maxhist_loc < nf_loc
-            end
+
 
         end
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu, amat, bvec)

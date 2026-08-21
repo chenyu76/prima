@@ -82,24 +82,6 @@ classdef lincob_mod
             trustregion_lincoa_obj = prima_mat.lincoa.trustregion_lincoa_mod();
             update_lincoa_obj = prima_mat.lincoa.update_lincoa_mod();
 
-            % Aeq(Meq, N)
-            % Aineq(Mineq, N)
-            % AMAT(N, M)
-            % Beq(Meq)
-            % Bineq(Mineq)
-            % BVEC(M)
-
-
-            % X(N)
-
-
-            % CHIST(MAXCHIST)
-
-
-            % FHIST(MAXFHIST)
-            % XHIST(N, MAXXHIST)
-
-
             solver = "LINCOA";
 
             iact = NaN(size(bvec));
@@ -162,8 +144,8 @@ classdef lincob_mod
             %====================%
 
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
-            % Removable in F2003.
-            % Removable in F2003.
+
+
             ixl = find(xl > -(0.25 * realmax));
             ixu = find(xu < 0.25 * realmax);
 

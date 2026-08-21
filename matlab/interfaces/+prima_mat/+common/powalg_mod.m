@@ -90,10 +90,6 @@ classdef powalg_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % C(M)
-
-
-            % Q(M, M)
             % MIN(M, N+1) <= SIZE(Rdiag) <= M
 
 
@@ -171,10 +167,6 @@ classdef powalg_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % C(M)
-
-
-            % Q(M, M)
             % R(M, :), N+1 <= SIZE(R, 2) <= M
 
 
@@ -229,11 +221,7 @@ classdef powalg_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % A(M, N)
-
-
             % Q(M, :), N <= SIZE(Q, 2) <= M
-            % Rdiag(N)
 
 
             %------------------------------------------------------------%
@@ -390,13 +378,6 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % D(N)
-            % XPT(N, NPT)
-            % GQ(N)
-            % PQ(NPT)
-            % HQ(N, N)
-
-
             dxpt = NaN(size(pq));
 
             ipObj = inputParser();
@@ -500,13 +481,6 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % FVAL(NPT)
-            % XPT(N, NPT)
-            % GQ(N)
-            % PQ(NPT)
-            % HQ(N, N)
-
-
             npt = size(xpt, 2);
 
             ipObj = inputParser();
@@ -547,12 +521,6 @@ classdef powalg_mod
             % This function calculates HESSIAN*X, with HESSIAN consisting of an explicit part HQ (0 if absent)
             % and an implicit part PQ in Powell's way: HESSIAN = HQ + sum_K=1^NPT PQ(K)*(XPT(:, K)*XPT(:, K)^T).
             %--------------------------------------------------------------------------------------------------%
-
-
-            % X(N)
-            % XPT(N, NPT)
-            % PQ(NPT)
-            % HQ(N, N)
 
 
             y = NaN(size(x));
@@ -737,14 +705,6 @@ classdef powalg_mod
 
 
             linalg_obj = prima_mat.common.linalg_mod(); %, r2update
-
-
-            % D(N)
-            % XPT(N, NPT)
-
-
-            % BMAT(N, NPT + N)
-            % ZMAT(NPT, NPT - N - 1)
 
 
             grot = NaN(2);
@@ -1061,15 +1021,10 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % BMAT(N, NPT + N)
-            % D(N)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
 
-            vlag = NaN(size(xpt, 1) + size(xpt, 2), 1); % VLAG(NPT + N)
-
+            vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
 
             % For debugging only
             wcheck = NaN(size(zmat, 1), 1);
@@ -1120,10 +1075,6 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % BMAT(N, NPT + N)
-            % D(N)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
 
@@ -1211,10 +1162,6 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % BMAT(N, NPT + N)
-            % D(N)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
 

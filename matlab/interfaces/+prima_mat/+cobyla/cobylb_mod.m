@@ -48,21 +48,7 @@ classdef cobylb_mod
             trustregion_cobyla_obj = prima_mat.cobyla.trustregion_cobyla_mod();
             update_cobyla_obj = prima_mat.cobyla.update_cobyla_mod();
 
-            % AMAT(N, M_LCON)
-            % BVEC(M_LCON)
-
-
             % On entry, [X, F, CONSTR] = [X0, F(X0), CONSTR(X0)]
-            % CONSTR(M)
-
-            % X(N)
-
-
-            % CHIST(MAXCHIST)
-            % CONHIST(M, MAXCONHIST)
-
-            % FHIST(MAXFHIST)
-            % XHIST(N, MAXXHIST)
 
 
             solver = "COBYLA";
@@ -701,10 +687,6 @@ classdef cobylb_mod
             % This function calculates the ratio between the "typical change" of F and that of CONSTR.
             % See equations (12)--(13) in Section 3 of the COBYLA paper for the definition of the ratio.
             %--------------------------------------------------------------------------------------------------%
-
-
-            % CONMAT(M, N+1)
-            % FVAL(N+1)
 
 
             %====================%

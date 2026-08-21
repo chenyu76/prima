@@ -24,13 +24,6 @@ classdef geometry_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % D(N)
-
-
-            % SIM(N, N+1)
-            % SIMI(N, N)
-
-
             distsq = NaN(size(sim, 2), 1);
 
             %real(RP) :: sigbar(size(sim, 1))
@@ -162,16 +155,7 @@ classdef geometry_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % CONMAT(M, N+1)
-
-            % CVAL(N+1)
-
-            % FVAL(N+1)
-            % SIMI(N, N)
-
-
-            d = NaN(size(simi, 1), 1); % D(N)
-
+            d = NaN(size(simi, 1), 1);
 
             A = NaN(size(simi, 1), size(conmat, 1));
 

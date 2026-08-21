@@ -42,34 +42,6 @@ classdef initialize_lincoa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % AMAT(Meq, N)
-            % AMAT(Mineq, N)
-            % AMAT(N, M)
-            % Beq(M)
-            % Bineq(M)
-
-
-            % XL(N)
-            % XU(N)
-            % X0(N)
-
-
-            % B(M)
-
-
-            % IJ(2, MAX(0_IK, NPT-2*N-1))
-
-
-            % EVALUATED(NPT)
-            % CHIST(MAXCHIST)
-            % CVAL(NPT)
-            % FHIST(MAXFHIST)
-            % FVAL(NPT)
-            % XBASE(N)
-            % XHIST(N, MAXXHIST)
-            % XPT(N, NPT)
-
-
             solver = "LINCOA";
 
             constr = NaN(nnz(xl > -(0.25 * realmax)) + nnz(xu < 0.25 * realmax) + 2 * numel(beq) + numel(bineq), 1);
@@ -151,8 +123,8 @@ classdef initialize_lincoa_mod
 
             % Set FVAL by evaluating F. Totally parallelizable except for FMSG.
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
-            % Removable in F2003.
-            % Removable in F2003.
+
+
             ixl = find(xl > -(0.25 * realmax));
             ixu = find(xu < 0.25 * realmax);
             for k = 1:npt
@@ -209,14 +181,8 @@ classdef initialize_lincoa_mod
             %use, non_intrinsic :: powalg_mod, only : errh
 
 
-            % IJ(2, MAX(0_IK, NPT - 2_IK * N - 1_IK))
-            % XPT(N, NPT)
             % N.B.: XPT is essentially only used for debugging, to test the error in the initial H. The initial
             % ZMAT and BMAT are completely defined by RHOBEG and IJ.
-
-
-            % BMAT(N, NPT + N)
-            % ZMAT(NPT, NPT - N - 1)
 
 
             n = size(xpt, 1);

@@ -18,19 +18,6 @@ classdef update_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % CONSTR(M)
-
-
-            % D(N)
-
-
-            % CONMAT(M, N+1)
-            % CVAL(N+1)
-            % FVAL(N+1)
-            % SIM(N, N+1)
-            % SIMI(N, N)
-
-
             simi_jdrop = NaN(size(simi, 2), 1);
 
             simi_test = NaN(size(simi, 1), size(simi, 2));
@@ -127,13 +114,6 @@ classdef update_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % CONMAT(M, N+1)
-            % CVAL(N+1)
-            % FVAL(N+1)
-            % SIM(N, N+1)
-            % SIMI(N, N)
-
-
             simi_test = NaN(size(simi, 1), size(simi, 2));
             itol = 1.0;
 
@@ -209,10 +189,6 @@ classdef update_cobyla_mod
             % This subroutine identifies the best vertex of the current simplex with respect to the merit
             % function PHI = F + CPEN * CSTRV.
             %--------------------------------------------------------------------------------------------------%
-
-
-            % CVAL(N+1)
-            % FVAL(N+1)
 
 
             %====================%

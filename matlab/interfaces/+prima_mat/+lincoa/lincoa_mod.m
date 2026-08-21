@@ -217,40 +217,17 @@ classdef lincoa_mod
             % Solver-specific modules
             lincob_obj = prima_mat.lincoa.lincob_mod();
 
-            % X(N)
-
-
-            % Aeq(Meq, N)
-            % Aineq(Mineq, N)
-            % Beq(Meq)
-            % Bineq(Mineq)
-
-
-            % XL(N)
-            % XU(N)
-
-
-            % CHIST(MAXCHIST)
-            % FHIST(MAXFHIST)
-            % XHIST(N, MAXXHIST)
-
-
             solver = "LINCOA";
 
             eta1_loc = NaN;
 
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
-            % Aeq_LOC(Meq, N)
-            % Aineq_LOC(Mineq, N)
-            amat = NaN; % AMAT(N, M); each column corresponds to a constraint
-            % Beq_LOC(Meq)
-            % Bineq_LOC(Mineq)
-            bvec = NaN; % BVEC(M)
-            % CHIST_LOC(MAXCHIST)
-            % FHIST_LOC(MAXFHIST)
-            % XHIST_LOC(N, MAXXHIST)
 
+            amat = NaN; % AMAT(N, M); each column corresponds to a constraint
+
+
+            bvec = NaN;
 
             ipObj = inputParser();
             addParameter(ipObj, 'f', NaN);
@@ -453,8 +430,6 @@ classdef lincoa_mod
             end
             %--------------------------------------------------------------------------------------------------%
 
-            % Deallocate variables not needed any more. We prefer explicit deallocation to the automatic one.
-
 
             % Write the outputs.
 
@@ -463,7 +438,7 @@ classdef lincoa_mod
             if nargout >= 5
                 nhist = min(nf_loc, size(xhist_loc, 2));
                 %----------------------------------------------------%
-                % Removable in F2003.
+
                 %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
@@ -487,7 +462,7 @@ classdef lincoa_mod
             if nargout >= 6
                 nhist = min(nf_loc, numel(fhist_loc));
                 %--------------------------------------------------%
-                % Removable in F2003.
+
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
@@ -497,15 +472,14 @@ classdef lincoa_mod
             if nargout >= 7
                 nhist = min(nf_loc, numel(chist_loc));
                 %--------------------------------------------------%
-                % Removable in F2003.
+
                 %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
-            if (nargout >= 5 || nargout >= 6 || nargout >= 7) && maxhist_loc < nf_loc
-            end
+
 
         end
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, rhoend, xl, xu, x0, amat, bvec)
@@ -544,8 +518,7 @@ classdef lincoa_mod
             m = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
 
             % Print a warning if some constraints are invalid. They will be ignored (Powell's code would stop).
-            if meq < size(Aeq, 1) || mineq < size(Aineq, 1)
-            end
+
 
             % Allocate memory. Removable in F2003.
 
@@ -585,10 +558,7 @@ classdef lincoa_mod
 
 
             % Print a warning if the starting point is sufficiently infeasible and the constraints are modified.
-            smallx = 10.0 ^ max(-6, -308) * rhoend;
-            constr_modified = (any(x0 + smallx < xl, 'all') || any(x0 - smallx > xu, 'all') || any(abs(Aeqx0 - beq) > smallx * Aeq_norm, 'all') || any(Aineqx0 - bineq > smallx * Aineq_norm, 'all'));
-            if constr_modified
-            end
+
 
             %====================%
             %  Calculation ends  %

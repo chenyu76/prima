@@ -56,13 +56,6 @@ classdef uobyqb_mod
             trustregion_uobyqa_obj = prima_mat.uobyqa.trustregion_uobyqa_mod();
             update_uobyqa_obj = prima_mat.uobyqa.update_uobyqa_mod();
 
-            % X(N)
-
-
-            % FHIST(MAXFHIST)
-            % XHIST(N, MAXXHIST)
-
-
             solver = "UOBYQA";
 
             k = NaN;

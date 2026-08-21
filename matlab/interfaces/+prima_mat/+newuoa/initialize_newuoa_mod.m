@@ -44,19 +44,6 @@ classdef initialize_newuoa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % X0(N)
-
-
-            % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
-
-
-            % FHIST(MAXFHIST)
-            % FVAL(NPT)
-            % XBASE(N)
-            % XHIST(N, MAXXHIST)
-            % XPT(N, NPT)
-
-
             solver = "NEWUOA";
 
             evaluated = false(size(fval));
@@ -189,16 +176,6 @@ classdef initialize_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % IJ(2, MAX(0_IK, NPT - 2_IK * N - 1_IK))
-            % FVAL(NPT)
-            % XPT(N, NPT)
-
-
-            % GOPT(N)
-            % HQ(N, N)
-            % PQ(NPT)
-
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
 
@@ -285,14 +262,8 @@ classdef initialize_newuoa_mod
             %use, non_intrinsic :: powalg_mod, only : errh
 
 
-            % IJ(2, MAX(0_IK, NPT - 2_IK * N - 1_IK))
-            % XPT(N, NPT)
             % N.B.: XPT is essentially only used for debugging, to test the error in the initial H. The initial
             % ZMAT and BMAT are completely defined by RHOBEG and IJ.
-
-
-            % BMAT(N, NPT + N)
-            % ZMAT(NPT, NPT - N - 1)
 
 
             n = size(xpt, 1);

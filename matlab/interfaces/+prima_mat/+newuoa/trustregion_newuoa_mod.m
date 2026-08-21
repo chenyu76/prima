@@ -44,16 +44,6 @@ classdef trustregion_newuoa_mod
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
 
-            % GOPT_IN(N)
-            % HQ_IN(N, N)
-            % PQ_IN(NPT)
-
-            % XPT(N, NPT)
-
-
-            % S(N)
-
-
             iter = NaN;
 
             alpha = NaN;

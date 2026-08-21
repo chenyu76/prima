@@ -39,15 +39,7 @@ classdef shiftbase_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % PQ(NPT)
-            % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
-
-
-            % BMAT(N, NPT + N)
-            % HQ(N, N)
-            % XBASE(N)
-            % XPT(N, NPT)
 
 
             bymat = NaN(numel(xbase));
@@ -132,12 +124,6 @@ classdef shiftbase_mod
 
 
             linalg_obj = prima_mat.common.linalg_mod();
-
-            % XBASE(N)
-            % XPT(N, NPT)
-            % PL(NPT-1, NPT)
-            % PQ(NPT-1)
-
 
             n = size(xpt, 1);
             npt = size(xpt, 2);

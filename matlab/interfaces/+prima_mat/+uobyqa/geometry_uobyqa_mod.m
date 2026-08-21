@@ -33,12 +33,6 @@ classdef geometry_uobyqa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % D(N)
-            % PL(NPT-1, NPT)
-
-            % XPT(N, NPT)
-
-
             distsq = NaN(size(xpt, 2), 1);
 
             vlag = NaN(size(xpt, 2), 1);
@@ -152,12 +146,7 @@ classdef geometry_uobyqa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % PL(NPT-1, NPT)
-            % XPT(N, NPT)
-
-
-            d = NaN(size(xpt, 1), 1); % D(N)
-
+            d = NaN(size(xpt, 1), 1);
 
             g = NaN(size(xpt, 1), 1);
 

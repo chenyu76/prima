@@ -89,17 +89,6 @@ classdef bobyqb_mod
             trustregion_bobyqa_obj = prima_mat.bobyqa.trustregion_bobyqa_mod();
             update_bobyqa_obj = prima_mat.bobyqa.update_bobyqa_mod();
 
-            % XL(N)
-            % XU(N)
-
-
-            % X(N)
-
-
-            % FHIST(MAXFHIST)
-            % XHIST(N, MAXXHIST)
-
-
             solver = "BOBYQA";
 
             ij = NaN(2, max(0, npt - 2 * numel(x) - 1));

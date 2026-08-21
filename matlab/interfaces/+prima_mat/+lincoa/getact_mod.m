@@ -72,22 +72,6 @@ classdef getact_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % AMAT(N, M)
-
-            % G(N)
-
-
-            % IACT(M)
-
-            % QFAC(N, N)
-            % RESACT(M)
-            % RESNEW(M)
-            % RFAC(N, N)
-
-
-            % PSD(N)
-
-
             icon = NaN;
 
             l = NaN;
@@ -352,17 +336,6 @@ classdef getact_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % C(N)
-
-
-            % IACT(M)
-
-            % QFAC(N, N)
-            % RESACT(M)
-            % RESNEW(M)
-            % RFAC(N, N)
-            % VLAM(N)
-
             % Local variables (debugging only)
 
 
@@ -399,14 +372,6 @@ classdef getact_mod
 
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-            % IACT(M)
-
-            % QFAC(N, N)
-            % RESACT(M)
-            % RESNEW(M)
-            % RFAC(N, N)
-            % VLAM(N)
 
             % Local variables (debugging only)
 

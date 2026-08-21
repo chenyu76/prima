@@ -32,14 +32,6 @@ classdef geometry_newuoa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % BMAT(N, NPT + N)
-            % D(N)
-
-
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
-
             distsq = NaN(size(xpt, 2), 1);
 
             %====================%
@@ -130,15 +122,6 @@ classdef geometry_newuoa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % BMAT(N, NPT + N)
-
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
-
-            % D(N)
-
-
             pqlag = NaN(size(xpt, 2), 1);
 
             %====================%
@@ -206,16 +189,6 @@ classdef geometry_newuoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
-
-            % BMAT(N, NPT + N)
-
-            % X(N)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
-
-            % D(N)
-
 
             angle = NaN;
             cf = NaN(5, 1);
@@ -373,15 +346,6 @@ classdef geometry_newuoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
-
-            % BMAT(N, NPT+N)
-
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
-
-            % D(N)
-
 
             j = NaN;
             k = NaN;

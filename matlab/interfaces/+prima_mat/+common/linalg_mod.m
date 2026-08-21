@@ -102,9 +102,6 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % A(SIZE(X), SIZE(X))
-
-
             n = numel(x);
 
             %====================%
@@ -138,9 +135,6 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % A(SIZE(X), SIZE(Y))
-
-
             %====================%
             % Calculation starts %
             %====================%
@@ -159,9 +153,6 @@ classdef linalg_mod
             % A = A + ALPHA*( X*Y^T + Y*X^T ),
             % where A is an NxN matrix, X and Y are N-dimensional vectors, and alpha is a scalar.
             %--------------------------------------------------------------------------------------------------%
-
-
-            % A(SIZE(X), SIZE(X))
 
 
             n = numel(x);
@@ -192,12 +183,6 @@ classdef linalg_mod
             % where A is an MxN matrix, ALPHA and BETA are real scalars, X and U are M-dimensional vectors,
             % Y and V are N-dimensional vectors.
             %--------------------------------------------------------------------------------------------------%
-
-
-            % U(SIZE(X))
-            % V(SIZE(Y))
-
-            % A(SIZE(X), SIZE(Y))
 
 
             %====================%
@@ -318,11 +303,6 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % A(M, N)
-            % B(M)
-            % Q(M, :), SIZE(Q, 2) = M or MIN(M, N)
-            % Rdiag(MIN(M, N))
-
             x = NaN(size(A, 2), 1);
 
             P = NaN(size(A, 2), 1);
@@ -406,10 +386,6 @@ classdef linalg_mod
             % 2. R is non-singular.
             %--------------------------------------------------------------------------------------------------%
 
-
-            % B(M)
-            % Q(M, N)
-            % R(N, N)
 
             x = NaN(size(R, 2), 1);
 

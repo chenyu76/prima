@@ -42,24 +42,6 @@ classdef initialize_bobyqa_mod
             powalg_obj = prima_mat.common.powalg_mod();
             xinbd_obj = prima_mat.common.xinbd_mod();
 
-            % XL(N)
-            % XU(N)
-
-
-            % X(N)
-
-
-            % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
-
-
-            % FVAL(NPT)
-            % SL(N)
-            % SU(N)
-            % XBASE(N)
-            % XHIST(N, MAXXHIST)
-            % XPT(N, NPT)
-
-
             solver = "BOBYQA";
 
             evaluated = false(size(xpt, 2), 1);
@@ -241,16 +223,6 @@ classdef initialize_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
-            % FVAL(NPT)
-            % XPT(N, NPT)
-
-
-            % GOPT(N)
-            % HQ(N, N)
-            % PQ(NPT)
-
-
             n = size(xpt, 1);
             npt = size(xpt, 2);
 
@@ -327,14 +299,6 @@ classdef initialize_bobyqa_mod
 
 
             %use, non_intrinsic :: powalg_mod, only : errh
-
-
-            % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
-            % XPT(N, NPT)
-
-
-            % BMAT(N, NPT + N)
-            % ZMAT(NPT, NPT - N - 1)
 
 
             n = size(xpt, 1);

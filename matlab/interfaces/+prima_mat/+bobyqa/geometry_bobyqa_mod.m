@@ -33,14 +33,6 @@ classdef geometry_bobyqa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % BMAT(N, NPT + N)
-            % D(N)
-
-
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
-
             distsq = NaN(size(xpt, 2), 1);
 
             %====================%
@@ -148,17 +140,6 @@ classdef geometry_bobyqa_mod
 
 
             powalg_obj = prima_mat.common.powalg_mod();
-
-            % BMAT(N, NPT + N)
-
-            % SL(N)
-            % SU(N)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT-N-1)
-
-
-            % D(N)
-
 
             ilbd = NaN;
             isbd = NaN(3, size(xpt, 2));

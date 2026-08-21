@@ -27,14 +27,6 @@ classdef update_bobyqa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % D(N)
-            % XPT(N, NPT)
-
-
-            % BMAT(N, NPT + N)
-            % ZMAT(NPT, NPT-N-1)
-
-
             hcol = NaN(size(bmat, 2), 1);
 
             v1 = NaN(size(bmat, 1), 1);
@@ -130,13 +122,6 @@ classdef update_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % XNEW(N)
-
-
-            % FVAL(NPT)
-            % XPT(N, NPT)
-
-
             %====================%
             % Calculation starts %
             %====================%
@@ -175,20 +160,6 @@ classdef update_bobyqa_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
-            % BMAT(N, NPT + N)
-            % D(:)
-
-            % XDROP(N)
-            % XOSAV(N)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
-
-            % GOPT(N)
-            % HQ(N, N)
-            % PQ(NPT)
-
 
             pqinc = NaN(size(pq));
 
@@ -239,19 +210,6 @@ classdef update_bobyqa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % BMAT(N, NPT+N)
-            % FVAL(NPT)
-
-            % SL(N)
-            % SU(N)
-            % XOPT(N)
-            % XOPT(N, NPT)
-            % ZMAT(NPT, NPT-N-1)
-
-
-            % GOPT(N)
-            % HQ(N, N)
-            % PQ(NPT)
             % N.B.:
             % GOPT, HQ, and PQ should be INTENT(INOUT) instead of INTENT(OUT). According to the Fortran 2018
             % standard, an INTENT(OUT) dummy argument becomes undefined on invocation of the procedure.

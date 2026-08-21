@@ -25,26 +25,6 @@ classdef initialize_cobyla_mod
 
             message_obj = prima_mat.common.message_mod();
 
-            % AMAT(N, M_LCON)
-            % BVEC(M_LCON)
-            % CONSTR0(M)
-
-
-            % X0(N)
-
-
-            % EVALUATED(N+1)
-            % CHIST(MAXCHIST)
-            % CONHIST(M, MAXCONHIST)
-            % CONMAT(M, N+1)
-            % CVAL(N+1)
-            % FHIST(MAXFHIST)
-            % FVAL(N+1)
-            % SIM(N, N+1)
-            % SIMI(N, N)
-            % XHIST(N, MAXXHIST)
-
-
             solver = "COBYLA";
 
             constr = NaN(size(conmat, 1), 1);

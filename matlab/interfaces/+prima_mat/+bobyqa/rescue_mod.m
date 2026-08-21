@@ -95,26 +95,6 @@ classdef rescue_mod
 
             xinbd_obj = prima_mat.common.xinbd_mod();
 
-            % XL(N)
-            % XU(N)
-
-
-            % FHIST(MAXFHIST)
-            % FVAL(NPT)
-            % GOPT(N)
-            % HQ(N, N)
-            % PQ(NPT)
-            % SL(N)
-            % SU(N)
-            % XBASE(N)
-            % XHIST(N, MAXXHIST)
-            % XPT(N, NPT)
-
-
-            %  BMAT(N, NPT + N)
-            % ZMAT(NPT, NPT-N-1)
-
-
             ij = NaN(2, max(0, size(xpt, 2) - 2 * size(xpt, 1) - 1));
             ip = NaN;
             iq = NaN;
@@ -550,13 +530,6 @@ classdef rescue_mod
 
 
             linalg_obj = prima_mat.common.linalg_mod();
-
-            % VLAG(NPT + N)
-
-
-            % BMAT(N, NPT + N)
-            % ZMAT(NPT, NPT-N-1)
-
 
             hcol = NaN(size(bmat, 2), 1);
 

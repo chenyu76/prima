@@ -18,13 +18,6 @@ classdef update_newuoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            % XNEW(N)
-
-
-            % FVAL(NPT)
-            % XPT(N, NPT)
-
-
             %====================%
             % Calculation starts %
             %====================%
@@ -68,20 +61,6 @@ classdef update_newuoa_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
-
-            % BMAT(N, NPT + N)
-            % D(:)
-
-            % XDROP(N)
-            % XOSAV(N)
-            % XPT(N, NPT)
-            % ZMAT(NPT, NPT - N - 1)
-
-
-            % GOPT(N)
-            % HQ(N, N)
-            % PQ(NPT)
-
 
             pqinc = NaN(size(pq));
 
@@ -132,17 +111,6 @@ classdef update_newuoa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % BMAT(N, NPT+N)
-            % FVAL(NPT)
-
-            % XOPT(N)
-            % XOPT(N, NPT)
-            % ZMAT(NPT, NPT-N-1)
-
-
-            % GOPT(N)
-            % HQ(N, N)
-            % PQ(NPT)
             % N.B.:
             % GOPT, HQ, and PQ should be INTENT(INOUT) instead of INTENT(OUT). According to the Fortran 2018
             % standard, an INTENT(OUT) dummy argument becomes undefined on invocation of the procedure.
