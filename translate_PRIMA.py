@@ -22,6 +22,7 @@ def run_preprocessor(compiler, flags, src_file, target_file, include_dir):
     """Helper function to run the compiler for preprocessing."""
     cmd = (
         [compiler]
+        # + ["-DPRIMA_DEBUGGING=1"]
         + flags
         + [str(src_file), f"-I{include_dir}", "-o", str(target_file)]
     )
@@ -128,5 +129,5 @@ if __name__ == "__main__":
         if p.exists():
             shutil.rmtree(p)
     translate_sources(preprocess_dir, preprocessed_files, output_dir, pkg_name)
-    if preprocess_dir.exists():
-        shutil.rmtree(preprocess_dir)
+    # if preprocess_dir.exists():
+    #     shutil.rmtree(preprocess_dir)

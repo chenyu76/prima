@@ -93,7 +93,7 @@ classdef update_lincoa_mod
 
 
         end
-        function [qalt_better, gopt, pq, hq, galt, pqalt] = tryqalt(~, idz, bmat, fval, xopt, xpt, zmat, qalt_better, gopt, pq, hq, galt, pqalt)
+        function [qalt_better, gopt, pq, hq, galt, pqalt] = tryqalt(~, idz, bmat, fval, xopt, xpt, zmat, qalt_better, gopt, pq, hq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine tests whether to replace Q by the alternative model, namely the model that
             % minimizes the F-norm of the Hessian subject to the interpolation conditions. It first calculates

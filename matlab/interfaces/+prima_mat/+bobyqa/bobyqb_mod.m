@@ -91,8 +91,6 @@ classdef bobyqb_mod
 
             solver = "BOBYQA";
 
-            ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
-
             accurate_mod = false;
             adequate_geo = false;
             bad_trstep = false;
@@ -123,10 +121,8 @@ classdef bobyqb_mod
             moderr_rec = NaN(size(dnorm_rec));
             pq = NaN(npt, 1);
 
-            sl = NaN(size(x));
-            su = NaN(size(x));
             vlag = NaN(npt + numel(x), 1);
-            xbase = NaN(size(x));
+
             xdrop = NaN(size(x));
             xosav = NaN(size(x));
             xpt = NaN(numel(x), npt);
@@ -139,7 +135,7 @@ classdef bobyqb_mod
             %====================%
 
             % Initialize XBASE, XPT, SL, SU, FVAL, and KOPT, together with the history, NF, and IJ.
-            [x, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, subinfo] = initialize_bobyqa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x, ij, fhist, fval, sl, su, xbase, xhist, xpt);
+            [x, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, subinfo] = initialize_bobyqa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x, fhist, fval, xhist, xpt);
 
             % Report the current best value, and check if user asks for early termination.
             terminate = false;
@@ -166,7 +162,7 @@ classdef bobyqb_mod
 
                 % Initialize the quadratic represented by [GOPT, HQ, PQ], so that its gradient at XBASE+XOPT is
                 % GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
-                [gopt, hq, pq] = initialize_bobyqa_obj.initq(ij, fval, xpt, gopt, hq, pq);
+                [gopt, hq, pq] = initialize_bobyqa_obj.initq(ij, fval, xpt, hq, pq);
                 if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
                     subinfo = -3;
                 end
@@ -335,7 +331,7 @@ classdef bobyqb_mod
 
                     % Set KNEW_TR to the index of the interpolation point to be replaced with XOPT + D.
                     % KNEW_TR will ensure that the geometry of XPT is "good enough" after the replacement.
-                    knew_tr = geometry_bobyqa_obj.setdrop_tr(kopt, ximproved, bmat, d, delta, rho, xpt, zmat);
+                    knew_tr = geometry_bobyqa_obj.setdrop_tr(kopt, ximproved, bmat, d, rho, xpt, zmat);
 
                     % Update [BMAT, ZMAT] (representing H in the BOBYQA paper), [GQ, HQ, PQ] (the quadratic
                     % model), and [FVAL, XPT, KOPT, FOPT, XOPT] so that XPT(:, KNEW_TR) becomes XOPT + D. If

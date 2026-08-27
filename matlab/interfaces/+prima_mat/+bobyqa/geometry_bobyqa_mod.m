@@ -12,7 +12,7 @@ classdef geometry_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function knew = setdrop_tr(~, kopt, ximproved, bmat, d, delta, rho, xpt, zmat)
+        function knew = setdrop_tr(~, kopt, ximproved, bmat, d, rho, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine sets KNEW to the index of the interpolation point to be deleted AFTER A TRUST
             % REGION STEP. KNEW will be set in a way ensuring that the geometry of XPT is "optimal" after

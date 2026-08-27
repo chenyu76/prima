@@ -12,7 +12,7 @@ classdef initialize_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [kopt, nf, fhist, fval, xbase, xhist, xpt, info] = initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, fhist, fval, xbase, xhist, xpt)
+        function [kopt, nf, fhist, fval, xbase, xhist, xpt, info] = initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, fhist, fval, xhist, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization about the interpolation points & their function values.
             % See Section 4 of the UOBYQA paper.

@@ -12,7 +12,7 @@ classdef initialize_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [x0, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, info] = initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x0, ij, fhist, fval, sl, su, xbase, xhist, xpt)
+        function [x0, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, info] = initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x0, fhist, fval, xhist, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization about the interpolation points & their function values.
             %
@@ -216,7 +216,7 @@ classdef initialize_bobyqa_mod
 
 
         end
-        function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, gopt, hq, pq, varargin)
+        function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, hq, pq, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the quadratic model represented by [GOPT, HQ, PQ] so that its gradient
             % at XBASE + XPT(:, KOPT) is GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.

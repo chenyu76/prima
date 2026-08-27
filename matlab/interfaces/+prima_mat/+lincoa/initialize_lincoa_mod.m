@@ -13,7 +13,7 @@ classdef initialize_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, info] = initxf(~, calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, rhobeg, xl, xu, x0, b, ij, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated)
+        function [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, info] = initxf(~, calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, rhobeg, xl, xu, x0, b, chist, cval, fhist, fval, xhist, xpt, evaluated)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization about the interpolation points & their function values.
             %

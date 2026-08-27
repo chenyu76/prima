@@ -86,7 +86,6 @@ classdef lincob_mod
 
             iact = NaN(size(bvec));
             idz = NaN;
-            ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
 
             accurate_mod = false;
             adequate_geo = false;
@@ -127,7 +126,6 @@ classdef lincob_mod
 
             rfac = NaN(numel(x));
 
-            xbase = NaN(size(x));
             xdrop = NaN(size(x));
             xfilt = NaN(numel(x), maxfilt);
             xosav = NaN(size(x));
@@ -151,7 +149,7 @@ classdef lincob_mod
 
             % Initialize B, XBASE, XPT, FVAL, CVAL, and KOPT, together with the history, NF, IJ, and EVALUATED.
             b = bvec;
-            [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, subinfo] = initialize_lincoa_obj.initxf(calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, rhobeg, xl, xu, x, b, ij, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated);
+            [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, subinfo] = initialize_lincoa_obj.initxf(calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, rhobeg, xl, xu, x, b, chist, cval, fhist, fval, xhist, xpt, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
             terminate = false;
@@ -391,7 +389,7 @@ classdef lincob_mod
                         % Establish the alternative model, namely the least Frobenius norm interpolant. Replace
                         % the current model with the alternative model if the recent few (three) alternative
                         % models are more accurate in predicting the function value of XOPT + D.
-                        [qalt_better, gopt, pq, hq, galt, pqalt] = update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), xpt, zmat, qalt_better, gopt, pq, hq, galt, pqalt);
+                        [qalt_better, gopt, pq, hq, galt, pqalt] = update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), xpt, zmat, qalt_better, gopt, pq, hq);
                         if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
                             info = -3;
                             break
@@ -486,7 +484,7 @@ classdef lincob_mod
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), HALF * delta), rho)  ! Powell's NEWUOA code
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), delta), rho)  ! Powell's BOBYQA code
                     % Find D so that the geometry of XPT will be improved when XPT(:, KNEW_GEO) becomes XOPT + D.
-                    [feasible, d] = geometry_lincoa_obj.geostep(iact, idz, knew_geo, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat, d);
+                    [feasible, d] = geometry_lincoa_obj.geostep(iact, idz, knew_geo, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat);
 
                     % Calculate the next value of the objective function.
                     x = xbase + (xpt(:, kopt) + d);
@@ -536,7 +534,7 @@ classdef lincob_mod
                     % current model with the alternative model if the recent few (three) alternative models are
                     % more accurate in predicting the function value of XOPT + D.
                     % N.B.: Powell's code does this only if XOPT + D is feasible.
-                    [qalt_better, gopt, pq, hq, galt, pqalt] = update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), xpt, zmat, qalt_better, gopt, pq, hq, galt, pqalt);
+                    [qalt_better, gopt, pq, hq, galt, pqalt] = update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), xpt, zmat, qalt_better, gopt, pq, hq);
                     if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
                         info = -3;
                         break

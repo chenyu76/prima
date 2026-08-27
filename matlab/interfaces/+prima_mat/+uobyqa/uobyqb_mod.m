@@ -86,7 +86,6 @@ classdef uobyqb_mod
             moderr_rec = NaN(size(dnorm_rec));
             pq = NaN(numel(distsq) + -1, 1);
 
-            xbase = NaN(size(x));
             xdrop = NaN(size(x));
             xpt = NaN(numel(x), numel(distsq));
             pl = NaN;
@@ -105,7 +104,7 @@ classdef uobyqb_mod
             %====================%
 
             % Initialize XBASE, XPT, FVAL, and KOPT, together with the history and NF.
-            [kopt, nf, fhist, fval, xbase, xhist, xpt, subinfo] = initialize_uobyqa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, x, fhist, fval, xbase, xhist, xpt);
+            [kopt, nf, fhist, fval, xbase, xhist, xpt, subinfo] = initialize_uobyqa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, x, fhist, fval, xhist, xpt);
 
             % Report the current best value, and check if user asks for early termination.
             terminate = false;

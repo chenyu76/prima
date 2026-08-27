@@ -224,10 +224,8 @@ classdef lincoa_mod
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
 
-            amat = NaN; % AMAT(N, M); each column corresponds to a constraint
+            % AMAT(N, M); each column corresponds to a constraint
 
-
-            bvec = NaN;
 
             ipObj = inputParser();
             addParameter(ipObj, 'f', NaN);
@@ -420,7 +418,7 @@ classdef lincoa_mod
             [maxhist_loc, xhist_loc, fhist_loc, chist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 5, nargout >= 6, 'output_chist', nargout >= 7);
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
-            [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, rhoend_loc, xl_loc, xu_loc, x, amat, bvec);
+            [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, rhoend_loc, xl_loc, xu_loc, x);
 
             %-------------------- Call LINCOB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
@@ -482,7 +480,7 @@ classdef lincoa_mod
 
 
         end
-        function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, rhoend, xl, xu, x0, amat, bvec)
+        function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, rhoend, xl, xu, x0)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine wraps the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
             % N.B.:

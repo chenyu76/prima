@@ -272,10 +272,8 @@ classdef cobyla_mod
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
 
-            amat = NaN; % AMAT(N, M_LCON); each column corresponds to a linear constraint
+            % AMAT(N, M_LCON); each column corresponds to a linear constraint
 
-
-            bvec = NaN;
 
             ipObj = inputParser();
             addParameter(ipObj, 'f', NaN);
@@ -417,7 +415,7 @@ classdef cobyla_mod
             xu_loc(isnan(xu_loc) | xu_loc > 0.25 * realmax) = 0.25 * realmax;
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
-            [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, xl_loc, xu_loc, amat, bvec);
+            [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, xl_loc, xu_loc);
 
             % Allocate memory for CONSTR_LOC.
             constr_loc = NaN(m, 1); % NOT removable even in F2003!
@@ -587,7 +585,7 @@ classdef cobyla_mod
 
 
         end
-        function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu, amat, bvec)
+        function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine wraps the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
             % N.B.:

@@ -64,7 +64,6 @@ classdef newuob_mod
             solver = "NEWUOA";
 
             idz = NaN;
-            ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
 
             k = NaN;
 
@@ -94,7 +93,6 @@ classdef newuob_mod
             moderr_rec = NaN(size(dnorm_rec));
             pq = NaN(npt, 1);
 
-            xbase = NaN(size(x));
             xdrop = NaN(size(x));
             xosav = NaN(size(x));
             xpt = NaN(numel(x), npt);
@@ -107,7 +105,7 @@ classdef newuob_mod
             %====================%
 
             % Initialize XBASE, XPT, FVAL, and KOPT, together with the history, NF, and IJ.
-            [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, subinfo] = initialize_newuoa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, x, ij, fhist, fval, xbase, xhist, xpt);
+            [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, subinfo] = initialize_newuoa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, x, fhist, fval, xhist, xpt);
 
             % Report the current best value, and check if user asks for early termination.
             terminate = false;

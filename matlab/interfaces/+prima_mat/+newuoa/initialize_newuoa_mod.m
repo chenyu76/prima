@@ -12,7 +12,7 @@ classdef initialize_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, info] = initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, ij, fhist, fval, xbase, xhist, xpt)
+        function [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, info] = initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, fhist, fval, xhist, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization about the interpolation points & their function values.
             %

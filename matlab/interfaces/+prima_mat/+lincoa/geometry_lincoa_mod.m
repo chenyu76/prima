@@ -138,7 +138,7 @@ classdef geometry_lincoa_mod
 
 
         end
-        function [feasible, s] = geostep(~, iact, idz, knew, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat, s)
+        function [feasible, s] = geostep(~, iact, idz, knew, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine finds a step S hat intends to improve the geometry of the interpolation set when
             % XPT(:, KNEW) is changed to XOPT + S, where XOPT = XPT(:, KOPT).

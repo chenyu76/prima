@@ -148,7 +148,7 @@ classdef geometry_cobyla_mod
 
 
         end
-        function d = geostep(~, jdrop, amat, bvec, conmat, cpen, cval, delbar, fval, simi)
+        function d = geostep(~, jdrop, amat, bvec, conmat, cpen, delbar, fval, simi)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates a geometry step so that the geometry of the interpolation set is improved
             % when SIM(:, JDRO_GEO) is replaced with SIM(:, N+1) + D. See (15)--(17) of the COBYLA paper.

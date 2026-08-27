@@ -462,7 +462,7 @@ classdef cobylb_mod
 
                     % Calculate the geometry step D.
                     delbar = 0.5 * delta;
-                    d(:) = geometry_cobyla_obj.geostep(jdrop_geo, amat, bvec, conmat, cpen, cval, delbar, fval, simi);
+                    d(:) = geometry_cobyla_obj.geostep(jdrop_geo, amat, bvec, conmat, cpen, delbar, fval, simi);
 
                     % Calculate the next value of the objective and constraint functions.
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
