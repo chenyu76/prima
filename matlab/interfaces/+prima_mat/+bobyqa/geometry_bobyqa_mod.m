@@ -141,46 +141,21 @@ classdef geometry_bobyqa_mod
 
             powalg_obj = prima_mat.common.powalg_mod();
 
-            ilbd = NaN;
             isbd = NaN(3, size(xpt, 2));
-
-            iubd = NaN;
-            k = NaN;
-
-            mask_fixl = false(size(xpt, 1), 1);
-            mask_fixu = false(size(xpt, 1), 1);
-
-            curv = NaN;
 
             distsq = NaN(size(xpt, 2), 1);
 
-            grdstp = NaN;
-            gs = NaN;
-            lfrac = NaN(size(xpt, 1), 1);
             pqlag = NaN(size(xpt, 2), 1);
 
-            resis = NaN;
             s = NaN(size(xpt, 1), 1);
-            scaling = NaN;
-            sfixsq = NaN;
-            slbd = NaN;
-            slbd_test = NaN(size(xpt, 1), 1);
-            ssqsav = NaN;
-            stplen = NaN(3, size(xpt, 2));
-            stpm = NaN;
-            subd = NaN;
-            subd_test = NaN(size(xpt, 1), 1);
-            sumin = NaN;
-            sxpt = NaN(size(xpt, 2), 1);
-            ufrac = NaN(size(xpt, 1), 1);
 
-            vlagsq = NaN;
+            slbd_test = NaN(size(xpt, 1), 1);
+
+            stplen = NaN(3, size(xpt, 2));
+
+            subd_test = NaN(size(xpt, 1), 1);
 
             x = NaN(size(xpt, 1), 1);
-
-            xdiff = NaN(size(xpt, 1), 1);
-
-            xtemp = NaN(size(xpt, 1), 1);
 
             n = size(xpt, 1);
             npt = size(xpt, 2);

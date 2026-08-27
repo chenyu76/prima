@@ -53,36 +53,17 @@ classdef trustregion_uobyqa_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            i = NaN;
-
-            k = NaN;
-
-            negcrv = false;
-
-            dhd = NaN;
             % Newton-Raphson step; only calculated when N = 1.
-            dnorm = NaN;
+
             dold = NaN(size(g));
 
-            dtg = NaN;
-            dtz = NaN;
-            gam = NaN;
-
-            partmp = NaN;
-
-            phi = NaN;
-
             piv = NaN(size(g));
-            slope = NaN;
+
             td = NaN(size(g));
-            tempa = NaN;
-            tempb = NaN;
+
             tn = NaN(numel(g) + -1, 1);
-            tnz = NaN;
-            wsq = NaN;
-            wwsq = NaN;
+
             z = NaN(size(g));
-            zsq = NaN;
 
             n = numel(g);
 

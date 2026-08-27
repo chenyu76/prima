@@ -18,8 +18,6 @@ classdef update_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            simi_jdrop = NaN(size(simi, 2), 1);
-
             simi_test = NaN(size(simi, 1), size(simi, 2));
 
             sum_simi = NaN(size(simi, 2), 1);
@@ -43,7 +41,7 @@ classdef update_cobyla_mod
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             if jdrop <= n
                 sim(:, jdrop) = d;
-                simi_jdrop(:) = simi(jdrop, :) ./ sum(simi(jdrop, :).' .* d, 'all');
+                simi_jdrop = simi(jdrop, :).' ./ sum(simi(jdrop, :).' .* d, 'all');
                 simi = simi - simi * d * simi_jdrop.';
                 simi(jdrop, :) = simi_jdrop;
             else                % JDROP = N+1

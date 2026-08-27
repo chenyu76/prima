@@ -50,19 +50,12 @@ classdef trustregion_lincoa_mod
             % RFAC(N, N); Will be updated in GETACT
 
 
-            jsav = NaN;
-
             ad = NaN(size(amat, 2), 1);
-            alpha = NaN;
-            alphm = NaN;
-            alpht = NaN;
-            beta = NaN;
+
             d = NaN(size(gopt_in));
 
-            dg = NaN;
-            dhd = NaN;
             dproj = NaN(size(gopt_in));
-            ds = NaN;
+
             frac = NaN(size(amat, 2), 1);
 
             gamma = NaN;
@@ -74,11 +67,8 @@ classdef trustregion_lincoa_mod
             psd = NaN(size(gopt_in));
 
             resact = NaN(size(amat, 2), 1);
-            resid = NaN;
 
             restmp = NaN(size(amat, 2), 1);
-            sold = NaN(size(s));
-            sqrtd = NaN;
 
             m = size(amat, 2);
             n = numel(gopt_in);

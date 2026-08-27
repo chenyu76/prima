@@ -87,19 +87,9 @@ classdef lincob_mod
             iact = NaN(size(bvec));
             idz = NaN;
 
-            accurate_mod = false;
-            adequate_geo = false;
-            bad_trstep = false;
-            close_itpset = false;
             evaluated = false(npt, 1);
-            feasible = false;
-            improve_geo = false;
+
             qalt_better = false(3, 1);
-            reduce_rho = false;
-
-            small_trrad = false;
-
-            ximproved = false;
 
             bmat = NaN(numel(x), npt + numel(x));
             cfilt = NaN(maxfilt, 1);
@@ -107,7 +97,6 @@ classdef lincob_mod
             constr_leq = NaN(size(beq));
             cval = NaN(npt, 1);
             d = NaN(size(x));
-            delbar = NaN;
 
             distsq = NaN(npt, 1);
             dnorm = NaN;
@@ -118,17 +107,15 @@ classdef lincob_mod
 
             gopt = NaN(size(x));
             hq = NaN(numel(x));
-            moderr = NaN;
-            moderr_alt = NaN;
+
             pq = NaN(npt, 1);
             pqalt = NaN(npt, 1);
             qfac = NaN(numel(x));
 
             rfac = NaN(numel(x));
 
-            xdrop = NaN(size(x));
             xfilt = NaN(numel(x), maxfilt);
-            xosav = NaN(size(x));
+
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
@@ -152,7 +139,7 @@ classdef lincob_mod
             [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, subinfo] = initialize_lincoa_obj.initxf(calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, rhobeg, xl, xu, x, b, chist, cval, fhist, fval, xhist, xpt, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
-            terminate = false;
+
             ipObj = inputParser();
             addParameter(ipObj, 'callback_fcn', struct());
             parse(ipObj, varargin{:});
@@ -168,7 +155,7 @@ classdef lincob_mod
             % N.B.: We must set CONSTR and CSTRV. Otherwise, if REDUCE_RHO is TRUE after the very first
             % iteration due to SHORTD, then RHOMSG will be called with CONSTR and CSTRV uninitialized.
             x = xbase + xpt(:, kopt);
-            f = fval(kopt);
+
             constr_leq(:) = Aeq * x - beq;
             constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
             cstrv = max([0.0; constr], [], 'all');
@@ -241,7 +228,7 @@ classdef lincob_mod
 
             qalt_better(:) = false;
             knew_tr = 0;
-            knew_geo = 0;
+
             qfac(:, :) = eye(n);
             rfac = zeros(size(rfac));
             nact = 0;

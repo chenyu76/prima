@@ -53,15 +53,8 @@ classdef cobylb_mod
 
             solver = "COBYLA";
 
-            j = NaN;
-
-            bad_trstep = false;
-            adequate_geo = false;
             evaluated = false(numel(x) + 1, 1);
-            improve_geo = false;
-            reduce_rho = false;
 
-            ximproved = false;
             A = NaN(numel(x), numel(constr)); % A contains the approximate gradient for the constraints
 
             cfilt = NaN(min(max(maxfilt, 1), maxfun), 1);
@@ -70,10 +63,9 @@ classdef cobylb_mod
             % Penalty parameter for constraint in merit function (PARMU in Powell's code)
             cval = NaN(numel(x) + 1, 1);
             d = NaN(size(x));
-            delbar = NaN;
 
             distsq = NaN(numel(x) + 1, 1);
-            dnorm = NaN;
+
             ffilt = NaN(size(cfilt));
             fval = NaN(numel(x) + 1, 1);
             g = NaN(size(x));
@@ -114,7 +106,7 @@ classdef cobylb_mod
             [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, subinfo] = initialize_cobyla_obj.initxfc(calcfc, iprint, maxfun, amat, bvec, constr, ctol, f, ftarget, rhobeg, x, chist, conhist, conmat, cval, fhist, fval, sim, xhist, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
-            terminate = false;
+
             ipObj = inputParser();
             addParameter(ipObj, 'callback_fcn', struct());
             parse(ipObj, varargin{:});
@@ -163,15 +155,12 @@ classdef cobylb_mod
             rho = rhobeg;
             delta = rhobeg;
             cpen = max(cpenmin, min(1000.0, obj.fcratio(conmat, fval))); % Powell's code: CPEN = ZERO
-            prerec = -realmax;
-            preref = -realmax;
-            prerem = -realmax;
-            actrem = -realmax;
+
+
             shortd = false;
-            trfail = false;
+
             ratio = -1.0;
             jdrop_tr = 0;
-            jdrop_geo = 0;
 
             % If DELTA <= GAMMA3*RHO after an update, we set DELTA to RHO. GAMMA3 must be less than GAMMA2. The
             % reason is as follows. Imagine a very successful step with DENORM = the un-updated DELTA = RHO.
@@ -222,7 +211,7 @@ classdef cobylb_mod
                 end
 
                 % Does the interpolation set have adequate geometry? It affects IMPROVE_GEO and REDUCE_RHO.
-                adequate_geo = all(sum(sim(:, 1:n) .^ 2, 1) <= 4.0 * delta ^ 2, 'all');
+                adequate_geo = all(sum(sim(:, 1:n) .^ 2, 1).' <= 4.0 * delta ^ 2, 'all');
 
                 % Calculate the linear approximations to the objective and constraint functions.
                 % N.B.: TRSTLP accesses A mostly by columns, so it is more reasonable to save A instead of A^T.
@@ -430,7 +419,7 @@ classdef cobylb_mod
                 % we take another geometry step in that case? If no, why should we do it here? Indeed, this
                 % distinction makes no practical difference for CUTEst problems with at most 100 variables
                 % and 5000 constraints, while the algorithm framework is simplified.
-                if improve_geo && ~all(sum(sim(:, 1:n) .^ 2, 1) <= 4.0 * delta ^ 2, 'all')
+                if improve_geo && ~all(sum(sim(:, 1:n) .^ 2, 1).' <= 4.0 * delta ^ 2, 'all')
                     % Before the geometry step, UPDATEPOLE has been called either implicitly by UPDATEXFC or
                     % explicitly after CPEN is updated, so that SIM(:, N + 1) is the optimal vertex.
 
@@ -625,8 +614,6 @@ classdef cobylb_mod
 
             % Initialize INFO, PREREF, and PREREC, which are needed in the postconditions.
 
-            preref = 0.0;
-            prerec = 0.0;
 
             % Increase CPEN if necessary to ensure PREREM > 0. Branch back for the next loop if this change
             % alters the optimal vertex of the current simplex. Note the following.

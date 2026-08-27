@@ -72,24 +72,13 @@ classdef getact_mod
 
             linalg_obj = prima_mat.common.linalg_mod();
 
-            icon = NaN;
-
-            l = NaN;
-
-            mask = false(size(amat, 2), 1);
-            apsd = NaN(size(amat, 2), 1);
-            dd = NaN;
-
-            dnorm = NaN;
-
             frac = NaN(size(g));
             psdsav = NaN(size(psd));
 
             v = NaN(size(g));
-            violmx = NaN;
+
             vlam = NaN(size(g));
             vmu = NaN(size(g));
-            vmult = NaN;
 
             m = size(amat, 2);
             n = numel(g);

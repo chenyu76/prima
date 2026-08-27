@@ -633,7 +633,6 @@ classdef powalg_mod
             Omega = NaN(size(xpt, 2));
             U = NaN(size(xpt, 2));
             V = NaN(size(xpt, 1), size(xpt, 2));
-            r = NaN(size(xpt, 2), 1);
 
             t = NaN(size(xpt, 2), 1);
 
@@ -649,10 +648,10 @@ classdef powalg_mod
             maxabs = max([1.0, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), max(abs(bmat), [], 'all')], [], 'all');
             U(:, :) = eye(npt) - A * Omega - xpt.' * bmat(:, 1:npt);
             V(:, :) = -(bmat(:, 1:npt) * A) - bmat(:, npt + 1:npt + n) * xpt;
-            r(:) = sum(U, 1) ./ double(npt);
+            r = sum(U, 1).' ./ double(npt);
             s = sum(V, 2) ./ double(npt);
             t(:) = -(A * r) - xpt.' * s;
-            e(1, 1) = max(max(U, [], 1) - min(U, [], 1), [], 'all');
+            e(1, 1) = max(max(U, [], 1).' - min(U, [], 1).', [], 'all');
             e(1, 2) = max(t, [], 'all') - min(t, [], 'all');
             e(1, 3) = max(max(V, [], 2) - min(V, [], 2), [], 'all');
             e(2, 1) = max(abs(sum(Omega, 1)), [], 'all');
@@ -707,7 +706,6 @@ classdef powalg_mod
             linalg_obj = prima_mat.common.linalg_mod(); %, r2update
 
 
-            grot = NaN(2);
             hcol = NaN(size(bmat, 2), 1);
 
             v1 = NaN(size(bmat, 1), 1);
@@ -1256,7 +1254,7 @@ classdef powalg_mod
 
             ell = fix((n:npt - n - 2).' ./ n); % The ell below (2.4) of the BOBYQA paper.
             ij(1, :) = (n:npt - n - 2).' - n * ell + 1;
-            ij(2, :) = mod(ij(1, :) + ell - 1, n) + 1; % MODULO(K-1, N) + 1 = K-N for K in [N+1, 2N]
+            ij(2, :) = mod(ij(1, :).' + ell - 1, n) + 1; % MODULO(K-1, N) + 1 = K-N for K in [N+1, 2N]
             ipObj = inputParser();
             addParameter(ipObj, 'sorting_direction', "");
             parse(ipObj, varargin{:});

@@ -50,44 +50,19 @@ classdef trustregion_bobyqa_mod
             univar_obj = prima_mat.common.univar_mod();
 
             xbdi = NaN(size(gopt_in));
-            grid_size = NaN;
-
-            bstep = NaN;
-            cth = NaN;
-
-            dhd = NaN;
-            dhs = NaN;
-            dold = NaN(size(d));
-            dredg = NaN;
-
-            ds = NaN;
-
-            hangt = NaN;
-            hangt_bd = NaN;
-
-            rayleighq = NaN;
 
             sbound = NaN(size(gopt_in));
-            sdec = NaN;
-            shs = NaN;
-            sqrtd = NaN;
-            sredg = NaN;
-            stepsq = NaN;
-            sth = NaN;
-            stplen = NaN;
-            temp = NaN;
+
             xtest = NaN(size(xopt));
             args = NaN(5, 1);
-            dred = NaN(size(gopt_in));
 
             hdred = NaN(size(gopt_in));
             hs = NaN(size(gopt_in));
 
             s = NaN(size(gopt_in));
             sqdscr = NaN(size(gopt_in));
-            ssq = NaN(size(gopt_in));
+
             tanbd = NaN(size(gopt_in));
-            xnew = NaN(size(gopt_in));
 
             n = numel(gopt_in);
 
@@ -116,7 +91,7 @@ classdef trustregion_bobyqa_mod
 
             % The initial values of IACT, DREDSQ, and GGSAV are unused but to entertain Fortran compilers.
             % TODO: Check that GGSAV has been initialized before used.
-            iact = 0;
+
             dredsq = 0.0;
             ggsav = 0.0;
 

@@ -96,36 +96,22 @@ classdef rescue_mod
             xinbd_obj = prima_mat.common.xinbd_mod();
 
             ij = NaN(2, max(0, size(xpt, 2) - 2 * size(xpt, 1) - 1));
-            ip = NaN;
-            iq = NaN;
 
-            k = NaN;
-
-            korig = NaN;
-            kprov = NaN;
-
-            subinfo = NaN;
-            mask = false(size(xpt, 1), 1);
-            beta = NaN;
-            bsum = NaN;
             den = NaN(size(xpt, 2), 1);
-            f = NaN;
 
             hdiag = NaN(size(xpt, 2), 1);
-            moderr = NaN;
+
             pqinc = NaN(size(xpt, 2), 1);
             ptsaux = NaN(2, size(xpt, 1));
             ptsid = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
 
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
-            vquad = NaN;
+
             wmv = NaN(size(xpt, 1) + size(xpt, 2), 1);
             x = NaN(size(xpt, 1), 1);
             xnew = NaN(size(xpt, 1), 1);
 
-            xp = NaN;
-            xq = NaN;
             xxpt = NaN(size(xpt, 2), 1);
 
             n = size(xpt, 1);
@@ -162,10 +148,10 @@ classdef rescue_mod
             % Set the elements of PTSAUX.
             ptsaux(1, :) = min(delta, su);
             ptsaux(2, :) = max(-delta, sl);
-            mask(:) = (ptsaux(1, :) + ptsaux(2, :) < 0);
+            mask = (ptsaux(1, :).' + ptsaux(2, :).' < 0);
             ptsaux([1, 2], find(mask)) = ptsaux([2, 1], find(mask));
-            mask(:) = (abs(ptsaux(2, :)) < 0.5 * abs(ptsaux(1, :)));
-            ptsaux(2, find(mask)) = 0.5 * ptsaux(1, find(mask));
+            mask = (abs(ptsaux(2, :)).' < 0.5 * abs(ptsaux(1, :)).');
+            ptsaux(2, find(mask)) = 0.5 * ptsaux(1, find(mask)).';
 
             % Set the identifiers of the artificial interpolation points that are along a coordinate direction
             % from XOPT, and set the corresponding nonzero elements of BMAT and ZMAT.
@@ -448,15 +434,15 @@ classdef rescue_mod
                         vquad = vquad + xp * (gopt(ip) + 0.5 * xp * hq(ip, ip));
                         vquad = vquad + xq * (gopt(iq) + 0.5 * xq * hq(iq, iq));
                         vquad = vquad + xp * xq * hq(ip, iq);
-                        xxpt(:) = xp * xpt(ip, :) + xq * xpt(iq, :);
+                        xxpt = xp * xpt(ip, :).' + xq * xpt(iq, :).';
                     elseif ip > 0
                         % IP > 0, IQ == 0
                         vquad = vquad + xp * (gopt(ip) + 0.5 * xp * hq(ip, ip));
-                        xxpt(:) = xp * xpt(ip, :);
+                        xxpt = xp * xpt(ip, :).';
                     elseif iq > 0
                         % IP == 0, IQ > 0
                         vquad = vquad + xq * (gopt(iq) + 0.5 * xq * hq(iq, iq));
-                        xxpt(:) = xq * xpt(iq, :);
+                        xxpt = xq * xpt(iq, :).';
                     end
                     vquad = vquad + 0.5 * sum(xxpt .* (pq .* xxpt), 'all');
                     % N.B.: INPROD(XXPT, PQ * XXPT) = INPROD(X, HESS_MUL(X, XPT, PQ))
@@ -562,7 +548,7 @@ classdef rescue_mod
             tau = vlag(knew);
             % In theory, DENOM can also be calculated after ZMAT is rotated below. However, this worsened the
             % performance of BOBYQA in a test on 20220413.
-            denom = sum(zmat(knew, :) .^ 2, 'all') * beta + tau ^ 2;
+            denom = sum(zmat(knew, :).' .^ 2, 'all') * beta + tau ^ 2;
 
             % Quite rarely, due to rounding errors, VLAG or BETA may not be finite, or DENOM may not be
             % positive. In such cases, [BMAT, ZMAT] would be destroyed by the update, and hence we would rather

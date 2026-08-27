@@ -224,7 +224,7 @@ classdef selectx_mod
             is_better = false;
             % Even though NaN/+Inf should not occur in FC1 or FC2 due to the moderated extreme barrier, for
             % security and robustness, the code below does not make this assumption.
-            is_better = is_better || (any(isnan([f2, c2]) | isinf([f2, c2]) & [f2, c2] > 0, 'all') && ~any(isnan([f1, c1]) | isinf([f1, c1]) & [f1, c1] > 0, 'all'));
+            is_better = is_better || (any(isnan([f2, c2]).' | isinf([f2, c2]) & [f2, c2] > 0, 'all') && ~any(isnan([f1, c1]).' | isinf([f1, c1]) & [f1, c1] > 0, 'all'));
             is_better = is_better || (f1 < f2 && c1 <= c2);
             is_better = is_better || (f1 <= f2 && c1 < c2);
             % If C1 <= CTOL and C2 is significantly larger/worse than CTOL, i.e., C2 > MAX(CTOL, CREF),

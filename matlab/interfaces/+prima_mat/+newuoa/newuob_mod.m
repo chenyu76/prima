@@ -65,22 +65,9 @@ classdef newuob_mod
 
             idz = NaN;
 
-            k = NaN;
-
-            accurate_mod = false;
-            adequate_geo = false;
-            bad_trstep = false;
-            close_itpset = false;
-            improve_geo = false;
-            reduce_rho = false;
-
-            small_trrad = false;
-
-            ximproved = false;
             bmat = NaN(numel(x), npt + numel(x));
 
             d = NaN(size(x));
-            delbar = NaN;
 
             distsq = NaN(npt, 1);
 
@@ -89,12 +76,10 @@ classdef newuob_mod
 
             gopt = NaN(size(x));
             hq = NaN(numel(x));
-            moderr = NaN;
+
             moderr_rec = NaN(size(dnorm_rec));
             pq = NaN(npt, 1);
 
-            xdrop = NaN(size(x));
-            xosav = NaN(size(x));
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
@@ -108,7 +93,7 @@ classdef newuob_mod
             [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, subinfo] = initialize_newuoa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, x, fhist, fval, xhist, xpt);
 
             % Report the current best value, and check if user asks for early termination.
-            terminate = false;
+
             ipObj = inputParser();
             addParameter(ipObj, 'callback_fcn', struct());
             parse(ipObj, varargin{:});
@@ -164,7 +149,7 @@ classdef newuob_mod
             dnorm_rec(:) = realmax;
             moderr_rec(:) = realmax;
             knew_tr = 0;
-            knew_geo = 0;
+
             itest = 0;
 
             % If DELTA <= GAMMA3*RHO after an update, we set DELTA to RHO. GAMMA3 must be less than GAMMA2. The

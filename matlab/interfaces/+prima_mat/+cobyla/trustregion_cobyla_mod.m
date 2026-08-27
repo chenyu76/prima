@@ -119,22 +119,14 @@ classdef trustregion_cobyla_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
-            nactsav = NaN;
-
             %real(RP) :: cvold
             cvsabs = NaN(size(b));
             cvshift = NaN(size(b));
-            dd = NaN;
-            dnew = NaN(size(d));
-            dold = NaN(size(d));
-            frac = NaN;
+
             fracmult = NaN(size(vmultc));
 
-            sd = NaN;
             sdirn = NaN(size(d));
-            sqrtd = NaN;
-            ss = NaN;
-            step = NaN;
+
             vmultd = NaN(size(vmultc));
             zdasav = NaN(size(z, 2), 1);
             zdota = NaN(size(z, 2), 1);

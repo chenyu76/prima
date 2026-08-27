@@ -94,7 +94,7 @@ classdef initialize_lincoa_mod
             % Set XPT(:, 2*N + 2 : NPT).
             % Indeed, XPT(:, K) has only two nonzeros for each K >= 2*N + 2,
             % N.B.: The 1 in IJ + 1 comes from the fact that XPT(:, 1) corresponds to XBASE.
-            xpt(:, 2 * n + 2:npt) = xpt(:, ij(1, :) + 1) + xpt(:, ij(2, :) + 1);
+            xpt(:, 2 * n + 2:npt) = xpt(:, ij(1, :).' + 1) + xpt(:, ij(2, :).' + 1);
 
             % Update the constraint right-hand sides to allow for the shift XBASE.
             b = b - amat.' * xbase;

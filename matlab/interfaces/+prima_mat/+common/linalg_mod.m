@@ -867,13 +867,8 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            i = NaN;
-            j = NaN;
-
-            Asubd = NaN;
-
             w = NaN(size(A, 1), 1);
-            wz = NaN;
+
             z = NaN(size(A, 1), 1);
 
             n = size(A, 1);
@@ -956,9 +951,6 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            i = NaN;
-
-            subd = NaN;
             v = NaN(size(A, 1), 1);
             w = NaN(size(A, 1), 1);
 
@@ -1076,10 +1068,6 @@ classdef linalg_mod
             % %% It is critical for the efficiency to use `spdiags` to construct `tridh` in the sparse form.
             %--------------------------------------------------------------------------------------------------%
 
-
-            eig_min = NaN;
-
-            k = NaN;
 
             piv = NaN(size(td));
 

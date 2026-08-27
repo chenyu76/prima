@@ -190,9 +190,7 @@ classdef geometry_newuoa_mod
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
 
-            angle = NaN;
             cf = NaN(5, 1);
-            cth = NaN;
 
             dold = NaN(size(x));
 
@@ -200,8 +198,6 @@ classdef geometry_newuoa_mod
 
             pqlag = NaN(size(xpt, 2), 1);
             s = NaN(size(x));
-
-            sth = NaN;
 
             % LFUNC(X)
 
@@ -347,18 +343,8 @@ classdef geometry_newuoa_mod
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
 
-            j = NaN;
-            k = NaN;
-
-            nw = NaN;
-
-            angle = NaN;
-
             den = NaN(9, 1);
             denex = NaN(9, 1);
-            denmax = NaN;
-
-            dold = NaN(size(xpt, 1), 1);
 
             dstemp = NaN(size(xpt, 2), 1);
 
@@ -367,22 +353,9 @@ classdef geometry_newuoa_mod
             prod_custom = NaN(size(xpt, 1) + size(xpt, 2), 5);
 
             sstemp = NaN(size(xpt, 2), 1);
-            tau = NaN;
-            tempa = NaN;
-            tempb = NaN;
-            tempc = NaN;
 
-            v = NaN(size(xpt, 2), 1);
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
             w = NaN(size(xpt, 1) + size(xpt, 2), 5);
-
-            xd = NaN;
-
-            xs = NaN;
-
-            y = NaN(size(xpt, 1), 1);
-            yd = NaN;
-            ysq = NaN;
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -512,7 +485,7 @@ classdef geometry_newuoa_mod
 
                 % Include in DEN the part of BETA that depends on THETA.
                 for k = 1:npt + n
-                    par(1:5) = 0.5 * prod_custom(k, 1:5) .* w(k, 1:5);
+                    par(1:5) = 0.5 * prod_custom(k, 1:5).' .* w(k, 1:5).';
                     den(1) = den(1) - par(1) - sum(par(1:5), 'all');
                     tempa = prod_custom(k, 1) * w(k, 2) + prod_custom(k, 2) * w(k, 1);
                     tempb = prod_custom(k, 2) * w(k, 4) + prod_custom(k, 4) * w(k, 2);
@@ -534,7 +507,7 @@ classdef geometry_newuoa_mod
                     den(9) = den(9) - 0.5 * tempa;
                 end
 
-                par(1:5) = 0.5 * prod_custom(knew, 1:5) .^ 2;
+                par(1:5) = 0.5 * prod_custom(knew, 1:5).' .^ 2;
                 denex(1) = alpha * den(1) + par(1) + sum(par(1:5), 'all');
                 tempa = 2.0 * prod_custom(knew, 1) * prod_custom(knew, 2);
                 tempb = prod_custom(knew, 2) * prod_custom(knew, 4);
@@ -625,8 +598,8 @@ classdef geometry_newuoa_mod
             %====================%
 
             par(1) = 1.0;
-            par(2:2:8) = cos(theta * [1.0, 2.0, 3.0, 4.0]);
-            par(3:2:9) = sin(theta * [1.0, 2.0, 3.0, 4.0]);
+            par(2:2:8) = cos(theta * [1.0, 2.0, 3.0, 4.0].');
+            par(3:2:9) = sin(theta * [1.0, 2.0, 3.0, 4.0].');
             f = sum(args .* par, 'all');
 
             %====================%

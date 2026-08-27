@@ -46,32 +46,11 @@ classdef trustregion_newuoa_mod
 
             iter = NaN;
 
-            alpha = NaN;
-            angle = NaN;
             args = NaN(4, 1);
-            bstep = NaN;
-            cth = NaN;
-
-            dg = NaN;
-            dhd = NaN;
-            dhs = NaN;
-
-            ggsav = NaN;
 
             hd = NaN(size(gopt_in));
 
             hs = NaN(size(gopt_in));
-
-            qadd = NaN;
-
-            reduc = NaN;
-            resid = NaN;
-            sg = NaN;
-            shs = NaN;
-            sold = NaN(size(gopt_in));
-            sqrtd = NaN;
-
-            sth = NaN;
 
             n = size(xpt, 1);
 
