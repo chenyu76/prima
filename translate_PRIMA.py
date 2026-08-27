@@ -3,7 +3,22 @@ import os
 import re
 import shutil
 import subprocess
+import time
 from pathlib import Path
+from functools import wraps
+
+
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        print(func.__name__, end="", flush=True)
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        end = time.perf_counter()
+        print(f": {end - start:.4f}s")
+        return result
+
+    return wrapper
 
 
 def trim_file(file_path):
@@ -29,6 +44,7 @@ def run_preprocessor(compiler, flags, src_file, target_file, include_dir):
     return subprocess.run(cmd, check=True)
 
 
+@timer
 def preprocess_sources(src_dir, src_files, output_dir):
     preprocessed_files = []
     for file_abs_path in src_files:
@@ -63,7 +79,7 @@ def preprocess_sources(src_dir, src_files, output_dir):
 
     return preprocessed_files
 
-
+@timer
 def extract_source_files(src_dir):
     """Extracts source file paths from CMake."""
     cmake_file = src_dir / "CMakeLists.txt"
@@ -91,6 +107,7 @@ def extract_source_files(src_dir):
     ]
 
 
+@timer
 def translate_sources(
     src_dir, preprocessed_files, output_dir, pkg_name, translator_exec="4ft2pm"
 ):
@@ -123,11 +140,12 @@ if __name__ == "__main__":
     output_dir = (current_dir / "matlab/interfaces/").resolve()
     pkg_name = "prima_mat"
 
-    src_files = extract_source_files(src_dir)
-    preprocessed_files = preprocess_sources(src_dir, src_files, preprocess_dir)
     for p in [output_dir / "+fortran", output_dir / f"+{pkg_name}"]:
         if p.exists():
             shutil.rmtree(p)
+
+    src_files = extract_source_files(src_dir)
+    preprocessed_files = preprocess_sources(src_dir, src_files, preprocess_dir)
     translate_sources(preprocess_dir, preprocessed_files, output_dir, pkg_name)
-    # if preprocess_dir.exists():
-    #     shutil.rmtree(preprocess_dir)
+    if preprocess_dir.exists():
+        shutil.rmtree(preprocess_dir)
