@@ -215,10 +215,10 @@ classdef bobyqa_mod
             addParameter(ipObj, 'xu', NaN);
             addParameter(ipObj, 'rhobeg', NaN);
             addParameter(ipObj, 'rhoend', NaN);
-            addParameter(ipObj, 'ftarget', NaN);
-            addParameter(ipObj, 'maxfun', NaN);
+            addParameter(ipObj, 'ftarget', consts_obj.FTARGET_DFT);
+            addParameter(ipObj, 'maxfun', consts_obj.MAXFUN_DIM_DFT * n);
             addParameter(ipObj, 'npt', NaN);
-            addParameter(ipObj, 'iprint', NaN);
+            addParameter(ipObj, 'iprint', consts_obj.IPRINT_DFT);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
             addParameter(ipObj, 'gamma1', 0.5);
@@ -231,10 +231,10 @@ classdef bobyqa_mod
             xu = ipObj.Results.xu;
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
-            ftarget = ipObj.Results.ftarget;
-            maxfun = ipObj.Results.maxfun;
+            ftarget_loc = ipObj.Results.ftarget;
+            maxfun_loc = ipObj.Results.maxfun;
             npt = ipObj.Results.npt;
-            iprint = ipObj.Results.iprint;
+            iprint_loc = ipObj.Results.iprint;
             eta1 = ipObj.Results.eta1;
             eta2 = ipObj.Results.eta2;
             gamma1_loc = ipObj.Results.gamma1;
@@ -302,18 +302,6 @@ classdef bobyqa_mod
                 rhoend_loc = consts_obj.RHOEND_DFT;
             end
 
-            if ismember('ftarget', ipObj.UsingDefaults)
-                ftarget_loc = consts_obj.FTARGET_DFT;
-            else
-                ftarget_loc = ftarget;
-            end
-
-            if ismember('maxfun', ipObj.UsingDefaults)
-                maxfun_loc = consts_obj.MAXFUN_DIM_DFT * n;
-            else
-                maxfun_loc = maxfun;
-            end
-
             if ~ismember('npt', ipObj.UsingDefaults)
                 npt_loc = npt;
             elseif maxfun_loc >= n + 3
@@ -321,12 +309,6 @@ classdef bobyqa_mod
                 npt_loc = min(maxfun_loc - 1, 2 * n + 1);
             else
                 npt_loc = 2 * n + 1;
-            end
-
-            if ismember('iprint', ipObj.UsingDefaults)
-                iprint_loc = consts_obj.IPRINT_DFT;
-            else
-                iprint_loc = iprint;
             end
 
             if ~ismember('eta1', ipObj.UsingDefaults)
