@@ -24,29 +24,31 @@ classdef checkexit_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            infos_obj = prima_mat.common.infos_mod();
+
             %====================%
             % Calculation starts %
             %====================%
 
-            info = 0; % Default info, indicating that the solver should not exit.
+            info = infos_obj.INFO_DFT; % Default info, indicating that the solver should not exit.
 
             % Although X should not contain NaN unless there is a bug, we include the following for security.
             % X can be Inf, as finite + finite can be Inf numerically.
             if any(isnan(x) | isinf(x), 'all')
-                info = -1;
+                info = infos_obj.NAN_INF_X;
             end
 
             % Although NAN_INF_F should not happen unless there is a bug, we include the following for security.
             if isnan(f) | isinf(f) & f > 0
-                info = -2;
+                info = infos_obj.NAN_INF_F;
             end
 
             if f <= ftarget
-                info = 1;
+                info = infos_obj.FTARGET_ACHIEVED;
             end
 
             if nf >= maxfun
-                info = 3;
+                info = infos_obj.MAXFUN_REACHED;
             end
 
             %====================%
@@ -61,29 +63,31 @@ classdef checkexit_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            infos_obj = prima_mat.common.infos_mod();
+
             %====================%
             % Calculation starts %
             %====================%
 
-            info = 0; % Default info, indicating that the solver should not exit.
+            info = infos_obj.INFO_DFT; % Default info, indicating that the solver should not exit.
 
             % Although X should not contain NaN unless there is a bug, we include the following for security.
             % X can be Inf, as finite + finite can be Inf numerically.
             if any(isnan(x) | isinf(x), 'all')
-                info = -1;
+                info = infos_obj.NAN_INF_X;
             end
 
             % Although NAN_INF_F should not happen unless there is a bug, we include the following for security.
             if (isnan(f) | isinf(f) & f > 0 || isnan(cstrv)) | isinf(cstrv) & cstrv > 0
-                info = -2;
+                info = infos_obj.NAN_INF_F;
             end
 
             if cstrv <= ctol && f <= ftarget
-                info = 1;
+                info = infos_obj.FTARGET_ACHIEVED;
             end
 
             if nf >= maxfun
-                info = 3;
+                info = infos_obj.MAXFUN_REACHED;
             end
 
             %====================%

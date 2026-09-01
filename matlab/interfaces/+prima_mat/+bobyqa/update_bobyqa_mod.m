@@ -12,7 +12,7 @@ classdef update_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [bmat, zmat, info] = updateh(~, knew, kopt, d, xpt, bmat, zmat, varargin)
+        function [bmat, zmat, info] = updateh(~, knew, kopt, d, xpt, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates arrays BMAT and ZMAT in order to replace the interpolation point
             % XPT(:, KNEW) by XNEW = XPT(:, KOPT) + D. See Section 4 of the BOBYQA paper. [BMAT, ZMAT] describes
@@ -24,6 +24,7 @@ classdef update_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
@@ -40,12 +41,8 @@ classdef update_bobyqa_mod
             % Calculation starts %
             %====================%
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 3
-                info = 0;
+                info = infos_obj.INFO_DFT;
             end
 
             % Do anything if KNEW is 0. This can only happen sometimes after a trust-region step.
@@ -78,7 +75,7 @@ classdef update_bobyqa_mod
             % not update them at all. Or should we simply terminate the algorithm?
             if ~(isfinite(sum(abs(hcol), 'all') + sum(abs(vlag), 'all') + abs(beta)) && denom > 0)
                 if nargout >= 3
-                    info = 7;
+                    info = infos_obj.DAMAGING_ROUNDING;
                 end
                 return
             end
@@ -104,7 +101,7 @@ classdef update_bobyqa_mod
 
             % Complete the updating of ZMAT. See (4.14) of the BOBYQA paper.
             sqrtdn = sqrt(denom);
-            zmat(:, 1) = (tau / sqrtdn) * zmat(:, 1) - (zmat(knew, 1) / sqrtdn) * vlag(1:npt);
+            zmat(:, 1) = tau / sqrtdn * zmat(:, 1) - zmat(knew, 1) / sqrtdn * vlag(1:npt);
             % Zaikun 20231012: Either of the following two lines worsens the performance of BOBYQA when the
             % objective function is evaluated with 5 or less correct significance digits. Strange.
             % %zmat(:, 1) = (tau * zmat(:, 1) - zmat(knew, 1) * vlag(1:npt)) / sqrtdn
@@ -259,7 +256,7 @@ classdef update_bobyqa_mod
             if itest >= 3
                 gopt = galt;
                 pq = pqalt;
-                hq = zeros(size(hq));
+                hq(:) = 0.0;
                 itest = 0;
             end
 

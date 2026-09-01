@@ -98,7 +98,7 @@ classdef geometry_uobyqa_mod
             knew = 0;
             % It makes almost no difference if we change the IF below to `IF (ANY(SCORE>0))`, which is used
             % in Powell's BOBYQA and LINCOA code.
-            if any(score > 1, 'all') || (ximproved && any(score > 0, 'all'))
+            if any(score > 1, 'all') || ximproved && any(score > 0, 'all')
                 % Powell's UOBYQA and NEWUOA code
                 [~, knew] = max(score);
                 %%MATLAB: [~, knew] = max(score);
@@ -110,7 +110,7 @@ classdef geometry_uobyqa_mod
             % to make sure that the new trial point is included in the interpolation set. However, the updating
             % subroutine will likely need to skip the update of the Lagrange polynomial, or they would be
             % destroyed by the NaNs.
-            if (ximproved && knew == 0) || knew < 0
+            if ximproved && knew == 0 || knew < 0
                 % KNEW < 0 is impossible in theory.
                 [~, knew] = max(distsq);
             end
@@ -168,7 +168,7 @@ classdef geometry_uobyqa_mod
 
             % For the KNEW-th Lagrange function, evaluate the gradient at XOPT and the Hessian.
             g(:) = pl(1:n, knew) + linalg_obj.smat_mul_vec(pl(n + 1:npt - 1, knew), xopt);
-            h(:, :) = linalg_obj.vec2smat(pl(n + 1:npt - 1, knew));
+            h(:) = linalg_obj.vec2smat(pl(n + 1:npt - 1, knew));
 
             % Evaluate GG = G^T*G and GHG = G^T*H*G. They will be used later.
             gg = sum(g .^ 2, 'all');
@@ -176,7 +176,7 @@ classdef geometry_uobyqa_mod
 
             % Calculate the Cauchy step as a backup. Powell's code does not have this, and D may be 0 or NaN.
             if gg > 0 && isfinite(gg)
-                dcauchy = (delbar / sqrt(gg)) * g;
+                dcauchy = delbar / sqrt(gg) * g;
                 if ghg < 0
                     dcauchy = -dcauchy;
                 end
@@ -218,7 +218,7 @@ classdef geometry_uobyqa_mod
             d(:) = h * v;
             vhv = sum(v .* d, 'all');
             if vhv * vhv <= 0.9999 * sum(d .^ 2, 'all') * vv
-                d = d - (vhv / vv) * v;
+                d = d - vhv / vv * v;
                 dd = sum(d .^ 2, 'all');
                 scaling = sqrt(dd / vv);
                 dhd = sum(d .* (h * d), 'all');
@@ -245,7 +245,7 @@ classdef geometry_uobyqa_mod
                 return
             end
 
-            v = d - (gd / gg) * g;
+            v = d - gd / gg * g;
             vv = sum(v .^ 2, 'all');
             if gd * dhd < 0
                 scaling = -delbar / sqrt(dd);

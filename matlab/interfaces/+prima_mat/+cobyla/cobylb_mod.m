@@ -36,6 +36,8 @@ classdef cobylb_mod
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
+            infos_obj = prima_mat.common.infos_mod();
+
             message_obj = prima_mat.common.message_mod();
 
             ratio_obj = prima_mat.common.ratio_mod();
@@ -114,7 +116,7 @@ classdef cobylb_mod
             if ~ismember('callback_fcn', ipObj.UsingDefaults)
                 terminate = callback_fcn(sim(:, n + 1), fval(n + 1), nf, 0, 'cstrv', cval(n + 1), 'nlconstr', conmat(m_lcon + 1:m, n + 1));
                 if terminate
-                    subinfo = 30;
+                    subinfo = infos_obj.CALLBACK_TERMINATE;
                 end
             end
 
@@ -126,7 +128,7 @@ classdef cobylb_mod
             [nfilt, cfilt, confilt, ffilt, xfilt] = initialize_cobyla_obj.initfilt(conmat, ctol, cweight, cval, fval, sim, evaluated, cfilt, confilt, ffilt, xfilt);
 
             % Check whether to return due to abnormal cases that may occur during the initialization.
-            if subinfo ~= 0
+            if subinfo ~= infos_obj.INFO_DFT
                 info = subinfo;
                 % Return the best calculated values of the variables.
                 % N.B. SELECTX and FINDPOLE choose X by different standards. One cannot replace the other.
@@ -181,7 +183,7 @@ classdef cobylb_mod
             % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop
             % https://fortran-lang.discourse.group/t/loops-dont-behave-like-they-should
             maxtr = intmax('int32') - 1; %%MATLAB: maxtr = 10 * maxfun;
-            info = 20;
+            info = infos_obj.MAXTR_REACHED;
 
             % Begin the iterative procedure.
             % After solving a trust-region subproblem, we use three boolean variables to control the workflow.
@@ -204,7 +206,7 @@ classdef cobylb_mod
                 % Switch the best vertex of the current simplex to SIM(:, N + 1).
                 [conmat, cval, fval, sim, simi, subinfo] = update_cobyla_obj.updatepole(cpen, conmat, cval, fval, sim, simi);
                 % Check whether to exit due to damaging rounding in UPDATEPOLE.
-                if subinfo == 7
+                if subinfo == infos_obj.DAMAGING_ROUNDING
                     info = subinfo;
                     break % Better action to take? Geometry step, or simply continue?
 
@@ -234,7 +236,7 @@ classdef cobylb_mod
                 % TENTH seems to work better than HALF or QUART, especially for linearly constrained problems.
                 % Note that LINCOA has a slightly more sophisticated way of defining SHORTD, taking into account
                 % whether D causes a change to the active set. Should we try the same here?
-                shortd = (dnorm <= 0.1 * rho); % `<=` works better than `<` in case of underflow.
+                shortd = dnorm <= 0.1 * rho; % `<=` works better than `<` in case of underflow.
 
                 % Predict the change to F (PREREF) and to the constraint violation (PREREC) due to D.
                 % We have the following in precise arithmetic. They may fail to hold due to rounding errors.
@@ -249,7 +251,7 @@ classdef cobylb_mod
                 % Evaluate PREREM, which is the predicted reduction in the merit function.
                 % In theory, PREREM >= 0 and it is 0 iff CPEN = 0 = PREREF. This may not be true numerically.
                 prerem = preref + cpen * prerec;
-                trfail = (~(prerem > 1.0e-6 * min(cpen, 1.0) * rho)); % PREREM is tiny/negative or NaN.
+                trfail = ~(prerem > 1.0e-6 * min(cpen, 1.0) * rho); % PREREM is tiny/negative or NaN.
 
                 if shortd || trfail
                     % Reduce DELTA if D is short or D fails to render PREREM > 0. The latter can happen due to
@@ -291,7 +293,7 @@ classdef cobylb_mod
                     message_obj.fmsg(solver, "Trust region", iprint, nf, delta, f, x, 'cstrv', cstrv, 'constr', constr);
 
                     % Evaluate ACTREM, which is the actual reduction in the merit function.
-                    actrem = (fval(n + 1) + cpen * cval(n + 1)) - (f + cpen * cstrv);
+                    actrem = fval(n + 1) + cpen * cval(n + 1) - (f + cpen * cstrv);
 
                     % Calculate the reduction ratio by REDRAT, which handles Inf/NaN carefully.
                     ratio = ratio_obj.redrat(actrem, prerem, eta1);
@@ -322,7 +324,7 @@ classdef cobylb_mod
                     end
 
                     % Is the newly generated X better than current best point?
-                    ximproved = (actrem > 0); % If ACTREM is NaN, then XIMPROVED should & will be FALSE.
+                    ximproved = actrem > 0; % If ACTREM is NaN, then XIMPROVED should & will be FALSE.
 
                     % Set JDROP_TR to the index of the vertex to be replaced with X. JDROP_TR = 0 means there
                     % is no good point to replace, and X will not be included into the simplex; in this case,
@@ -333,7 +335,7 @@ classdef cobylb_mod
                     % UPDATEXFC does nothing if JDROP_TR == 0, as the algorithm decides to discard X.
                     [conmat, cval, fval, sim, simi, subinfo] = update_cobyla_obj.updatexfc(jdrop_tr, constr, cpen, cstrv, d, f, conmat, cval, fval, sim, simi);
                     % Check whether to exit due to damaging rounding in UPDATEXFC.
-                    if subinfo == 7
+                    if subinfo == infos_obj.DAMAGING_ROUNDING
                         info = subinfo;
                         break % Better action to take? Geometry step, or a RESCUE as in BOBYQA?
 
@@ -341,7 +343,7 @@ classdef cobylb_mod
 
                     % Check whether to exit due to MAXFUN, FTARGET, etc.
                     subinfo = checkexit_obj.checkexit_con(maxfun, nf, cstrv, ctol, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -359,11 +361,11 @@ classdef cobylb_mod
                 % most N invocations of GEOSTEP.
 
                 % BAD_TRSTEP: Is the last trust-region step bad?
-                bad_trstep = (shortd || trfail || ratio <= 0 || jdrop_tr == 0);
+                bad_trstep = shortd || trfail || ratio <= 0 || jdrop_tr == 0;
                 % IMPROVE_GEO: Should we take a geometry step to improve the geometry of the interpolation set?
-                improve_geo = (bad_trstep && ~adequate_geo);
+                improve_geo = bad_trstep && ~adequate_geo;
                 % REDUCE_RHO: Should we enhance the resolution by reducing RHO?
-                reduce_rho = (bad_trstep && adequate_geo && max(delta, dnorm) <= rho);
+                reduce_rho = bad_trstep && adequate_geo && max(delta, dnorm) <= rho;
 
                 % COBYLA never sets IMPROVE_GEO and REDUCE_RHO to TRUE simultaneously.
                 % %call assert(.not. (improve_geo .and. reduce_rho), 'IMPROVE_GEO or REDUCE_RHO are not both TRUE', srname)
@@ -489,7 +491,7 @@ classdef cobylb_mod
                     % Update SIM, SIMI, FVAL, CONMAT, and CVAL so that SIM(:, JDROP_GEO) is replaced with D.
                     [conmat, cval, fval, sim, simi, subinfo] = update_cobyla_obj.updatexfc(jdrop_geo, constr, cpen, cstrv, d, f, conmat, cval, fval, sim, simi);
                     % Check whether to exit due to damaging rounding in UPDATEXFC.
-                    if subinfo == 7
+                    if subinfo == infos_obj.DAMAGING_ROUNDING
                         info = subinfo;
                         break % Better action to take? Geometry step, or simply continue?
 
@@ -497,7 +499,7 @@ classdef cobylb_mod
 
                     % Check whether to exit due to MAXFUN, FTARGET, etc.
                     subinfo = checkexit_obj.checkexit_con(maxfun, nf, cstrv, ctol, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -507,7 +509,7 @@ classdef cobylb_mod
                 % by reducing RHO; update DELTA and CPEN at the same time.
                 if reduce_rho
                     if rho <= rhoend
-                        info = 0;
+                        info = infos_obj.SMALL_TR_RADIUS;
                         break
                     end
                     delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
@@ -520,7 +522,7 @@ classdef cobylb_mod
                     % Switch the best vertex of the current simplex to SIM(:, N + 1).
                     [conmat, cval, fval, sim, simi, subinfo] = update_cobyla_obj.updatepole(cpen, conmat, cval, fval, sim, simi);
                     % Check whether to exit due to damaging rounding in UPDATEPOLE.
-                    if subinfo == 7
+                    if subinfo == infos_obj.DAMAGING_ROUNDING
                         info = subinfo;
                         break % Better action to take? Geometry step, or simply continue?
 
@@ -531,7 +533,7 @@ classdef cobylb_mod
                 if ~ismember('callback_fcn', ipObj.UsingDefaults)
                     terminate = callback_fcn(sim(:, n + 1), fval(n + 1), nf, tr, 'cstrv', cval(n + 1), 'nlconstr', conmat(m_lcon + 1:m, n + 1));
                     if terminate
-                        info = 30;
+                        info = infos_obj.CALLBACK_TERMINATE;
                         break
                     end
                 end
@@ -541,7 +543,7 @@ classdef cobylb_mod
             % Return from the calculation, after trying the last trust-region step if it has not been tried yet.
             % Ensure that D has not been updated after SHORTD == TRUE occurred, or the code below is incorrect.
             x = sim(:, n + 1) + d;
-            if info == 0 && shortd && norm(x - sim(:, n + 1)) > 1.0e-3 * rhoend && nf < maxfun
+            if info == infos_obj.SMALL_TR_RADIUS && shortd && norm(x - sim(:, n + 1)) > 1.0e-3 * rhoend && nf < maxfun
                 constr(1:m_lcon) = evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints
                 [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m)); constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
                 % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the linear
@@ -582,6 +584,8 @@ classdef cobylb_mod
             % See the discussions around equation (9) of the COBYLA paper.
             %--------------------------------------------------------------------------------------------------%
 
+
+            infos_obj = prima_mat.common.infos_mod();
 
             % Solver-specific modules
             trustregion_cobyla_obj = prima_mat.cobyla.trustregion_cobyla_mod();
@@ -630,7 +634,7 @@ classdef cobylb_mod
                 % Switch the best vertex of the current simplex to SIM(:, N + 1).
                 [conmat, cval, fval, sim, simi, info] = update_cobyla_obj.updatepole(cpen, conmat, cval, fval, sim, simi);
                 % Check whether to exit due to damaging rounding in UPDATEPOLE.
-                if info == 7
+                if info == infos_obj.DAMAGING_ROUNDING
                     break
                 end
 
@@ -689,7 +693,7 @@ classdef cobylb_mod
             fmax = max(fval, [], 'all');
             r = 0.0;
             if any(cmin < 0.5 * cmax, 'all') && fmin < fmax
-                denom = min(fortran.merge('tsource', max(cmax, 0.0) - cmin, 'fsource', realmax, 'mask', (cmin < 0.5 * cmax)), [], 'all');
+                denom = min(fortran.merge('tsource', max(cmax, 0.0) - cmin, 'fsource', realmax, 'mask', cmin < 0.5 * cmax), [], 'all');
                 % Powell mentioned the following alternative in Section 4 of his COBYLA paper. According to a
                 % test on 20230610, it does not make much difference to the performance.
                 % %denom = maxval(max(cmax, ZERO) - cmin, mask=(cmin < HALF * cmax))

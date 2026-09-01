@@ -146,6 +146,8 @@ classdef uobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            consts_obj = prima_mat.common.consts_mod();
+
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
@@ -173,38 +175,29 @@ classdef uobyqa_mod
             % value for RHOBEG, taking the value of RHOEND into account. Note that RHOEND is considered only if
             % it is present and it is VALID (i.e., finite and positive). The other inputs are read similarly.
             ipObj = inputParser();
-            addParameter(ipObj, 'f', NaN);
-            addParameter(ipObj, 'nf', NaN);
             addParameter(ipObj, 'rhobeg', NaN);
             addParameter(ipObj, 'rhoend', NaN);
-            addParameter(ipObj, 'ftarget', -realmax);
-            addParameter(ipObj, 'maxfun', NaN);
-            addParameter(ipObj, 'iprint', 0);
+            addParameter(ipObj, 'ftarget', consts_obj.FTARGET_DFT);
+            addParameter(ipObj, 'maxfun', max(consts_obj.MAXFUN_DIM_DFT * n, npt + 1));
+            addParameter(ipObj, 'iprint', consts_obj.IPRINT_DFT);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
             addParameter(ipObj, 'gamma1', 0.5);
             addParameter(ipObj, 'gamma2', 2.0);
-            addParameter(ipObj, 'xhist', NaN);
-            addParameter(ipObj, 'fhist', NaN);
             addParameter(ipObj, 'maxhist', NaN);
             addParameter(ipObj, 'callback_fcn', struct());
-            addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
             ftarget_loc = ipObj.Results.ftarget;
-            maxfun = ipObj.Results.maxfun;
+            maxfun_loc = ipObj.Results.maxfun;
             iprint_loc = ipObj.Results.iprint;
             eta1 = ipObj.Results.eta1;
             eta2 = ipObj.Results.eta2;
             gamma1_loc = ipObj.Results.gamma1;
             gamma2_loc = ipObj.Results.gamma2;
-            xhist = ipObj.Results.xhist;
-            fhist = ipObj.Results.fhist;
             maxhist = ipObj.Results.maxhist;
             callback_fcn = ipObj.Results.callback_fcn;
-
             if ~ismember('rhobeg', ipObj.UsingDefaults)
                 rhobeg_loc = rhobeg;
             elseif ~ismember('rhoend', ipObj.UsingDefaults)
@@ -213,26 +206,20 @@ classdef uobyqa_mod
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
                 if isfinite(rhoend) && rhoend > 0
-                    rhobeg_loc = max(10.0 * rhoend, 1.0);
+                    rhobeg_loc = max(10.0 * rhoend, consts_obj.RHOBEG_DFT);
                 else
-                    rhobeg_loc = 1.0;
+                    rhobeg_loc = consts_obj.RHOBEG_DFT;
                 end
             else
-                rhobeg_loc = 1.0;
+                rhobeg_loc = consts_obj.RHOBEG_DFT;
             end
 
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(eps(1.0), min((1.0e-6 / 1.0) * rhobeg_loc, 1.0e-6));
+                rhoend_loc = max(eps(1.0), min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, consts_obj.RHOEND_DFT));
             else
-                rhoend_loc = 1.0e-6;
-            end
-
-            if ismember('maxfun', ipObj.UsingDefaults)
-                maxfun_loc = max(500 * n, npt + 1);
-            else
-                maxfun_loc = maxfun;
+                rhoend_loc = consts_obj.RHOEND_DFT;
             end
 
             if ~ismember('eta1', ipObj.UsingDefaults)
@@ -254,7 +241,7 @@ classdef uobyqa_mod
             end
 
             if ismember('maxhist', ipObj.UsingDefaults)
-                maxhist_loc = max([maxfun_loc, npt + 1, 500 * n], [], 'all');
+                maxhist_loc = max([maxfun_loc, npt + 1, consts_obj.MAXFUN_DIM_DFT * n], [], 'all');
             else
                 maxhist_loc = maxhist;
             end

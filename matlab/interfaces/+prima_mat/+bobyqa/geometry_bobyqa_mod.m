@@ -95,7 +95,7 @@ classdef geometry_bobyqa_mod
 
             knew = 0;
             % The following IF works slightly better than `IF (ANY(SCORE > 0))` from Powell's BOBYQA/LINCOA code.
-            if any(score > 1, 'all') || (ximproved && any(score > 0, 'all'))
+            if any(score > 1, 'all') || ximproved && any(score > 0, 'all')
                 % Powell's UOBYQA and NEWUOA code.
                 % See (6.1) of the BOBYQA paper for the definition of KNEW in this case.
                 [~, knew] = max(score);
@@ -108,7 +108,7 @@ classdef geometry_bobyqa_mod
             % to make sure that the new trial point is included in the interpolation set. However, the updating
             % subroutine will likely need to skip the update of the Lagrange polynomials (i.e., H), or they
             % would be destroyed by the NaNs.
-            if (ximproved && knew == 0) || knew < 0
+            if ximproved && knew == 0 || knew < 0
                 % KNEW < 0 is impossible in theory.
                 [~, knew] = max(distsq);
             end
@@ -246,7 +246,7 @@ classdef geometry_bobyqa_mod
                 slbd_test(xdiff < 0) = ufrac(xdiff < 0);
                 if any(slbd_test > slbd, 'all')
                     [slbd, ilbd] = max(slbd_test, [], 'omitnan');
-                    ilbd = -ilbd * round(1.0 .* ((xdiff(ilbd) > 0) .* 2 - 1));
+                    ilbd = -ilbd * round((xdiff(ilbd) > 0) .* 2 - 1);
                     %%MATLAB:
                     %%[slbd, ilbd] = max(slbd_test, [], 'omitnan');
                     %%ilbd = -ilbd * sign(xdiff(ilbd));
@@ -260,7 +260,7 @@ classdef geometry_bobyqa_mod
                 if any(subd_test < subd, 'all')
                     [~, iubd] = min(subd_test, [], 'omitnan');
                     subd = max(sumin, subd_test(iubd));
-                    iubd = iubd * round(1.0 .* ((xdiff(iubd) > 0) .* 2 - 1));
+                    iubd = iubd * round((xdiff(iubd) > 0) .* 2 - 1);
                     %%MATLAB:
                     %%[subd, iubd] = min(subd_test, [], 'omitnan');
                     %%subd = max(sumin, subd);
@@ -376,7 +376,7 @@ classdef geometry_bobyqa_mod
                     glag = -glag;
                 end
                 s(:) = 0.0;
-                mask_free = (min(xopt - sl, glag) > 0 | max(xopt - su, glag) < 0);
+                mask_free = min(xopt - sl, glag) > 0 | max(xopt - su, glag) < 0;
                 s(mask_free) = bigstp;
                 ggfree = sum(glag(find(mask_free)) .^ 2, 'all');
                 % In Powell's code, the subroutine returns immediately if GGFREE is 0. However, GGFREE depends
@@ -400,9 +400,9 @@ classdef geometry_bobyqa_mod
                     ssqsav = sfixsq;
                     grdstp = sqrt(resis / ggfree);
                     xtemp = xopt - grdstp * glag;
-                    mask_fixl = (s >= bigstp & xtemp <= sl); % S == BIGSTP & XTEMP == SL
-                    mask_fixu = (s >= bigstp & xtemp >= su); % S == BIGSTP & XTEMP == SU
-                    mask_free = (s >= bigstp & ~(mask_fixl | mask_fixu));
+                    mask_fixl = s >= bigstp & xtemp <= sl; % S == BIGSTP & XTEMP == SL
+                    mask_fixu = s >= bigstp & xtemp >= su; % S == BIGSTP & XTEMP == SU
+                    mask_free = s >= bigstp & ~(mask_fixl | mask_fixu);
                     s(mask_fixl) = sl(mask_fixl) - xopt(mask_fixl);
                     s(mask_fixu) = su(mask_fixu) - xopt(mask_fixu);
                     sfixsq = sfixsq + sum(s(find(mask_fixl | mask_fixu)) .^ 2, 'all');

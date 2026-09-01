@@ -127,7 +127,7 @@ classdef geometry_lincoa_mod
             % to make sure that the new trial point is included in the interpolation set. However, the updating
             % subroutine will likely need to skip the update of the Lagrange polynomials (i.e., H), or they
             % would be destroyed by the NaNs.
-            if (ximproved && knew == 0) || knew < 0
+            if ximproved && knew == 0 || knew < 0
                 % KNEW < 0 is impossible in theory.
                 [~, knew] = max(distsq);
             end
@@ -263,7 +263,7 @@ classdef geometry_lincoa_mod
             % Replace S with a steepest ascent step from XOPT if the latter provides a larger value of DENABS.
             gnorm = norm(glag);
             if gnorm > eps(1.0) && isfinite(gnorm)
-                gstp = (delbar / gnorm) * glag;
+                gstp = delbar / gnorm * glag;
                 if sum(gstp .* powalg_obj.hess_mul(gstp, xpt, pqlag), 'all') < 0
                     % <GSTP, HESS_LAG*GSTP> is negative
                     gstp = -gstp;
@@ -284,7 +284,7 @@ classdef geometry_lincoa_mod
 
             % Set FEASIBLE for the calculated S.
             cstrv = max([0.0; amat(:, find(rstat >= 0)).' * s - rescon(find(rstat >= 0))], [], 'all');
-            feasible = (cstrv <= 0);
+            feasible = cstrv <= 0;
 
             % If NACT <= 0 or NACT >= N, the calculation has finished. Otherwise, define PGSTP by maximizing
             % |LFUNC| within the trust region from XOPT along the projection of GLAG onto the column space of
@@ -297,7 +297,7 @@ classdef geometry_lincoa_mod
             %%MATLAB: pglag = qfac(:, nact+1:n) * (glag' * qfac(:, nact+1:n))';
             gnorm = norm(pglag);
             if nact > 0 && gnorm > eps(1.0) && isfinite(gnorm)
-                pgstp = (delbar / gnorm) * pglag;
+                pgstp = delbar / gnorm * pglag;
                 if sum(pgstp .* powalg_obj.hess_mul(pgstp, xpt, pqlag), 'all') < 0
                     % <PGSTP, HESS_LAG*PGSTP> is negative.
                     pgstp = -pgstp;
@@ -316,11 +316,11 @@ classdef geometry_lincoa_mod
                 take_pgstp = false;
                 if cstrv <= cvtol
                     den = powalg_obj.calden(kopt, bmat, pgstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
-                    take_pgstp = (abs(den(knew)) > 0.1 * denabs);
+                    take_pgstp = abs(den(knew)) > 0.1 * denabs;
                 end
                 if take_pgstp || isnan(denabs)
                     s = pgstp;
-                    feasible = (cstrv <= cvtol);
+                    feasible = cstrv <= cvtol;
                 end
             end
 
@@ -331,7 +331,7 @@ classdef geometry_lincoa_mod
                 scaling = delbar / norm(s);
                 s = max(0.6 * scaling, min(0.5, scaling)) * s; % 0.6: ensure |D| > DELBAR/2
                 cstrv = max([0.0; amat(:, find(rstat >= 0)).' * s - rescon(find(rstat >= 0))], [], 'all');
-                feasible = (cstrv <= 0);
+                feasible = cstrv <= 0;
             end
 
             %====================%

@@ -59,7 +59,7 @@ classdef univar_mod
             end
 
             if isfinite(step) && abs(step) > 0
-                unit_angle = (2.0 * pi) / double(grid_size);
+                unit_angle = 2.0 * pi / double(grid_size);
                 angle = (double(kopt - 1) + step) * unit_angle;
                 % 1. AGRID(KOPT) = (KOPT-1) * UNIT_ANGLE. 2. ANGLE may not be in [0, 2*PI].
 
@@ -112,7 +112,7 @@ classdef univar_mod
             end
 
             if isfinite(step) && abs(step) > 0
-                unit_angle = (2.0 * pi) / double(grid_size);
+                unit_angle = 2.0 * pi / double(grid_size);
                 angle = (double(kopt - 1) + step) * unit_angle;
                 % 1. AGRID(KOPT) = (KOPT-1) * UNIT_ANGLE. 2. ANGLE may not be in [0, 2*PI].
 

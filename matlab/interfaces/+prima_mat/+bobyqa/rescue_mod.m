@@ -88,6 +88,7 @@ classdef rescue_mod
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
+            infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
 
@@ -121,14 +122,14 @@ classdef rescue_mod
             % Calculation starts %
             %====================%
 
-            info = 0;
+            info = infos_obj.INFO_DFT;
 
             % Do nothing if NF already reaches it upper bound.
             % To please Fortran compilers, set BMAT and ZMAT before returning, though they will not be used.
             if nf >= maxfun
-                bmat = zeros(size(bmat));
-                zmat = zeros(size(zmat));
-                info = 3;
+                bmat(:) = 0.0;
+                zmat(:) = 0.0;
+                info = infos_obj.MAXFUN_REACHED;
                 return
             end
 
@@ -148,17 +149,17 @@ classdef rescue_mod
             % Set the elements of PTSAUX.
             ptsaux(1, :) = min(delta, su);
             ptsaux(2, :) = max(-delta, sl);
-            mask = (ptsaux(1, :).' + ptsaux(2, :).' < 0);
+            mask = ptsaux(1, :).' + ptsaux(2, :).' < 0;
             ptsaux([1, 2], find(mask)) = ptsaux([2, 1], find(mask));
-            mask = (abs(ptsaux(2, :)).' < 0.5 * abs(ptsaux(1, :)).');
+            mask = abs(ptsaux(2, :)).' < 0.5 * abs(ptsaux(1, :)).';
             ptsaux(2, find(mask)) = 0.5 * ptsaux(1, find(mask)).';
 
             % Set the identifiers of the artificial interpolation points that are along a coordinate direction
             % from XOPT, and set the corresponding nonzero elements of BMAT and ZMAT.
             sfrac = 0.5 / double(n + 1);
             ptsid(1) = sfrac;
-            bmat = zeros(size(bmat));
-            zmat = zeros(size(zmat));
+            bmat(:) = 0.0;
+            zmat(:) = 0.0;
             for k = 1:n
                 ptsid(k + 1) = double(k) + sfrac;
                 if k <= npt - n - 1
@@ -178,7 +179,7 @@ classdef rescue_mod
             end
 
             % Set any remaining identifiers with their nonzero elements of ZMAT.
-            ij(:, :) = powalg_obj.setij(n, npt);
+            ij(:) = powalg_obj.setij(n, npt);
             for k = 2 * n + 2:npt
                 ip = ij(1, k - 2 * n - 1);
                 iq = ij(2, k - 2 * n - 1);
@@ -232,7 +233,7 @@ classdef rescue_mod
 
                 % Pick the index KORIG of an original point that has not yet replaced one of the provisional
                 % points, giving attention to the closeness to XOPT and to previous tries with KORIG.
-                korig = fortran.minloc(score, 'mask', (score > 0), 'dim', 1);
+                korig = fortran.minloc(score, 'mask', score > 0, 'dim', 1);
 
                 % Calculate VLAG and BETA for the required updating of the H matrix if XPT(:, KORIG) is
                 % reinstated in the set of interpolation points, which means to replace a point in the
@@ -422,7 +423,7 @@ classdef rescue_mod
 
                     % Check whether to exit
                     subinfo = checkexit_obj.checkexit_unc(maxfun, nf, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -502,7 +503,7 @@ classdef rescue_mod
 
 
         end
-        function [bmat, zmat, info] = updateh_rsc(~, knew, beta, vlag_in, bmat, zmat, varargin)
+        function [bmat, zmat, info] = updateh_rsc(~, knew, beta, vlag_in, bmat, zmat)
             % %%% N.B.: UPDATEH_RSC is only used by RESCUE.
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates arrays BMAT and ZMAT in order to replace the interpolation point
@@ -515,6 +516,7 @@ classdef rescue_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
             hcol = NaN(size(bmat, 2), 1);
@@ -529,12 +531,8 @@ classdef rescue_mod
             % Calculation starts %
             %====================%
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 3
-                info = 0;
+                info = infos_obj.INFO_DFT;
             end
 
             % We must not do anything if KNEW is 0. This can only happen sometimes after a trust-region step.
@@ -555,7 +553,7 @@ classdef rescue_mod
             % not update them at all. Or should we simply terminate the algorithm?
             if ~(isfinite(sum(abs(vlag), 'all') + abs(beta)) && denom > 0)
                 if nargout >= 3
-                    info = 7;
+                    info = infos_obj.DAMAGING_ROUNDING;
                 end
                 return
             end
@@ -581,7 +579,7 @@ classdef rescue_mod
             % Complete the updating of ZMAT. See (4.14) of the BOBYQA paper.
             sqrtdn = sqrt(denom);
             zknew1 = zmat(knew, 1) / sqrtdn;
-            zmat(:, 1) = (tau / sqrtdn) * zmat(:, 1) - zknew1 * vlag(1:npt);
+            zmat(:, 1) = tau / sqrtdn * zmat(:, 1) - zknew1 * vlag(1:npt);
             zmat(knew, 1) = zknew1; % Because TAU = VLAG(KNEW) + 1. Powell's code does not have this.
 
             % Finally, update the matrix BMAT. It implements the last N rows of (4.9) in the BOBYQA paper.

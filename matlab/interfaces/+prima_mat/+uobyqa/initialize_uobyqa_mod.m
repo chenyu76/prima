@@ -24,6 +24,8 @@ classdef initialize_uobyqa_mod
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
+            infos_obj = prima_mat.common.infos_mod();
+
             message_obj = prima_mat.common.message_mod();
 
             solver = "UOBYQA";
@@ -43,7 +45,7 @@ classdef initialize_uobyqa_mod
 
             % Initialize INFO to the default value. At return, an INFO different from this value will indicate
             % an abnormal return.
-            info = 0;
+            info = infos_obj.INFO_DFT;
 
             % Initialize XBASE to X0.
             xbase = x0;
@@ -59,12 +61,12 @@ classdef initialize_uobyqa_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-realmax, size(xhist));
+            xhist(:) = -realmax;
             fhist(:) = realmax;
             fval(:) = realmax;
 
             % Set XPT(:, 1 : 2*N+1) and FVAL(:, 1 : 2*N+1).
-            xpt = zeros(size(xpt));
+            xpt(:) = 0.0;
             kk(:) = linspace(2, 2 * n, n).';
             xpt(:, kk) = rhobeg * eye(n);
             for k = 1:2 * n + 1
@@ -97,13 +99,13 @@ classdef initialize_uobyqa_mod
 
                 % Check whether to exit.
                 subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                if subinfo ~= 0
+                if subinfo ~= infos_obj.INFO_DFT
                     info = subinfo;
                     break
                 end
             end
 
-            if info == 0
+            if info == infos_obj.INFO_DFT
                 xw(:) = -rhobeg;
                 xw(fval(kk) < fval(1)) = rhobeg;
                 % See (42)--(43) of the UOBYQA paper for IP and IQ.
@@ -131,7 +133,7 @@ classdef initialize_uobyqa_mod
 
                     % Check whether to exit.
                     subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -148,13 +150,15 @@ classdef initialize_uobyqa_mod
 
 
         end
-        function [pq, info] = initq(~, fval, xpt, pq, varargin)
+        function [pq, info] = initq(~, fval, xpt, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the quadratic model, whose coefficients are stored in PQ, where
             % PQ(1 : N) containing the gradient of the model at XBASE, and PQ(N+1 : NPT-1) containing the upper
             % triangular part of the Hessian, column by column. See Section 4 of the UOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
 
+
+            infos_obj = prima_mat.common.infos_mod();
 
             deriv = NaN(size(xpt, 1), 1);
 
@@ -200,15 +204,11 @@ classdef initialize_uobyqa_mod
                 pq(ih) = (fval(k) - fbase - xpt(ip, k) * pq(ip) - xpt(iq, k) * pq(iq) - 0.5 * rhosq * (deriv(ip) + deriv(iq))) / (xpt(ip, k) * xpt(iq, k));
             end
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 2
                 if any(isnan(pq), 'all')
-                    info = -3;
+                    info = infos_obj.NAN_INF_MODEL;
                 else
-                    info = 0;
+                    info = infos_obj.INFO_DFT;
                 end
             end
 
@@ -218,7 +218,7 @@ classdef initialize_uobyqa_mod
 
 
         end
-        function [pl, info] = initl(~, xpt, pl, varargin)
+        function [pl, info] = initl(~, xpt, pl)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the Lagrange functions. The coefficients of the K-th Lagrange function
             % is stored in PL(:, K), with PL(1 : N, K) containing the gradient of the function at XBASE, and
@@ -226,6 +226,8 @@ classdef initialize_uobyqa_mod
             % See Section 4 of the UOBYQA paper.
             %--------------------------------------------------------------------------------------------------%
 
+
+            infos_obj = prima_mat.common.infos_mod();
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -237,7 +239,7 @@ classdef initialize_uobyqa_mod
             rhobeg = max(abs(xpt(:, 2)), [], 'all');
             rhosq = rhobeg ^ 2;
 
-            pl = zeros(size(pl));
+            pl(:) = 0.0;
 
             % Form the gradient and diagonal second derivatives of the Lagrange functions.
             for k = 1:n
@@ -289,15 +291,11 @@ classdef initialize_uobyqa_mod
                 end
             end
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 2
                 if any(isnan(pl), 'all')
-                    info = -3;
+                    info = infos_obj.NAN_INF_MODEL;
                 else
-                    info = 0;
+                    info = infos_obj.INFO_DFT;
                 end
             end
 

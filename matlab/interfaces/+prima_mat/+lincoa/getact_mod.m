@@ -204,7 +204,7 @@ classdef getact_mod
 
                 % Pick the next integer L or terminate; a positive L is the index of the most violated constraint.
                 apsd = amat.' * psd;
-                mask = (resnew > 0 & resnew <= tdel & apsd > (dnorm / delta) * resnew);
+                mask = resnew > 0 & resnew <= tdel & apsd > dnorm / delta * resnew;
                 %----------------------------------------------------------------------------------------------%
                 % N.B.: the definition of L and VIOLMX can be simplified as follows, but we prefer explicitness.
                 %L = INT(MAXLOC(APSD, MASK=MASK, DIM=1), IK) ! MAXLOC(...) = 0 if MASK is all FALSE.
@@ -380,7 +380,7 @@ classdef getact_mod
 
             iact(icon:nact) = [iact(icon + 1:nact); iact(icon)];
             resact(icon:nact) = [resact(icon + 1:nact); resact(icon)];
-            resnew(iact(nact)) = max(resact(nact), 1.0e-60);
+            resnew(iact(nact)) = max(resact(nact), 10.0 ^ max(-60, -floor(log10(realmax))));
             vlam(icon:nact) = [vlam(icon + 1:nact); vlam(icon)];
             nact = nact - 1;
 

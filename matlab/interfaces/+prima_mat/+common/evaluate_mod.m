@@ -32,13 +32,13 @@ classdef evaluate_mod
             % This function moderates the function value of a MINIMIZATION problem. It replaces NaN and any
             % value above FUNCMAX by FUNCMAX.
             %--------------------------------------------------------------------------------------------------%
-
+            consts_obj = prima_mat.common.consts_mod();
 
             y = f;
             if isnan(y)
-                y = 1.0e30;
+                y = consts_obj.FUNCMAX;
             end
-            y = max(-realmax, min(1.0e30, y));
+            y = max(-realmax, min(consts_obj.FUNCMAX, y));
             % We may moderate huge negative function values as follows, but we decide not to.
             %y = max(-FUNCMAX, min(FUNCMAX, y))
         end
@@ -48,11 +48,11 @@ classdef evaluate_mod
             % It replaces any value below -CONSTRMAX by -CONSTRMAX, and any NaN or value above CONSTRMAX by
             % CONSTRMAX.
             %--------------------------------------------------------------------------------------------------%
-
+            consts_obj = prima_mat.common.consts_mod();
 
             y = c;
-            y(isnan(c)) = 1.0e30;
-            y = max(-1.0e30, min(1.0e30, y));
+            y(isnan(c)) = consts_obj.CONSTRMAX;
+            y = max(-consts_obj.CONSTRMAX, min(consts_obj.CONSTRMAX, y));
         end
         function f = evaluatef(obj, calfun, x)
             %--------------------------------------------------------------------------------------------------%

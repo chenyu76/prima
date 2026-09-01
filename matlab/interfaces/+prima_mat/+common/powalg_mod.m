@@ -643,11 +643,11 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            A(:, :) = 0.5 * (xpt.' * xpt) .^ 2;
-            Omega(:, :) = -(zmat(:, 1:idz - 1) * zmat(:, 1:idz - 1).') + zmat(:, idz:npt - n - 1) * zmat(:, idz:npt - n - 1).';
+            A(:) = 0.5 * (xpt.' * xpt) .^ 2;
+            Omega(:) = -(zmat(:, 1:idz - 1) * zmat(:, 1:idz - 1).') + zmat(:, idz:npt - n - 1) * zmat(:, idz:npt - n - 1).';
             maxabs = max([1.0, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), max(abs(bmat), [], 'all')], [], 'all');
-            U(:, :) = eye(npt) - A * Omega - xpt.' * bmat(:, 1:npt);
-            V(:, :) = -(bmat(:, 1:npt) * A) - bmat(:, npt + 1:npt + n) * xpt;
+            U(:) = eye(npt) - A * Omega - xpt.' * bmat(:, 1:npt);
+            V(:) = -(bmat(:, 1:npt) * A) - bmat(:, npt + 1:npt + n) * xpt;
             r = sum(U, 1).' ./ double(npt);
             s = sum(V, 2) ./ double(npt);
             t(:) = -(A * r) - xpt.' * s;
@@ -667,7 +667,7 @@ classdef powalg_mod
             %====================%
 
         end
-        function [idz, bmat, zmat, info] = updateh(obj, knew, kref, d, xpt, idz, bmat, zmat, varargin)
+        function [idz, bmat, zmat, info] = updateh(obj, knew, kref, d, xpt, idz, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates arrays [BMAT, ZMAT, IDZ], in order to replace the interpolation point
             % XPT(:, KNEW) by XNEW = XPT(:, KREF) + D, where KREF usually equals KOPT in practice. See Section 4
@@ -703,6 +703,7 @@ classdef powalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod(); %, r2update
 
 
@@ -726,12 +727,8 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 4
-                info = 0;
+                info = infos_obj.INFO_DFT;
             end
 
             % We must not do anything if KNEW is 0. This can only happen sometimes after a trust-region step.
@@ -766,7 +763,7 @@ classdef powalg_mod
             % not update them at all. Or should we simply terminate the algorithm?
             if ~(isfinite(sum(abs(hcol), 'all') + sum(abs(vlag), 'all') + abs(beta)) && abs(denom) > 0)
                 if nargout >= 4
-                    info = 7;
+                    info = infos_obj.DAMAGING_ROUNDING;
                 end
                 return
             end
@@ -880,8 +877,8 @@ classdef powalg_mod
 
                 %tempa = temp * beta
                 %tempb = temp * tau
-                tempa = (beta / denom) * zmat(knew, jb);
-                tempb = (tau / denom) * zmat(knew, jb);
+                tempa = beta / denom * zmat(knew, jb);
+                tempb = tau / denom * zmat(knew, jb);
                 temp = zmat(knew, ja);
                 scala = 1.0 / sqrt(abs(beta) * temp ^ 2 + tau ^ 2); % 1/SQRT(ZETA) in (4.19)-(4.20) of NEWUOA paper
                 scalb = scala * sqrtdn;
@@ -919,10 +916,10 @@ classdef powalg_mod
             % DENOM < 0, in which case one of the S_J will flip the sign when multiplied by SIGN(DENOM), leading
             % to an increase of IDZ (if S_J flipped from 1 to -1) or a decrease (if S_J flipped from -1 to 1).
             if denom < 0
-                if idz == 1 || (idz < npt - n && beta < 0)
+                if idz == 1 || idz < npt - n && beta < 0
                     % (4.18), (4.20) of the NEWUOA paper
                     idz = idz + 1;
-                elseif idz == npt - n || (idz > 1 && beta >= 0)
+                elseif idz == npt - n || idz > 1 && beta >= 0
                     % (4.18), (4.19) of the NEWUOA paper
                     idz = idz - 1;
                     % Exchange ZMAT(:, 1) and ZMAT(:. IDZ) if IDZ > 1. Why? No matter whether the update is
@@ -1260,7 +1257,7 @@ classdef powalg_mod
             parse(ipObj, varargin{:});
             sorting_direction = ipObj.Results.sorting_direction;
             if ~ismember('sorting_direction', ipObj.UsingDefaults)
-                ij(:, :) = sort(ij, 'dim', 1, 'direction', sorting_direction); % SORTING_DIRECTION is 'DESCEND' of 'ASCEND'
+                ij(:) = sort(ij, 'dim', 1, 'direction', sorting_direction); % SORTING_DIRECTION is 'DESCEND' of 'ASCEND'
 
             end
             %%MATLAB: (N.B.: Fortran MODULO == MATLAB `mod`, Fortran MOD == MATLAB `rem`)

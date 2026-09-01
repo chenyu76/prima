@@ -25,16 +25,12 @@ classdef history_mod
 
             ipObj = inputParser();
             addParameter(ipObj, 'output_chist', false);
-            addParameter(ipObj, 'chist', NaN);
             addParameter(ipObj, 'm', NaN);
             addParameter(ipObj, 'output_conhist', false);
-            addParameter(ipObj, 'conhist', NaN);
             parse(ipObj, varargin{:});
             output_chist = ipObj.Results.output_chist;
-            chist = ipObj.Results.chist;
             m = ipObj.Results.m;
             output_conhist = ipObj.Results.output_conhist;
-            conhist = ipObj.Results.conhist;
 
             %====================%
             % Calculation starts %
@@ -58,8 +54,8 @@ classdef history_mod
             if unit_memo <= 0
                 % No output of history is requested
                 maxhist = 0;
-            elseif maxhist > 100000000 / unit_memo
-                maxhist = fix(100000000 / unit_memo); % Integer division.
+            elseif maxhist > min(300 * 10 ^ 6, (intmax('int32') - 1) / 2) / unit_memo
+                maxhist = fix(min(300 * 10 ^ 6, (intmax('int32') - 1) / 2) / unit_memo); % Integer division.
                 % We cannot simply set MAXHIST = MIN(MAXHIST, MAXHISTMEM/UNIT_MEMO), as they may not have
                 % the same kind, and compilers may complain. We may convert them, but overflow may occur.
 
@@ -100,12 +96,12 @@ classdef history_mod
             chist = ipObj.Results.chist;
             constr = ipObj.Results.constr;
             conhist = ipObj.Results.conhist;
-            if (~ismember('chist', ipObj.UsingDefaults) || nargout >= 3) && ~ismember('cstrv', ipObj.UsingDefaults)
+            if ~ismember('chist', ipObj.UsingDefaults) && ~ismember('cstrv', ipObj.UsingDefaults)
                 maxchist = numel(chist);
             else
                 maxchist = 0;
             end
-            if (~ismember('conhist', ipObj.UsingDefaults) || nargout >= 4) && ~ismember('constr', ipObj.UsingDefaults)
+            if ~ismember('conhist', ipObj.UsingDefaults) && ~ismember('constr', ipObj.UsingDefaults)
                 maxconhist = size(conhist, 2);
             else
                 maxconhist = 0;
@@ -155,17 +151,17 @@ classdef history_mod
             parse(ipObj, varargin{:});
             chist = ipObj.Results.chist;
             conhist = ipObj.Results.conhist;
-            if ~ismember('chist', ipObj.UsingDefaults) || nargout >= 3
-                maxchist = numel(chist);
-            else
+            if ismember('chist', ipObj.UsingDefaults)
                 maxchist = 0;
-            end
-            if ~ismember('conhist', ipObj.UsingDefaults) || nargout >= 4
-
-                maxconhist = size(conhist, 2);
             else
+                maxchist = numel(chist);
+            end
+            if ismember('conhist', ipObj.UsingDefaults)
 
                 maxconhist = 0;
+            else
+
+                maxconhist = size(conhist, 2);
             end
 
             %====================%
@@ -177,7 +173,7 @@ classdef history_mod
                 % We could replace MODULO(NF - 1_IK, MAXXHIST) + 1_IK) with MODULO(NF - 1_IK, MAXHIST) + 1_IK)
                 % based on the assumption that MAXXHIST == 0 or MAXHIST. For robustness, we do not do that.
                 khist = mod(nf - 1, maxxhist) + 1;
-                xhist(:, :) = reshape([reshape(xhist(:, khist + 1:maxxhist), 1, []), reshape(xhist(:, 1:khist), 1, [])], size(xhist));
+                xhist(:) = [reshape(xhist(:, khist + 1:maxxhist), 1, []), reshape(xhist(:, 1:khist), 1, [])];
                 % N.B.:
                 % 1. The result of the array constructor is always a rank-1 array (e.g., vector), no matter what
                 % elements are used for the construction.
@@ -194,7 +190,7 @@ classdef history_mod
             % The ranging should be done only if 0 < MAXCONHIST < NF. Otherwise, it leads to errors/wrong results.
             if maxconhist > 0 && maxconhist < nf
                 khist = mod(nf - 1, maxconhist) + 1;
-                conhist(:, :) = reshape([reshape(conhist(:, khist + 1:maxconhist), 1, []), reshape(conhist(:, 1:khist), 1, [])], size(conhist));
+                conhist(:) = [reshape(conhist(:, khist + 1:maxconhist), 1, []), reshape(conhist(:, 1:khist), 1, [])];
             end
             % The ranging should be done only if 0 < MAXCHIST < NF. Otherwise, it leads to errors/wrong results.
             if maxchist > 0 && maxchist < nf

@@ -12,7 +12,7 @@ classdef trustregion_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [crvmin, s, info_loc] = trsapp(obj, delta, gopt_in, hq_in, pq_in, tol, xpt, s, varargin)
+        function [crvmin, s, info_loc] = trsapp(obj, delta, gopt_in, hq_in, pq_in, tol, xpt, s)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine finds an approximate solution to the N-dimensional trust region subproblem
             %
@@ -121,7 +121,7 @@ classdef trustregion_newuoa_mod
                 end
                 % Exit if GG is small. This must be done first; otherwise, DD can be 0 and BSTEP is not well
                 % defined. The inequality below must be non-strict so that GG = GG0 = 0 will trigger the exit.
-                if gg <= (tol ^ 2) * gg0
+                if gg <= tol ^ 2 * gg0
                     info_loc = 0;
                     break
                 end
@@ -212,7 +212,7 @@ classdef trustregion_newuoa_mod
                 % Exit if CG path cuts the boundary. It is the only possibility that TWOD_SEARCH is true.
                 if alpha >= bstep || ss >= delsq
                     crvmin = 0.0;
-                    twod_search = (n >= 2 && gg > (tol ^ 2) * gg0); % TWOD_SEARCH should be FALSE if N = 1.
+                    twod_search = n >= 2 && gg > tol ^ 2 * gg0; % TWOD_SEARCH should be FALSE if N = 1.
                     break
                 end
 
@@ -223,7 +223,7 @@ classdef trustregion_newuoa_mod
                 end
 
                 % Prepare for the next CG iteration.
-                d = (gg / ggsav) * d - g - hs; % CG direction
+                d = gg / ggsav * d - g - hs; % CG direction
                 dd = sum(d .* d, 'all');
                 ds = sum(d .* s, 'all');
                 if ds <= 0
@@ -257,7 +257,7 @@ classdef trustregion_newuoa_mod
                     break
                 end
                 % Exit if GG is small. The inequality must be non-strict so that GG = GG0 = 0 triggers the exit.
-                if gg <= (tol ^ 2) * gg0
+                if gg <= tol ^ 2 * gg0
                     info_loc = 0;
                     break
                 end
@@ -279,7 +279,7 @@ classdef trustregion_newuoa_mod
 
                 % We calculate D as below. It did improve the performance of NEWUOA in our test.
                 % PROJECT(X, V) returns the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||).
-                d = (g + hs) - linalg_obj.project1(g + hs, s);
+                d = g + hs - linalg_obj.project1(g + hs, s);
                 % N.B.:
                 % 1. The condition ||D||<=SQRT(TOL*GG) below is equivalent to |INPROD(G+HS,S)|<=SQRT((1-TOL)*GG*SS).
                 % As given above, Powell's code triggers an exit if INPROD(G+HS,S)=SGK<=(TOL-1)*SQRT(GG*SS).
@@ -292,7 +292,7 @@ classdef trustregion_newuoa_mod
                     info_loc = 0;
                     break
                 end
-                d = (norm(s) / norm(d)) * d;
+                d = norm(s) / norm(d) * d;
                 % In precise arithmetic, INPROD(D, S) = 0 and ||D|| = ||S|| = DELTA.
                 if abs(sum(d .* s, 'all')) >= 0.1 * norm(d) * norm(s) || norm(d) >= 2.0 * delta
                     info_loc = -1;
@@ -346,10 +346,6 @@ classdef trustregion_newuoa_mod
             if scaled && crvmin > 0
                 crvmin = crvmin / modscal;
             end
-
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
 
             %====================%
             %  Calculation ends  %

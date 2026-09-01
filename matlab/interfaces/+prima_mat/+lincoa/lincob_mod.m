@@ -64,9 +64,12 @@ classdef lincob_mod
 
             % Generic models
             checkexit_obj = prima_mat.common.checkexit_mod();
+            consts_obj = prima_mat.common.consts_mod();
 
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
+
+            infos_obj = prima_mat.common.infos_mod();
 
             message_obj = prima_mat.common.message_mod();
 
@@ -93,7 +96,7 @@ classdef lincob_mod
 
             bmat = NaN(numel(x), npt + numel(x));
             cfilt = NaN(maxfilt, 1);
-            constr = NaN(nnz(xl > -(0.25 * realmax)) + nnz(xu < 0.25 * realmax) + 2 * numel(beq) + numel(bineq), 1);
+            constr = NaN(nnz(xl > -consts_obj.BOUNDMAX) + nnz(xu < consts_obj.BOUNDMAX) + 2 * numel(beq) + numel(bineq), 1);
             constr_leq = NaN(size(beq));
             cval = NaN(npt, 1);
             d = NaN(size(x));
@@ -131,8 +134,8 @@ classdef lincob_mod
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
 
 
-            ixl = find(xl > -(0.25 * realmax));
-            ixu = find(xu < 0.25 * realmax);
+            ixl = find(xl > -consts_obj.BOUNDMAX);
+            ixu = find(xu < consts_obj.BOUNDMAX);
 
             % Initialize B, XBASE, XPT, FVAL, CVAL, and KOPT, together with the history, NF, IJ, and EVALUATED.
             b = bvec;
@@ -147,7 +150,7 @@ classdef lincob_mod
             if ~ismember('callback_fcn', ipObj.UsingDefaults)
                 terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, 0, 'cstrv', cval(kopt));
                 if terminate
-                    subinfo = 30;
+                    subinfo = infos_obj.CALLBACK_TERMINATE;
                 end
             end
 
@@ -175,24 +178,24 @@ classdef lincob_mod
 
             % Finish the initialization if INITXF completed normally and CALLBACK did not request termination;
             % otherwise, do not proceed, as XPT etc may be uninitialized, leading to errors or exceptions.
-            if subinfo == 0
+            if subinfo == infos_obj.INFO_DFT
                 % Initialize [BMAT, ZMAT, IDZ], representing inverse of KKT matrix of the interpolation system.
                 [idz, bmat, zmat] = initialize_lincoa_obj.inith(ij, xpt, bmat, zmat);
 
                 % Initialize the quadratic represented by [GOPT, HQ, PQ], so that its gradient at XBASE+XOPT is
                 % GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
-                hq = zeros(size(hq));
+                hq(:) = 0.0;
                 pq(:) = powalg_obj.omega_mul(idz, zmat, fval);
                 gopt(:) = bmat(:, 1:npt) * fval + powalg_obj.hess_mul(xpt(:, kopt), xpt, pq);
                 pqalt = pq;
                 galt = gopt;
                 if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
-                    subinfo = -3;
+                    subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
 
             % Check whether to return due to abnormal cases that may occur during the initialization.
-            if subinfo ~= 0
+            if subinfo ~= infos_obj.INFO_DFT
                 info = subinfo;
                 % Return the best calculated values of the variables. If CTOL > 0, the KOPT decided by SELECTX
                 % may not be the same as the one by INITXF.
@@ -229,8 +232,8 @@ classdef lincob_mod
             qalt_better(:) = false;
             knew_tr = 0;
 
-            qfac(:, :) = eye(n);
-            rfac = zeros(size(rfac));
+            qfac(:) = eye(n);
+            rfac(:) = 0.0;
             nact = 0;
             iact(:) = (1:m).';
 
@@ -253,7 +256,7 @@ classdef lincob_mod
             % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop
             % https://fortran-lang.discourse.group/t/loops-dont-behave-like-they-should
             maxtr = intmax('int32') - 1; %%MATLAB: maxtr = 10 * maxfun;
-            info = 20;
+            info = infos_obj.MAXTR_REACHED;
 
             % Begin the iterative procedure.
             % After solving a trust-region subproblem, we use three boolean variables to control the workflow.
@@ -274,7 +277,7 @@ classdef lincob_mod
                 % considered nearly active if the point under consideration is within 0.2*DELTA to the boundary
                 % of the constraint. See the subroutine GETACT and Section 3 of Powell (2015) for more details.
                 % `<=` works better than `<` in case of underflow.
-                shortd = ((dnorm <= 0.5 * delta && ngetact < 2) || dnorm <= 0.1999 * delta);
+                shortd = dnorm <= 0.5 * delta && ngetact < 2 || dnorm <= 0.1999 * delta;
                 %------------------------------------------------------------------------------------------%
                 % The SHORTD defined above needs NGETACT, which relies on Powell's trust region subproblem
                 % solver. If a different subproblem solver is used, we can take the following SHORTD adopted
@@ -299,7 +302,7 @@ classdef lincob_mod
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
                 qred = -powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
-                trfail = (~(qred > 1.0e-6 * rho ^ 2)); % QRED is tiny/negative or NaN.
+                trfail = ~(qred > 1.0e-6 * rho ^ 2); % QRED is tiny/negative or NaN.
 
                 if shortd || trfail
                     % In this case, do nothing but reducing DELTA. Afterward, DELTA < DNORM may occur.
@@ -334,7 +337,7 @@ classdef lincob_mod
 
                     % Check whether to exit.
                     subinfo = checkexit_obj.checkexit_con(maxfun, nf, cstrv, ctol, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -359,7 +362,7 @@ classdef lincob_mod
                     end
 
                     % Is the newly generated X better than current best point?
-                    ximproved = (f < fval(kopt));
+                    ximproved = f < fval(kopt);
 
                     % Set KNEW_TR to the index of the interpolation point to be replaced with XNEW = XOPT + D.
                     % KNEW_TR will ensure that the geometry of XPT is "good enough" after the replacement.
@@ -378,7 +381,7 @@ classdef lincob_mod
                         % models are more accurate in predicting the function value of XOPT + D.
                         [qalt_better, gopt, pq, hq, galt, pqalt] = update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), xpt, zmat, qalt_better, gopt, pq, hq);
                         if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
-                            info = -3;
+                            info = infos_obj.NAN_INF_MODEL;
                             break
                         end
 
@@ -419,19 +422,19 @@ classdef lincob_mod
                 % %close_itpset = all(distsq <= max(delta**2, 4.0_RP * rho**2))  ! Powell's code.
                 % %close_itpset = all(distsq <= max((TWO * delta)**2, (TEN * rho)**2))  ! Powell's BOBYQA code.
                 % ADEQUATE_GEO: Is the geometry of the interpolation set "adequate"?
-                adequate_geo = (shortd && accurate_mod) || close_itpset;
+                adequate_geo = shortd && accurate_mod || close_itpset;
                 % SMALL_TRRAD: Is the trust-region radius small? This indicator seems not impactive in practice.
-                small_trrad = (max(delta, dnorm) <= rho); % Behaves the same as Powell's version.
+                small_trrad = max(delta, dnorm) <= rho; % Behaves the same as Powell's version.
                 %small_trrad = (delsav <= rho)  ! Powell's code. DELSAV = unupdated DELTA.
 
                 % IMPROVE_GEO and REDUCE_RHO are defined as follows.
                 % N.B.: If SHORTD is TRUE at the very first iteration, then REDUCE_RHO will be set to TRUE.
 
                 % BAD_TRSTEP (for IMPROVE_GEO): Is the last trust-region step bad?
-                bad_trstep = (shortd || trfail || ratio <= eta1 || knew_tr == 0);
+                bad_trstep = shortd || trfail || ratio <= eta1 || knew_tr == 0;
                 improve_geo = bad_trstep && ~adequate_geo;
                 % BAD_TRSTEP (for REDUCE_RHO): Is the last trust-region step bad?
-                bad_trstep = (shortd || trfail || ratio <= 0 || knew_tr == 0);
+                bad_trstep = shortd || trfail || ratio <= 0 || knew_tr == 0;
                 reduce_rho = bad_trstep && adequate_geo && small_trrad;
 
                 % Equivalently, REDUCE_RHO can be set as follows. It shows that REDUCE_RHO is TRUE in two cases.
@@ -492,7 +495,7 @@ classdef lincob_mod
 
                     % Check whether to exit.
                     subinfo = checkexit_obj.checkexit_con(maxfun, nf, cstrv, ctol, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -507,7 +510,7 @@ classdef lincob_mod
                     qalt_better(:) = [qalt_better(2:numel(qalt_better)); abs(moderr_alt) < 0.1 * abs(moderr)];
 
                     % Is the newly generated X better than current best point?
-                    ximproved = (f < fval(kopt) && feasible);
+                    ximproved = f < fval(kopt) && feasible;
 
                     % Update [BMAT, ZMAT, IDZ] (represents H in the NEWUOA paper), [XPT, FVAL, KOPT] and
                     % [GOPT, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_GEO) becomes XNEW = XOPT + D.
@@ -523,7 +526,7 @@ classdef lincob_mod
                     % N.B.: Powell's code does this only if XOPT + D is feasible.
                     [qalt_better, gopt, pq, hq, galt, pqalt] = update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), xpt, zmat, qalt_better, gopt, pq, hq);
                     if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
-                        info = -3;
+                        info = infos_obj.NAN_INF_MODEL;
                         break
                     end
 
@@ -536,7 +539,7 @@ classdef lincob_mod
                 % by reducing RHO; update DELTA at the same time.
                 if reduce_rho
                     if rho <= rhoend
-                        info = 0;
+                        info = infos_obj.SMALL_TR_RADIUS;
                         break
                     end
                     delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
@@ -565,7 +568,7 @@ classdef lincob_mod
                     % FIXME: CVAL(KOP) is WRONG! CVAL is not updated.
                     terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, tr, 'cstrv', cval(kopt));
                     if terminate
-                        info = 30;
+                        info = infos_obj.CALLBACK_TERMINATE;
                         break
                     end
                 end
@@ -573,7 +576,7 @@ classdef lincob_mod
             end % End of DO TR = 1, MAXTR. The iterative procedure ends.
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
-            if info == 0 && shortd && dnorm > 0.1 * rhoend && nf < maxfun
+            if info == infos_obj.SMALL_TR_RADIUS && shortd && dnorm > 0.1 * rhoend && nf < maxfun
                 x = xbase + (xpt(:, kopt) + d);
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;

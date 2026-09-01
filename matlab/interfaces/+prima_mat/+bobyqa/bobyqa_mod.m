@@ -185,8 +185,12 @@ classdef bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            consts_obj = prima_mat.common.consts_mod();
+
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
+
+            infos_obj = prima_mat.common.infos_mod();
 
             preproc_obj = prima_mat.common.preproc_mod();
 
@@ -207,65 +211,55 @@ classdef bobyqa_mod
             n = numel(x);
 
             ipObj = inputParser();
-            addParameter(ipObj, 'f', NaN);
             addParameter(ipObj, 'xl', NaN);
             addParameter(ipObj, 'xu', NaN);
-            addParameter(ipObj, 'nf', NaN);
             addParameter(ipObj, 'rhobeg', NaN);
             addParameter(ipObj, 'rhoend', NaN);
-            addParameter(ipObj, 'ftarget', -realmax);
+            addParameter(ipObj, 'ftarget', NaN);
             addParameter(ipObj, 'maxfun', NaN);
             addParameter(ipObj, 'npt', NaN);
-            addParameter(ipObj, 'iprint', 0);
+            addParameter(ipObj, 'iprint', NaN);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
             addParameter(ipObj, 'gamma1', 0.5);
             addParameter(ipObj, 'gamma2', 2.0);
-            addParameter(ipObj, 'xhist', NaN);
-            addParameter(ipObj, 'fhist', NaN);
             addParameter(ipObj, 'maxhist', NaN);
             addParameter(ipObj, 'honour_x0', false);
             addParameter(ipObj, 'callback_fcn', struct());
-            addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-
             xl = ipObj.Results.xl;
             xu = ipObj.Results.xu;
-
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
-            ftarget_loc = ipObj.Results.ftarget;
+            ftarget = ipObj.Results.ftarget;
             maxfun = ipObj.Results.maxfun;
             npt = ipObj.Results.npt;
-            iprint_loc = ipObj.Results.iprint;
+            iprint = ipObj.Results.iprint;
             eta1 = ipObj.Results.eta1;
             eta2 = ipObj.Results.eta2;
             gamma1_loc = ipObj.Results.gamma1;
             gamma2_loc = ipObj.Results.gamma2;
-            xhist = ipObj.Results.xhist;
-            fhist = ipObj.Results.fhist;
             maxhist = ipObj.Results.maxhist;
             honour_x0 = ipObj.Results.honour_x0;
             callback_fcn = ipObj.Results.callback_fcn;
-            info = ipObj.Results.info;
 
             % Read the inputs
 
-            xl_loc(:) = -(0.25 * realmax);
+            xl_loc(:) = -consts_obj.BOUNDMAX;
             if ~ismember('xl', ipObj.UsingDefaults)
                 if numel(xl) > 0
                     xl_loc = xl;
                 end
             end
-            xl_loc(isnan(xl_loc) | xl_loc < -(0.25 * realmax)) = -(0.25 * realmax);
+            xl_loc(isnan(xl_loc) | xl_loc < -consts_obj.BOUNDMAX) = -consts_obj.BOUNDMAX;
 
-            xu_loc(:) = 0.25 * realmax;
+            xu_loc(:) = consts_obj.BOUNDMAX;
             if ~ismember('xu', ipObj.UsingDefaults)
                 if numel(xu) > 0
                     xu_loc = xu;
                 end
             end
-            xu_loc(isnan(xu_loc) | xu_loc > 0.25 * realmax) = 0.25 * realmax;
+            xu_loc(isnan(xu_loc) | xu_loc > consts_obj.BOUNDMAX) = consts_obj.BOUNDMAX;
 
             % The solver requires that MINVAL(XU-XL) >= 2*RHOBEG, and we return if MINVAL(XU-XL) < 2*EPS.
             % It would be better to fix the variables at (XU+XL)/2 wherever XU and XL almost equal, as is done
@@ -273,7 +267,7 @@ classdef bobyqa_mod
             % but we choose not to implement it in the current version.
             if any(xu_loc - xl_loc < 2.0 * eps(1.0), 'all')
                 if nargout >= 6
-                    info = 6;
+                    info = infos_obj.NO_SPACE_BETWEEN_BOUNDS;
                 end
 
                 return
@@ -292,24 +286,30 @@ classdef bobyqa_mod
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
                 if isfinite(rhoend) && rhoend > 0
-                    rhobeg_loc = max(10.0 * rhoend, 1.0);
+                    rhobeg_loc = max(10.0 * rhoend, consts_obj.RHOBEG_DFT);
                 else
-                    rhobeg_loc = 1.0;
+                    rhobeg_loc = consts_obj.RHOBEG_DFT;
                 end
             else
-                rhobeg_loc = 1.0;
+                rhobeg_loc = consts_obj.RHOBEG_DFT;
             end
 
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(eps(1.0), min((1.0e-6 / 1.0) * rhobeg_loc, 1.0e-6));
+                rhoend_loc = max(eps(1.0), min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, consts_obj.RHOEND_DFT));
             else
-                rhoend_loc = 1.0e-6;
+                rhoend_loc = consts_obj.RHOEND_DFT;
+            end
+
+            if ismember('ftarget', ipObj.UsingDefaults)
+                ftarget_loc = consts_obj.FTARGET_DFT;
+            else
+                ftarget_loc = ftarget;
             end
 
             if ismember('maxfun', ipObj.UsingDefaults)
-                maxfun_loc = 500 * n;
+                maxfun_loc = consts_obj.MAXFUN_DIM_DFT * n;
             else
                 maxfun_loc = maxfun;
             end
@@ -321,6 +321,12 @@ classdef bobyqa_mod
                 npt_loc = min(maxfun_loc - 1, 2 * n + 1);
             else
                 npt_loc = 2 * n + 1;
+            end
+
+            if ismember('iprint', ipObj.UsingDefaults)
+                iprint_loc = consts_obj.IPRINT_DFT;
+            else
+                iprint_loc = iprint;
             end
 
             if ~ismember('eta1', ipObj.UsingDefaults)
@@ -342,7 +348,7 @@ classdef bobyqa_mod
             end
 
             if ismember('maxhist', ipObj.UsingDefaults)
-                maxhist_loc = max([maxfun_loc, n + 3, 500 * n], [], 'all');
+                maxhist_loc = max([maxfun_loc, n + 3, consts_obj.MAXFUN_DIM_DFT * n], [], 'all');
             else
                 maxhist_loc = maxhist;
             end
@@ -353,7 +359,7 @@ classdef bobyqa_mod
                 honour_x0_loc = honour_x0;
             elseif has_rhobeg
                 % HONOUR_X0 is FALSE if user provides a valid RHOBEG. Is this the best choice?
-                honour_x0_loc = (~(isfinite(rhobeg) && rhobeg > 0));
+                honour_x0_loc = ~(isfinite(rhobeg) && rhobeg > 0);
             end
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.

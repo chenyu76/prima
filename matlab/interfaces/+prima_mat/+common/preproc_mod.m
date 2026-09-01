@@ -22,6 +22,7 @@ classdef preproc_mod
             % This subroutine preprocesses the inputs. It does nothing to the inputs that are valid.
             %--------------------------------------------------------------------------------------------------%
 
+            consts_obj = prima_mat.common.consts_mod();
 
             % Optional in-outputs
 
@@ -34,8 +35,8 @@ classdef preproc_mod
             addParameter(ipObj, 'm', NaN);
             addParameter(ipObj, 'npt', NaN);
             addParameter(ipObj, 'maxfilt', NaN);
-            addParameter(ipObj, 'ctol', NaN);
-            addParameter(ipObj, 'cweight', NaN);
+            addParameter(ipObj, 'ctol', consts_obj.CTOL_DFT);
+            addParameter(ipObj, 'cweight', consts_obj.CWEIGHT_DFT);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
             addParameter(ipObj, 'gamma1', NaN);
@@ -79,7 +80,7 @@ classdef preproc_mod
             % Validate IPRINT
             if abs(iprint) > 3
 
-                iprint = 0;
+                iprint = consts_obj.IPRINT_DFT;
             end
 
             % Validate MAXFUN
@@ -88,12 +89,12 @@ classdef preproc_mod
             % not needed in Python/MATLAB/Julia/R.
             switch lower(solver)
             case "uobyqa"
-                min_maxfun = ((n + 1) * (n + 2)) / 2 + 1; % INT(*) avoids overflow when IK is 16-bit.
+                min_maxfun = (n + 1) * (n + 2) / 2 + 1; % INT(*) avoids overflow when IK is 16-bit.
 
             case "cobyla"
                 min_maxfun = n + 2;
 
-            otherwise                % CASE ('NEWUOA', 'BOBYQA', 'LINCOA')
+            otherwise
                 min_maxfun = n + 3;
 
             end
@@ -124,7 +125,7 @@ classdef preproc_mod
             end
 
             % Validate NPT
-            if ~ismember('npt', ipObj.UsingDefaults) || nargout >= 7
+            if ~ismember('npt', ipObj.UsingDefaults)
                 if npt < n + 2 || npt >= maxfun || 2 * npt > (n + 2) * (n + 1)
                     %INT(*) avoids overflow when IK is 16-bit
 
@@ -133,10 +134,10 @@ classdef preproc_mod
             end
 
             % Validate MAXFILT
-            if ~ismember('maxfilt', ipObj.UsingDefaults) || nargout >= 8
+            if ~ismember('maxfilt', ipObj.UsingDefaults)
 
                 if maxfilt <= 0
-                    maxfilt = 2000;
+                    maxfilt = consts_obj.MAXFILT_DFT;
                 else
                     maxfilt = max(200, maxfilt); % The inputted MAXFILT is too small.
                 end
@@ -151,8 +152,8 @@ classdef preproc_mod
                 end
                 % We cannot simply set MAXFILT = MIN(MAXFILT, MAXHISTMEM/...), as they may not have
                 % the same kind, and compilers may complain. We may convert them, but overflow may occur.
-                if maxfilt > 100000000 / unit_memo
-                    maxfilt = fix(100000000 / unit_memo); % Integer division.
+                if maxfilt > min(300 * 10 ^ 6, (intmax('int32') - 1) / 2) / unit_memo
+                    maxfilt = fix(min(300 * 10 ^ 6, (intmax('int32') - 1) / 2) / unit_memo); % Integer division.
 
                 end
                 maxfilt = min(maxfun, max(200, maxfilt));
@@ -167,7 +168,7 @@ classdef preproc_mod
                 if eta2 >= 0 && eta2 < 1
                     eta1 = eta2 / 7.0;
                 else
-                    eta1 = 0.1;
+                    eta1 = consts_obj.ETA1_DFT;
                 end
             end
 
@@ -178,7 +179,7 @@ classdef preproc_mod
                 if eta1 >= 0 && eta1 < 1
                     eta2 = (eta1 + 2.0) / 3.0;
                 else
-                    eta2 = 0.7;
+                    eta2 = consts_obj.ETA2_DFT;
                 end
             end
 
@@ -190,13 +191,13 @@ classdef preproc_mod
             if ~(gamma1 > 0 && gamma1 < 1)
                 % GAMMA1 = NaN falls into this case.
 
-                gamma1 = 0.5;
+                gamma1 = consts_obj.GAMMA1_DFT;
             end
 
             if ~(isfinite(gamma2) && gamma2 >= 1)
                 % GAMMA2 = NaN falls into this case.
 
-                gamma2 = 2.0;
+                gamma2 = consts_obj.GAMMA2_DFT;
             end
 
             % Validate RHOBEG and RHOEND
@@ -205,11 +206,11 @@ classdef preproc_mod
 
             % Revise the default values for RHOBEG/RHOEND according to the solver.
             if lower(solver) == "bobyqa"
-                rhobeg_default = max(eps(1.0), min(1.0, min(xu - xl, [], 'all') / 4.0));
-                rhoend_default = max(eps(1.0), min((1.0e-6 / 1.0) * rhobeg_default, 1.0e-6));
+                rhobeg_default = max(eps(1.0), min(consts_obj.RHOBEG_DFT, min(xu - xl, [], 'all') / 4.0));
+                rhoend_default = max(eps(1.0), min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_default, consts_obj.RHOEND_DFT));
             else
-                rhobeg_default = 1.0;
-                rhoend_default = 1.0e-6;
+                rhobeg_default = consts_obj.RHOBEG_DFT;
+                rhoend_default = consts_obj.RHOEND_DFT;
             end
 
             if lower(solver) == "bobyqa"
@@ -236,7 +237,7 @@ classdef preproc_mod
 
             if ~(isfinite(rhoend) && rhoend >= 0 && rhoend <= rhobeg)
                 % RHOEND = NaN falls into this case.
-                rhoend = max(eps(1.0), min((1.0e-6 / 1.0) * rhobeg, rhoend_default));
+                rhoend = max(eps(1.0), min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg, rhoend_default));
             end
 
             % For BOBYQA, revise X0 or RHOBEG so that the distance between X0 and the inactive bounds is at
@@ -276,13 +277,13 @@ classdef preproc_mod
                 % Revise RHOBEG if needed.
                 % N.B.: If X0 has been revised above (i.e., HONOUR_X0 is FALSE), then the following revision
                 % is unnecessary in precise arithmetic. However, it may still be needed due to rounding errors.
-                lbx = (isfinite(xl) & x0 - xl <= eps(1.0) * max(1.0, abs(xl))); % X0 essentially equals XL
-                ubx = (isfinite(xu) & x0 - xu >= -eps(1.0) * max(1.0, abs(xu))); % X0 essentially equals XU
+                lbx = isfinite(xl) & x0 - xl <= eps(1.0) * max(1.0, abs(xl)); % X0 essentially equals XL
+                ubx = isfinite(xu) & x0 - xu >= -eps(1.0) * max(1.0, abs(xu)); % X0 essentially equals XU
                 x0(lbx) = xl(lbx);
                 x0(ubx) = xu(ubx);
                 rhobeg = max(eps(1.0), min([rhobeg; x0(find(~lbx)) - xl(find(~lbx)); xu(find(~ubx)) - x0(find(~ubx))], [], 'all'));
                 if rhobeg_in - rhobeg > eps(1.0) * max(1.0, rhobeg_in)
-                    rhoend = max(eps(1.0), min((rhoend / rhobeg_in) * rhobeg, rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
+                    rhoend = max(eps(1.0), min(rhoend / rhobeg_in * rhobeg, rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
 
                 end
             end
@@ -293,21 +294,21 @@ classdef preproc_mod
             rhoend = min(max(rhoend, eps(1.0)), rhobeg);
 
             % Validate CTOL (it can be 0)
-            if ~ismember('ctol', ipObj.UsingDefaults) || nargout >= 9
+            if ~ismember('ctol', ipObj.UsingDefaults)
                 if ~(ctol >= 0)
                     % CTOL = NaN falls into this case.
 
-                    ctol = sqrt(eps(1.0));
+                    ctol = consts_obj.CTOL_DFT;
 
                 end
             end
 
             % Validate CWEIGHT (it can be +Inf)
-            if ~ismember('cweight', ipObj.UsingDefaults) || nargout >= 10
+            if ~ismember('cweight', ipObj.UsingDefaults)
                 if ~(cweight >= 0)
                     % CWEIGHT = NaN falls into this case.
 
-                    cweight = 1.0e8;
+                    cweight = consts_obj.CWEIGHT_DFT;
 
                 end
             end

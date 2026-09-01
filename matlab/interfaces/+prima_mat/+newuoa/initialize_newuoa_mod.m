@@ -40,6 +40,8 @@ classdef initialize_newuoa_mod
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
+            infos_obj = prima_mat.common.infos_mod();
+
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
@@ -57,7 +59,7 @@ classdef initialize_newuoa_mod
 
             % Initialize INFO to the default value. At return, an INFO different from this value will indicate
             % an abnormal return.
-            info = 0;
+            info = infos_obj.INFO_DFT;
 
             % Initialize XBASE to X0.
             xbase = x0;
@@ -73,7 +75,7 @@ classdef initialize_newuoa_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-realmax, size(xhist));
+            xhist(:) = -realmax;
             fhist(:) = realmax;
             fval(:) = realmax;
 
@@ -99,7 +101,7 @@ classdef initialize_newuoa_mod
 
                 % Check whether to exit.
                 subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                if subinfo ~= 0
+                if subinfo ~= infos_obj.INFO_DFT
                     info = subinfo;
                     break
                 end
@@ -136,7 +138,7 @@ classdef initialize_newuoa_mod
             xpt(:, 2 * n + 2:npt) = xpt(:, ij(1, :).' + 1) + xpt(:, ij(2, :).' + 1);
 
             % Set FVAL(2*N + 2 : NPT) by evaluating F. Totally parallelizable except for FMSG.
-            if info == 0
+            if info == infos_obj.INFO_DFT
                 for k = 2 * n + 2:npt
                     x = xpt(:, k) + xbase;
                     f = evaluate_obj.evaluatef(calfun, x);
@@ -151,7 +153,7 @@ classdef initialize_newuoa_mod
 
                     % Check whether to exit.
                     subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -169,12 +171,14 @@ classdef initialize_newuoa_mod
 
 
         end
-        function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, gopt, hq, pq, varargin)
+        function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the quadratic model represented by [GOPT, HQ, PQ] so that its gradient
             % at XBASE + XPT(:,KOPT) is GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
             %--------------------------------------------------------------------------------------------------%
 
+
+            infos_obj = prima_mat.common.infos_mod();
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -200,7 +204,7 @@ classdef initialize_newuoa_mod
             % Set the diagonal of HQ by the 2nd-order central finite difference. If we do this before the
             % revision of GOPT(1:NDIAG), we can avoid the calculation of FVAL(K + 1) - FBASE) / RHOBEG. But we
             % prefer to decouple the initialization of GOPT and HQ. We are not concerned by this amount of flops.
-            hq = zeros(size(hq));
+            hq(:) = 0.0;
             for k = 1:ndiag
                 hq(k, k) = ((fval(k + 1) - fbase) / rhobeg - (fbase - fval(k + n + 1)) / rhobeg) / rhobeg;
             end
@@ -234,15 +238,11 @@ classdef initialize_newuoa_mod
 
             pq(:) = 0.0;
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 4
                 if any(isnan(gopt), 'all') || any(isnan(hq), 'all')
-                    info = -3;
+                    info = infos_obj.NAN_INF_MODEL;
                 else
-                    info = 0;
+                    info = infos_obj.INFO_DFT;
                 end
             end
 
@@ -252,12 +252,14 @@ classdef initialize_newuoa_mod
 
 
         end
-        function [idz, bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat, varargin)
+        function [idz, bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes [IDZ, BMAT, ZMAT] which represents the matrix H in (3.12) of the
             % NEWUOA paper (see also (2.7) of the BOBYQA paper).
             %--------------------------------------------------------------------------------------------------%
 
+
+            infos_obj = prima_mat.common.infos_mod();
 
             %use, non_intrinsic :: powalg_mod, only : errh
 
@@ -279,7 +281,7 @@ classdef initialize_newuoa_mod
             % Set BMAT.
             recip = 1.0 / rhobeg;
             reciq = 0.5 / rhobeg;
-            bmat = zeros(size(bmat));
+            bmat(:) = 0.0;
             if npt <= 2 * n + 1
                 % Set BMAT(1 : NPT-N-1, :)
                 bmat(1:npt - n - 1, 2:npt - n) = reciq * eye(npt - n - 1);
@@ -296,7 +298,7 @@ classdef initialize_newuoa_mod
             % Set ZMAT.
             recip = 1.0 / rhosq;
             reciq = sqrt(0.5) / rhosq;
-            zmat = zeros(size(zmat));
+            zmat(:) = 0.0;
             if npt <= 2 * n + 1
                 zmat(1, :) = -reciq - reciq;
                 zmat(2:npt - n, :) = reciq * eye(npt - n - 1);
@@ -317,15 +319,11 @@ classdef initialize_newuoa_mod
             % Set IDZ.
             idz = 1;
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 4
                 if any(isnan(bmat), 'all') || any(isnan(zmat), 'all')
-                    info = -3;
+                    info = infos_obj.NAN_INF_MODEL;
                 else
-                    info = 0;
+                    info = infos_obj.INFO_DFT;
                 end
             end
 

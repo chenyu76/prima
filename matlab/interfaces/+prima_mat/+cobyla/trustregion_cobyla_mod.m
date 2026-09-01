@@ -68,7 +68,6 @@ classdef trustregion_cobyla_mod
             z = NaN(numel(d));
 
             m = size(A, 2);
-            n = size(A, 1);
 
             %====================%
             % Calculation starts %
@@ -76,7 +75,7 @@ classdef trustregion_cobyla_mod
 
             % Form A_aug and B_aug. This allows the gradient of the objective function to be regarded as the
             % gradient of a constraint in the second stage.
-            A_aug(:, :) = reshape([reshape(A, 1, []), g.'], [n, m + 1]); %%MATLAB: A_aug = [A, g];
+            A_aug(:) = [reshape(A, 1, []), g.']; %%MATLAB: A_aug = [A, g];
             b_aug(:) = [b; 0.0]; %%MATLAB: b_aug = [b; 0];
 
             % Scale the problem if A_aug contains large values. Otherwise, floating point exceptions may occur.
@@ -302,7 +301,7 @@ classdef trustregion_cobyla_mod
                     % Usually during stage 1 the vector SDIRN gives a search direction that reduces all the
                     % active constraint violations by one simultaneously.
                     if stage == 1
-                        sdirn = sdirn - ((sum(sdirn .* A(:, iact(nact)), 'all') + 1.0) / zdota(nact)) * z(:, nact);
+                        sdirn = sdirn - (sum(sdirn .* A(:, iact(nact)), 'all') + 1.0) / zdota(nact) * z(:, nact);
                     else
                         sdirn = -(1.0 / zdota(nact)) * z(:, nact);
                         % SDIRN = Z(:, NACT)/(A(:,IACT(NACT))^T*Z(:, NACT))

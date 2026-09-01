@@ -206,19 +206,15 @@ classdef linalg_mod
             n = size(A, 1);
 
             ipObj = inputParser();
-            addParameter(ipObj, 'tol', NaN);
+            addParameter(ipObj, 'tol', min(1.0e-3, 100.0 * eps(1.0) * double(max(size(A, 1), size(A, 2)))));
             parse(ipObj, varargin{:});
-            tol = ipObj.Results.tol;
+            tol_loc = ipObj.Results.tol;
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if ismember('tol', ipObj.UsingDefaults)
-                tol_loc = min(1.0e-3, 100.0 * eps(1.0) * double(max(size(A, 1), size(A, 2))));
-            else
-                tol_loc = tol;
-            end
+
             tol_loc = max([tol_loc, tol_loc * max(abs(A), [], 'all'), tol_loc * max(abs(B), [], 'all')], [], 'all');
             is_inv = all(abs(A * B - eye(n)) <= tol_loc, 'all') || all(abs(B * A - eye(n)) <= tol_loc, 'all');
 
@@ -244,7 +240,7 @@ classdef linalg_mod
             Q = ipObj.Results.Q;
             R = ipObj.Results.R;
             P = ipObj.Results.P;
-            if ~(nargout >= 1 || nargout >= 2 || nargout >= 2)
+            if ~(~ismember('Q', ipObj.UsingDefaults) || ~ismember('R', ipObj.UsingDefaults) || ~ismember('R', ipObj.UsingDefaults))
                 return
             end
 
@@ -255,8 +251,8 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            pivot = (nargout >= 3);
-            Q_loc(:, :) = eye(m);
+            pivot = ~ismember('P', ipObj.UsingDefaults);
+            Q_loc(:) = eye(m);
             T = A.'; % T is the transpose of R. We consider T in order to work on columns.
             if pivot
                 P = (1:n).';
@@ -279,10 +275,10 @@ classdef linalg_mod
                 end
             end
 
-            if nargout >= 1
+            if ~ismember('Q', ipObj.UsingDefaults)
                 Q = Q_loc(:, 1:size(Q, 2));
             end
-            if nargout >= 2
+            if ~ismember('R', ipObj.UsingDefaults)
                 R = T(:, 1:size(R, 1)).';
             end
 
@@ -329,7 +325,7 @@ classdef linalg_mod
             end
 
             if ismember('Q', ipObj.UsingDefaults)
-                [Q_loc, ~, P] = obj.qr(A);
+                [Q_loc, ~, P] = obj.qr(A, 'Q', Q_loc, 'P', P);
                 Rdiag_loc = arrayfun(@(i) sum(Q_loc(:, i) .* A(:, P(i)), 'all'), (1:min(m, n))');
                 %%MATLAB: Rdiag_loc = sum(Q_loc(:, 1:min(m,n)) .* A(:, P(1:min(m,n))), 1); % Row vector
                 rank = max([0; find(abs(Rdiag_loc) > 0)], [], 'all');
@@ -447,7 +443,7 @@ classdef linalg_mod
 
             is_banded = true;
             for i = 1:n
-                is_banded = (all(abs(A(i + lwidth + 1:m, i)) <= tol_loc, 'all') && all(abs(A(1:i - uwidth - 1, i)) <= tol_loc, 'all'));
+                is_banded = all(abs(A(i + lwidth + 1:m, i)) <= tol_loc, 'all') && all(abs(A(1:i - uwidth - 1, i)) <= tol_loc, 'all');
                 if ~is_banded
                     break
                 end
@@ -464,19 +460,15 @@ classdef linalg_mod
 
 
             ipObj = inputParser();
-            addParameter(ipObj, 'tol', NaN);
+            addParameter(ipObj, 'tol', 0.0);
             parse(ipObj, varargin{:});
-            tol = ipObj.Results.tol;
+            tol_loc = ipObj.Results.tol;
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if ismember('tol', ipObj.UsingDefaults)
-                tol_loc = 0.0;
-            else
-                tol_loc = tol;
-            end
+
             width = max(0, size(A, 1) - 1);
             is_tril = obj.isbanded(A, width, 0, 'tol', tol_loc);
 
@@ -491,19 +483,15 @@ classdef linalg_mod
 
 
             ipObj = inputParser();
-            addParameter(ipObj, 'tol', NaN);
+            addParameter(ipObj, 'tol', 0.0);
             parse(ipObj, varargin{:});
-            tol = ipObj.Results.tol;
+            tol_loc = ipObj.Results.tol;
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if ismember('tol', ipObj.UsingDefaults)
-                tol_loc = 0.0;
-            else
-                tol_loc = tol;
-            end
+
             width = max(0, size(A, 2) - 1);
             is_triu = obj.isbanded(A, 0, width, 'tol', tol_loc);
 
@@ -515,7 +503,7 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether the matrix A has orthonormal columns up to the tolerance TOL.
             %--------------------------------------------------------------------------------------------------%
-
+            consts_obj = prima_mat.common.consts_mod();
 
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
@@ -526,7 +514,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            tol_loc = realmax;
+            tol_loc = consts_obj.ORTHTOL_DFT;
             if ~ismember('tol', ipObj.UsingDefaults)
                 tol_loc = tol;
             end
@@ -542,7 +530,7 @@ classdef linalg_mod
                 is_orth = false;
             elseif any(isnan(A), 'all')
                 is_orth = false;
-            elseif realmax < realmax
+            elseif consts_obj.ORTHTOL_DFT < realmax
                 is_orth = all(abs(A.' * A - eye(n)) <= max(tol_loc, tol_loc * max(abs(A), [], 'all')), 'all');
             end
 
@@ -571,7 +559,7 @@ classdef linalg_mod
 
             elseif any(isinf(v), 'all')
                 u(:) = 0.0;
-                u(isinf(v)) = 1.0 .* ((v(isinf(v)) > 0) .* 2 - 1);
+                u(isinf(v)) = (v(isinf(v)) > 0) .* 2 - 1;
                 %%MATLAB: u = 0; u(isinf(v)) = sign(v(isinf(v)))
                 u = u ./ norm(u);
                 y(:) = sum(x .* u, 'all') * u;
@@ -594,6 +582,7 @@ classdef linalg_mod
 
             y = NaN(size(x));
 
+            U = NaN(size(V, 1), min(size(V, 1), size(V, 2)));
             V_loc = NaN(size(V, 1), size(V, 2));
 
             %====================%
@@ -609,15 +598,15 @@ classdef linalg_mod
 
             elseif any(isinf(V), 'all')
                 mask00 = isinf(V);
-                V_loc(mask00) = 1.0 .* ((V(mask00) > 0) .* 2 - 1);
+                V_loc(mask00) = (V(mask00) > 0) .* 2 - 1;
                 mask01 = ~mask00;
                 V_loc(mask01) = 0.0;
 
                 %%MATLAB: V_loc = 0; V_loc(isinf(V)) = sign(V);
-                U = obj.qr(V_loc);
+                U = obj.qr(V_loc, 'Q', U);
                 y(:) = U * (U.' * x);
             else
-                U = obj.qr(V);
+                U = obj.qr(V, 'Q', U);
                 y(:) = U * (U.' * x);
             end
 
@@ -700,14 +689,14 @@ classdef linalg_mod
                 % to avoid the confusing SIGN(., 0) (see 1).
                 % 1. SIGN(A, 0) = ABS(A) in Fortran but sign(0) = 0 in MATLAB, Python, Julia, and R!
                 % 2. Taking SIGN(X(1)) into account ensures the continuity of G with respect to X except at 0.
-                c = 1.0 .* ((x(1) > 0) .* 2 - 1); %%MATLAB: c = sign(x(1))
+                c = (x(1) > 0) .* 2 - 1; %%MATLAB: c = sign(x(1))
                 s = 0.0;
             elseif abs(x(1)) <= eps(1.0) * abs(x(2))
                 % N.B.: SIGN(A, X) = ABS(A) * sign of X /= A * sign of X ! Therefore, it is WRONG to define G
                 % as SIGN(RESHAPE([ZERO, -ONE, ONE, ZERO], [2, 2]), X(2)). This mistake was committed on
                 % 20211206 and took a whole day to debug! NEVER use SIGN on arrays unless you are really sure.
                 c = 0.0;
-                s = 1.0 .* ((x(2) > 0) .* 2 - 1); %%MATLAB: s = sign(x(2))
+                s = (x(2) > 0) .* 2 - 1; %%MATLAB: s = sign(x(2))
 
             else
                 % Here is the normal case. It implements the Givens rotation in a stable & continuous way as in:
@@ -785,7 +774,7 @@ classdef linalg_mod
 
             refa = abs(ref) + sensitivity * abs(x);
             refb = abs(ref) + 2.0 * sensitivity * abs(x);
-            is_minor = (abs(ref) >= refa || refa >= refb);
+            is_minor = abs(ref) >= refa || refa >= refb;
 
             %====================%
             %  Calculation ends  %
@@ -814,7 +803,7 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether A is symmetric up to TOL.
             %--------------------------------------------------------------------------------------------------%
-
+            consts_obj = prima_mat.common.consts_mod();
 
             ipObj = inputParser();
             addParameter(ipObj, 'tol', NaN);
@@ -825,7 +814,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            tol_loc = 1.0e-10;
+            tol_loc = consts_obj.SYMTOL_DFT;
             if ~ismember('tol', ipObj.UsingDefaults)
                 tol_loc = tol;
             end
@@ -849,8 +838,8 @@ classdef linalg_mod
             is_symmetric = true;
             if size(A, 1) ~= size(A, 2)
                 is_symmetric = false;
-            elseif 1.0e-10 < 0.9 * realmax
-                is_symmetric = (~any(abs(A - A.') > tol_loc * max(max(abs(A), [], 'all'), 1.0), 'all')) && all(isnan(A) == isnan(A.'), 'all');
+            elseif consts_obj.SYMTOL_DFT < 0.9 * realmax
+                is_symmetric = ~any(abs(A - A.') > tol_loc * max(max(abs(A), [], 'all'), 1.0), 'all') && all(isnan(A) == isnan(A.'), 'all');
             end
 
             %====================%
@@ -975,7 +964,7 @@ classdef linalg_mod
             end
 
             H = A;
-            if nargout >= 2
+            if ~ismember('Q', ipObj.UsingDefaults)
                 Q = eye(n);
             end
 
@@ -1019,7 +1008,7 @@ classdef linalg_mod
                     H(:, i) = H(:, i) - w * v(i);
                 end
 
-                if nargout >= 2
+                if ~ismember('Q', ipObj.UsingDefaults)
                     w(:) = Q(:, j + 1:n) * v(j + 1:n);
                     for i = j + 1:n
                         Q(:, i) = Q(:, i) - w * v(i);
@@ -1085,7 +1074,7 @@ classdef linalg_mod
             %====================%
 
             maxiter = 100;
-            tol_loc = 10.0 ^ max(-6, -308);
+            tol_loc = 10.0 ^ max(-6, -floor(log10(realmax)));
             if ~ismember('tol', ipObj.UsingDefaults)
                 tol_loc = tol;
             end
@@ -1206,7 +1195,7 @@ classdef linalg_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            vec = NaN((size(smat, 1) * (size(smat, 1) + 1)) / 2, 1);
+            vec = NaN(size(smat, 1) * (size(smat, 1) + 1) / 2, 1);
 
             %====================%
             % Calculation starts %

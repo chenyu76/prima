@@ -137,7 +137,7 @@ classdef geometry_cobyla_mod
 
             end
 
-            if (ximproved && jdrop == 0) || jdrop < 0
+            if ximproved && jdrop == 0 || jdrop < 0
                 % JDROP < 0 is impossible in theory.
                 [~, jdrop] = max(distsq);
             end

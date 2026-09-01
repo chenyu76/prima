@@ -87,10 +87,10 @@ classdef shiftbase_mod
             end
             %%MATLAB: ymat = xptxav .* sxpt + qxoptq * xopt  % sxpt should be a row, xopt should be a column
             %ymat(:, kopt) = HALF * xoptsq * xopt ! This makes no difference according to a test on 20220406
-            bymat(:, :) = bmat(:, 1:npt) * ymat.'; % BMAT(:, 1:NPT) is not updated yet.
+            bymat(:) = bmat(:, 1:npt) * ymat.'; % BMAT(:, 1:NPT) is not updated yet.
             bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + (bymat + bymat.');
             % Then the revisions of BMAT that depend on ZMAT are calculated.
-            yzmat(:, :) = ymat * zmat;
+            yzmat(:) = ymat * zmat;
             yzmat_c = yzmat;
             yzmat_c(:, 1:idz_loc - 1) = -yzmat(:, 1:idz_loc - 1); % IDZ_LOC is usually small. So this assignment is cheap.
             bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + yzmat * yzmat_c.';
@@ -99,8 +99,8 @@ classdef shiftbase_mod
             % Update the quadratic model. Note that PQ remains unchanged. For HQ, see (7.14) of the NEWUOA paper.
             %v = matprod(xptxav, pq)  ! Vector V in (7.14) of the NEWUOA paper
             v(:) = xpt * pq - 0.5 * sum(pq, 'all') * xopt; % This one seems to work better numerically.
-            vxopt(:, :) = v * xopt.'; %%MATLAB: vxopt = v * xopt';  % v and xopt should be both columns
-            hq = (vxopt + vxopt.') + hq; %call r2update(hq, ONE, xopt, v)
+            vxopt(:) = v * xopt.'; %%MATLAB: vxopt = v * xopt';  % v and xopt should be both columns
+            hq = vxopt + vxopt.' + hq; %call r2update(hq, ONE, xopt, v)
             %call symmetrize(hq)  ! Do this if the update above does not ensure symmetry.
 
             % The following instructions complete the shift of XBASE.

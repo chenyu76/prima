@@ -29,6 +29,7 @@ classdef message_mod
 
 
             fprint_obj = prima_mat.common.fprint_mod();
+            infos_obj = prima_mat.common.infos_mod();
 
             string_obj = prima_mat.common.string_mod();
 
@@ -62,7 +63,7 @@ classdef message_mod
             if ismember('constr', ipObj.UsingDefaults)
                 is_constrained = ~ismember('cstrv', ipObj.UsingDefaults);
             else
-                is_constrained = (numel(constr) > 0);
+                is_constrained = numel(constr) > 0;
             end
 
             % Decide the constraint violation.
@@ -77,29 +78,29 @@ classdef message_mod
 
             % Decide the return message.
             switch info
-            case 1
+            case infos_obj.FTARGET_ACHIEVED
                 reason = "the target function value is achieved.";
-            case 3
+            case infos_obj.MAXFUN_REACHED
                 reason = "the maximal number of function evaluations has been reached.";
-            case 20
+            case infos_obj.MAXTR_REACHED
                 reason = "the maximal number of trust region iterations has been reached.";
-            case 0
+            case infos_obj.SMALL_TR_RADIUS
                 reason = "the trust region radius reaches its lower bound.";
-            case 2
+            case infos_obj.TRSUBP_FAILED
                 reason = "a trust region step has failed to reduce the quadratic model.";
-            case -1
+            case infos_obj.NAN_INF_X
                 reason = "NaN or Inf occurs in x.";
-            case -2
+            case infos_obj.NAN_INF_F
                 reason = "the objective or constraint functions return NaN or +Inf.";
-            case -3
+            case infos_obj.NAN_INF_MODEL
                 reason = "NaN or Inf occurs in the models.";
-            case 7
+            case infos_obj.DAMAGING_ROUNDING
                 reason = "rounding errors are becoming damaging.";
-            case 6
+            case infos_obj.NO_SPACE_BETWEEN_BOUNDS
                 reason = "there is no space between the lower and upper bounds of variable.";
-            case 8
+            case infos_obj.ZERO_LINEAR_CONSTRAINT
                 reason = "one of the linear constraints has a zero gradient";
-            case 30
+            case infos_obj.CALLBACK_TERMINATE
                 reason = "callback function requested termination of optimization";
             otherwise
                 reason = "UNKNOWN EXIT FLAG";
@@ -187,7 +188,7 @@ classdef message_mod
             if ismember('constr', ipObj.UsingDefaults)
                 is_constrained = ~ismember('cstrv', ipObj.UsingDefaults);
             else
-                is_constrained = (numel(constr) > 0);
+                is_constrained = numel(constr) > 0;
             end
 
             % Decide the constraint violation.
@@ -336,7 +337,7 @@ classdef message_mod
             if ismember('constr', ipObj.UsingDefaults)
                 is_constrained = ~ismember('cstrv', ipObj.UsingDefaults);
             else
-                is_constrained = (numel(constr) > 0);
+                is_constrained = numel(constr) > 0;
             end
 
             % Decide the constraint violation.

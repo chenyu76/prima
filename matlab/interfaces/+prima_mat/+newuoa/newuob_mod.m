@@ -48,6 +48,8 @@ classdef newuob_mod
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
+            infos_obj = prima_mat.common.infos_mod();
+
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
@@ -101,7 +103,7 @@ classdef newuob_mod
             if ~ismember('callback_fcn', ipObj.UsingDefaults)
                 terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, 0);
                 if terminate
-                    subinfo = 30;
+                    subinfo = infos_obj.CALLBACK_TERMINATE;
                 end
             end
 
@@ -111,7 +113,7 @@ classdef newuob_mod
 
             % Finish the initialization if INITXF completed normally and CALLBACK did not request termination;
             % otherwise, do not proceed, as XPT etc may be uninitialized, leading to errors or exceptions.
-            if subinfo == 0
+            if subinfo == infos_obj.INFO_DFT
                 % Initialize [BMAT, ZMAT, IDZ], representing inverse of KKT matrix of the interpolation
                 % system.
                 [idz, bmat, zmat] = initialize_newuoa_obj.inith(ij, xpt, bmat, zmat);
@@ -120,12 +122,12 @@ classdef newuob_mod
                 % GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
                 [gopt, hq, pq] = initialize_newuoa_obj.initq(ij, fval, xpt, gopt, hq, pq);
                 if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
-                    subinfo = -3;
+                    subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
 
             % Check whether to return due to abnormal cases that may occur during the initialization.
-            if subinfo ~= 0
+            if subinfo ~= infos_obj.INFO_DFT
                 info = subinfo;
                 % Arrange FHIST and XHIST so that they are in the chronological order.
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
@@ -171,7 +173,7 @@ classdef newuob_mod
             % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop
             % https://fortran-lang.discourse.group/t/loops-dont-behave-like-they-should
             maxtr = intmax('int32') - 1; %%MATLAB: maxtr = 10 * maxfun;
-            info = 20;
+            info = infos_obj.MAXTR_REACHED;
 
             % Begin the iterative procedure.
             % After solving a trust-region subproblem, we use three boolean variables to control the workflow.
@@ -187,12 +189,12 @@ classdef newuob_mod
                 % Check whether D is too short to invoke a function evaluation.
                 % SHORTD corresponds to Box 3 of the NEWUOA paper. N.B.: we compare DNORM with RHO, not DELTA.
                 % HALF seems to work better than TENTH or QUART.
-                shortd = (dnorm <= 0.5 * rho); % `<=` works better than `<` in case of underflow.
+                shortd = dnorm <= 0.5 * rho; % `<=` works better than `<` in case of underflow.
 
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
                 qred = -powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq);
-                trfail = (~(qred > 1.0e-6 * rho ^ 2)); % QRED is tiny/negative, or NaN.
+                trfail = ~(qred > 1.0e-6 * rho ^ 2); % QRED is tiny/negative, or NaN.
 
                 if shortd || trfail
                     % In this case, do nothing but reducing DELTA. Afterward, DELTA < DNORM may occur.
@@ -244,7 +246,7 @@ classdef newuob_mod
                     end
 
                     % Is the newly generated X better than current best point?
-                    ximproved = (f < fval(kopt));
+                    ximproved = f < fval(kopt);
 
                     % Set KNEW_TR to the index of the interpolation point to be replaced with XNEW = XOPT + D.
                     % KNEW_TR will ensure that the geometry of XPT is "good enough" after the replacement.
@@ -285,14 +287,14 @@ classdef newuob_mod
                         % 5. Powell's code tries Q_alt only when DELTA == RHO.
                         [itest, gopt, hq, pq] = update_newuoa_obj.tryqalt(idz, bmat, fval - fval(kopt), ratio, xpt(:, kopt), xpt, zmat, itest, gopt, hq, pq);
                         if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
-                            info = -3;
+                            info = infos_obj.NAN_INF_MODEL;
                             break
                         end
                     end
 
                     % Check whether to exit
                     subinfo = checkexit_obj.checkexit_unc(maxfun, nf, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -321,20 +323,20 @@ classdef newuob_mod
                 % %close_itpset = all(distsq <= max((TWO * delta)**2, (TEN * rho)**2))  ! Powell's BOBYQA code.
                 % %close_itpset = all(distsq <= max(delta**2, 4.0_RP * rho**2))  ! Powell's LINCOA code.
                 % ADEQUATE_GEO: Is the geometry of the interpolation set "adequate"?
-                adequate_geo = (shortd && accurate_mod) || close_itpset;
+                adequate_geo = shortd && accurate_mod || close_itpset;
                 % SMALL_TRRAD: Is the trust-region radius small? This indicator seems not impactive in practice.
                 % When MAX(DELTA, DNORM) > RHO, as Powell mentioned under (2.3) of the NEWUOA paper, "RHO has
                 % not restricted the most recent choice of D", so it is not reasonable to reduce RHO.
-                small_trrad = (max(delta, dnorm) <= rho); % Powell's code.
+                small_trrad = max(delta, dnorm) <= rho; % Powell's code.
                 %small_trrad = (delsav <= rho)  ! Behaves the same as Powell's version. DELSAV = unupdated DELTA.
 
                 % IMPROVE_GEO and REDUCE_RHO are defined as follows.
 
                 % BAD_TRSTEP (for IMPROVE_GEO): Is the last trust-region step bad?
-                bad_trstep = (shortd || trfail || ratio <= eta1 || knew_tr == 0);
+                bad_trstep = shortd || trfail || ratio <= eta1 || knew_tr == 0;
                 improve_geo = bad_trstep && ~adequate_geo;
                 % BAD_TRSTEP (for REDUCE_RHO): Is the last trust-region step bad?
-                bad_trstep = (shortd || trfail || ratio <= 0 || knew_tr == 0);
+                bad_trstep = shortd || trfail || ratio <= 0 || knew_tr == 0;
                 reduce_rho = bad_trstep && adequate_geo && small_trrad;
 
                 % Equivalently, REDUCE_RHO can be set as follows. It shows that REDUCE_RHO is TRUE in two cases.
@@ -490,7 +492,7 @@ classdef newuob_mod
                     %------------------------------------------------------------------------------------------%
 
                     % Is the newly generated X better than current best point?
-                    ximproved = (f < fval(kopt));
+                    ximproved = f < fval(kopt);
 
                     % Update [BMAT, ZMAT, IDZ] (represents H in the NEWUOA paper), [XPT, FVAL, KOPT] and
                     % [GOPT, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_GEO) becomes XNEW = XOPT + D.
@@ -500,13 +502,13 @@ classdef newuob_mod
                     [kopt, fval, xpt] = update_newuoa_obj.updatexf(knew_geo, ximproved, f, xosav + d, kopt, fval, xpt);
                     [gopt, hq, pq] = update_newuoa_obj.updateq(idz, knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
                     if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
-                        info = -3;
+                        info = infos_obj.NAN_INF_MODEL;
                         break
                     end
 
                     % Check whether to exit
                     subinfo = checkexit_obj.checkexit_unc(maxfun, nf, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -516,7 +518,7 @@ classdef newuob_mod
                 % by reducing RHO; update DELTA at the same time.
                 if reduce_rho
                     if rho <= rhoend
-                        info = 0;
+                        info = infos_obj.SMALL_TR_RADIUS;
                         break
                     end
                     delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
@@ -543,7 +545,7 @@ classdef newuob_mod
                 if ~ismember('callback_fcn', ipObj.UsingDefaults)
                     terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, tr);
                     if terminate
-                        info = 30;
+                        info = infos_obj.CALLBACK_TERMINATE;
                         break
                     end
                 end
@@ -552,7 +554,7 @@ classdef newuob_mod
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             x = xbase + (xpt(:, kopt) + d);
-            if info == 0 && shortd && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
+            if info == infos_obj.SMALL_TR_RADIUS && shortd && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 % Save X, F into the history.

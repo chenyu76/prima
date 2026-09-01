@@ -37,6 +37,7 @@ classdef initialize_bobyqa_mod
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
+            infos_obj = prima_mat.common.infos_mod();
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
@@ -57,7 +58,7 @@ classdef initialize_bobyqa_mod
 
             % Initialize INFO to the default value. At return, an INFO different from this value will indicate
             % an abnormal return.
-            info = 0;
+            info = infos_obj.INFO_DFT;
 
             % SL and SU are the lower and upper bounds on feasible moves from X0.
             sl = xl - x0;
@@ -103,12 +104,12 @@ classdef initialize_bobyqa_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-realmax, size(xhist));
+            xhist(:) = -realmax;
             fhist(:) = realmax;
             fval(:) = realmax;
 
             % Set XPT(:, 2 : N+1)
-            xpt = zeros(size(xpt));
+            xpt(:) = 0.0;
             for k = 1:n
                 xpt(k, k + 1) = rhobeg;
                 if su(k) <= 0
@@ -144,7 +145,7 @@ classdef initialize_bobyqa_mod
 
                 % Check whether to exit
                 subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                if subinfo ~= 0
+                if subinfo ~= infos_obj.INFO_DFT
                     info = subinfo;
                     break
                 end
@@ -183,7 +184,7 @@ classdef initialize_bobyqa_mod
             xpt(:, 2 * n + 2:npt) = xpt(:, ij(1, :).' + 1) + xpt(:, ij(2, :).' + 1);
 
             % Set FVAL(2*N + 2 : NPT) by evaluating F. Totally parallelizable except for FMSG.
-            if info == 0
+            if info == infos_obj.INFO_DFT
                 for k = 2 * n + 2:npt
                     x(:) = xinbd_obj.xinbd(xbase, xpt(:, k), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XPT(:, K).
                     f = evaluate_obj.evaluatef(calfun, x);
@@ -198,7 +199,7 @@ classdef initialize_bobyqa_mod
 
                     % Check whether to exit
                     subinfo = checkexit_obj.checkexit_unc(maxfun, k, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -216,12 +217,14 @@ classdef initialize_bobyqa_mod
 
 
         end
-        function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, hq, pq, varargin)
+        function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the quadratic model represented by [GOPT, HQ, PQ] so that its gradient
             % at XBASE + XPT(:, KOPT) is GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
             %--------------------------------------------------------------------------------------------------%
 
+
+            infos_obj = prima_mat.common.infos_mod();
 
             n = size(xpt, 1);
             npt = size(xpt, 2);
@@ -242,12 +245,12 @@ classdef initialize_bobyqa_mod
             xb = diag(xpt(:, n + 2:n + ndiag + 1));
 
             % Revise GOPT(1:NDIAG) to the value provided by the three-point interpolation.
-            gopt(1:ndiag) = (gopt(1:ndiag) .* xb - ((fval(n + 2:n + ndiag + 1) - fbase) ./ xb) .* xa) ./ (xb - xa);
+            gopt(1:ndiag) = (gopt(1:ndiag) .* xb - (fval(n + 2:n + ndiag + 1) - fbase) ./ xb .* xa) ./ (xb - xa);
 
             % Set the diagonal of HQ by the three-point interpolation. If we do this before the revision of
             % GOPT(1:NDIAG), we can avoid the calculation of FVAL(K + 1) - FBASE) / RHOBEG. But we prefer to
             % decouple the initialization of GOPT and HQ. We are not concerned by this amount of flops.
-            hq = zeros(size(hq));
+            hq(:) = 0.0;
             for k = 1:ndiag
                 hq(k, k) = 2.0 * ((fval(k + 1) - fbase) / xa(k) - (fval(n + k + 1) - fbase) / xb(k)) / (xa(k) - xb(k));
             end
@@ -273,15 +276,11 @@ classdef initialize_bobyqa_mod
 
             pq(:) = 0.0;
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 4
                 if any(isnan(gopt), 'all') || any(isnan(hq), 'all')
-                    info = -3;
+                    info = infos_obj.NAN_INF_MODEL;
                 else
-                    info = 0;
+                    info = infos_obj.INFO_DFT;
                 end
             end
 
@@ -291,12 +290,14 @@ classdef initialize_bobyqa_mod
 
 
         end
-        function [bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat, varargin)
+        function [bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes [BMAT, ZMAT] which represents the matrix H in (2.7) of the BOBYQA
             % paper (see also (3.12) of the NEWUOA paper).
             %--------------------------------------------------------------------------------------------------%
 
+
+            infos_obj = prima_mat.common.infos_mod();
 
             %use, non_intrinsic :: powalg_mod, only : errh
 
@@ -317,7 +318,7 @@ classdef initialize_bobyqa_mod
             xa = diag(xpt(:, 2:ndiag + 1));
             xb = diag(xpt(:, n + 2:n + ndiag + 1));
 
-            bmat = zeros(size(bmat));
+            bmat(:) = 0.0;
             % Set BMAT(1 : NDIAG, :)
             bmat(1:ndiag, 1) = -(xa + xb) ./ (xa .* xb);
             for k = 1:ndiag
@@ -331,7 +332,7 @@ classdef initialize_bobyqa_mod
                 bmat(k, npt + k) = -0.5 * rhosq;
             end
 
-            zmat = zeros(size(zmat));
+            zmat(:) = 0.0;
             % Set ZMAT(:, 1 : NDIAG)
             zmat(1, 1:ndiag) = sqrt(2.0) ./ (xa .* xb);
             for k = 1:ndiag
@@ -345,15 +346,11 @@ classdef initialize_bobyqa_mod
                 zmat(ij(:, k - n) + 1, k) = -1.0 / rhosq;
             end
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 3
                 if any(isnan(bmat), 'all') || any(isnan(zmat), 'all')
-                    info = -3;
+                    info = infos_obj.NAN_INF_MODEL;
                 else
-                    info = 0;
+                    info = infos_obj.INFO_DFT;
                 end
             end
 

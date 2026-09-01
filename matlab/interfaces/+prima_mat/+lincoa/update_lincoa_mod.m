@@ -122,7 +122,7 @@ classdef update_lincoa_mod
             % recent few alternative models are more accurate in predicting the function value of XOPT + D.
             if all(qalt_better, 'all')
                 pq = pqalt;
-                hq = zeros(size(hq));
+                hq(:) = 0.0;
                 gopt = galt;
                 qalt_better(:) = false;
             end
@@ -161,7 +161,7 @@ classdef update_lincoa_mod
                 return
             end
 
-            mask = (abs(rescon) < dnorm + delta);
+            mask = abs(rescon) < dnorm + delta;
             ax(find(mask)) = amat(:, find(mask)).' * xopt;
             mask00 = mask;
             rescon(mask00) = max(b(mask00) - ax(mask00), 0.0);

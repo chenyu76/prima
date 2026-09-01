@@ -144,7 +144,7 @@ classdef update_newuoa_mod
             if itest >= 3
                 gopt = galt;
                 pq = pqalt;
-                hq = zeros(size(hq));
+                hq(:) = 0.0;
                 itest = 0;
             end
 

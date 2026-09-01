@@ -15,7 +15,7 @@ classdef trustregion_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [iact, nact, qfac, rfac, s, ngetact] = trstep(~, amat, delta, gopt_in, hq_in, pq_in, rescon, tol, xpt, iact, nact, qfac, rfac, s, varargin)
+        function [iact, nact, qfac, rfac, s, ngetact] = trstep(~, amat, delta, gopt_in, hq_in, pq_in, rescon, tol, xpt, iact, nact, qfac, rfac, s)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine solves
             %       minimize Q(XOPT + D)  s.t. ||D|| <= DELTA, AMAT^T*D <= B.
@@ -94,10 +94,6 @@ classdef trustregion_lincoa_mod
             end
 
             % Return if G is not finite. Otherwise, GETACT will fail in the debugging mode.
-            ipObj = inputParser();
-            addParameter(ipObj, 'ngetact', NaN);
-            parse(ipObj, varargin{:});
-            ngetact = ipObj.Results.ngetact;
             if ~isfinite(sum(abs(gopt), 'all'))
                 s(:) = 0.0;
                 if nargout >= 6
@@ -115,7 +111,7 @@ classdef trustregion_lincoa_mod
             % step up to now, calculated by a sequence of (truncated) CG iterations.
             % N.B.: The order of the following lines is important, as the later ones override the earlier.
             resnew = rescon;
-            resnew(rescon >= 0) = max(1.0e-60, rescon(rescon >= 0));
+            resnew(rescon >= 0) = max(10.0 ^ max(-60, -floor(log10(realmax))), rescon(rescon >= 0));
             resnew(rescon >= delta) = -1.0;
             %%MATLAB:
             %%resnew = rescon; resnew(rescon >= 0) = max(TINYCV, rescon(rescon >= 0)); resnew(rescon >= delta) = -1;
@@ -166,7 +162,7 @@ classdef trustregion_lincoa_mod
                         % Powell's code: IF (DD <= 0) THEN
                         break
                     end
-                    psd = (0.2 * delta / sqrt(dd)) * psd;
+                    psd = 0.2 * delta / sqrt(dd) * psd;
 
                     % If the modulus of the residual of an "active constraint" is substantial (i.e., more than
                     % 1.0E-4*DELTA), then modify the searching direction PSD by a projection step to the
@@ -339,7 +335,7 @@ classdef trustregion_lincoa_mod
 
                 % Update RESNEW.
                 restmp = resnew - alpha * ad; % Only RESTMP(TRUELOC(RESNEW > 0)) is needed.
-                resnew(resnew > 0) = max(1.0e-60, restmp(resnew > 0));
+                resnew(resnew > 0) = max(10.0 ^ max(-60, -floor(log10(realmax))), restmp(resnew > 0));
                 %%MATLAB: mask = (resnew > 0); resnew(mask) = max(TINYCV, resnew(mask) - alpha * ad(mask));
 
                 % Update RESACT. This is done iff GETACT has been called, and D is not PSD but a modified step.
@@ -380,7 +376,7 @@ classdef trustregion_lincoa_mod
                 % in flops. However, according to a test on 20220820, removing this condition (essentially
                 % replacing it with ||S|| < DELTA) improves the performance of LINCOA a bit. This may lead to
                 % small steps, but tiny steps will lead to tiny reductions and trigger an exit.
-                newact = (jsav > 0);
+                newact = jsav > 0;
                 if newact
                     continue
                 end

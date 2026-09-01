@@ -34,9 +34,12 @@ classdef initialize_lincoa_mod
 
 
             checkexit_obj = prima_mat.common.checkexit_mod();
+            consts_obj = prima_mat.common.consts_mod();
 
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
+
+            infos_obj = prima_mat.common.infos_mod();
 
             message_obj = prima_mat.common.message_mod();
 
@@ -44,7 +47,7 @@ classdef initialize_lincoa_mod
 
             solver = "LINCOA";
 
-            constr = NaN(nnz(xl > -(0.25 * realmax)) + nnz(xu < 0.25 * realmax) + 2 * numel(beq) + numel(bineq), 1);
+            constr = NaN(nnz(xl > -consts_obj.BOUNDMAX) + nnz(xu < consts_obj.BOUNDMAX) + 2 * numel(beq) + numel(bineq), 1);
             constr_leq = NaN(size(beq));
 
             n = size(xpt, 1);
@@ -56,7 +59,7 @@ classdef initialize_lincoa_mod
 
             % Initialize INFO to the default value. At return, an INFO different from this value will indicate
             % an abnormal return.
-            info = 0;
+            info = infos_obj.INFO_DFT;
 
             % Initialize XBASE to X0.
             xbase = x0;
@@ -72,7 +75,7 @@ classdef initialize_lincoa_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-realmax, size(xhist));
+            xhist(:) = -realmax;
             fhist(:) = realmax;
             chist(:) = realmax;
             fval(:) = realmax;
@@ -119,14 +122,14 @@ classdef initialize_lincoa_mod
                 %end if
                 %----------------------------------------------------------------------------------------------%
             end
-            feasible = (cval <= 0);
+            feasible = cval <= 0;
 
             % Set FVAL by evaluating F. Totally parallelizable except for FMSG.
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
 
 
-            ixl = find(xl > -(0.25 * realmax));
-            ixu = find(xu < 0.25 * realmax);
+            ixl = find(xl > -consts_obj.BOUNDMAX);
+            ixu = find(xu < consts_obj.BOUNDMAX);
             for k = 1:npt
                 x = xbase + xpt(:, k);
                 f = evaluate_obj.evaluatef(calfun, x);
@@ -146,7 +149,7 @@ classdef initialize_lincoa_mod
 
                 % Check whether to exit.
                 subinfo = checkexit_obj.checkexit_con(maxfun, k, cstrv, ctol, f, ftarget, x);
-                if subinfo ~= 0
+                if subinfo ~= infos_obj.INFO_DFT
                     info = subinfo;
                     break
                 end
@@ -160,7 +163,7 @@ classdef initialize_lincoa_mod
             % We set feasible to TRUE for the evaluated point with the smallest constraint violation. This is
             % necessary, or KOPT defined below may become 0 if EVALUATED .AND. FEASIBLE is all FALSE.
             feasible(fortran.minloc(cval, 'mask', evaluated, 'dim', 1)) = true;
-            kopt = fortran.minloc(fval, 'mask', (evaluated & feasible), 'dim', 1);
+            kopt = fortran.minloc(fval, 'mask', evaluated & feasible, 'dim', 1);
             %%MATLAB:
             %%fopt = min(fval(evaluated & feasible));
             %%kopt = find(evaluated & feasible & ~(fval > fopt), 1, 'first');
@@ -171,12 +174,14 @@ classdef initialize_lincoa_mod
 
 
         end
-        function [idz, bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat, varargin)
+        function [idz, bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes [IDZ, BMAT, ZMAT] which represents the matrix H in (3.12) of the
             % NEWUOA paper (see also (2.7) of the BOBYQA paper).
             %--------------------------------------------------------------------------------------------------%
 
+
+            infos_obj = prima_mat.common.infos_mod();
 
             %use, non_intrinsic :: powalg_mod, only : errh
 
@@ -198,7 +203,7 @@ classdef initialize_lincoa_mod
             % Set BMAT.
             recip = 1.0 / rhobeg;
             reciq = 0.5 / rhobeg;
-            bmat = zeros(size(bmat));
+            bmat(:) = 0.0;
             if npt <= 2 * n + 1
                 % Set BMAT(1 : NPT-N-1, :)
                 bmat(1:npt - n - 1, 2:npt - n) = reciq * eye(npt - n - 1);
@@ -215,7 +220,7 @@ classdef initialize_lincoa_mod
             % Set ZMAT.
             recip = 1.0 / rhosq;
             reciq = sqrt(0.5) / rhosq;
-            zmat = zeros(size(zmat));
+            zmat(:) = 0.0;
             if npt <= 2 * n + 1
                 zmat(1, :) = -reciq - reciq;
                 zmat(2:npt - n, :) = reciq * eye(npt - n - 1);
@@ -236,15 +241,11 @@ classdef initialize_lincoa_mod
             % Set IDZ.
             idz = 1;
 
-            ipObj = inputParser();
-            addParameter(ipObj, 'info', NaN);
-            parse(ipObj, varargin{:});
-            info = ipObj.Results.info;
             if nargout >= 4
                 if any(isnan(bmat), 'all') || any(isnan(zmat), 'all')
-                    info = -3;
+                    info = infos_obj.NAN_INF_MODEL;
                 else
-                    info = 0;
+                    info = infos_obj.INFO_DFT;
                 end
             end
 

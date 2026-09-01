@@ -18,6 +18,8 @@ classdef update_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            infos_obj = prima_mat.common.infos_mod();
+
             simi_test = NaN(size(simi, 1), size(simi, 2));
 
             sum_simi = NaN(size(simi, 2), 1);
@@ -32,7 +34,7 @@ classdef update_cobyla_mod
             % Do nothing when JDROP is 0. This can only happen after a trust-region step.
             if jdrop <= 0
                 % JDROP < 0 is impossible if the input is correct.
-                info = 0; % INFO must be set, as it is an output!
+                info = infos_obj.INFO_DFT; % INFO must be set, as it is an output!
                 return
             end
 
@@ -56,9 +58,9 @@ classdef update_cobyla_mod
             % Calculate SIMI from scratch if the current one is damaged by rounding errors.
             erri = max(abs(simi * sim(:, 1:n) - eye(n)), [], 'all'); % MAXIMUM(X) returns NaN if X contains NaN
             if erri > 0.1 * itol || isnan(erri)
-                simi_test(:, :) = inv(sim(:, 1:n));
+                simi_test(:) = inv(sim(:, 1:n));
                 erri_test = max(abs(simi_test * sim(:, 1:n) - eye(n)), [], 'all');
-                if erri_test < erri || (isnan(erri) && ~isnan(erri_test))
+                if erri_test < erri || isnan(erri) && ~isnan(erri_test)
                     simi = simi_test;
                     erri = erri_test;
                 end
@@ -73,7 +75,7 @@ classdef update_cobyla_mod
                 % Switch the best vertex to the pole position SIM(:, N+1) if it is not there already.
                 [conmat, cval, fval, sim, simi, info] = obj.updatepole(cpen, conmat, cval, fval, sim, simi);
             else                % ERRI > ITOL or ERRI is NaN
-                info = 7;
+                info = infos_obj.DAMAGING_ROUNDING;
                 sim = sim_old;
                 simi = simi_old;
             end
@@ -112,6 +114,8 @@ classdef update_cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            infos_obj = prima_mat.common.infos_mod();
+
             simi_test = NaN(size(simi, 1), size(simi, 2));
             itol = 1.0;
 
@@ -122,7 +126,7 @@ classdef update_cobyla_mod
             %====================%
 
             % INFO must be set, as it is an output.
-            info = 0;
+            info = infos_obj.INFO_DFT;
 
             % Identify the optimal vertex of the current simplex.
             jopt = obj.findpole(cpen, cval, fval);
@@ -154,9 +158,9 @@ classdef update_cobyla_mod
             % Calculate SIMI from scratch if the current one is damaged by rounding errors.
             erri = max(abs(simi * sim(:, 1:n) - eye(n)), [], 'all'); % MAXIMUM(X) returns NaN if X contains NaN
             if erri > 0.1 * itol || isnan(erri)
-                simi_test(:, :) = inv(sim(:, 1:n));
+                simi_test(:) = inv(sim(:, 1:n));
                 erri_test = max(abs(simi_test * sim(:, 1:n) - eye(n)), [], 'all');
-                if erri_test < erri || (isnan(erri) && ~isnan(erri_test))
+                if erri_test < erri || isnan(erri) && ~isnan(erri_test)
                     simi = simi_test;
                     erri = erri_test;
                 end
@@ -171,7 +175,7 @@ classdef update_cobyla_mod
                     cval([jopt, n + 1]) = cval([n + 1, jopt]);
                 end
             else                % ERRI > ITOL or ERRI is NaN
-                info = 7;
+                info = infos_obj.DAMAGING_ROUNDING;
                 sim = sim_old;
                 simi = simi_old;
             end
@@ -200,7 +204,7 @@ classdef update_cobyla_mod
             % Essentially, JOPT = MINLOC(PHI). However, we keep JOPT = N + 1 unless there is a strictly better
             % choice. When there are multiple choices, we choose the JOPT with the smallest value of CVAL.
             if phimin < phi(jopt) || any(cval < cval(jopt) & phi <= phi(jopt), 'all')
-                jopt = fortran.minloc(cval, 'mask', (phi <= phimin), 'dim', 1);
+                jopt = fortran.minloc(cval, 'mask', phi <= phimin, 'dim', 1);
                 %%MATLAB: cmin = min(cval(phi <= phimin)); jopt = find(phi <= phimin & cval <= cmin, 1, 'first');
 
             end

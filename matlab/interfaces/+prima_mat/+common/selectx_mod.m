@@ -66,7 +66,7 @@ classdef selectx_mod
             end
 
             % Decide which columns of XFILT to keep.
-            keep = (~obj.isbetter01(f, cstrv, ffilt(1:nfilt), cfilt(1:nfilt), ctol));
+            keep = ~obj.isbetter01(f, cstrv, ffilt(1:nfilt), cfilt(1:nfilt), ctol);
 
             % If NFILT == MAXFILT and X is not better than any column of XFILT, then we remove the worst column
             % of XFILT according to the merit function PHI = FFILT + CWEIGHT * MAX(CFILT - CTOL, ZERO).
@@ -93,9 +93,9 @@ classdef selectx_mod
                 % 2. In finite-precision arithmetic, PHI_1 == PHI_2 and CSTRV_SHIFTED_1 == CSTRV_SHIFTED_2 do
                 % not ensure that F_1 == F_2!
                 phimax = max(phi, [], 'all');
-                cref = max(fortran.merge('tsource', cfilt_shifted, 'fsource', -realmax, 'mask', (phi >= phimax)), [], 'all');
-                fref = max(fortran.merge('tsource', ffilt, 'fsource', -realmax, 'mask', (cfilt_shifted >= cref)), [], 'all');
-                kworst = fortran.maxloc(cfilt, 'mask', (ffilt >= fref), 'dim', 1);
+                cref = max(fortran.merge('tsource', cfilt_shifted, 'fsource', -realmax, 'mask', phi >= phimax), [], 'all');
+                fref = max(fortran.merge('tsource', ffilt, 'fsource', -realmax, 'mask', cfilt_shifted >= cref), [], 'all');
+                kworst = fortran.maxloc(cfilt, 'mask', ffilt >= fref, 'dim', 1);
                 %%MATLAB: cmax = max(cfilt(ffilt >= fref)); kworst = find(ffilt >= fref & ~(cfilt < cmax), 1,'first');
                 if kworst < 1 || kworst > numel(keep)
                     % For security. Should not happen.
@@ -109,7 +109,7 @@ classdef selectx_mod
             xfilt(:, 1:nfilt) = xfilt(:, index_to_keep(1:nfilt));
             ffilt(1:nfilt) = ffilt(index_to_keep(1:nfilt));
             cfilt(1:nfilt) = cfilt(index_to_keep(1:nfilt));
-            if (~ismember('confilt', ipObj.UsingDefaults) || nargout >= 5) && ~ismember('constr', ipObj.UsingDefaults)
+            if ~ismember('confilt', ipObj.UsingDefaults) && ~ismember('constr', ipObj.UsingDefaults)
                 confilt(:, 1:nfilt) = confilt(:, index_to_keep(1:nfilt));
             end
 
@@ -117,7 +117,7 @@ classdef selectx_mod
             xfilt(:, nfilt) = x;
             ffilt(nfilt) = f;
             cfilt(nfilt) = cstrv;
-            if (~ismember('confilt', ipObj.UsingDefaults) || nargout >= 5) && ~ismember('constr', ipObj.UsingDefaults)
+            if ~ismember('confilt', ipObj.UsingDefaults) && ~ismember('constr', ipObj.UsingDefaults)
                 confilt(:, nfilt) = constr;
             end
 
@@ -137,6 +137,7 @@ classdef selectx_mod
             % its constraint violation is at most CTOL. Note that CTOL is absolute, not relative.
             %--------------------------------------------------------------------------------------------------%
 
+            consts_obj = prima_mat.common.consts_mod();
 
             nhist = numel(fhist);
 
@@ -146,14 +147,14 @@ classdef selectx_mod
 
             % We select X among the points with F < FREF and CSTRV < CREF.
             % Do NOT use F <= FREF, because F == FREF (FUNCMAX or REALMAX) may mean F == INF in practice!
-            if any(fhist < 1.0e30 & chist < 1.0e30, 'all')
-                fref = 1.0e30;
-                cref = 1.0e30;
-            elseif any(fhist < realmax & chist < 1.0e30, 'all')
+            if any(fhist < consts_obj.FUNCMAX & chist < consts_obj.CONSTRMAX, 'all')
+                fref = consts_obj.FUNCMAX;
+                cref = consts_obj.CONSTRMAX;
+            elseif any(fhist < realmax & chist < consts_obj.CONSTRMAX, 'all')
                 fref = realmax;
-                cref = 1.0e30;
-            elseif any(fhist < 1.0e30 & chist < realmax, 'all')
-                fref = 1.0e30;
+                cref = consts_obj.CONSTRMAX;
+            elseif any(fhist < consts_obj.FUNCMAX & chist < realmax, 'all')
+                fref = consts_obj.FUNCMAX;
                 cref = realmax;
             else
                 fref = realmax;
@@ -164,7 +165,7 @@ classdef selectx_mod
                 % Shift the constraint violations by CTOL, so that CSTRV <= CTOL is regarded as no violation.
                 chist_shifted = max(chist - ctol, 0.0);
                 % CMIN is the minimal shifted constraint violation attained in the history.
-                cmin = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', (fhist < fref)), [], 'all');
+                cmin = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', fhist < fref), [], 'all');
                 % We consider only the points whose shifted constraint violations are at most the CREF below.
                 % N.B.: Without taking MAX(EPS, .), CREF would be 0 if CMIN = 0. In that case, asking for
                 % CSTRV_SHIFTED < CREF would be WRONG!
@@ -191,10 +192,10 @@ classdef selectx_mod
                 % 1. This process is the opposite of selecting KWORST in SAVEFILT.
                 % 2. In finite-precision arithmetic, PHI_1 == PHI_2 and CSTRV_SHIFTED_1 == CSTRV_SHIFTED_2 do
                 % not ensure that F_1 == F_2!
-                phimin = min(fortran.merge('tsource', phi, 'fsource', realmax, 'mask', (fhist < fref & chist_shifted <= cref)), [], 'all');
-                cref = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', (fhist < fref & phi <= phimin)), [], 'all');
-                fref = min(fortran.merge('tsource', fhist, 'fsource', realmax, 'mask', (chist_shifted <= cref)), [], 'all');
-                kopt = fortran.minloc(chist, 'mask', (fhist <= fref), 'dim', 1);
+                phimin = min(fortran.merge('tsource', phi, 'fsource', realmax, 'mask', fhist < fref & chist_shifted <= cref), [], 'all');
+                cref = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', fhist < fref & phi <= phimin), [], 'all');
+                fref = min(fortran.merge('tsource', fhist, 'fsource', realmax, 'mask', chist_shifted <= cref), [], 'all');
+                kopt = fortran.minloc(chist, 'mask', fhist <= fref, 'dim', 1);
                 %%MATLAB: cmin = min(chist(fhist <= fref)); kopt = find(fhist <= fref & ~(chist > cmin), 1,'first');
             else
                 kopt = nhist;
@@ -216,6 +217,7 @@ classdef selectx_mod
             % Here, C means constraint violation, which is a nonnegative number.
             %--------------------------------------------------------------------------------------------------%
 
+            consts_obj = prima_mat.common.consts_mod();
 
             %====================%
             % Calculation starts %
@@ -224,14 +226,14 @@ classdef selectx_mod
             is_better = false;
             % Even though NaN/+Inf should not occur in FC1 or FC2 due to the moderated extreme barrier, for
             % security and robustness, the code below does not make this assumption.
-            is_better = is_better || (any(isnan([f2, c2]).' | isinf([f2, c2]) & [f2, c2] > 0, 'all') && ~any(isnan([f1, c1]).' | isinf([f1, c1]) & [f1, c1] > 0, 'all'));
-            is_better = is_better || (f1 < f2 && c1 <= c2);
-            is_better = is_better || (f1 <= f2 && c1 < c2);
+            is_better = is_better || any(isnan([f2, c2]).' | isinf([f2, c2]) & [f2, c2] > 0, 'all') && ~any(isnan([f1, c1]).' | isinf([f1, c1]) & [f1, c1] > 0, 'all');
+            is_better = is_better || f1 < f2 && c1 <= c2;
+            is_better = is_better || f1 <= f2 && c1 < c2;
             % If C1 <= CTOL and C2 is significantly larger/worse than CTOL, i.e., C2 > MAX(CTOL, CREF),
             % then FC1 is better than FC2 as long as F1 < REALMAX. Normally CREF >= CTOL so MAX(CTOL, CREF)
             % is indeed CREF. However, this may not be true if CTOL > 1E-1*CONSTRMAX.
-            cref = 10.0 * max(eps(1.0), min(ctol, 1.0e-2 * 1.0e30)); % The MIN avoids overflow.
-            is_better = is_better || (f1 < realmax && c1 <= ctol && (c2 > max(ctol, cref) || isnan(c2)));
+            cref = 10.0 * max(eps(1.0), min(ctol, 1.0e-2 * consts_obj.CONSTRMAX)); % The MIN avoids overflow.
+            is_better = is_better || f1 < realmax && c1 <= ctol && (c2 > max(ctol, cref) || isnan(c2));
 
             %====================%
             %  Calculation ends  %

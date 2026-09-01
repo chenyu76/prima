@@ -246,6 +246,8 @@ classdef cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            consts_obj = prima_mat.common.consts_mod();
+
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
@@ -276,8 +278,6 @@ classdef cobyla_mod
 
 
             ipObj = inputParser();
-            addParameter(ipObj, 'f', NaN);
-            addParameter(ipObj, 'cstrv', NaN);
             addParameter(ipObj, 'nlconstr', NaN);
             addParameter(ipObj, 'Aineq', NaN);
             addParameter(ipObj, 'bineq', NaN);
@@ -287,28 +287,21 @@ classdef cobyla_mod
             addParameter(ipObj, 'xu', NaN);
             addParameter(ipObj, 'f0', NaN);
             addParameter(ipObj, 'nlconstr0', NaN);
-            addParameter(ipObj, 'nf', NaN);
             addParameter(ipObj, 'rhobeg', NaN);
             addParameter(ipObj, 'rhoend', NaN);
-            addParameter(ipObj, 'ftarget', -realmax);
-            addParameter(ipObj, 'ctol', sqrt(eps(1.0)));
-            addParameter(ipObj, 'cweight', 1.0e8);
+            addParameter(ipObj, 'ftarget', consts_obj.FTARGET_DFT);
+            addParameter(ipObj, 'ctol', consts_obj.CTOL_DFT);
+            addParameter(ipObj, 'cweight', consts_obj.CWEIGHT_DFT);
             addParameter(ipObj, 'maxfun', NaN);
-            addParameter(ipObj, 'iprint', 0);
+            addParameter(ipObj, 'iprint', consts_obj.IPRINT_DFT);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
             addParameter(ipObj, 'gamma1', 0.5);
             addParameter(ipObj, 'gamma2', 2.0);
-            addParameter(ipObj, 'xhist', NaN);
-            addParameter(ipObj, 'fhist', NaN);
-            addParameter(ipObj, 'chist', NaN);
-            addParameter(ipObj, 'nlchist', NaN);
             addParameter(ipObj, 'maxhist', NaN);
-            addParameter(ipObj, 'maxfilt', 2000);
+            addParameter(ipObj, 'maxfilt', consts_obj.MAXFILT_DFT);
             addParameter(ipObj, 'callback_fcn', struct());
-            addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-
             nlconstr = ipObj.Results.nlconstr;
             Aineq = ipObj.Results.Aineq;
             bineq = ipObj.Results.bineq;
@@ -318,7 +311,6 @@ classdef cobyla_mod
             xu = ipObj.Results.xu;
             f0 = ipObj.Results.f0;
             nlconstr0 = ipObj.Results.nlconstr0;
-
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
             ftarget_loc = ipObj.Results.ftarget;
@@ -330,14 +322,9 @@ classdef cobyla_mod
             eta2 = ipObj.Results.eta2;
             gamma1_loc = ipObj.Results.gamma1;
             gamma2_loc = ipObj.Results.gamma2;
-            xhist = ipObj.Results.xhist;
-            fhist = ipObj.Results.fhist;
-            chist = ipObj.Results.chist;
-            nlchist = ipObj.Results.nlchist;
             maxhist = ipObj.Results.maxhist;
             maxfilt_loc = ipObj.Results.maxfilt;
             callback_fcn = ipObj.Results.callback_fcn;
-
             if ismember('bineq', ipObj.UsingDefaults)
                 mineq = 0;
             else
@@ -351,12 +338,12 @@ classdef cobyla_mod
             if ismember('xl', ipObj.UsingDefaults)
                 mxl = 0;
             else
-                mxl = nnz(xl > -(0.25 * realmax));
+                mxl = nnz(xl > -consts_obj.BOUNDMAX);
             end
             if ismember('xu', ipObj.UsingDefaults)
                 mxu = 0;
             else
-                mxu = nnz(xu < 0.25 * realmax);
+                mxu = nnz(xu < consts_obj.BOUNDMAX);
             end
             m = mxu + mxl + 2 * meq + mineq + m_nlcon;
             n = numel(x);
@@ -398,21 +385,21 @@ classdef cobyla_mod
                 beq_loc = beq;
             end
 
-            xl_loc(:) = -(0.25 * realmax);
+            xl_loc(:) = -consts_obj.BOUNDMAX;
             if ~ismember('xl', ipObj.UsingDefaults)
                 if numel(xl) > 0
                     xl_loc = xl;
                 end
             end
-            xl_loc(isnan(xl_loc) | xl_loc < -(0.25 * realmax)) = -(0.25 * realmax);
+            xl_loc(isnan(xl_loc) | xl_loc < -consts_obj.BOUNDMAX) = -consts_obj.BOUNDMAX;
 
-            xu_loc(:) = 0.25 * realmax;
+            xu_loc(:) = consts_obj.BOUNDMAX;
             if ~ismember('xu', ipObj.UsingDefaults)
                 if numel(xu) > 0
                     xu_loc = xu;
                 end
             end
-            xu_loc(isnan(xu_loc) | xu_loc > 0.25 * realmax) = 0.25 * realmax;
+            xu_loc(isnan(xu_loc) | xu_loc > consts_obj.BOUNDMAX) = consts_obj.BOUNDMAX;
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
             [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, xl_loc, xu_loc);
@@ -450,24 +437,24 @@ classdef cobyla_mod
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
                 if isfinite(rhoend) && rhoend > 0
-                    rhobeg_loc = max(10.0 * rhoend, 1.0);
+                    rhobeg_loc = max(10.0 * rhoend, consts_obj.RHOBEG_DFT);
                 else
-                    rhobeg_loc = 1.0;
+                    rhobeg_loc = consts_obj.RHOBEG_DFT;
                 end
             else
-                rhobeg_loc = 1.0;
+                rhobeg_loc = consts_obj.RHOBEG_DFT;
             end
 
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(eps(1.0), min((1.0e-6 / 1.0) * rhobeg_loc, 1.0e-6));
+                rhoend_loc = max(eps(1.0), min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, consts_obj.RHOEND_DFT));
             else
-                rhoend_loc = 1.0e-6;
+                rhoend_loc = consts_obj.RHOEND_DFT;
             end
 
             if ismember('maxfun', ipObj.UsingDefaults)
-                maxfun_loc = 500 * n;
+                maxfun_loc = consts_obj.MAXFUN_DIM_DFT * n;
             else
                 maxfun_loc = maxfun;
             end
@@ -491,13 +478,13 @@ classdef cobyla_mod
             end
 
             if ismember('maxhist', ipObj.UsingDefaults)
-                maxhist_loc = max([maxfun_loc, n + 2, 500 * n], [], 'all');
+                maxhist_loc = max([maxfun_loc, n + 2, consts_obj.MAXFUN_DIM_DFT * n], [], 'all');
             else
                 maxhist_loc = maxhist;
             end
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
-            [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, ~, maxfilt_loc, ctol_loc, cweight_loc, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, 'm', m, 'is_constrained', (m > 0), 'ctol', ctol_loc, 'cweight', cweight_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc, 'maxfilt', maxfilt_loc);
+            [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, ~, maxfilt_loc, ctol_loc, cweight_loc, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, 'm', m, 'is_constrained', m > 0, 'ctol', ctol_loc, 'cweight', cweight_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc, 'maxfilt', maxfilt_loc);
 
             % Further revise MAXHIST_LOC according to MAXHISTMEM, and allocate memory for the history.
             % In MATLAB/Python/Julia/R implementation, we should simply set MAXHIST = MAXFUN and initialize
@@ -517,7 +504,7 @@ classdef cobyla_mod
             % Write the outputs.
 
 
-            if nargout >= 4
+            if ~ismember('nlconstr', ipObj.UsingDefaults)
                 nlconstr = constr_loc(m - m_nlcon + 1:m);
             end
 
@@ -599,6 +586,8 @@ classdef cobyla_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            consts_obj = prima_mat.common.consts_mod();
+
             idmat = NaN(numel(xl));
 
             n = numel(xl);
@@ -608,8 +597,8 @@ classdef cobyla_mod
             %====================%
 
             % Decide the number of nontrivial constraints.
-            mxl = nnz(xl > -(0.25 * realmax));
-            mxu = nnz(xu < 0.25 * realmax);
+            mxl = nnz(xl > -consts_obj.BOUNDMAX);
+            mxu = nnz(xu < consts_obj.BOUNDMAX);
             meq = numel(beq);
             mineq = numel(bineq);
             m_lcon = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
@@ -620,8 +609,8 @@ classdef cobyla_mod
             amat = NaN(n, m_lcon);
 
             % Define the indices of the nontrivial bound constraints.
-            ixl = find(xl > -(0.25 * realmax));
-            ixu = find(xu < 0.25 * realmax);
+            ixl = find(xl > -consts_obj.BOUNDMAX);
+            ixu = find(xu < consts_obj.BOUNDMAX);
 
             % Wrap the linear constraints.
             % The bound constraint XL <= X <= XU is handled as two constraints -X <= -XL, X <= XU.
@@ -629,7 +618,7 @@ classdef cobyla_mod
             % N.B.:
             % 1. The treatment of the equality constraints is naive. One may choose to eliminate them instead.
             % 2. The code below is quite inefficient in terms of memory, but we prefer readability.
-            idmat(:, :) = eye(n);
+            idmat(:) = eye(n);
             amat = reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), reshape(-Aeq.', 1, []), reshape(Aeq.', 1, []), reshape(Aineq.', 1, [])], size(amat));
             bvec = [-xl(ixl); xu(ixu); -beq; beq; bineq];
             %%MATLAB code:

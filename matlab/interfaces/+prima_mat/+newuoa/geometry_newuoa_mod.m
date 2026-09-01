@@ -82,7 +82,7 @@ classdef geometry_newuoa_mod
 
             knew = 0;
             % The following IF works a bit better than `IF (ANY(SCORE > 0))` from Powell's BOBYQA/LINCOA code.
-            if any(score > 1, 'all') || (ximproved && any(score > 0, 'all'))
+            if any(score > 1, 'all') || ximproved && any(score > 0, 'all')
                 % Powell's UOBYQA and NEWUOA code
                 % See (7.5) of the NEWUOA paper for the definition of KNEW in this case.
                 [~, knew] = max(score);
@@ -95,7 +95,7 @@ classdef geometry_newuoa_mod
             % to make sure that the new trial point is included in the interpolation set. However, the updating
             % subroutine will likely need to skip the update of the Lagrange polynomials (i.e., H), or they
             % would be destroyed by the NaNs.
-            if (ximproved && knew == 0) || knew < 0
+            if ximproved && knew == 0 || knew < 0
                 % KNEW < 0 is impossible in theory.
                 [~, knew] = max(distsq);
             end
@@ -274,7 +274,7 @@ classdef geometry_newuoa_mod
                 if norm(s) <= tol * sqrt(ss)
                     break
                 end
-                s = (norm(d) / norm(s)) * s;
+                s = norm(d) / norm(s) * s;
 
                 % In precise arithmetic, INPROD(S, D) = 0 and ||S|| = ||D|| = DELBAR.
                 if abs(sum(d .* s, 'all')) >= 0.1 * norm(d) * norm(s) || norm(s) >= 2.0 * delbar
@@ -392,7 +392,7 @@ classdef geometry_newuoa_mod
                 %---------!dstemp = matprod(d, xpt) - inprod(x, d) !-------------%
                 dstemp(:) = xptemp.' * d;
                 %----------------------------------------------------------------%
-                sstemp(:) = sum((xptemp) .^ 2, 1);
+                sstemp(:) = sum(xptemp .^ 2, 1);
 
                 dstemp(kopt) = 2.0 * ds + 1.0;
                 sstemp(kopt) = ss;
@@ -401,7 +401,7 @@ classdef geometry_newuoa_mod
                 if k == 0
                     k = knew;
                 end
-                if (~(dstemp(k) ^ 2 / sstemp(k) >= dtest)) && k ~= kopt
+                if ~(dstemp(k) ^ 2 / sstemp(k) >= dtest) && k ~= kopt
                     % `.NOT. (A >= B)` differs from `A < B`.  The former holds iff A < B or {A, B} contains NaN.
                     % Although unlikely, if NaN occurs, it may happen that K = KOPT.
                     s = xpt(:, k) - x;
@@ -438,7 +438,7 @@ classdef geometry_newuoa_mod
                 if norm(s) <= tol * sqrt(ss)
                     break
                 end
-                s = (s ./ norm(s)) * norm(d);
+                s = s ./ norm(s) * norm(d);
                 % In precise arithmetic, INPROD(S, D) = 0 and ||S|| = ||D|| = DELBAR = ||D0||.
                 if abs(sum(d .* s, 'all')) >= 0.1 * norm(d) * norm(s) || norm(s) >= 2.0 * delbar
                     break

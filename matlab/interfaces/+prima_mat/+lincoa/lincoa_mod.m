@@ -209,6 +209,8 @@ classdef lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            consts_obj = prima_mat.common.consts_mod();
+
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
@@ -228,43 +230,34 @@ classdef lincoa_mod
 
 
             ipObj = inputParser();
-            addParameter(ipObj, 'f', NaN);
-            addParameter(ipObj, 'cstrv', NaN);
             addParameter(ipObj, 'Aineq', NaN);
             addParameter(ipObj, 'bineq', NaN);
             addParameter(ipObj, 'Aeq', NaN);
             addParameter(ipObj, 'beq', NaN);
             addParameter(ipObj, 'xl', NaN);
             addParameter(ipObj, 'xu', NaN);
-            addParameter(ipObj, 'nf', NaN);
             addParameter(ipObj, 'rhobeg', NaN);
             addParameter(ipObj, 'rhoend', NaN);
-            addParameter(ipObj, 'ftarget', -realmax);
-            addParameter(ipObj, 'ctol', sqrt(eps(1.0)));
-            addParameter(ipObj, 'cweight', 1.0e8);
+            addParameter(ipObj, 'ftarget', consts_obj.FTARGET_DFT);
+            addParameter(ipObj, 'ctol', consts_obj.CTOL_DFT);
+            addParameter(ipObj, 'cweight', consts_obj.CWEIGHT_DFT);
             addParameter(ipObj, 'maxfun', NaN);
             addParameter(ipObj, 'npt', NaN);
-            addParameter(ipObj, 'iprint', 0);
+            addParameter(ipObj, 'iprint', consts_obj.IPRINT_DFT);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
             addParameter(ipObj, 'gamma1', 0.5);
             addParameter(ipObj, 'gamma2', 2.0);
-            addParameter(ipObj, 'xhist', NaN);
-            addParameter(ipObj, 'fhist', NaN);
-            addParameter(ipObj, 'chist', NaN);
             addParameter(ipObj, 'maxhist', NaN);
-            addParameter(ipObj, 'maxfilt', 2000);
+            addParameter(ipObj, 'maxfilt', consts_obj.MAXFILT_DFT);
             addParameter(ipObj, 'callback_fcn', struct());
-            addParameter(ipObj, 'info', NaN);
             parse(ipObj, varargin{:});
-
             Aineq = ipObj.Results.Aineq;
             bineq = ipObj.Results.bineq;
             Aeq = ipObj.Results.Aeq;
             beq = ipObj.Results.beq;
             xl = ipObj.Results.xl;
             xu = ipObj.Results.xu;
-
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
             ftarget_loc = ipObj.Results.ftarget;
@@ -277,13 +270,9 @@ classdef lincoa_mod
             eta2 = ipObj.Results.eta2;
             gamma1_loc = ipObj.Results.gamma1;
             gamma2_loc = ipObj.Results.gamma2;
-            xhist = ipObj.Results.xhist;
-            fhist = ipObj.Results.fhist;
-            chist = ipObj.Results.chist;
             maxhist = ipObj.Results.maxhist;
             maxfilt_loc = ipObj.Results.maxfilt;
             callback_fcn = ipObj.Results.callback_fcn;
-
             if ismember('bineq', ipObj.UsingDefaults)
                 mineq = 0;
             else
@@ -326,21 +315,21 @@ classdef lincoa_mod
                 beq_loc = beq;
             end
 
-            xl_loc(:) = -(0.25 * realmax);
+            xl_loc(:) = -consts_obj.BOUNDMAX;
             if ~ismember('xl', ipObj.UsingDefaults)
                 if numel(xl) > 0
                     xl_loc = xl;
                 end
             end
-            xl_loc(isnan(xl_loc) | xl_loc < -(0.25 * realmax)) = -(0.25 * realmax);
+            xl_loc(isnan(xl_loc) | xl_loc < -consts_obj.BOUNDMAX) = -consts_obj.BOUNDMAX;
 
-            xu_loc(:) = 0.25 * realmax;
+            xu_loc(:) = consts_obj.BOUNDMAX;
             if ~ismember('xu', ipObj.UsingDefaults)
                 if numel(xu) > 0
                     xu_loc = xu;
                 end
             end
-            xu_loc(isnan(xu_loc) | xu_loc > 0.25 * realmax) = 0.25 * realmax;
+            xu_loc(isnan(xu_loc) | xu_loc > consts_obj.BOUNDMAX) = consts_obj.BOUNDMAX;
 
             % If RHOBEG is present, then RHOBEG_LOC is a copy of RHOBEG; otherwise, RHOBEG_LOC takes the default
             % value for RHOBEG, taking the value of RHOEND into account. Note that RHOEND is considered only if
@@ -353,24 +342,24 @@ classdef lincoa_mod
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
                 if isfinite(rhoend) && rhoend > 0
-                    rhobeg_loc = max(10.0 * rhoend, 1.0);
+                    rhobeg_loc = max(10.0 * rhoend, consts_obj.RHOBEG_DFT);
                 else
-                    rhobeg_loc = 1.0;
+                    rhobeg_loc = consts_obj.RHOBEG_DFT;
                 end
             else
-                rhobeg_loc = 1.0;
+                rhobeg_loc = consts_obj.RHOBEG_DFT;
             end
 
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(eps(1.0), min((1.0e-6 / 1.0) * rhobeg_loc, 1.0e-6));
+                rhoend_loc = max(eps(1.0), min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, consts_obj.RHOEND_DFT));
             else
-                rhoend_loc = 1.0e-6;
+                rhoend_loc = consts_obj.RHOEND_DFT;
             end
 
             if ismember('maxfun', ipObj.UsingDefaults)
-                maxfun_loc = 500 * n;
+                maxfun_loc = consts_obj.MAXFUN_DIM_DFT * n;
             else
                 maxfun_loc = maxfun;
             end
@@ -403,7 +392,7 @@ classdef lincoa_mod
             end
 
             if ismember('maxhist', ipObj.UsingDefaults)
-                maxhist_loc = max([maxfun_loc, n + 3, 500 * n], [], 'all');
+                maxhist_loc = max([maxfun_loc, n + 3, consts_obj.MAXFUN_DIM_DFT * n], [], 'all');
             else
                 maxhist_loc = maxhist;
             end
@@ -418,7 +407,7 @@ classdef lincoa_mod
             [maxhist_loc, xhist_loc, fhist_loc, chist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 5, nargout >= 6, 'output_chist', nargout >= 7);
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
-            [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, rhoend_loc, xl_loc, xu_loc, x);
+            [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, xl_loc, xu_loc, x);
 
             %-------------------- Call LINCOB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
@@ -480,7 +469,7 @@ classdef lincoa_mod
 
 
         end
-        function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, rhoend, xl, xu, x0)
+        function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu, x0)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine wraps the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
             % N.B.:
@@ -498,6 +487,8 @@ classdef lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            consts_obj = prima_mat.common.consts_mod();
+
             idmat = NaN(numel(x0));
 
             n = numel(x0);
@@ -507,8 +498,8 @@ classdef lincoa_mod
             %====================%
 
             % Decide the number of nontrivial and valid (gradient is nonzero) constraints.
-            mxl = nnz(xl > -(0.25 * realmax));
-            mxu = nnz(xu < 0.25 * realmax);
+            mxl = nnz(xl > -consts_obj.BOUNDMAX);
+            mxu = nnz(xu < consts_obj.BOUNDMAX);
             Aeq_norm = sqrt(sum(Aeq .^ 2, 2));
             meq = nnz(Aeq_norm > 0);
             Aineq_norm = sqrt(sum(Aineq .^ 2, 2));
@@ -524,8 +515,8 @@ classdef lincoa_mod
             amat = NaN(n, m);
 
             % Define the indices of the valid and nontrivial constraints.
-            ixl = find(xl > -(0.25 * realmax));
-            ixu = find(xu < 0.25 * realmax);
+            ixl = find(xl > -consts_obj.BOUNDMAX);
+            ixu = find(xu < consts_obj.BOUNDMAX);
             ieq = find(Aeq_norm > 0);
             iineq = find(Aineq_norm > 0);
 
@@ -535,7 +526,7 @@ classdef lincoa_mod
             % N.B.:
             % 1. The treatment of the equality constraints is naive. One may choose to eliminate them instead.
             % 2. The code below is quite inefficient in terms of memory, but we prefer readability.
-            idmat(:, :) = eye(n);
+            idmat(:) = eye(n);
             amat = reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), reshape(-Aeq(ieq, :).', 1, []), reshape(Aeq(ieq, :).', 1, []), reshape(Aineq(iineq, :).', 1, [])], size(amat));
             bvec = [-xl(ixl); xu(ixu); -beq(ieq); beq(ieq); bineq(iineq)];
             %%MATLAB code:

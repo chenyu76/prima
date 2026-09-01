@@ -23,6 +23,8 @@ classdef initialize_cobyla_mod
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
+            infos_obj = prima_mat.common.infos_mod();
+
             message_obj = prima_mat.common.message_mod();
 
             solver = "COBYLA";
@@ -39,7 +41,7 @@ classdef initialize_cobyla_mod
 
             % Initialize INFO to the default value. At return, an INFO different from this value will indicate
             % an abnormal return.
-            info = 0;
+            info = infos_obj.INFO_DFT;
 
             % Initialize the simplex. It will be revised during the initialization.
             sim = eye(n, n + 1) * rhobeg;
@@ -58,13 +60,13 @@ classdef initialize_cobyla_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist = repmat(-realmax, size(xhist));
+            xhist(:) = -realmax;
             fhist(:) = realmax;
             chist(:) = realmax;
-            conhist = repmat(realmax, size(conhist));
+            conhist(:) = realmax;
             fval(:) = realmax;
             cval(:) = realmax;
-            conmat = repmat(realmax, size(conmat));
+            conmat(:) = realmax;
 
             for k = 1:n + 1
                 x = sim(:, n + 1);
@@ -98,7 +100,7 @@ classdef initialize_cobyla_mod
 
                 % Check whether to exit.
                 subinfo = checkexit_obj.checkexit_con(maxfun, k, cstrv, ctol, f, ftarget, x);
-                if subinfo ~= 0
+                if subinfo ~= infos_obj.INFO_DFT
                     info = subinfo;
                     break
                 end

@@ -213,7 +213,7 @@ classdef trustregion_uobyqa_mod
                 end
 
                 % NEGCRV is TRUE iff H + PAR*I has at least one negative eigenvalue (CRV means curvature).
-                negcrv = any(piv < 0 | (piv <= 0 & abs([tn; 0.0]) > 0), 'all');
+                negcrv = any(piv < 0 | piv <= 0 & abs([tn; 0.0]) > 0, 'all');
 
                 % Handle the case where H + PAR*I is positive semidefinite and the gradient at the trust region
                 % center is zero.
@@ -232,7 +232,7 @@ classdef trustregion_uobyqa_mod
                     % a nonempty array when NEGCRV is TRUE, and hence K <= N; however, the Fortran code may not
                     % behave in this way when compiled with aggressive optimization options; on 20221220, it is
                     % observed that K = HUGE(K) = 32767 with Flang -Ofast.
-                    k = min([n; find(piv < 0 | (piv <= 0 & abs([tn; 0.0]) > 0))], [], 'all');
+                    k = min([n; find(piv < 0 | piv <= 0 & abs([tn; 0.0]) > 0)], [], 'all');
                 else
                     % Set K to the last index corresponding to a zero curvature; K = 0 if no such curvature exits.
                     k = max([0; find(abs(piv) + abs([tn; 0.0]) <= 0)], [], 'all');
@@ -271,7 +271,7 @@ classdef trustregion_uobyqa_mod
                             % PIV(K+1) was named as "TEMP" in Powell's code. Is PIV(K+1) consistent with the meaning of PIV?
                             piv(k + 1) = td(k + 1) + par;
                             if piv(k + 1) <= abs(piv(k))
-                                d(k + 1) = 1.0 .* ((-tn(k) > 0) .* 2 - 1); %%MATLAB: d(k + 1) = -sing(tn(k))
+                                d(k + 1) = (-tn(k) > 0) .* 2 - 1; %%MATLAB: d(k + 1) = -sing(tn(k))
                                 dhd = piv(k) + piv(k + 1) - 2.0 * abs(tn(k));
                             else
                                 d(k + 1) = -tn(k) / piv(k + 1);
@@ -325,7 +325,7 @@ classdef trustregion_uobyqa_mod
                             % Has DSQ got the correct value?
                             d = -(delta / sqrt(dsq)) * d;
                         else                            % This ELSE covers the unlikely yet possible case where DTG is zero or even NaN.
-                            d = (delta / sqrt(dsq)) * d;
+                            d = delta / sqrt(dsq) * d;
                         end
                         % N.B.: As per Powell's code, the lines above would be D = -SIGN(DELTA/SQRT(DSQ), DTG)*D.
                         % However, our version here seems more reasonable in case DTG == 0, which is unlikely
@@ -372,7 +372,7 @@ classdef trustregion_uobyqa_mod
 
                     phi = 1.0 / dnorm - 1.0 / delta;
                     if tol * (1.0 + par * dsq / wsq) - dsq * phi * phi >= 0
-                        d = (delta / dnorm) * d;
+                        d = delta / dnorm * d;
                         break
                     end
                     if iter >= 2 && par <= parl
@@ -490,7 +490,7 @@ classdef trustregion_uobyqa_mod
             % If the More-Sorensen algorithm breaks down abnormally (e.g., NaN in the computation), then ||D||
             % may be (much) more than DELTA. This is handled in the following naive way.
             if norm(d) > delta
-                d = (delta / norm(d)) * d;
+                d = delta / norm(d) * d;
             end
 
             % Set CRVMIN to zero if it is NaN, which may happen if the problem is ill-conditioned.

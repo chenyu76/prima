@@ -41,6 +41,7 @@ classdef uobyqb_mod
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
+            infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
             message_obj = prima_mat.common.message_mod();
@@ -99,7 +100,7 @@ classdef uobyqb_mod
             if ~ismember('callback_fcn', ipObj.UsingDefaults)
                 terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, 0);
                 if terminate
-                    subinfo = 30;
+                    subinfo = infos_obj.CALLBACK_TERMINATE;
                 end
             end
 
@@ -109,7 +110,7 @@ classdef uobyqb_mod
 
             % Finish the initialization if INITXF completed normally and CALLBACK did not request termination;
             % otherwise, do not proceed, as XPT etc may be uninitialized, leading to errors or exceptions.
-            if subinfo == 0
+            if subinfo == infos_obj.INFO_DFT
                 % Initialize the Lagrange polynomials represented by PL. Allocate memory for it first. In
                 % general, to make the implementation simple and straightforward, we use automatic arrays rather
                 % than allocable ones whenever possible. However, PL is an exception, as its size is O(N^4). If
@@ -120,13 +121,13 @@ classdef uobyqb_mod
 
                 % Initialize the quadratic model represented by PQ.
                 pq = initialize_uobyqa_obj.initq(fval, xpt, pq);
-                if ~(all(isfinite(pq), 'all'))
-                    subinfo = -3;
+                if ~all(isfinite(pq), 'all')
+                    subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
 
             % Check whether to return due to abnormal cases that may occur during the initialization.
-            if subinfo ~= 0
+            if subinfo ~= infos_obj.INFO_DFT
                 info = subinfo;
                 % Arrange FHIST and XHIST so that they are in the chronological order.
                 [xhist, fhist] = history_obj.rangehist(nf, xhist, fhist);
@@ -171,7 +172,7 @@ classdef uobyqb_mod
             % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop
             % https://fortran-lang.discourse.group/t/loops-dont-behave-like-they-should
             maxtr = intmax('int32') - 1; %%MATLAB: maxtr = 10 * maxfun;
-            info = 20;
+            info = infos_obj.MAXTR_REACHED;
 
             % Begin the iterative procedure.
             % After solving a trust-region subproblem, we use three boolean variables to control the workflow.
@@ -194,17 +195,17 @@ classdef uobyqb_mod
 
                 % Generate trust region step D, and also calculate a lower bound on the Hessian of Q.
                 g(:) = pq(1:n) + linalg_obj.smat_mul_vec(pq(n + 1:npt - 1), xpt(:, kopt));
-                h(:, :) = linalg_obj.vec2smat(pq(n + 1:npt - 1));
+                h(:) = linalg_obj.vec2smat(pq(n + 1:npt - 1));
                 [d, crvmin] = trustregion_uobyqa_obj.trstep(delta, g, h, trtol, d);
                 dnorm = min(delta, norm(d));
 
                 % Check whether D is too short to invoke a function evaluation.
-                shortd = (dnorm <= 0.5 * rho); % `<=` works better than `<` in case of underflow.
+                shortd = dnorm <= 0.5 * rho; % `<=` works better than `<` in case of underflow.
 
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
                 qred = -powalg_obj.quadinc_ghv(pq, d, xpt(:, kopt)); % QRED = Q(XOPT) - Q(XOPT + D)
-                trfail = (~(qred > 1.0e-6 * rho ^ 2)); % QRED is tiny/negative or NaN.
+                trfail = ~(qred > 1.0e-6 * rho ^ 2); % QRED is tiny/negative or NaN.
 
                 if shortd || trfail
                     % Powell's code does not reduce DELTA as follows. This comes from NEWUOA and works well.
@@ -253,7 +254,7 @@ classdef uobyqb_mod
                     end
 
                     % Is the newly generated X better than current best point?
-                    ximproved = (f < fval(kopt));
+                    ximproved = f < fval(kopt);
 
                     % Set KNEW to the index of the next interpolation point to be deleted.
                     knew_tr = geometry_uobyqa_obj.setdrop_tr(kopt, ximproved, d, pl, rho, xpt);
@@ -264,8 +265,8 @@ classdef uobyqb_mod
                         xdrop = xpt(:, knew_tr);
                         % Update PL, PQ, XPT, FVAL, and KOPT so that XPT(:, KNEW_TR) becomes XOPT + D.
                         [kopt, fval, pl, pq, xpt] = update_uobyqa_obj.update(knew_tr, d, f, moderr, kopt, fval, pl, pq, xpt);
-                        if ~(all(isfinite(pq), 'all'))
-                            info = -3;
+                        if ~all(isfinite(pq), 'all')
+                            info = infos_obj.NAN_INF_MODEL;
                             break
                         end
                         ddmove = sum((xdrop - xpt(:, kopt)) .^ 2, 'all'); % KOPT is updated.
@@ -274,7 +275,7 @@ classdef uobyqb_mod
 
                     % Check whether to exit
                     subinfo = checkexit_obj.checkexit_unc(maxfun, nf, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -294,9 +295,9 @@ classdef uobyqb_mod
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
                 accurate_mod = all(abs(moderr_rec) <= 0.125 * crvmin * rho ^ 2, 'all') && all(dnorm_rec <= rho, 'all');
                 % ADEQUATE_GEO: Is the geometry of the interpolation set "adequate"?
-                adequate_geo = (shortd && accurate_mod) || close_itpset;
+                adequate_geo = shortd && accurate_mod || close_itpset;
                 % SMALL_TRRAD: Is the trust-region radius small? This indicator seems not impactive in practice.
-                small_trrad = (max(delta, dnorm) <= rho); % Behaves the same as Powell's version.
+                small_trrad = max(delta, dnorm) <= rho; % Behaves the same as Powell's version.
                 %small_trrad = (dnorm <= rho)  ! Powell's code.
 
                 % Comments on ACCURATE_MOD:
@@ -329,11 +330,11 @@ classdef uobyqb_mod
 
                 % BAD_TRSTEP (for IMPROVE_GEO): Is the last trust-region step bad? For UOBYQA, it is CRUCIAL to
                 % include DMOVE <= 4.0_RP*RHO**2 in the definition of BAD_TRSTEP for IMPROVE_GEO.
-                bad_trstep = (shortd || trfail || (ratio <= eta1 && ddmove <= 4.0 * delta ^ 2) || knew_tr == 0);
+                bad_trstep = shortd || trfail || ratio <= eta1 && ddmove <= 4.0 * delta ^ 2 || knew_tr == 0;
                 %bad_trstep = (shortd .or. trfail .or. ratio <= eta1 .or. knew_tr == 0)  ! Works poorly!
                 improve_geo = bad_trstep && ~adequate_geo;
                 % BAD_TRSTEP (for REDUCE_RHO): Is the last trust-region step bad?
-                bad_trstep = (shortd || trfail || ratio <= 0 || knew_tr == 0); % Performs better than the one below from Powell.
+                bad_trstep = shortd || trfail || ratio <= 0 || knew_tr == 0; % Performs better than the one below from Powell.
                 %bad_trstep = (shortd .or. trfail .or. (ratio <= 0 .and. ddmove <= 4.0_RP * delta**2) .or. knew_tr == 0)
                 reduce_rho = bad_trstep && adequate_geo && small_trrad;
 
@@ -411,14 +412,14 @@ classdef uobyqb_mod
 
                     % Update PL, PQ, XPT, FVAL, and KOPT so that XPT(:, KNEW_GEO) becomes XOPT + D.
                     [kopt, fval, pl, pq, xpt] = update_uobyqa_obj.update(knew_geo, d, f, moderr, kopt, fval, pl, pq, xpt);
-                    if ~(all(isfinite(pq), 'all'))
-                        info = -3;
+                    if ~all(isfinite(pq), 'all')
+                        info = infos_obj.NAN_INF_MODEL;
                         break
                     end
 
                     % Check whether to exit
                     subinfo = checkexit_obj.checkexit_unc(maxfun, nf, f, ftarget, x);
-                    if subinfo ~= 0
+                    if subinfo ~= infos_obj.INFO_DFT
                         info = subinfo;
                         break
                     end
@@ -428,7 +429,7 @@ classdef uobyqb_mod
                 % by reducing RHO; update DELTA at the same time.
                 if reduce_rho
                     if rho <= rhoend
-                        info = 0;
+                        info = infos_obj.SMALL_TR_RADIUS;
                         break
                     end
                     delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
@@ -452,7 +453,7 @@ classdef uobyqb_mod
                 if ~ismember('callback_fcn', ipObj.UsingDefaults)
                     terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, tr);
                     if terminate
-                        info = 30;
+                        info = infos_obj.CALLBACK_TERMINATE;
                         break
                     end
                 end
@@ -465,7 +466,7 @@ classdef uobyqb_mod
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             % Ensure that D has not been updated after SHORTD == TRUE occurred, or the code below is incorrect.
             x = xbase + (xpt(:, kopt) + d);
-            if info == 0 && shortd && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
+            if info == infos_obj.SMALL_TR_RADIUS && shortd && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 % Save X, F into the history.

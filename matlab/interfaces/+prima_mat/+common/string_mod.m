@@ -68,28 +68,21 @@ classdef string_mod
 
 
             ipObj = inputParser();
-            addParameter(ipObj, 'ndgt', NaN);
-            addParameter(ipObj, 'nexp', NaN);
+            addParameter(ipObj, 'ndgt', min(floor(-log10(eps(class(x)))), floor(-log10(eps('double')))) + 1);
+            addParameter(ipObj, 'nexp', ceil(log10(double(floor(log10(realmax(class(x)))) + 0.1))));
             parse(ipObj, varargin{:});
-            ndgt = ipObj.Results.ndgt;
-            nexp = ipObj.Results.nexp;
+            ndgt_loc = ipObj.Results.ndgt;
+            nexp_loc = ipObj.Results.nexp;
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if ismember('ndgt', ipObj.UsingDefaults)
-                % By default, we print at most the same number of decimal digits as the double precision.
-                ndgt_loc = min(floor(-log10(eps(class(x)))), floor(-log10(eps(class(0.0))))) + 1;
-            else
-                ndgt_loc = ndgt;
-            end
+            % By default, we print at most the same number of decimal digits as the double precision.
+
             ndgt_loc = min(ndgt_loc, floor(double(obj.MAX_NUM_STR_LEN - 5) / 2.0)); % Safeguard
-            if ismember('nexp', ipObj.UsingDefaults)
-                nexp_loc = ceil(log10(double(floor(log10(realmax(class(x)))) + 0.1))); % Use + 0.1 in case RANGE(X) = 10^k.
-            else
-                nexp_loc = nexp;
-            end
+            % Use + 0.1 in case RANGE(X) = 10^k.
+
             nexp_loc = min(nexp_loc, floor(double(obj.MAX_NUM_STR_LEN - 5) / 2.0));
 
             if isfinite(x)
@@ -153,7 +146,7 @@ classdef string_mod
 
             if ismember('ndgt', ipObj.UsingDefaults)
                 % By default, we print at most the same number of decimal digits as the double precision.
-                ndgt_loc = min(floor(-log10(eps(class(x)))), floor(-log10(eps(class(0.0))))) + 1;
+                ndgt_loc = min(floor(-log10(eps(class(x)))), floor(-log10(eps('double')))) + 1;
             else
                 ndgt_loc = ndgt;
             end
