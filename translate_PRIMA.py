@@ -6,6 +6,43 @@ import subprocess
 import time
 from pathlib import Path
 from functools import wraps
+import datetime
+
+
+def wrap_as_comment(text: str) -> str:
+    lines = text.split("\n")
+    max_col = max([len(line) for line in lines])
+    lines = (
+        ["%-" + "-" * max_col + "-%"]
+        + ["% " + line + " " * (max_col - len(line)) + " %" for line in lines]
+        + ["%-" + "-" * max_col + "-%"]
+    )
+    return "\n".join(lines)
+
+
+def format_date_and_commit(text: str) -> str:
+    today = datetime.date.today().strftime("%Y-%m-%d")
+    commit = subprocess.run(
+        ["git", "rev-parse", "--short=8", "main"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    return text.format(date=today, commit=commit)
+
+
+FILE_PREAMBLE = wrap_as_comment(format_date_and_commit("""
+This file is translated from Fortran by 4ft2pm on {date}.
+4ft2pm is a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.
+The fortran version is from PRIMA (https://libprima.net) with git commit {commit}.
+""".strip()))
+
+FOLDER_README = format_date_and_commit("""
+This is the MATLAB of ??????
+Translated from Fortran by 4ft2pm on {date}.
+4ft2pm is a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.
+The fortran version is from PRIMA (https://libprima.net) with git commit {commit}.
+""".strip())
 
 
 def timer(func):
@@ -21,81 +58,53 @@ def timer(func):
     return wrapper
 
 
-def trim_file(file_path):
-    """Removes leading and trailing empty lines and whitespaces from a file."""
-    try:
-        content = file_path.read_text(encoding="utf-8", errors="ignore")
-        # .strip() removes all leading/trailing whitespace and newlines
-        # We append a single "\n" at the end as per standard POSIX
-        # file conventions
-        file_path.write_text(content.strip() + "\n", encoding="utf-8")
-    except Exception as e:
-        print(f"Warning: Could not trim {file_path.name}. Details: {e}")
-
-
-def run_preprocessor(compiler, flags, src_file, target_file, include_dir):
-    """Helper function to run the compiler for preprocessing."""
-    cmd = (
-        [compiler]
-        # + ["-DPRIMA_DEBUGGING=1"]
-        + flags
-        + [str(src_file), f"-I{include_dir}", "-o", str(target_file)]
-    )
-    return subprocess.run(cmd, check=True)
-
-
 @timer
 def preprocess_sources(src_dir, src_files, output_dir):
     preprocessed_files = []
     for file_abs_path in src_files:
         file_rel_path = Path(os.path.relpath(file_abs_path, start=src_dir))
-
-        full_path = src_dir / file_rel_path
+        source_path = src_dir / file_rel_path
         target_path = output_dir / file_rel_path
         preprocessed_files.append(target_path)
-
-        if not full_path.exists():
-            print(f"Skipping (not found): {file_rel_path}")
-            continue
 
         # Create target subdirectories automatically
         target_path.parent.mkdir(parents=True, exist_ok=True)
 
-        suffix = full_path.suffix
-
         # .F90 -> Preprocess with gfortran
-        if suffix == ".F90":
-            run_preprocessor(
-                "gfortran",
-                ["-E", "-cpp", "-P"],
-                full_path,
-                target_path,
-                src_dir,
+        if source_path.suffix == ".F90":
+            subprocess.run(
+                [
+                    "gfortran",
+                    "-E",
+                    "-cpp",
+                    "-P",
+                    str(source_path),
+                    f"-I{src_dir}",
+                    "-o",
+                    str(target_path),
+                ],
+                check=True,
             )
-            trim_file(target_path)
-        # .f90 or other -> Copy directly
+            content = target_path.read_text(encoding="utf-8", errors="ignore")
+            # .strip() removes all leading/trailing whitespace and newlines
+            # We append a single "\n" at the end as per standard POSIX
+            # file conventions
+            target_path.write_text(content.strip() + "\n", encoding="utf-8")
         else:
-            shutil.copy2(full_path, target_path)
+            shutil.copy2(source_path, target_path)
 
     return preprocessed_files
+
 
 @timer
 def extract_source_files(src_dir):
     """Extracts source file paths from CMake."""
     cmake_file = src_dir / "CMakeLists.txt"
 
-    if not cmake_file.exists():
-        print(f"Error: Cannot find {cmake_file}")
-        return
-
     # Parse CMakeLists.txt for source files
     content = cmake_file.read_text(encoding="utf-8", errors="ignore")
     pattern = re.compile(r"add_library\s*\((.*?)\)", re.DOTALL | re.IGNORECASE)
     matches = pattern.findall(content)
-
-    if not matches:
-        print("Error: No 'add_library' statement found in CMakeLists.txt.")
-        return
 
     # Extract file tokens and filter out keywords/variables
     raw_tokens = matches[0].split()
@@ -111,25 +120,22 @@ def extract_source_files(src_dir):
 def translate_sources(
     src_dir, preprocessed_files, output_dir, pkg_name, translator_exec="4ft2pm"
 ):
-    project_dir = Path("/home/yuchen/Syncthing/graduationThesis/4ft2pm")
-    cmd = [
-        "cabal",
-        "run",
-        "4ft2pm",
-        "--",
-        "-r",
-        str(src_dir),
-        "-o",
-        str(output_dir),
-        # "--try-bit-consistency",
-        # "--no-simplify",
-        "--prima",
-        "--as-package",
-        pkg_name,
-    ]
     return subprocess.run(
-        cmd,
-        cwd=project_dir,
+        [
+            translator_exec,
+            "-r",
+            str(src_dir),
+            "-o",
+            str(output_dir),
+            "--create-setup-m",
+            # "--try-bit-consistency",
+            # "--no-simplify",
+            "--prima",
+            "--as-package",
+            pkg_name,
+            # "--preamble",
+            # FILE_PREAMBLE,
+        ]
     )
 
 
@@ -147,5 +153,6 @@ if __name__ == "__main__":
     src_files = extract_source_files(src_dir)
     preprocessed_files = preprocess_sources(src_dir, src_files, preprocess_dir)
     translate_sources(preprocess_dir, preprocessed_files, output_dir, pkg_name)
+
     if preprocess_dir.exists():
         shutil.rmtree(preprocess_dir)
