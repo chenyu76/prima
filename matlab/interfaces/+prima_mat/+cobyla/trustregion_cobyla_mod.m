@@ -83,8 +83,8 @@ classdef trustregion_cobyla_mod
             % N.B.: It is faster and safer to scale by multiplying a reciprocal than by division. See
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
             for i = 1:m + 1                % Note that SIZE(A, 2) = SIZE(B) = M + 1 /= M.
-                if max(abs(A_aug(:, i)), [], 'all') > 1.0e12
-                    modscal = max(2.0 * realmin, 1.0 / max(abs(A_aug(:, i)), [], 'all')); % MAX: avoid underflow.
+                if max(abs(A_aug(:, i))) > 1.0e12
+                    modscal = max(2.0 * realmin, 1.0 / max(abs(A_aug(:, i)))); % MAX: avoid underflow.
                     A_aug(:, i) = A_aug(:, i) * modscal;
                     b_aug(i) = b_aug(i) * modscal;
                 end
@@ -256,7 +256,7 @@ classdef trustregion_cobyla_mod
                         fracmult(vmultd > 0 & iact <= m) = vmultc(vmultd > 0 & iact <= m) ./ vmultd(vmultd > 0 & iact <= m);
                         %%MATLAB: mask = (vmultd > 0 & iact <= m); fracmult(mask) = vmultc(mask) / vmultd(mask);
                         % Only the places with VMULTD > 0 and IACT <= M is relevant blow, if any.
-                        frac = min(fracmult(1:nact), [], 'all'); % FRACMULT(NACT+1:MCON) may contain garbage.
+                        frac = min(fracmult(1:nact)); % FRACMULT(NACT+1:MCON) may contain garbage.
                         vmultc(1:nact) = max(0.0, vmultc(1:nact) - frac * vmultd(1:nact));
 
                         % Reorder the active constraints so that the one to be replaced is at the end of the list.
@@ -366,7 +366,7 @@ classdef trustregion_cobyla_mod
                     break
                 end
                 % SQRTD: square root of a discriminant. The MAXVAL avoids SQRTD < ABS(SD) due to underflow.
-                sqrtd = max([sqrt(ss * dd + sd ^ 2), abs(sd), sqrt(ss * dd)], [], 'all');
+                sqrtd = max([sqrt(ss * dd + sd ^ 2), abs(sd), sqrt(ss * dd)]);
                 if sd > 0
                     step = dd / (sqrtd + sd);
                 else
@@ -441,7 +441,7 @@ classdef trustregion_cobyla_mod
                 %%MATLAB: mask = (vmultd < 0); fracmult(mask) = vmultc(mask) / (vmultc(mask) - vmultd(mask));
                 % Only the places with VMULTD < 0 is relevant below, if any.
                 icon = fortran.minloc([1.0; fracmult], 'dim', 1) - 1;
-                frac = min([1.0; fracmult], [], 'all');
+                frac = min([1.0; fracmult]);
                 %%MATLAB: [frac, icon] = min([1, fracmult]); icon = icon - 1
 
                 % Update D, VMULTC and CVIOL.

@@ -92,9 +92,9 @@ classdef selectx_mod
                 % 1. This process is the opposite of selecting KOPT in SELECTX.
                 % 2. In finite-precision arithmetic, PHI_1 == PHI_2 and CSTRV_SHIFTED_1 == CSTRV_SHIFTED_2 do
                 % not ensure that F_1 == F_2!
-                phimax = max(phi, [], 'all');
-                cref = max(fortran.merge('tsource', cfilt_shifted, 'fsource', -realmax, 'mask', phi >= phimax), [], 'all');
-                fref = max(fortran.merge('tsource', ffilt, 'fsource', -realmax, 'mask', cfilt_shifted >= cref), [], 'all');
+                phimax = max(phi);
+                cref = max(fortran.merge('tsource', cfilt_shifted, 'fsource', -realmax, 'mask', phi >= phimax));
+                fref = max(fortran.merge('tsource', ffilt, 'fsource', -realmax, 'mask', cfilt_shifted >= cref));
                 kworst = fortran.maxloc(cfilt, 'mask', ffilt >= fref, 'dim', 1);
                 %%MATLAB: cmax = max(cfilt(ffilt >= fref)); kworst = find(ffilt >= fref & ~(cfilt < cmax), 1,'first');
                 if kworst < 1 || kworst > numel(keep)
@@ -165,7 +165,7 @@ classdef selectx_mod
                 % Shift the constraint violations by CTOL, so that CSTRV <= CTOL is regarded as no violation.
                 chist_shifted = max(chist - ctol, 0.0);
                 % CMIN is the minimal shifted constraint violation attained in the history.
-                cmin = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', fhist < fref), [], 'all');
+                cmin = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', fhist < fref));
                 % We consider only the points whose shifted constraint violations are at most the CREF below.
                 % N.B.: Without taking MAX(EPS, .), CREF would be 0 if CMIN = 0. In that case, asking for
                 % CSTRV_SHIFTED < CREF would be WRONG!
@@ -192,9 +192,9 @@ classdef selectx_mod
                 % 1. This process is the opposite of selecting KWORST in SAVEFILT.
                 % 2. In finite-precision arithmetic, PHI_1 == PHI_2 and CSTRV_SHIFTED_1 == CSTRV_SHIFTED_2 do
                 % not ensure that F_1 == F_2!
-                phimin = min(fortran.merge('tsource', phi, 'fsource', realmax, 'mask', fhist < fref & chist_shifted <= cref), [], 'all');
-                cref = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', fhist < fref & phi <= phimin), [], 'all');
-                fref = min(fortran.merge('tsource', fhist, 'fsource', realmax, 'mask', chist_shifted <= cref), [], 'all');
+                phimin = min(fortran.merge('tsource', phi, 'fsource', realmax, 'mask', fhist < fref & chist_shifted <= cref));
+                cref = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', fhist < fref & phi <= phimin));
+                fref = min(fortran.merge('tsource', fhist, 'fsource', realmax, 'mask', chist_shifted <= cref));
                 kopt = fortran.minloc(chist, 'mask', fhist <= fref, 'dim', 1);
                 %%MATLAB: cmin = min(chist(fhist <= fref)); kopt = find(fhist <= fref & ~(chist > cmin), 1,'first');
             else

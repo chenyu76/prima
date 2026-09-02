@@ -287,7 +287,7 @@ classdef bobyqb_mod
                     % improve the performance, especially when pursing high-precision solutions.
                     vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat);
                     den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
-                    to_rescue = ximproved && ~(isfinite(sum(abs(vlag), 'all')) && any(den > max(vlag(1:npt) .^ 2, [], 'all'), 'all'));
+                    to_rescue = ximproved && ~(isfinite(sum(abs(vlag), 'all')) && any(den > max(vlag(1:npt) .^ 2), 'all'));
                     % Below are some alternatives conditions for calling RESCUE. They perform fairly well.
                     % %to_rescue = .false.  ! Do not call RESCUE at all.
                     % %to_rescue = (ximproved .and. .not. any(den > 0.25_RP * maxval(vlag(1:npt)**2)))
@@ -416,7 +416,7 @@ classdef bobyqb_mod
 
                     % Set DELBAR, which will be used as the trust-region radius for the geometry-improving
                     % scheme GEOSTEP. Note that DELTA has been updated before arriving here.
-                    delbar = max(min(0.1 * sqrt(max(distsq, [], 'all')), delta), rho); % Powell's code
+                    delbar = max(min(0.1 * sqrt(max(distsq)), delta), rho); % Powell's code
                     %delbar = rho  ! Powell's UOBYQA code
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), HALF * delta), rho)  ! Powell's NEWUOA code
                     %delbar = max(TENTH * delta, rho)  ! Powell's LINCOA code
@@ -587,11 +587,11 @@ classdef bobyqb_mod
 
             xnew = xopt + d;
             gnew = gopt + powalg_obj.hess_mul(d, xpt, pq, 'hq', hq);
-            bfirst(:) = max(abs(moderr_rec), [], 'all');
+            bfirst(:) = max(abs(moderr_rec));
             bfirst(xnew <= sl) = gnew(xnew <= sl) * rho;
             bfirst(xnew >= su) = -gnew(xnew >= su) * rho;
             bsecond = 0.5 * (diag(hq) + xpt .^ 2 * pq) * rho ^ 2;
-            ebound = min(max(bfirst, bfirst + bsecond), [], 'all');
+            ebound = min(max(bfirst, bfirst + bsecond));
             if crvmin > 0
                 ebound = min(ebound, 0.125 * crvmin * rho ^ 2);
             end

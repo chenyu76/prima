@@ -187,7 +187,7 @@ classdef initialize_newuoa_mod
             % Calculation starts %
             %====================%
 
-            rhobeg = max(abs(xpt(:, 2)), [], 'all'); % Read RHOBEG from XPT.
+            rhobeg = max(abs(xpt(:, 2))); % Read RHOBEG from XPT.
             fbase = fval(1); % FBASE is the function value at XBASE.
 
             % Set GOPT by the forward difference.
@@ -275,7 +275,7 @@ classdef initialize_newuoa_mod
             % Calculation starts %
             %====================%
 
-            rhobeg = max(abs(xpt(:, 2)), [], 'all'); % Read RHOBEG from XPT.
+            rhobeg = max(abs(xpt(:, 2))); % Read RHOBEG from XPT.
             rhosq = rhobeg ^ 2;
 
             % Set BMAT.

@@ -310,7 +310,7 @@ classdef initialize_bobyqa_mod
             %====================%
 
             % Some values to be used for setting BMAT and ZMAT.
-            rhobeg = max(abs(xpt(:, 2)), [], 'all'); % Read RHOBEG from XPT. Note that XPT(:, 1) = 0.
+            rhobeg = max(abs(xpt(:, 2))); % Read RHOBEG from XPT. Note that XPT(:, 1) = 0.
             rhosq = rhobeg ^ 2;
 
             % The interpolation set decides the first NDIAG diagonal 2nd derivatives of the Lagrange polynomials.

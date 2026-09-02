@@ -393,7 +393,7 @@ classdef lincoa_mod
             end
 
             if ismember('maxhist', ipObj.UsingDefaults)
-                maxhist_loc = max([maxfun_loc, n + 3, consts_obj.MAXFUN_DIM_DFT * n], [], 'all');
+                maxhist_loc = max([maxfun_loc, n + 3, consts_obj.MAXFUN_DIM_DFT * n]);
             else
                 maxhist_loc = maxhist;
             end

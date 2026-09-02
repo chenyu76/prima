@@ -124,7 +124,7 @@ classdef getact_mod
                 if ~any(vlam(1:nact) >= 0, 'all')
                     break
                 end
-                icon = max(find(vlam(1:nact) >= 0), [], 'all');
+                icon = max(find(vlam(1:nact) >= 0));
                 %%MATLAB: icon = max(find(vlam(1:nact) >= 0)); % OR: icon = find(vlam(1:nact) >= 0, 1, 'last')
                 [iact, nact, qfac, resact, resnew, rfac, vlam] = obj.delact(icon, iact, nact, qfac, resact, resnew, rfac, vlam);
             end
@@ -259,7 +259,7 @@ classdef getact_mod
                     frac(:) = realmax;
                     frac(vmu(1:nact) < 0 & vlam(1:nact) < 0) = vlam(vmu(1:nact) < 0 & vlam(1:nact) < 0) ./ vmu(vmu(1:nact) < 0 & vlam(1:nact) < 0);
                     %%MATLAB: frac = vlam / vmu; frac(vmu >= 0 | vlam >= 0) = Inf;
-                    vmult = min([violmx; frac(1:nact)], [], 'all');
+                    vmult = min([violmx; frac(1:nact)]);
                     icon = max([0; find(frac(1:nact) <= vmult)], [], 'all');
                     %%MATLAB: icon = max([0; find(frac(1:nact) <= vmult)]); % find(frac(1:nact)<=vmult) can be empty
 

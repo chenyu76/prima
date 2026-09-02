@@ -169,7 +169,7 @@ classdef initialize_uobyqa_mod
             % Calculation starts %
             %====================%
 
-            rhobeg = max(abs(xpt(:, 2)), [], 'all');
+            rhobeg = max(abs(xpt(:, 2)));
             rhosq = rhobeg ^ 2;
             fbase = fval(1);
 
@@ -236,7 +236,7 @@ classdef initialize_uobyqa_mod
             % Calculation starts %
             %====================%
 
-            rhobeg = max(abs(xpt(:, 2)), [], 'all');
+            rhobeg = max(abs(xpt(:, 2)));
             rhosq = rhobeg ^ 2;
 
             pl(:) = 0.0;

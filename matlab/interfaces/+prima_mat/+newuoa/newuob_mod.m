@@ -446,7 +446,7 @@ classdef newuob_mod
                     % Set DELBAR, which will be used as the trust-region radius for the geometry-improving
                     % scheme GEOSTEP. Note that DELTA has been updated before arriving here. See the comments
                     % above the definition of IMPROVE_GEO.
-                    delbar = max(min(0.1 * sqrt(max(distsq, [], 'all')), 0.5 * delta), rho); % Powell's code
+                    delbar = max(min(0.1 * sqrt(max(distsq)), 0.5 * delta), rho); % Powell's code
                     %delbar = rho  ! Powell's UOBYQA code
                     %delbar = max(TENTH * delta, rho)  ! Powell's LINCOA code
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), delta), rho)  ! Powell's BOBYQA code

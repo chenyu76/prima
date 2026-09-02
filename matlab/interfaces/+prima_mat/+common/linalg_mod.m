@@ -215,7 +215,7 @@ classdef linalg_mod
             %====================%
 
 
-            tol_loc = max([tol_loc, tol_loc * max(abs(A), [], 'all'), tol_loc * max(abs(B), [], 'all')], [], 'all');
+            tol_loc = max([tol_loc, tol_loc * max(abs(A), [], 'all'), tol_loc * max(abs(B), [], 'all')]);
             is_inv = all(abs(A * B - eye(n)) <= tol_loc, 'all') || all(abs(B * A - eye(n)) <= tol_loc, 'all');
 
             %====================%
@@ -675,13 +675,13 @@ classdef linalg_mod
                     s = x(2) / r;
                 elseif abs(x(1)) > abs(x(2))
                     t = x(2) / x(1);
-                    u = max([1.0, abs(t), sqrt(1.0 + t ^ 2)], [], 'all'); % MAXVAL: precaution against rounding error.
+                    u = max([1.0, abs(t), sqrt(1.0 + t ^ 2)]); % MAXVAL: precaution against rounding error.
                     u = u .* ((x(1) > 0) .* 2 - 1); %%MATLAB: u = sign(x(1))*sqrt(ONE + t**2)
                     c = 1.0 / u;
                     s = t / u;
                 else
                     t = x(1) / x(2);
-                    u = max([1.0, abs(t), sqrt(1.0 + t ^ 2)], [], 'all'); % MAXVAL: precaution against rounding error.
+                    u = max([1.0, abs(t), sqrt(1.0 + t ^ 2)]); % MAXVAL: precaution against rounding error.
                     u = u .* ((x(2) > 0) .* 2 - 1); %%MATLAB: u = sign(x(2))*sqrt(ONE + t**2)
                     c = t / u;
                     s = 1.0 / u;
@@ -1060,11 +1060,11 @@ classdef linalg_mod
 
             if all(piv >= 0, 'all')
                 % The matrix is positive semidefinite.
-                eminub = min(piv, [], 'all');
+                eminub = min(piv);
                 eminlb = 0.0;
             else
-                eminub = min(td, [], 'all');
-                eminlb = -max(abs([0.0; tn]) + abs(td) + abs([tn; 0.0]), [], 'all');
+                eminub = min(td);
+                eminlb = -max(abs([0.0; tn]) + abs(td) + abs([tn; 0.0]));
             end
 
             ksav = 0;
@@ -1099,7 +1099,7 @@ classdef linalg_mod
 
                 % We arrive here iff PIVNEW contains nonpositive entries and EIG_MIN is no less than the smallest
                 % eigenvalue. We set EMINUB to EIG_MIN except a possible adjustment by the rule of false position.
-                k = min(find(~(pivnew > 0)), [], 'all');
+                k = min(find(~(pivnew > 0)));
                 piv(1:k - 1) = pivnew(1:k - 1);
 
                 % KSAV was initialized to 0, triggering the ELSE when ALL(PIVNEW > 0) fails for the first time.

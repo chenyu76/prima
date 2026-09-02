@@ -234,7 +234,7 @@ classdef preproc_mod
 
             % Revise the default values for RHOBEG/RHOEND according to the solver.
             if lower(solver) == "bobyqa"
-                rhobeg_default = max(eps, min(consts_obj.RHOBEG_DFT, min(xu - xl, [], 'all') / 4.0));
+                rhobeg_default = max(eps, min(consts_obj.RHOBEG_DFT, min(xu - xl) / 4.0));
                 rhoend_default = max(eps, min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_default, consts_obj.RHOEND_DFT));
             else
                 rhobeg_default = consts_obj.RHOBEG_DFT;
@@ -244,11 +244,11 @@ classdef preproc_mod
             if lower(solver) == "bobyqa"
                 % Do NOT merge the IF below into the ELSEIF above! Otherwise, XU and XL may be accessed even if
                 % the solver is not BOBYQA, because the logical evaluation is not short-circuit.
-                if rhobeg > min(xu - xl, [], 'all') / 2.0
+                if rhobeg > min(xu - xl) / 2.0
                     % Do NOT make this revision if RHOBEG not positive or not finite, because otherwise RHOBEG
                     % will get a huge value when XU or XL contains huge values that indicate unbounded variables.
-                    rhobeg = min(xu - xl, [], 'all') / 4.0; % Here, we do not take RHOBEG_DEFAULT.
-                    debug_obj.warning(solver, "Invalid RHOBEG: " + string_obj.real2str_scalar(rhobeg_in) + "; " + solver + " requires 0 < RHOBEG <= MINVAL(XU-XL)/2 = " + string_obj.real2str_scalar(min(xu - xl, [], 'all') / 2.0) + "; it is set to " + string_obj.real2str_scalar(rhobeg));
+                    rhobeg = min(xu - xl) / 4.0; % Here, we do not take RHOBEG_DEFAULT.
+                    debug_obj.warning(solver, "Invalid RHOBEG: " + string_obj.real2str_scalar(rhobeg_in) + "; " + solver + " requires 0 < RHOBEG <= MINVAL(XU-XL)/2 = " + string_obj.real2str_scalar(min(xu - xl) / 2.0) + "; it is set to " + string_obj.real2str_scalar(rhobeg));
                 end
             end
 

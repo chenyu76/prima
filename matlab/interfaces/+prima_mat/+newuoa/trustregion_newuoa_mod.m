@@ -62,9 +62,9 @@ classdef trustregion_newuoa_mod
             % Note that CRVMIN must be scaled back if it is nonzero, but the step is scale invariant.
             % N.B.: It is faster and safer to scale by multiplying a reciprocal than by division. See
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
-            if max(abs(gopt_in), [], 'all') > 1.0e12
+            if max(abs(gopt_in)) > 1.0e12
                 % The threshold is empirical.
-                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
+                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in))); % MAX: precaution against underflow.
                 gopt = gopt_in * modscal;
                 pq = pq_in * modscal;
                 hq = hq_in * modscal;
@@ -149,7 +149,7 @@ classdef trustregion_newuoa_mod
                     %--------------------------------------------------%
 
                     % SQRTD: square root of a discriminant. The MAXVAL avoids SQRTD < ABS(DS) due to underflow.
-                    sqrtd = max([sqrt(ds ^ 2 + dd * resid), abs(ds), sqrt(dd * resid)], [], 'all');
+                    sqrtd = max([sqrt(ds ^ 2 + dd * resid), abs(ds), sqrt(dd * resid)]);
                     % Powell's code does not distinguish the following two cases, which have no difference in
                     % precise arithmetic. The following scheme stabilizes the calculation. Copied from LINCOA.
                     if ds <= 0

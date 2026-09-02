@@ -210,7 +210,7 @@ classdef rescue_mod
             score(:) = sqrt(sum(xpt .^ 2, 1)); % Powell's BOBYQA paper
             % In theory, SCORE(KOPT) = 0. Make sure this so that KOPT will be skipped when we choose KORIG below.
             score(kopt) = 0.0;
-            scoreinc = max(score, [], 'all');
+            scoreinc = max(score);
 
             % NPROV is the number of provisional points that has not yet been replaced with original points.
             nprov = npt - 1;
@@ -313,7 +313,7 @@ classdef rescue_mod
                 % point will be ranked lower if it fails to fulfill MAXVAL(DEN) > C*MAXVAL(VLAG(1:NPT)**2).
                 % Even if KORIG cannot satisfy this condition for now, it may validate the inequality in future
                 % attempts, as BMAT and ZMAT will be updated.
-                if ~(isfinite(sum(abs(vlag), 'all')) && any(den > 5.0e-2 * max(vlag(1:npt) .^ 2, [], 'all'), 'all'))
+                if ~(isfinite(sum(abs(vlag), 'all')) && any(den > 5.0e-2 * max(vlag(1:npt) .^ 2), 'all'))
                     % The above condition works a bit better than Powell's version below due to the factor 0.05.
                     % %IF (.NOT. (ANY(DEN > 1.0E-2_RP * MAXVAL(VLAG(1:NPT)**2)))) THEN  ! Powell' code
                     score(korig) = -score(korig) - scoreinc;

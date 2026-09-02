@@ -200,7 +200,7 @@ classdef update_cobyla_mod
             % Identify the optimal vertex of the current simplex.
             jopt = numel(fval); % We use N + 1 as the default value of JOPT.
             phi = fval + cpen * cval;
-            phimin = min(phi, [], 'all');
+            phimin = min(phi);
             % Essentially, JOPT = MINLOC(PHI). However, we keep JOPT = N + 1 unless there is a strictly better
             % choice. When there are multiple choices, we choose the JOPT with the smallest value of CVAL.
             if phimin < phi(jopt) || any(cval < cval(jopt) & phi <= phi(jopt), 'all')

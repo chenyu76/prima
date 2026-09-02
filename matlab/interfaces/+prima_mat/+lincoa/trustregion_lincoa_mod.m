@@ -83,9 +83,9 @@ classdef trustregion_lincoa_mod
             % Note that the trust-region step is scale invariant.
             % N.B.: It is faster and safer to scale by multiplying a reciprocal than by division. See
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
-            if max(abs(gopt_in), [], 'all') > 1.0e12
+            if max(abs(gopt_in)) > 1.0e12
                 % The threshold is empirical.
-                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
+                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in))); % MAX: precaution against underflow.
                 gopt = gopt_in * modscal;
                 pq = pq_in * modscal;
                 hq = hq_in * modscal;
@@ -199,7 +199,7 @@ classdef trustregion_lincoa_mod
                             % Set GAMMA to the greatest value so that S + PSD + GAMMA*DPROJ satisfies the trust
                             % region bound. SQRTD: square root of a discriminant. Powell's code for SQRTD is
                             % SQRT(DS * DS + DD * RESID), which may be below ABS(DS) due to underflow in DS*DS.
-                            sqrtd = max([sqrt(ds * ds + dd * resid), abs(ds), sqrt(dd * resid)], [], 'all');
+                            sqrtd = max([sqrt(ds * ds + dd * resid), abs(ds), sqrt(dd * resid)]);
                             if ds <= 0
                                 gamma = (sqrtd - ds) / dd;
                             else
@@ -217,7 +217,7 @@ classdef trustregion_lincoa_mod
                             frac(:) = 1.0;
                             restmp(find(ad > 0)) = resnew(find(ad > 0)) - amat(:, find(ad > 0)).' * psd;
                             frac(ad > 0) = restmp(ad > 0) ./ ad(ad > 0);
-                            gamma = min([gamma; 1.0; frac], [], 'all'); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
+                            gamma = min([gamma; 1.0; frac]); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
 
                         end
                     end
@@ -252,7 +252,7 @@ classdef trustregion_lincoa_mod
                 end
                 % SQRTD: square root of a discriminant. Powell's code for SQRTD is SQRT(DS * DS + DD * RESID),
                 % which may be below ABS(DS) due to underflow in DS*DS.
-                sqrtd = max([sqrt(ds * ds + dd * resid), abs(ds), sqrt(dd * resid)], [], 'all');
+                sqrtd = max([sqrt(ds * ds + dd * resid), abs(ds), sqrt(dd * resid)]);
                 if ds <= 0
                     alpha = (sqrtd - ds) / dd;
                 else

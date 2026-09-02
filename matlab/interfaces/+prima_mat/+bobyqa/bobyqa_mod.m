@@ -270,7 +270,7 @@ classdef bobyqa_mod
                 if nargout >= 6
                     info = infos_obj.NO_SPACE_BETWEEN_BOUNDS;
                 end
-                debug_obj.warning(solver, "There is no space between the lower and upper bounds of variable " + int2str(min(find(xu_loc - xl_loc < 2.0 * eps), [], 'all')) + ". The solver cannot continue");
+                debug_obj.warning(solver, "There is no space between the lower and upper bounds of variable " + int2str(min(find(xu_loc - xl_loc < 2.0 * eps))) + ". The solver cannot continue");
                 return
             end
 
@@ -331,7 +331,7 @@ classdef bobyqa_mod
             end
 
             if ismember('maxhist', ipObj.UsingDefaults)
-                maxhist_loc = max([maxfun_loc, n + 3, consts_obj.MAXFUN_DIM_DFT * n], [], 'all');
+                maxhist_loc = max([maxfun_loc, n + 3, consts_obj.MAXFUN_DIM_DFT * n]);
             else
                 maxhist_loc = maxhist;
             end

@@ -506,7 +506,7 @@ classdef powalg_mod
             %%end
             if all(isfinite(qval), 'all')
                 fmq = fval - qval;
-                err = (max(fmq, [], 'all') - min(fmq, [], 'all')) / max([1.0; abs(fval)], [], 'all');
+                err = (max(fmq) - min(fmq)) / max([1.0; abs(fval)], [], 'all');
             else
                 err = realmax;
             end
@@ -645,20 +645,20 @@ classdef powalg_mod
 
             A(:) = 0.5 * (xpt.' * xpt) .^ 2;
             Omega(:) = -(zmat(:, 1:idz - 1) * zmat(:, 1:idz - 1).') + zmat(:, idz:npt - n - 1) * zmat(:, idz:npt - n - 1).';
-            maxabs = max([1.0, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), max(abs(bmat), [], 'all')], [], 'all');
+            maxabs = max([1.0, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), max(abs(bmat), [], 'all')]);
             U(:) = eye(npt) - A * Omega - xpt.' * bmat(:, 1:npt);
             V(:) = -(bmat(:, 1:npt) * A) - bmat(:, npt + 1:npt + n) * xpt;
             r = sum(U, 1).' ./ double(npt);
             s = sum(V, 2) ./ double(npt);
             t(:) = -(A * r) - xpt.' * s;
-            e(1, 1) = max(max(U, [], 1).' - min(U, [], 1).', [], 'all');
-            e(1, 2) = max(t, [], 'all') - min(t, [], 'all');
-            e(1, 3) = max(max(V, [], 2) - min(V, [], 2), [], 'all');
-            e(2, 1) = max(abs(sum(Omega, 1)), [], 'all');
+            e(1, 1) = max(max(U, [], 1).' - min(U, [], 1).');
+            e(1, 2) = max(t) - min(t);
+            e(1, 3) = max(max(V, [], 2) - min(V, [], 2));
+            e(2, 1) = max(abs(sum(Omega, 1)));
             e(2, 2) = abs(sum(r, 'all') - 1.0);
-            e(2, 3) = max(abs(sum(bmat(:, 1:npt), 2)), [], 'all');
+            e(2, 3) = max(abs(sum(bmat(:, 1:npt), 2)));
             e(3, 1) = max(abs(xpt * Omega), [], 'all');
-            e(3, 2) = max(abs(xpt * r), [], 'all');
+            e(3, 2) = max(abs(xpt * r));
             e(3, 3) = max(abs(xpt * bmat(:, 1:npt).' - eye(n)), [], 'all');
             err = max(e, [], 'all') / (maxabs * double(n + npt));
 

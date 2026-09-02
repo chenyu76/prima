@@ -76,9 +76,9 @@ classdef trustregion_bobyqa_mod
             % Note that CRVMIN must be scaled back if it is nonzero, but step is scale invariant.
             % N.B.: It is faster and safer to scale by multiplying a reciprocal than by division. See
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
-            if max(abs(gopt_in), [], 'all') > 1.0e12
+            if max(abs(gopt_in)) > 1.0e12
                 % The threshold is empirical.
-                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in), [], 'all')); % MAX: precaution against underflow.
+                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in))); % MAX: precaution against underflow.
                 gopt = gopt_in * modscal;
                 pq = pq_in * modscal;
                 hq = hq_in * modscal;
@@ -161,7 +161,7 @@ classdef trustregion_bobyqa_mod
                 % ignoring the simple bounds.
 
                 % SQRTD: square root of a discriminant. The MAXVAL avoids SQRTD < ABS(DS) due to underflow.
-                sqrtd = max([sqrt(stepsq * resid + ds * ds), sqrt(stepsq * resid), abs(ds)], [], 'all');
+                sqrtd = max([sqrt(stepsq * resid + ds * ds), sqrt(stepsq * resid), abs(ds)]);
 
                 % Zaikun 20220210: For the IF ... ELSE ... END IF below, Powell's condition for the IF is DS>=0.
                 % In theory, switching the condition to DS > 0 changes nothing; indeed, the two formulations

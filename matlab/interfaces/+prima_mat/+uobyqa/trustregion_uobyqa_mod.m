@@ -82,9 +82,9 @@ classdef trustregion_uobyqa_mod
             % changed. Note that CRVMIN must be scaled back if it is nonzero, but the step is scale invariant.
             % N.B.: It is faster and safer to scale by multiplying a reciprocal than by division. See
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
-            if max(abs(g), [], 'all') > 1.0e8
+            if max(abs(g)) > 1.0e8
                 % The threshold is empirical.
-                modscal = max(2.0 * realmin, 1.0 / max(abs(g), [], 'all')); % MAX: precaution against underflow.
+                modscal = max(2.0 * realmin, 1.0 / max(abs(g))); % MAX: precaution against underflow.
                 gg = g * modscal;
                 hh = h * modscal;
                 scaled = true;
@@ -155,14 +155,14 @@ classdef trustregion_uobyqa_mod
 
             % Begin the trust region calculation with a tridiagonal matrix by calculating the L_1-norm of the
             % Hessenberg form of H, which is an upper bound for the spectral norm of H.
-            hnorm = max(abs([0.0; tn]) + abs(td) + abs([tn; 0.0]), [], 'all');
+            hnorm = max(abs([0.0; tn]) + abs(td) + abs([tn; 0.0]));
             delsq = delta * delta;
 
             % Set the initial values of PAR and its bounds.
             % N.B.: PAR is the parameter LAMBDA in More-Sorensen (1983) and Powell (1997), as well as the THETA
             % in Section 2 of the UOBYQA paper. The algorithm looks for the optimal PAR characterized in Lemmas
             % 2.1--2.3 of More-Sorensen (1983).
-            parl = max([0.0, -min(td, [], 'all'), gnorm / delta - hnorm], [], 'all'); % Lower bound for the optimal PAR
+            parl = max([0.0, -min(td), gnorm / delta - hnorm]); % Lower bound for the optimal PAR
             parlest = parl; % Estimation for PARL
             par = parl;
             paru = 0.0; % Upper bound for the optimal PAR ??? The initial value is less than PARL. Why?

@@ -689,11 +689,11 @@ classdef cobylb_mod
             % the sign of the constraints before defining CMIN and CMAX.
             cmin = min(-conmat, [], 2);
             cmax = max(-conmat, [], 2);
-            fmin = min(fval, [], 'all');
-            fmax = max(fval, [], 'all');
+            fmin = min(fval);
+            fmax = max(fval);
             r = 0.0;
             if any(cmin < 0.5 * cmax, 'all') && fmin < fmax
-                denom = min(fortran.merge('tsource', max(cmax, 0.0) - cmin, 'fsource', realmax, 'mask', cmin < 0.5 * cmax), [], 'all');
+                denom = min(fortran.merge('tsource', max(cmax, 0.0) - cmin, 'fsource', realmax, 'mask', cmin < 0.5 * cmax));
                 % Powell mentioned the following alternative in Section 4 of his COBYLA paper. According to a
                 % test on 20230610, it does not make much difference to the performance.
                 % %denom = maxval(max(cmax, ZERO) - cmin, mask=(cmin < HALF * cmax))

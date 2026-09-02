@@ -197,7 +197,7 @@ classdef initialize_lincoa_mod
             % Calculation starts %
             %====================%
 
-            rhobeg = max(abs(xpt(:, 2)), [], 'all'); % Read RHOBEG from XPT.
+            rhobeg = max(abs(xpt(:, 2))); % Read RHOBEG from XPT.
             rhosq = rhobeg ^ 2;
 
             % Set BMAT.
