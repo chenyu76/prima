@@ -85,6 +85,7 @@ classdef rescue_mod
 
             checkexit_obj = prima_mat.common.checkexit_mod();
 
+            debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
@@ -258,7 +259,7 @@ classdef rescue_mod
                     else
                         ip = floor(ptsid(k)); % IP = 0 if 0 < PTSID(K) < 1.
                         iq = floor(double(n + 1) * ptsid(k) - double((n + 1) * ip));
-
+                        debug_obj.assert();
                         if ip > 0 && iq > 0
                             wmv(k) = xpt(ip, korig) * ptsaux(1, ip) + xpt(iq, korig) * ptsaux(1, iq);
                         elseif ip > 0

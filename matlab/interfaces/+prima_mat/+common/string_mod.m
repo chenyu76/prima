@@ -31,21 +31,6 @@ classdef string_mod
                 [varargout{1:nargout}] = obj.real2str_vector(varargin{:});
             end
         end
-        function y = upper(~, x)
-            %--------------------------------------------------------------------------------------------------%
-            % This function maps the characters of a string to the upper case, if applicable.
-            %--------------------------------------------------------------------------------------------------%
-
-
-            dist = 'A' - 'a';
-
-            y = x;
-            for i = 1:strlength(y)
-                if extractBetween(y, i, i) >= "a" && extractBetween(y, i, i) <= "z"
-                    y = replaceBetween(y, i, i, char(double(unicode2native(extractBetween(y, i, i))) + dist));
-                end
-            end
-        end
         function y = istr(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function converts a string to an integer array.

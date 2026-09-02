@@ -127,7 +127,7 @@ classdef selectx_mod
 
 
         end
-        function kopt = selectx(~, fhist, chist, cweight, ctol)
+        function kopt = selectx(obj, fhist, chist, cweight, ctol)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine selects X according to the FHIST and CHIST, which represents (a part of) history
             % of F and CSTRV. Normally, FHIST and CHIST are not the full history but only a filter, e.g., FFILT

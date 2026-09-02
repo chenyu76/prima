@@ -70,6 +70,8 @@ classdef getact_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            debug_obj = prima_mat.common.debug_mod();
+
             linalg_obj = prima_mat.common.linalg_mod();
 
             frac = NaN(size(g));
@@ -294,7 +296,7 @@ classdef getact_mod
                 % if NACT happens to be 1 when the WHILE loop starts. However, we have never observed a failure
                 % of the assertion below as of 20220329. Why?
                 %-----------------------------------------%
-                %
+                debug_obj.assert(); %
                 %-----------------------------------------%
                 if nact == 0
                     break
@@ -359,6 +361,7 @@ classdef getact_mod
             % QFAC, etc accordingly, and reduces NACT to NACT-1.
             %--------------------------------------------------------------------------------------------------%
 
+            consts_obj = prima_mat.common.consts_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
 
@@ -380,7 +383,7 @@ classdef getact_mod
 
             iact(icon:nact) = [iact(icon + 1:nact); iact(icon)];
             resact(icon:nact) = [resact(icon + 1:nact); resact(icon)];
-            resnew(iact(nact)) = max(resact(nact), 10.0 ^ max(-60, -floor(log10(realmax))));
+            resnew(iact(nact)) = max(resact(nact), consts_obj.TINYCV);
             vlam(icon:nact) = [vlam(icon + 1:nact); vlam(icon)];
             nact = nact - 1;
 

@@ -46,6 +46,8 @@ classdef trustregion_bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            debug_obj = prima_mat.common.debug_mod();
+
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
 
@@ -276,7 +278,7 @@ classdef trustregion_bobyqa_mod
                 % Restart the conjugate gradient method if it has hit a new bound.
                 if iact > 0
                     nact = nact + 1;
-
+                    debug_obj.assert();
                     xbdi(iact) = round((s(iact) > 0) .* 2 - 1); %%MATLAB: xbdi(iact) = sign(s(iact))
                     % Exit when NACT = N (NACT > N is impossible). We must update XBDI before exiting!
                     if nact >= n

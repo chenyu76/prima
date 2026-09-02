@@ -156,6 +156,7 @@ classdef newuoa_mod
 
             consts_obj = prima_mat.common.consts_mod();
 
+            debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
@@ -317,7 +318,9 @@ classdef newuoa_mod
             end
 
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
-
+            if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
+                debug_obj.warning(solver, "Only the history of the last " + int2str(maxhist_loc) + " function evaluation(s) is recorded");
+            end
 
         end
 

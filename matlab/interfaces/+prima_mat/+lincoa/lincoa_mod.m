@@ -211,6 +211,7 @@ classdef lincoa_mod
 
             consts_obj = prima_mat.common.consts_mod();
 
+            debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
@@ -407,7 +408,7 @@ classdef lincoa_mod
             [maxhist_loc, xhist_loc, fhist_loc, chist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 5, nargout >= 6, 'output_chist', nargout >= 7);
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
-            [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, xl_loc, xu_loc, x);
+            [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, rhoend_loc, xl_loc, xu_loc, x);
 
             %-------------------- Call LINCOB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
@@ -466,10 +467,12 @@ classdef lincoa_mod
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
-
+            if (nargout >= 5 || nargout >= 6 || nargout >= 7) && maxhist_loc < nf_loc
+                debug_obj.warning(solver, "Only the history of the last " + int2str(maxhist_loc) + " function evaluation(s) is recorded");
+            end
 
         end
-        function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu, x0)
+        function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, rhoend, xl, xu, x0)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine wraps the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
             % N.B.:
@@ -488,6 +491,9 @@ classdef lincoa_mod
 
 
             consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+
+            solver = "LINCOA";
 
             idmat = NaN(numel(x0));
 
@@ -507,7 +513,9 @@ classdef lincoa_mod
             m = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
 
             % Print a warning if some constraints are invalid. They will be ignored (Powell's code would stop).
-
+            if meq < size(Aeq, 1) || mineq < size(Aineq, 1)
+                debug_obj.warning(solver, "Some linear constraints have zero gradients; they are ignored");
+            end
 
             % Allocate memory. Removable in F2003.
 
@@ -547,7 +555,11 @@ classdef lincoa_mod
 
 
             % Print a warning if the starting point is sufficiently infeasible and the constraints are modified.
-
+            smallx = 10.0 ^ max(-6, -floor(log10(realmax))) * rhoend;
+            constr_modified = any(x0 + smallx < xl, 'all') || any(x0 - smallx > xu, 'all') || any(abs(Aeqx0 - beq) > smallx * Aeq_norm, 'all') || any(Aineqx0 - bineq > smallx * Aineq_norm, 'all');
+            if constr_modified
+                debug_obj.warning(solver, "The starting point is infeasible. " + solver + " modified the right-hand sides of the constraints to make it feasible");
+            end
 
             %====================%
             %  Calculation ends  %

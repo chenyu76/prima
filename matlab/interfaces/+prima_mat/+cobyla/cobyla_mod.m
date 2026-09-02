@@ -248,6 +248,7 @@ classdef cobyla_mod
 
             consts_obj = prima_mat.common.consts_mod();
 
+            debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
@@ -260,7 +261,7 @@ classdef cobyla_mod
 
 
             solver = "COBYLA";
-
+            srname = "COBYLA";
             info_loc = NaN;
 
             nf_loc = NaN;
@@ -352,6 +353,7 @@ classdef cobyla_mod
             if ~ismember('nlconstr0', ipObj.UsingDefaults)
                 if numel(nlconstr0) ~= m_nlcon
 
+                    debug_obj.warning(srname, "SIZE(NLCONSTR0) /= M_NLCON. Exiting");
                     return % This may be problematic, as outputs like F are undefined.
 
                 end
@@ -569,7 +571,9 @@ classdef cobyla_mod
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
-
+            if (nargout >= 6 || nargout >= 7 || nargout >= 8 || nargout >= 9) && maxhist_loc < nf_loc
+                debug_obj.warning(solver, "Only the history of the last " + int2str(maxhist_loc) + " function evaluation(s) is recorded");
+            end
 
         end
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu)

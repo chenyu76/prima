@@ -187,6 +187,7 @@ classdef bobyqa_mod
 
             consts_obj = prima_mat.common.consts_mod();
 
+            debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
 
@@ -269,7 +270,7 @@ classdef bobyqa_mod
                 if nargout >= 6
                     info = infos_obj.NO_SPACE_BETWEEN_BOUNDS;
                 end
-
+                debug_obj.warning(solver, "There is no space between the lower and upper bounds of variable " + int2str(min(find(xu_loc - xl_loc < 2.0 * eps), [], 'all')) + ". The solver cannot continue");
                 return
             end
 
@@ -403,7 +404,9 @@ classdef bobyqa_mod
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
-
+            if (nargout >= 4 || nargout >= 5) && maxhist_loc < nf_loc
+                debug_obj.warning(solver, "Only the history of the last " + int2str(maxhist_loc) + " function evaluation(s) is recorded");
+            end
 
         end
 

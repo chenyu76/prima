@@ -39,6 +39,8 @@ classdef trustregion_lincoa_mod
             %--------------------------------------------------------------------------------------------------%
 
 
+            consts_obj = prima_mat.common.consts_mod();
+
             powalg_obj = prima_mat.common.powalg_mod();
 
             % Solver-specific modules
@@ -111,7 +113,7 @@ classdef trustregion_lincoa_mod
             % step up to now, calculated by a sequence of (truncated) CG iterations.
             % N.B.: The order of the following lines is important, as the later ones override the earlier.
             resnew = rescon;
-            resnew(rescon >= 0) = max(10.0 ^ max(-60, -floor(log10(realmax))), rescon(rescon >= 0));
+            resnew(rescon >= 0) = max(consts_obj.TINYCV, rescon(rescon >= 0));
             resnew(rescon >= delta) = -1.0;
             %%MATLAB:
             %%resnew = rescon; resnew(rescon >= 0) = max(TINYCV, rescon(rescon >= 0)); resnew(rescon >= delta) = -1;
@@ -335,7 +337,7 @@ classdef trustregion_lincoa_mod
 
                 % Update RESNEW.
                 restmp = resnew - alpha * ad; % Only RESTMP(TRUELOC(RESNEW > 0)) is needed.
-                resnew(resnew > 0) = max(10.0 ^ max(-60, -floor(log10(realmax))), restmp(resnew > 0));
+                resnew(resnew > 0) = max(consts_obj.TINYCV, restmp(resnew > 0));
                 %%MATLAB: mask = (resnew > 0); resnew(mask) = max(TINYCV, resnew(mask) - alpha * ad(mask));
 
                 % Update RESACT. This is done iff GETACT has been called, and D is not PSD but a modified step.

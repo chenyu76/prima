@@ -18,7 +18,10 @@ classdef fprint_mod
     methods
         function fprint(~, string, varargin)
 
+            debug_obj = prima_mat.common.debug_mod();
+
             newline_custom = newline;
+            srname = "FPRINT";
 
             fexist = false;
 
@@ -68,7 +71,7 @@ classdef fprint_mod
                     case {"append", "a"}
 
                     otherwise
-
+                        debug_obj.warning(srname, "Unknown file action """ + faction + """");
                     end
                 end
                 % Check whether the file is already existing.
@@ -79,6 +82,7 @@ classdef fprint_mod
                 funit_loc = fopen(fname_loc, 'w');
 
                 if iostat ~= 0
+                    debug_obj.warning(srname, "Failed to open file " + fname_loc);
                     return
                 end
             end

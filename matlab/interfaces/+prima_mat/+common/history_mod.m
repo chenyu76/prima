@@ -18,7 +18,7 @@ classdef history_mod
             % XHIST = NaN(N, MAXFUN), FHIST = NaN(1, MAXFUN), CHIST = NaN(1, MAXFUN), CONHIST = NaN(M, MAXFUN),
             % if they are requested; replace MAXFUN with 0 for the history that is not requested.
             %--------------------------------------------------------------------------------------------------%
-
+            consts_obj = prima_mat.common.consts_mod();
 
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
 
@@ -54,8 +54,8 @@ classdef history_mod
             if unit_memo <= 0
                 % No output of history is requested
                 maxhist = 0;
-            elseif maxhist > min(300 * 10 ^ 6, (intmax('int32') - 1) / 2) / unit_memo
-                maxhist = fix(min(300 * 10 ^ 6, (intmax('int32') - 1) / 2) / unit_memo); % Integer division.
+            elseif maxhist > consts_obj.MAXHISTMEM / unit_memo
+                maxhist = fix(consts_obj.MAXHISTMEM / unit_memo); % Integer division.
                 % We cannot simply set MAXHIST = MIN(MAXHIST, MAXHISTMEM/UNIT_MEMO), as they may not have
                 % the same kind, and compilers may complain. We may convert them, but overflow may occur.
 

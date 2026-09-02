@@ -269,7 +269,7 @@ classdef linalg_mod
                 end
                 for i = m:-1:j + 1
                     G = obj.planerot(T(j, [j, i]).').';
-                    T(j, [j, i]) = [obj.hypotenuse(T(j, j), T(j, i)), 0.0]; %T(j, [j, i]) = [sqrt(T(j, j)**2 + T(j, i)**2), ZERO]
+                    T(j, [j, i]) = [hypot(T(j, j), T(j, i)), 0.0]; %T(j, [j, i]) = [sqrt(T(j, j)**2 + T(j, i)**2), ZERO]
                     T(j + 1:n, [j, i]) = T(j + 1:n, [j, i]) * G;
                     Q_loc(:, [j, i]) = Q_loc(:, [j, i]) * G;
                 end
@@ -616,42 +616,6 @@ classdef linalg_mod
 
 
         end
-        function r = hypotenuse(~, x1, x2)
-            %--------------------------------------------------------------------------------------------------%
-            % HYPOTENUSE(X1, X2) returns SQRT(X1^2 + X2^2), handling over/underflow.
-            %--------------------------------------------------------------------------------------------------%
-
-
-            y = NaN(2, 1);
-
-            %====================%
-            % Calculation starts %
-            %====================%
-
-            if ~isfinite(x1)
-                r = abs(x1);
-            elseif ~isfinite(x2)
-                r = abs(x2);
-            else
-                y(:) = abs([x1, x2]);
-                y(:) = [min(y, [], 'all'), max(y, [], 'all')];
-                if y(1) > sqrt(realmin) && y(2) < sqrt(realmax / 2.1)
-                    r = sqrt(sum(y .^ 2, 'all'));
-                elseif y(2) > 0
-                    r = y(2) * sqrt((y(1) / y(2)) ^ 2 + 1.0);
-                else
-                    r = 0.0;
-                end
-                % Without the following line, R > Y(1) + Y(2) or R < Y(2) may happen due to rounding errors.
-                r = min(sum(y, 'all'), max(y(2), r));
-            end
-
-            %====================%
-            %  Calculation ends  %
-            %====================%
-
-
-        end
         function G = planerot(obj, x)
             %--------------------------------------------------------------------------------------------------%
             % As in MATLAB, PLANEROT(X) returns a 2x2 Givens matrix G for X in R^2 so that Y = G*X has Y(2) = 0.
@@ -732,7 +696,7 @@ classdef linalg_mod
 
 
         end
-        function A = symmetrize(~, A)
+        function A = symmetrize(obj, A)
             %--------------------------------------------------------------------------------------------------%
             % SYMMETRIZE(A) symmetrizes A.
             % N.B.: Here, we assume that A is a matrix that IS SUPPOSED TO BE symmetric in precise arithmetic,
@@ -1161,7 +1125,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
-        function smat = vec2smat(~, vec)
+        function smat = vec2smat(obj, vec)
             %--------------------------------------------------------------------------------------------------%
             % This function transforms a vector VEC to a symmetric matrix SMAT with the vector storing the upper
             % triangular part of the matrix column by column.
@@ -1188,7 +1152,7 @@ classdef linalg_mod
 
 
         end
-        function vec = smat2vec(~, smat)
+        function vec = smat2vec(obj, smat)
             %--------------------------------------------------------------------------------------------------%
             % This function transforms a symmetric matrix SMAT to a vector VEC that stores the upper triangular
             % part of the matrix column by column.

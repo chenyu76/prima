@@ -125,7 +125,7 @@ classdef powalg_mod
                     % If we apply the rotation below when CQ(K+1) = 0, then CQ(K) will get updated to |CQ(K)|.
                     G = linalg_obj.planerot(cq([k, k + 1]));
                     Q(:, [k, k + 1]) = Q(:, [k, k + 1]) * G.';
-                    cq(k) = linalg_obj.hypotenuse(cq(k), cq(k + 1)); %cq(k) = sqrt(cq(k)**2 + cq(k + 1)**2)
+                    cq(k) = hypot(cq(k), cq(k + 1)); %cq(k) = sqrt(cq(k)**2 + cq(k + 1)**2)
 
                 end
             end
@@ -330,7 +330,7 @@ classdef powalg_mod
             for k = i:n - 1
                 G = linalg_obj.planerot(R([k + 1, k], k + 1));
                 % HYPT must be calculated before R is updated.
-                hypt = linalg_obj.hypotenuse(R(k + 1, k + 1), R(k, k + 1)); %hypt = sqrt(R(k, k + 1)**2 + R(k + 1, k + 1)**2)
+                hypt = hypot(R(k + 1, k + 1), R(k, k + 1)); %hypt = sqrt(R(k, k + 1)**2 + R(k + 1, k + 1)**2)
 
                 % Update Q(:, [K, K+1]).
                 Q(:, [k, k + 1]) = Q(:, [k + 1, k]) * G.';
