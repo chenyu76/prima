@@ -169,7 +169,7 @@ classdef selectx_mod
                 % We consider only the points whose shifted constraint violations are at most the CREF below.
                 % N.B.: Without taking MAX(EPS, .), CREF would be 0 if CMIN = 0. In that case, asking for
                 % CSTRV_SHIFTED < CREF would be WRONG!
-                cref = max(eps(1.0), 2.0 * cmin);
+                cref = max(eps, 2.0 * cmin);
                 % We use the following PHI as our merit function to select X.
                 if cweight <= 0
                     phi = fhist;
@@ -232,7 +232,7 @@ classdef selectx_mod
             % If C1 <= CTOL and C2 is significantly larger/worse than CTOL, i.e., C2 > MAX(CTOL, CREF),
             % then FC1 is better than FC2 as long as F1 < REALMAX. Normally CREF >= CTOL so MAX(CTOL, CREF)
             % is indeed CREF. However, this may not be true if CTOL > 1E-1*CONSTRMAX.
-            cref = 10.0 * max(eps(1.0), min(ctol, 1.0e-2 * consts_obj.CONSTRMAX)); % The MIN avoids overflow.
+            cref = 10.0 * max(eps, min(ctol, 1.0e-2 * consts_obj.CONSTRMAX)); % The MIN avoids overflow.
             is_better = is_better || f1 < realmax && c1 <= ctol && (c2 > max(ctol, cref) || isnan(c2));
 
             %====================%

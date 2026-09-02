@@ -206,8 +206,8 @@ classdef preproc_mod
 
             % Revise the default values for RHOBEG/RHOEND according to the solver.
             if lower(solver) == "bobyqa"
-                rhobeg_default = max(eps(1.0), min(consts_obj.RHOBEG_DFT, min(xu - xl, [], 'all') / 4.0));
-                rhoend_default = max(eps(1.0), min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_default, consts_obj.RHOEND_DFT));
+                rhobeg_default = max(eps, min(consts_obj.RHOBEG_DFT, min(xu - xl, [], 'all') / 4.0));
+                rhoend_default = max(eps, min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_default, consts_obj.RHOEND_DFT));
             else
                 rhobeg_default = consts_obj.RHOBEG_DFT;
                 rhoend_default = consts_obj.RHOEND_DFT;
@@ -237,7 +237,7 @@ classdef preproc_mod
 
             if ~(isfinite(rhoend) && rhoend >= 0 && rhoend <= rhobeg)
                 % RHOEND = NaN falls into this case.
-                rhoend = max(eps(1.0), min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg, rhoend_default));
+                rhoend = max(eps, min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg, rhoend_default));
             end
 
             % For BOBYQA, revise X0 or RHOBEG so that the distance between X0 and the inactive bounds is at
@@ -277,21 +277,21 @@ classdef preproc_mod
                 % Revise RHOBEG if needed.
                 % N.B.: If X0 has been revised above (i.e., HONOUR_X0 is FALSE), then the following revision
                 % is unnecessary in precise arithmetic. However, it may still be needed due to rounding errors.
-                lbx = isfinite(xl) & x0 - xl <= eps(1.0) * max(1.0, abs(xl)); % X0 essentially equals XL
-                ubx = isfinite(xu) & x0 - xu >= -eps(1.0) * max(1.0, abs(xu)); % X0 essentially equals XU
+                lbx = isfinite(xl) & x0 - xl <= eps * max(1.0, abs(xl)); % X0 essentially equals XL
+                ubx = isfinite(xu) & x0 - xu >= -eps * max(1.0, abs(xu)); % X0 essentially equals XU
                 x0(lbx) = xl(lbx);
                 x0(ubx) = xu(ubx);
-                rhobeg = max(eps(1.0), min([rhobeg; x0(find(~lbx)) - xl(find(~lbx)); xu(find(~ubx)) - x0(find(~ubx))], [], 'all'));
-                if rhobeg_in - rhobeg > eps(1.0) * max(1.0, rhobeg_in)
-                    rhoend = max(eps(1.0), min(rhoend / rhobeg_in * rhobeg, rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
+                rhobeg = max(eps, min([rhobeg; x0(find(~lbx)) - xl(find(~lbx)); xu(find(~ubx)) - x0(find(~ubx))], [], 'all'));
+                if rhobeg_in - rhobeg > eps * max(1.0, rhobeg_in)
+                    rhoend = max(eps, min(rhoend / rhobeg_in * rhobeg, rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
 
                 end
             end
 
             % The following revision may update RHOBEG and RHOEND slightly. It particularly prevents
             % RHOEND > RHOBEG due to rounding errors, which would not be accepted by the solvers.
-            rhobeg = max(rhobeg, eps(1.0));
-            rhoend = min(max(rhoend, eps(1.0)), rhobeg);
+            rhobeg = max(rhobeg, eps);
+            rhoend = min(max(rhoend, eps), rhobeg);
 
             % Validate CTOL (it can be 0)
             if ~ismember('ctol', ipObj.UsingDefaults)

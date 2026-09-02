@@ -151,7 +151,7 @@ classdef trustregion_bobyqa_mod
                 stepsq = sum(s .^ 2, 'all');
                 ds = sum(d(find(xbdi == 0)) .* s(find(xbdi == 0)), 'all');
 
-                if ~(stepsq > eps(1.0) * delsq && gredsq * delsq > (tol * qred) ^ 2 && ~isnan(ds))
+                if ~(stepsq > eps * delsq && gredsq * delsq > (tol * qred) ^ 2 && ~isnan(ds))
                     break
                 end
 

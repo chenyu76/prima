@@ -245,7 +245,7 @@ classdef geometry_newuoa_mod
                 maxiter = 0; % Return immediately to avoid producing a D containing NaN/Inf.
             end
 
-            tol = min(0.1, max(eps(1.0) ^ 0.25, 1.0e-4));
+            tol = min(0.1, max(eps ^ 0.25, 1.0e-4));
             for iter = 1:maxiter
                 % Begin the iteration by overwriting S with a vector that has the required length and direction,
                 % except that termination occurs if the given D and S are nearly parallel.
@@ -410,7 +410,7 @@ classdef geometry_newuoa_mod
 
             densav = 0.0;
 
-            tol = min(0.1, max(eps(1.0) ^ 0.25, 1.0e-4));
+            tol = min(0.1, max(eps ^ 0.25, 1.0e-4));
             for iter = 1:n
                 % Begin the iteration by overwriting S with a vector that has the required length and direction.
                 % TOL is the tolerance for telling whether S and D are nearly parallel. In Powell's code, the

@@ -134,7 +134,7 @@ classdef powalg_mod
             % The two IFs cannot be merged as Fortran may evaluate CQ(N+1) even if N>=M, leading to a SEGFAULT.
             if n < m
                 % Powell's condition for the following IF: CQ(N+1) /= 0.
-                if abs(cq(n + 1)) > eps(1.0) ^ 2 && ~linalg_obj.isminor0(cq(n + 1), cqa(n + 1))
+                if abs(cq(n + 1)) > eps ^ 2 && ~linalg_obj.isminor0(cq(n + 1), cqa(n + 1))
                     n = n + 1;
                 end
             end

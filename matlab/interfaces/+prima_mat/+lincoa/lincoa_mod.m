@@ -353,7 +353,7 @@ classdef lincoa_mod
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(eps(1.0), min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, consts_obj.RHOEND_DFT));
+                rhoend_loc = max(eps, min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, consts_obj.RHOEND_DFT));
             else
                 rhoend_loc = consts_obj.RHOEND_DFT;
             end
@@ -377,7 +377,7 @@ classdef lincoa_mod
                 eta1_loc = eta1;
             elseif ~ismember('eta2', ipObj.UsingDefaults)
                 if eta2 > 0 && eta2 < 1
-                    eta1_loc = max(eps(1.0), eta2 / 7.0);
+                    eta1_loc = max(eps, eta2 / 7.0);
                 end
             else
                 eta1_loc = 0.1;

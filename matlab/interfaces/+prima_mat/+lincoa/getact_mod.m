@@ -173,7 +173,7 @@ classdef getact_mod
                 dd = sum(psd .* psd, 'all');
                 dnorm = sqrt(dd);
 
-                if dnorm <= eps(1.0) || isnan(dnorm)
+                if dnorm <= eps || isnan(dnorm)
                     break
                 end
 
@@ -232,7 +232,7 @@ classdef getact_mod
                 % The following condition works essentially the same as Powell's. However, it ensures that
                 % VIOLMX > EPS * DNORM when the EXIT is not triggered, which implies that AMAT(:, L) is not in
                 % the range of QFAC(:, 1:NACT).
-                if all(~mask, 'all') || violmx <= max(eps(1.0) * dnorm, 10.0 * norm(apsd(iact(1:nact)), "inf"))
+                if all(~mask, 'all') || violmx <= max(eps * dnorm, 10.0 * norm(apsd(iact(1:nact)), "inf"))
                     break
                 end
 

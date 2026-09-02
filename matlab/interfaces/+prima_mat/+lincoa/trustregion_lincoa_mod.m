@@ -158,7 +158,7 @@ classdef trustregion_lincoa_mod
                     ngetact_loc = ngetact_loc + 1;
                     [iact, nact, qfac, resact, resnew, rfac, psd] = getact_obj.getact(amat, delta, g, iact, nact, qfac, resact, resnew, rfac, psd);
                     dd = sum(psd .* psd, 'all');
-                    if dd <= eps(1.0) * delsq || isnan(dd)
+                    if dd <= eps * delsq || isnan(dd)
                         % Powell's code: IF (DD <= 0) THEN
                         break
                     end
@@ -193,7 +193,7 @@ classdef trustregion_lincoa_mod
                         dd = sum(dproj .^ 2, 'all');
                         resid = delsq - sum((s + psd) .^ 2, 'all');
                         % Powell's condition for the following IF: RESID > 0.
-                        if resid > 0 && dd > eps(1.0) * delsq && ~isnan(ds)
+                        if resid > 0 && dd > eps * delsq && ~isnan(ds)
                             % Set GAMMA to the greatest value so that S + PSD + GAMMA*DPROJ satisfies the trust
                             % region bound. SQRTD: square root of a discriminant. Powell's code for SQRTD is
                             % SQRT(DS * DS + DD * RESID), which may be below ABS(DS) due to underflow in DS*DS.
@@ -245,7 +245,7 @@ classdef trustregion_lincoa_mod
                 % ALPHA may be mistakenly calculated as a huge value due to rounding errors, as observed on
                 % 20221205. Therefore, we exit when DD is small. The test for DG is covered by the IF after the
                 % calculation of ALPHA.
-                if resid <= 0 || dd <= eps(1.0) * delsq || isnan(ds)
+                if resid <= 0 || dd <= eps * delsq || isnan(ds)
                     break
                 end
                 % SQRTD: square root of a discriminant. Powell's code for SQRTD is SQRT(DS * DS + DD * RESID),

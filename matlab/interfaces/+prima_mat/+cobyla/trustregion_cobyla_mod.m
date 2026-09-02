@@ -264,7 +264,7 @@ classdef trustregion_cobyla_mod
                         % following IF: .NOT. ABS(ZDOTA(NACT)) > 0. Note that it is different from
                         % 'ABS(ZDOTA(NACT) <= 0)', as ZDOTA(NACT) can be NaN.
                         % N.B.: We cannot arrive here with NACT == 0, which should have triggered an exit above.
-                        if isnan(zdota(nact)) || abs(zdota(nact)) <= eps(1.0) ^ 2
+                        if isnan(zdota(nact)) || abs(zdota(nact)) <= eps ^ 2
                             break
                         end
                         vmultc([icon, nact]) = [0.0, frac]; % VMULTC([ICON, NACT]) is valid as ICON > NACT.
@@ -292,7 +292,7 @@ classdef trustregion_cobyla_mod
 
                     % Powell's code does not have the following. It avoids subsequent floating point exceptions.
                     %------------------------------------------------------------------------------------------%
-                    if isnan(zdota(nact)) || abs(zdota(nact)) <= eps(1.0) ^ 2
+                    if isnan(zdota(nact)) || abs(zdota(nact)) <= eps ^ 2
                         break
                     end
                     %------------------------------------------------------------------------------------------%
@@ -335,7 +335,7 @@ classdef trustregion_cobyla_mod
 
                     end
                     if nact > 0
-                        if isnan(zdota(nact)) || abs(zdota(nact)) <= eps(1.0) ^ 2
+                        if isnan(zdota(nact)) || abs(zdota(nact)) <= eps ^ 2
                             break
                         end
                     end
@@ -362,7 +362,7 @@ classdef trustregion_cobyla_mod
                 dd = delta ^ 2 - sum(d .* d, 'all');
                 ss = sum(sdirn .* sdirn, 'all');
                 sd = sum(sdirn .* d, 'all');
-                if dd <= 0 || ss <= eps(1.0) * delta ^ 2 || isnan(sd)
+                if dd <= 0 || ss <= eps * delta ^ 2 || isnan(sd)
                     break
                 end
                 % SQRTD: square root of a discriminant. The MAXVAL avoids SQRTD < ABS(SD) due to underflow.

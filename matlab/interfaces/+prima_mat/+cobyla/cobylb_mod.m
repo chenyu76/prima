@@ -90,7 +90,7 @@ classdef cobylb_mod
             % 2. There is no need to revise ACTREM and PREREM when CPEN = 0 and F = FVAL(N+1) as in lines
             % 312--314 of Powell's cobylb.f code. Powell's code revises ACTREM to CVAL(N + 1) - CSTRV and PREREM
             % to PREREC in this case, which is crucial for feasibility problems.
-            cpenmin = eps(1.0);
+            cpenmin = eps;
 
             m_lcon = numel(bvec);
             m = numel(constr);

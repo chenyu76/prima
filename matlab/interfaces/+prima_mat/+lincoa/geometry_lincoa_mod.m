@@ -262,7 +262,7 @@ classdef geometry_lincoa_mod
 
             % Replace S with a steepest ascent step from XOPT if the latter provides a larger value of DENABS.
             gnorm = norm(glag);
-            if gnorm > eps(1.0) && isfinite(gnorm)
+            if gnorm > eps && isfinite(gnorm)
                 gstp = delbar / gnorm * glag;
                 if sum(gstp .* powalg_obj.hess_mul(gstp, xpt, pqlag), 'all') < 0
                     % <GSTP, HESS_LAG*GSTP> is negative
@@ -296,7 +296,7 @@ classdef geometry_lincoa_mod
             pglag(:) = qfac(:, nact + 1:n) * (qfac(:, nact + 1:n).' * glag);
             %%MATLAB: pglag = qfac(:, nact+1:n) * (glag' * qfac(:, nact+1:n))';
             gnorm = norm(pglag);
-            if nact > 0 && gnorm > eps(1.0) && isfinite(gnorm)
+            if nact > 0 && gnorm > eps && isfinite(gnorm)
                 pgstp = delbar / gnorm * pglag;
                 if sum(pgstp .* powalg_obj.hess_mul(pgstp, xpt, pqlag), 'all') < 0
                     % <PGSTP, HESS_LAG*PGSTP> is negative.
@@ -312,7 +312,7 @@ classdef geometry_lincoa_mod
                 % Powell's code is as follows. Note that MATPROD(PGSTP, AMAT(:, IACT(1:NACT))) is 0 in theory.
                 % %cvtol = min(0.01_RP * norm(pgstp), TEN * norm(matprod(pgstp, amat(:, iact(1:nact))), 'inf'))
                 % The following code works essentially the same as Powell's code.
-                cvtol = max(eps(1.0) * norm(pgstp), 10.0 * norm(amat(:, iact(1:nact)).' * pgstp, "inf"));
+                cvtol = max(eps * norm(pgstp), 10.0 * norm(amat(:, iact(1:nact)).' * pgstp, "inf"));
                 take_pgstp = false;
                 if cstrv <= cvtol
                     den = powalg_obj.calden(kopt, bmat, pgstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.

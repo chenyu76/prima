@@ -138,7 +138,7 @@ classdef trustregion_newuoa_mod
 
                     % Powell's code does not have the following two IFs.
                     %--------------------------------------------------%
-                    if dd <= eps(1.0) * delsq
+                    if dd <= eps * delsq
                         info_loc = 0;
                         break
                     end

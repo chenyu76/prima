@@ -206,7 +206,7 @@ classdef linalg_mod
             n = size(A, 1);
 
             ipObj = inputParser();
-            addParameter(ipObj, 'tol', min(1.0e-3, 100.0 * eps(1.0) * double(max(size(A, 1), size(A, 2)))));
+            addParameter(ipObj, 'tol', min(1.0e-3, 100.0 * eps * double(max(size(A, 1), size(A, 2)))));
             parse(ipObj, varargin{:});
             tol_loc = ipObj.Results.tol;
 
@@ -683,7 +683,7 @@ classdef linalg_mod
                 % X(1) == 0 == X(2).
                 c = 1.0;
                 s = 0.0;
-            elseif abs(x(2)) <= eps(1.0) * abs(x(1))
+            elseif abs(x(2)) <= eps * abs(x(1))
                 % N.B.:
                 % 0. With <= instead of <, this case covers X(1) == 0 == X(2), which is treated above separately
                 % to avoid the confusing SIGN(., 0) (see 1).
@@ -691,7 +691,7 @@ classdef linalg_mod
                 % 2. Taking SIGN(X(1)) into account ensures the continuity of G with respect to X except at 0.
                 c = (x(1) > 0) .* 2 - 1; %%MATLAB: c = sign(x(1))
                 s = 0.0;
-            elseif abs(x(1)) <= eps(1.0) * abs(x(2))
+            elseif abs(x(1)) <= eps * abs(x(2))
                 % N.B.: SIGN(A, X) = ABS(A) * sign of X /= A * sign of X ! Therefore, it is WRONG to define G
                 % as SIGN(RESHAPE([ZERO, -ONE, ONE, ZERO], [2, 2]), X(2)). This mistake was committed on
                 % 20211206 and took a whole day to debug! NEVER use SIGN on arrays unless you are really sure.
