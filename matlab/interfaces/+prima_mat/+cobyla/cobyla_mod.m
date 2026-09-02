@@ -513,9 +513,6 @@ classdef cobyla_mod
             % Copy XHIST_LOC to XHIST if needed.
             if nargout >= 6
                 nhist = min(nf_loc, size(xhist_loc, 2));
-                %----------------------------------------------------%
-
-                %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
                 % 0. Allocate XHIST as long as it is present, even if the size is 0; otherwise, it will be
@@ -537,9 +534,6 @@ classdef cobyla_mod
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 7
                 nhist = min(nf_loc, numel(fhist_loc));
-                %--------------------------------------------------%
-
-                %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
@@ -547,9 +541,6 @@ classdef cobyla_mod
             % Copy CHIST_LOC to CHIST if needed.
             if nargout >= 8
                 nhist = min(nf_loc, numel(chist_loc));
-                %--------------------------------------------------%
-
-                %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
             end
@@ -563,15 +554,12 @@ classdef cobyla_mod
             % A similar comment can be made on CONSTR_LOC and NLCONSTR, which are related to CONFILT in COBYLB.
             if nargout >= 9
                 nhist = min(nf_loc, size(conhist_loc, 2));
-                %---------------------------------------------------------------%
-
-                %---------------------------------------------------------------%
                 nlchist = conhist_loc(m - m_nlcon + 1:m, 1:nhist); % The same as XHIST, we must cap NLCHIST at NF_LOC.
 
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
-            if (nargout >= 6 || nargout >= 7 || nargout >= 8 || nargout >= 9) && maxhist_loc < nf_loc
+            if nargout >= 6 && maxhist_loc < nf_loc
                 debug_obj.warning(solver, "Only the history of the last " + int2str(maxhist_loc) + " function evaluation(s) is recorded");
             end
 
