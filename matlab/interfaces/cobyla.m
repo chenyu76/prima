@@ -568,7 +568,12 @@ f = fun(x);
 if isempty(nonlcon)
     nlconstr = [];
 else
-    [nlcineq, nlceq] = nonlcon(x);
-    nlconstr = [-nlceq(:); nlceq(:); nlcineq(:)];
+    [nlcineq, nlceq, succ] = nonlcon(x);
+    if succ
+        nlconstr = [-nlceq(:); nlceq(:); nlcineq(:)];
+    else
+        % Preserve the constraint shape known by the MATLAB solver.
+        nlconstr = NaN(size(constr_in));
+    end
 end
 return
