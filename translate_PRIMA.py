@@ -135,6 +135,8 @@ def translate_sources(
             pkg_name,
             # "--preamble",
             # FILE_PREAMBLE,
+            "--max-column-width",
+            "100",
         ]
     )
 
