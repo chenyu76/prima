@@ -12,7 +12,11 @@ classdef initialize_cobyla_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, info] = initxfc(~, calcfc, iprint, maxfun, amat, bvec, constr0, ctol, f0, ftarget, rhobeg, x0, chist, conhist, conmat, cval, fhist, fval, sim, xhist, evaluated)
+        function [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, ...
+                  info] = ...
+                initxfc(~, calcfc, iprint, maxfun, amat, bvec, constr0, ctol, f0, ftarget, ...
+                        rhobeg, x0, chist, conhist, conmat, cval, fhist, fval, sim, xhist, ...
+                        evaluated)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization concerning X, function values, and constraints.
             %--------------------------------------------------------------------------------------------------%
@@ -78,17 +82,22 @@ classdef initialize_cobyla_mod
                 else
                     j = k - 1;
                     x(j) = x(j) + rhobeg;
-                    constr(1:m_lcon) = evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints.
-                    [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m)); constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints.
+                    constr(1:m_lcon) = ...
+                        evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints.
+                    [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m));
+                    constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints.
                     % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
                     % linear constraint values here to make CSTRV consistent.
                 end
                 cstrv = max([0.0; constr], [], 'all');
 
                 % Print a message about the function/constraint evaluation according to IPRINT.
-                message_obj.fmsg(solver, "Initialization", iprint, k, rhobeg, f, x, 'cstrv', cstrv, 'constr', constr);
+                message_obj.fmsg(solver, "Initialization", iprint, k, rhobeg, f, x, ...
+                                 'cstrv', cstrv, 'constr', constr);
                 % Save X, F, CONSTR, CSTRV into the history.
-                [xhist, fhist, chist, conhist] = history_obj.savehist(k, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist, 'constr', constr, 'conhist', conhist);
+                [xhist, fhist, chist, conhist] = ...
+                    history_obj.savehist(k, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist, ...
+                                         'constr', constr, 'conhist', conhist);
 
                 % Save F, CONSTR, and CSTRV to FVAL, CONMAT, and CVAL respectively. This must be done before
                 % checking whether to exit. If exit, FVAL, CONMAT, and CVAL will define FFILT, CONFILT, and
@@ -130,7 +139,9 @@ classdef initialize_cobyla_mod
 
 
         end
-        function [nfilt, cfilt, confilt, ffilt, xfilt] = initfilt(~, conmat, ctol, cweight, cval, fval, sim, evaluated, cfilt, confilt, ffilt, xfilt)
+        function [nfilt, cfilt, confilt, ffilt, xfilt] = ...
+                initfilt(~, conmat, ctol, cweight, cval, fval, sim, evaluated, cfilt, confilt, ...
+                         ffilt, xfilt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the filters (XFILT, etc) that will be used when selecting X at the
             % end of the solver.
@@ -157,7 +168,10 @@ classdef initialize_cobyla_mod
                     else
                         x = sim(:, i); % I == N+1
                     end
-                    [nfilt, cfilt, ffilt, xfilt, confilt] = selectx_obj.savefilt(cval(i), ctol, cweight, fval(i), x, nfilt, cfilt, ffilt, xfilt, 'constr', conmat(:, i), 'confilt', confilt);
+                    [nfilt, cfilt, ffilt, xfilt, confilt] = ...
+                        selectx_obj.savefilt(cval(i), ctol, cweight, fval(i), x, nfilt, cfilt, ...
+                                             ffilt, xfilt, 'constr', conmat(:, i), ...
+                                             'confilt', confilt);
                 end
             end
 

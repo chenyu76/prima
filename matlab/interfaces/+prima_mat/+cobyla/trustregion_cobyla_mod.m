@@ -84,17 +84,21 @@ classdef trustregion_cobyla_mod
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
             for i = 1:m + 1                % Note that SIZE(A, 2) = SIZE(B) = M + 1 /= M.
                 if max(abs(A_aug(:, i))) > 1.0e12
-                    modscal = max(2.0 * realmin, 1.0 / max(abs(A_aug(:, i)))); % MAX: avoid underflow.
+                    modscal = ...
+                        max(2.0 * realmin, 1.0 / max(abs(A_aug(:, i)))); % MAX: avoid underflow.
                     A_aug(:, i) = A_aug(:, i) * modscal;
                     b_aug(i) = b_aug(i) * modscal;
                 end
             end
 
             % Stage 1: minimize the l_infinity constraint violation of the linearized constraints.
-            [iact_slice, nact, d, vmultc_slice, z] = obj.trstlp_sub(iact(1:m), nact, 1, A_aug(:, 1:m), b_aug(1:m), delta, d, vmultc(1:m), z); iact(1:m) = iact_slice; vmultc(1:m) = vmultc_slice;
+            [iact_slice, nact, d, vmultc_slice, z] = ...
+                obj.trstlp_sub(iact(1:m), nact, 1, A_aug(:, 1:m), b_aug(1:m), delta, d, ...
+                               vmultc(1:m), z); iact(1:m) = iact_slice; vmultc(1:m) = vmultc_slice;
 
             % Stage 2: minimize the linearized objective without increasing the l_infinity constraint violation.
-            [iact, nact, d, vmultc, z] = obj.trstlp_sub(iact, nact, 2, A_aug, b_aug, delta, d, vmultc, z);
+            [iact, nact, d, vmultc, z] = ...
+                obj.trstlp_sub(iact, nact, 2, A_aug, b_aug, delta, d, vmultc, z);
 
             %====================%
             %  Calculation ends  %
@@ -102,7 +106,8 @@ classdef trustregion_cobyla_mod
 
 
         end
-        function [iact, nact, d, vmultc, z] = trstlp_sub(~, iact, nact, stage, A, b, delta, d, vmultc, z)
+        function [iact, nact, d, vmultc, z] = ...
+                trstlp_sub(~, iact, nact, stage, A, b, delta, d, vmultc, z)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the real calculations for TRSTLP, both stage 1 and stage 2.
             % Major differences between stage 1 and stage 2:
@@ -221,7 +226,9 @@ classdef trustregion_cobyla_mod
                 if icon > nact
                     zdasav(1:nact) = zdota(1:nact);
                     nactsav = nact;
-                    [z, zdota, nact] = powalg_obj.qradd_Rdiag(A(:, iact(icon)), z, zdota, nact); % QRADD may update NACT to NACT + 1.
+                    [z, zdota, nact] = ...
+                        powalg_obj.qradd_Rdiag(A(:, iact(icon)), z, zdota, ...
+                                               nact); % QRADD may update NACT to NACT + 1.
                     % Indeed, it suffices to pass ZDOTA(1:MIN(N, NACT+1)) to QRADD as follows.
                     % %call qradd(A(:, iact(icon)), z, zdota(1:min(n, nact + 1_IK)), nact)
 
@@ -241,7 +248,9 @@ classdef trustregion_cobyla_mod
                         % A(:, IACT(1:NACT)) is the UNUPDATED version before QRADD (Z(:, 1:NACT) remains the
                         % same before and after QRADD). Therefore, if we supply ZDOTA to LSQR (as Rdiag) as
                         % Powell did, we should use the UNUPDATED version, namely ZDASAV.
-                        vmultd(1:nact) = linalg_obj.lsqr_Rdiag(A(:, iact(1:nact)), A(:, iact(icon)), 'Q', z(:, 1:nact), 'Rdiag', zdasav(1:nact));
+                        vmultd(1:nact) = ...
+                            linalg_obj.lsqr_Rdiag(A(:, iact(1:nact)), A(:, iact(icon)), ...
+                                                  'Q', z(:, 1:nact), 'Rdiag', zdasav(1:nact));
                         if ~any(vmultd(1:nact) > 0 & iact(1:nact) <= m, 'all')
                             % N.B.: This can be triggered by NACT == 0 (among other possibilities)! This is
                             % important, because NACT will be used as an index in the sequel.
@@ -253,7 +262,8 @@ classdef trustregion_cobyla_mod
 
                         % Revise the Lagrange multipliers. The revision is not applicable to VMULTC(NACT + 1:M).
                         fracmult(:) = realmax;
-                        fracmult(vmultd > 0 & iact <= m) = vmultc(vmultd > 0 & iact <= m) ./ vmultd(vmultd > 0 & iact <= m);
+                        fracmult(vmultd > 0 & iact <= m) = ...
+                            vmultc(vmultd > 0 & iact <= m) ./ vmultd(vmultd > 0 & iact <= m);
                         %%MATLAB: mask = (vmultd > 0 & iact <= m); fracmult(mask) = vmultc(mask) / vmultd(mask);
                         % Only the places with VMULTD > 0 and IACT <= M is relevant blow, if any.
                         frac = min(fracmult(1:nact)); % FRACMULT(NACT+1:MCON) may contain garbage.
@@ -267,7 +277,8 @@ classdef trustregion_cobyla_mod
                         if isnan(zdota(nact)) || abs(zdota(nact)) <= eps ^ 2
                             break
                         end
-                        vmultc([icon, nact]) = [0.0, frac]; % VMULTC([ICON, NACT]) is valid as ICON > NACT.
+                        vmultc([icon, nact]) = ...
+                            [0.0, frac]; % VMULTC([ICON, NACT]) is valid as ICON > NACT.
                         iact([icon, nact]) = iact([nact, icon]);
                     end
 
@@ -280,7 +291,9 @@ classdef trustregion_cobyla_mod
                             % We must exit, as NACT-1 is used as an index below. Powell's code does not have this.
                             break
                         end
-                        [z, Rdiag_slice] = powalg_obj.qrexc_Rdiag(A(:, iact(1:nact)), z, zdota(1:nact), nact - 1); zdota(1:nact) = Rdiag_slice;
+                        [z, Rdiag_slice] = ...
+                            powalg_obj.qrexc_Rdiag(A(:, iact(1:nact)), z, zdota(1:nact), nact - 1);
+                        zdota(1:nact) = Rdiag_slice;
                         % Indeed, it suffices to pass Z(:, 1:NACT) to QREXC as follows.
                         % %call qrexc(A(:, iact(1:nact)), z(:, 1:nact), zdota(1:nact), nact - 1_IK)
                         iact([nact - 1, nact]) = iact([nact, nact - 1]);
@@ -301,7 +314,10 @@ classdef trustregion_cobyla_mod
                     % Usually during stage 1 the vector SDIRN gives a search direction that reduces all the
                     % active constraint violations by one simultaneously.
                     if stage == 1
-                        sdirn = sdirn - (sum(sdirn .* A(:, iact(nact)), 'all') + 1.0) / zdota(nact) * z(:, nact);
+                        sdirn = ...
+                            sdirn ...
+                            - (sum(sdirn .* A(:, iact(nact)), 'all') + 1.0) / zdota(nact) ...
+                              * z(:, nact);
                     else
                         sdirn = -(1.0 / zdota(nact)) * z(:, nact);
                         % SDIRN = Z(:, NACT)/(A(:,IACT(NACT))^T*Z(:, NACT))
@@ -315,7 +331,9 @@ classdef trustregion_cobyla_mod
                     if ~(icon > 0)
                         error("ICON > 0");
                     end
-                    [z, Rdiag_slice] = powalg_obj.qrexc_Rdiag(A(:, iact(1:nact)), z, zdota(1:nact), icon); zdota(1:nact) = Rdiag_slice; % QREXC does nothing if ICON==NACT.
+                    [z, Rdiag_slice] = ...
+                        powalg_obj.qrexc_Rdiag(A(:, iact(1:nact)), z, zdota(1:nact), icon);
+                    zdota(1:nact) = Rdiag_slice; % QREXC does nothing if ICON==NACT.
                     % Indeed, it suffices to pass Z(:, 1:NACT) to QREXC as follows.
                     % %call qrexc(A(:, iact(1:nact)), z(:, 1:nact), zdota(1:nact), icon)
                     iact(icon:nact) = [iact(icon + 1:nact); iact(icon)];
@@ -423,13 +441,16 @@ classdef trustregion_cobyla_mod
                 % Set VMULTD to the VMULTC vector that would occur if D became DNEW. A device is included to
                 % force VMULTD(K)=ZERO if deviations from this value can be attributed to computer rounding
                 % errors. First calculate the new Lagrange multipliers.
-                vmultd(1:nact) = -linalg_obj.lsqr_Rdiag(A(:, iact(1:nact)), dnew, 'Q', z(:, 1:nact), 'Rdiag', zdota(1:nact));
+                vmultd(1:nact) = ...
+                    -linalg_obj.lsqr_Rdiag(A(:, iact(1:nact)), dnew, 'Q', z(:, 1:nact), ...
+                                           'Rdiag', zdota(1:nact));
                 if stage == 2
                     vmultd(nact) = max(0.0, vmultd(nact)); % This seems never activated.
 
                 end
                 % Complete VMULTD by finding the new constraint residuals. (Powell wrote "Complete VMULTC ...")
-                cvshift(:) = cviol - (A(:, iact).' * dnew - b(iact)); % Only CVSHIFT(nact+1:mcon) is needed.
+                cvshift(:) = ...
+                    cviol - (A(:, iact).' * dnew - b(iact)); % Only CVSHIFT(nact+1:mcon) is needed.
                 cvsabs(:) = abs(A(:, iact)).' * abs(dnew) + abs(b(iact)) + cviol;
                 cvshift(linalg_obj.isminor1(cvshift, cvsabs)) = 0.0;
                 %%MATLAB: cvshift(isminor(cvshift, cvsabs)) = 0;
@@ -437,7 +458,8 @@ classdef trustregion_cobyla_mod
 
                 % Calculate the fraction of the step from D to DNEW that will be taken.
                 fracmult(:) = realmax;
-                fracmult(vmultd < 0) = vmultc(vmultd < 0) ./ (vmultc(vmultd < 0) - vmultd(vmultd < 0));
+                fracmult(vmultd < 0) = ...
+                    vmultc(vmultd < 0) ./ (vmultc(vmultd < 0) - vmultd(vmultd < 0));
                 %%MATLAB: mask = (vmultd < 0); fracmult(mask) = vmultc(mask) / (vmultc(mask) - vmultd(mask));
                 % Only the places with VMULTD < 0 is relevant below, if any.
                 icon = fortran.minloc([1.0; fracmult], 'dim', 1) - 1;

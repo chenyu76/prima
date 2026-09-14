@@ -17,7 +17,9 @@ classdef preproc_mod
             %    are not in debug mode.
 
         end
-        function [iprint, maxfun, maxhist, ftarget, rhobeg, rhoend, npt, maxfilt, ctol, cweight, eta1, eta2, gamma1, gamma2, x0] = preproc(~, solver, n, iprint, maxfun, maxhist, ftarget, rhobeg, rhoend, varargin)
+        function [iprint, maxfun, maxhist, ftarget, rhobeg, rhoend, npt, maxfilt, ctol, cweight, ...
+                  eta1, eta2, gamma1, gamma2, x0] = ...
+                preproc(~, solver, n, iprint, maxfun, maxhist, ftarget, rhobeg, rhoend, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine preprocesses the inputs. It does nothing to the inputs that are valid.
             %--------------------------------------------------------------------------------------------------%
@@ -92,7 +94,10 @@ classdef preproc_mod
             if abs(iprint) > 3
                 iprint_in = iprint;
                 iprint = consts_obj.IPRINT_DFT;
-                debug_obj.warning(solver, "Invalid IPRINT: " + int2str(iprint_in) + "; it should be 0, 1, -1, 2, -2, 3, or -3; it is set to " + int2str(iprint));
+                debug_obj.warning(solver, ...
+                                  "Invalid IPRINT: " + int2str(iprint_in) ...
+                                  + "; it should be 0, 1, -1, 2, -2, 3, or -3; it is set to " ...
+                                  + int2str(iprint));
             end
 
             % Validate MAXFUN
@@ -115,20 +120,30 @@ classdef preproc_mod
                 if maxfun > 0
                     maxfun = min_maxfun;
                 else                    % We assume that non-positive values of MAXFUN are produced by overflow.
-                    maxfun = fix(max(min_maxfun, 10 ^ min(4, floor(log10(realmax(class(maxfun))))))); %%MATLAB: maxfun =  max(min_maxfun, 10^4);
+                    maxfun = ...
+                        fix(max(min_maxfun, ...
+                                10 ...
+                                ^ min(4, ...
+                                      floor(log10(realmax(class(maxfun))))))); %%MATLAB: maxfun =  max(min_maxfun, 10^4);
                     % N.B.: Do NOT set MAXFUN to HUGE(MAXFUN), as it may cause overflow and infinite cycling
                     % when used as the upper bound of DO loops. This occurred on 20240225 with gfortran 13. See
                     % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop
                     % https://fortran-lang.discourse.group/t/loops-dont-behave-like-they-should
                 end
-                debug_obj.warning(solver, "Invalid MAXFUN: " + int2str(maxfun_in) + "; it should be at least " + min_maxfun_str + " with N = " + int2str(n) + "; it is set to " + int2str(maxfun));
+                debug_obj.warning(solver, ...
+                                  "Invalid MAXFUN: " + int2str(maxfun_in) ...
+                                  + "; it should be at least " + min_maxfun_str + " with N = " ...
+                                  + int2str(n) + "; it is set to " + int2str(maxfun));
             end
 
             % Validate MAXHIST
             if maxhist <= 0
                 maxhist_in = maxhist;
                 maxhist = maxfun;
-                debug_obj.warning(solver, "Invalid MAXHIST: " + int2str(maxhist_in) + "; it should be a positive integer; it is set to " + int2str(maxhist));
+                debug_obj.warning(solver, ...
+                                  "Invalid MAXHIST: " + int2str(maxhist_in) ...
+                                  + "; it should be a positive integer; it is set to " ...
+                                  + int2str(maxhist));
             end
             maxhist = min(maxhist, maxfun); % MAXHIST > MAXFUN is never needed.
 
@@ -144,7 +159,11 @@ classdef preproc_mod
                     %INT(*) avoids overflow when IK is 16-bit
                     npt_in = npt;
                     npt = min(maxfun - 1, 2 * n + 1);
-                    debug_obj.warning(solver, "Invalid NPT: " + int2str(npt_in) + "; it should be an integer in the interval [N+2, (N+1)(N+2)/2] with N = " + int2str(n) + " and less than MAXFUN = " + int2str(maxfun) + "; it is set to " + int2str(npt));
+                    debug_obj.warning(solver, ...
+                                      "Invalid NPT: " + int2str(npt_in) ...
+                                      + "; it should be an integer in the interval [N+2, (N+1)(N+2)/2] with N = " ...
+                                      + int2str(n) + " and less than MAXFUN = " ...
+                                      + int2str(maxfun) + "; it is set to " + int2str(npt));
                 end
             end
 
@@ -154,14 +173,16 @@ classdef preproc_mod
                 if maxfilt <= 0
                     maxfilt = consts_obj.MAXFILT_DFT;
                 else
-                    maxfilt = max(consts_obj.MIN_MAXFILT, maxfilt); % The inputted MAXFILT is too small.
+                    maxfilt = ...
+                        max(consts_obj.MIN_MAXFILT, maxfilt); % The inputted MAXFILT is too small.
                 end
                 % Further revise MAXFILT according to MAXHISTMEM.
                 switch lower(solver)
                 case "lincoa"
                     unit_memo = (n + 2) * fix(8); % INT(*) avoids overflow when IK is 16-bit.
                 case "cobyla"
-                    unit_memo = (m_loc + n + 2) * fix(8); % INT(*) avoids overflow when IK is 16-bit.
+                    unit_memo = ...
+                        (m_loc + n + 2) * fix(8); % INT(*) avoids overflow when IK is 16-bit.
                 otherwise                    % The following should not be reached unless there is a bug, but we keep it for safety.
                     unit_memo = 1;
                 end
@@ -174,11 +195,18 @@ classdef preproc_mod
                 maxfilt = min(maxfun, max(consts_obj.MIN_MAXFILT, maxfilt));
                 if is_constrained_loc
                     if maxfilt_in <= 0
-                        debug_obj.warning(solver, "Invalid MAXFILT: " + int2str(maxfilt_in) + "; it should be a positive integer; it is set to " + int2str(maxfilt));
+                        debug_obj.warning(solver, ...
+                                          "Invalid MAXFILT: " + int2str(maxfilt_in) ...
+                                          + "; it should be a positive integer; it is set to " ...
+                                          + int2str(maxfilt));
                     elseif maxfilt_in < min(maxfun, consts_obj.MIN_MAXFILT)
-                        debug_obj.warning(solver, "MAXFILT = " + int2str(maxfilt_in) + " is too small; it is set to " + int2str(maxfilt));
+                        debug_obj.warning(solver, ...
+                                          "MAXFILT = " + int2str(maxfilt_in) ...
+                                          + " is too small; it is set to " + int2str(maxfilt));
                     elseif maxfilt < min(maxfilt_in, maxfun)
-                        debug_obj.warning(solver, "MAXFILT is reduced from " + int2str(maxfilt_in) + " to " + int2str(maxfilt) + " due to memory limit");
+                        debug_obj.warning(solver, ...
+                                          "MAXFILT is reduced from " + int2str(maxfilt_in) ...
+                                          + " to " + int2str(maxfilt) + " due to memory limit");
                     end
                 end
             end
@@ -193,7 +221,11 @@ classdef preproc_mod
                 else
                     eta1 = consts_obj.ETA1_DFT;
                 end
-                debug_obj.warning(solver, "Invalid ETA1: " + string_obj.real2str_scalar(eta1_in) + "; it should be in the interval [0, 1) and not more than ETA2 = " + string_obj.real2str_scalar(eta2) + "; it is set to " + string_obj.real2str_scalar(eta1));
+                debug_obj.warning(solver, ...
+                                  "Invalid ETA1: " + string_obj.real2str_scalar(eta1_in) ...
+                                  + "; it should be in the interval [0, 1) and not more than ETA2 = " ...
+                                  + string_obj.real2str_scalar(eta2) + "; it is set to " ...
+                                  + string_obj.real2str_scalar(eta1));
             end
 
             if ~(eta2 >= eta1 && eta2 < 1)
@@ -205,7 +237,11 @@ classdef preproc_mod
                 else
                     eta2 = consts_obj.ETA2_DFT;
                 end
-                debug_obj.warning(solver, "Invalid ETA2: " + string_obj.real2str_scalar(eta2_in) + "; it should be in the interval [0, 1) and not less than ETA1 = " + string_obj.real2str_scalar(eta1) + "; it is set to " + string_obj.real2str_scalar(eta2));
+                debug_obj.warning(solver, ...
+                                  "Invalid ETA2: " + string_obj.real2str_scalar(eta2_in) ...
+                                  + "; it should be in the interval [0, 1) and not less than ETA1 = " ...
+                                  + string_obj.real2str_scalar(eta1) + "; it is set to " ...
+                                  + string_obj.real2str_scalar(eta2));
             end
 
             % The following revision may update ETA1 slightly. It prevents ETA1 > ETA2 due to rounding
@@ -217,14 +253,20 @@ classdef preproc_mod
                 % GAMMA1 = NaN falls into this case.
                 gamma1_in = gamma1;
                 gamma1 = consts_obj.GAMMA1_DFT;
-                debug_obj.warning(solver, "Invalid GAMMA1: " + string_obj.real2str_scalar(gamma1_in) + "; it should in the interval (0, 1); it is set to " + string_obj.real2str_scalar(gamma1));
+                debug_obj.warning(solver, ...
+                                  "Invalid GAMMA1: " + string_obj.real2str_scalar(gamma1_in) ...
+                                  + "; it should in the interval (0, 1); it is set to " ...
+                                  + string_obj.real2str_scalar(gamma1));
             end
 
             if ~(isfinite(gamma2) && gamma2 >= 1)
                 % GAMMA2 = NaN falls into this case.
                 gamma2_in = gamma2;
                 gamma2 = consts_obj.GAMMA2_DFT;
-                debug_obj.warning(solver, "Invalid GAMMA2: " + string_obj.real2str_scalar(gamma2_in) + "; it should be a real number not less than 1; it is set to " + string_obj.real2str_scalar(gamma2));
+                debug_obj.warning(solver, ...
+                                  "Invalid GAMMA2: " + string_obj.real2str_scalar(gamma2_in) ...
+                                  + "; it should be a real number not less than 1; it is set to " ...
+                                  + string_obj.real2str_scalar(gamma2));
             end
 
             % Validate RHOBEG and RHOEND
@@ -235,7 +277,10 @@ classdef preproc_mod
             % Revise the default values for RHOBEG/RHOEND according to the solver.
             if lower(solver) == "bobyqa"
                 rhobeg_default = max(eps, min(consts_obj.RHOBEG_DFT, min(xu - xl) / 4.0));
-                rhoend_default = max(eps, min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_default, consts_obj.RHOEND_DFT));
+                rhoend_default = ...
+                    max(eps, ...
+                        min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_default, ...
+                            consts_obj.RHOEND_DFT));
             else
                 rhobeg_default = consts_obj.RHOBEG_DFT;
                 rhoend_default = consts_obj.RHOEND_DFT;
@@ -248,7 +293,12 @@ classdef preproc_mod
                     % Do NOT make this revision if RHOBEG not positive or not finite, because otherwise RHOBEG
                     % will get a huge value when XU or XL contains huge values that indicate unbounded variables.
                     rhobeg = min(xu - xl) / 4.0; % Here, we do not take RHOBEG_DEFAULT.
-                    debug_obj.warning(solver, "Invalid RHOBEG: " + string_obj.real2str_scalar(rhobeg_in) + "; " + solver + " requires 0 < RHOBEG <= MINVAL(XU-XL)/2 = " + string_obj.real2str_scalar(min(xu - xl) / 2.0) + "; it is set to " + string_obj.real2str_scalar(rhobeg));
+                    debug_obj.warning(solver, ...
+                                      "Invalid RHOBEG: " + string_obj.real2str_scalar(rhobeg_in) ...
+                                      + "; " + solver ...
+                                      + " requires 0 < RHOBEG <= MINVAL(XU-XL)/2 = " ...
+                                      + string_obj.real2str_scalar(min(xu - xl) / 2.0) ...
+                                      + "; it is set to " + string_obj.real2str_scalar(rhobeg));
                 end
             end
 
@@ -261,13 +311,23 @@ classdef preproc_mod
                 else
                     rhobeg = rhobeg_default;
                 end
-                debug_obj.warning(solver, "Invalid RHOBEG: " + string_obj.real2str_scalar(rhobeg_in) + "; it should be a positive number; it is set to " + string_obj.real2str_scalar(rhobeg));
+                debug_obj.warning(solver, ...
+                                  "Invalid RHOBEG: " + string_obj.real2str_scalar(rhobeg_in) ...
+                                  + "; it should be a positive number; it is set to " ...
+                                  + string_obj.real2str_scalar(rhobeg));
             end
 
             if ~(isfinite(rhoend) && rhoend >= 0 && rhoend <= rhobeg)
                 % RHOEND = NaN falls into this case.
-                rhoend = max(eps, min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg, rhoend_default));
-                debug_obj.warning(solver, "Invalid RHOEND: " + string_obj.real2str_scalar(rhoend_in) + "; we should have " + string_obj.real2str_scalar(rhobeg) + " = RHOBEG >= RHOEND >= 0; it is set to " + string_obj.real2str_scalar(rhoend));
+                rhoend = ...
+                    max(eps, ...
+                        min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg, ...
+                            rhoend_default));
+                debug_obj.warning(solver, ...
+                                  "Invalid RHOEND: " + string_obj.real2str_scalar(rhoend_in) ...
+                                  + "; we should have " + string_obj.real2str_scalar(rhobeg) ...
+                                  + " = RHOBEG >= RHOEND >= 0; it is set to " ...
+                                  + string_obj.real2str_scalar(rhoend));
             end
 
             % For BOBYQA, revise X0 or RHOBEG so that the distance between X0 and the inactive bounds is at
@@ -302,22 +362,40 @@ classdef preproc_mod
                     %%x0(ubx_minus) = xu(ubx_minus) - rhobeg;
 
                     if any(abs(x0_in - x0) > 0, 'all')
-                        debug_obj.warning(solver, "X0 is revised so that the distance between X0 and the inactive bounds is at least RHOBEG = " + string_obj.real2str_scalar(rhobeg) + "; revise RHOBEG or set HONOUR_X0 to .TRUE. if you prefer to keep X0 unchanged");
+                        debug_obj.warning(solver, ...
+                                          "X0 is revised so that the distance between X0 and the inactive bounds is at least RHOBEG = " ...
+                                          + string_obj.real2str_scalar(rhobeg) ...
+                                          + "; revise RHOBEG or set HONOUR_X0 to .TRUE. if you prefer to keep X0 unchanged");
                     end
                 end
 
                 % Revise RHOBEG if needed.
                 % N.B.: If X0 has been revised above (i.e., HONOUR_X0 is FALSE), then the following revision
                 % is unnecessary in precise arithmetic. However, it may still be needed due to rounding errors.
-                lbx(:) = isfinite(xl) & x0 - xl <= eps * max(1.0, abs(xl)); % X0 essentially equals XL
-                ubx(:) = isfinite(xu) & x0 - xu >= -eps * max(1.0, abs(xu)); % X0 essentially equals XU
+                lbx(:) = ...
+                    isfinite(xl) & x0 - xl <= eps * max(1.0, abs(xl)); % X0 essentially equals XL
+                ubx(:) = ...
+                    isfinite(xu) & x0 - xu >= -eps * max(1.0, abs(xu)); % X0 essentially equals XU
                 x0(lbx) = xl(lbx);
                 x0(ubx) = xu(ubx);
-                rhobeg = max(eps, min([rhobeg; x0(find(~lbx)) - xl(find(~lbx)); xu(find(~ubx)) - x0(find(~ubx))], [], 'all'));
+                rhobeg = ...
+                    max(eps, ...
+                        min([rhobeg; x0(find(~lbx)) - xl(find(~lbx))
+                             xu(find(~ubx)) - x0(find(~ubx))], [], 'all'));
                 if rhobeg_in - rhobeg > eps * max(1.0, rhobeg_in)
-                    rhoend = max(eps, min(rhoend / rhobeg_in * rhobeg, rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
+                    rhoend = ...
+                        max(eps, ...
+                            min(rhoend / rhobeg_in * rhobeg, ...
+                                rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
                     if has_rhobeg
-                        debug_obj.warning(solver, "RHOBEG is revised from " + string_obj.real2str_scalar(rhobeg_in) + " to " + string_obj.real2str_scalar(rhobeg) + " and RHOEND from " + string_obj.real2str_scalar(rhoend_in) + " to " + string_obj.real2str_scalar(rhoend) + " so that the distance between X0 and the inactive bounds is at least RHOBEG");
+                        debug_obj.warning(solver, ...
+                                          "RHOBEG is revised from " ...
+                                          + string_obj.real2str_scalar(rhobeg_in) + " to " ...
+                                          + string_obj.real2str_scalar(rhobeg) ...
+                                          + " and RHOEND from " ...
+                                          + string_obj.real2str_scalar(rhoend_in) + " to " ...
+                                          + string_obj.real2str_scalar(rhoend) ...
+                                          + " so that the distance between X0 and the inactive bounds is at least RHOBEG");
                     end
                 end
             end
@@ -334,7 +412,10 @@ classdef preproc_mod
                     ctol_in = ctol;
                     ctol = consts_obj.CTOL_DFT;
                     if is_constrained_loc
-                        debug_obj.warning(solver, "Invalid CTOL: " + string_obj.real2str_scalar(ctol_in) + "; it should be a nonnegative number; it is set to " + string_obj.real2str_scalar(ctol));
+                        debug_obj.warning(solver, ...
+                                          "Invalid CTOL: " + string_obj.real2str_scalar(ctol_in) ...
+                                          + "; it should be a nonnegative number; it is set to " ...
+                                          + string_obj.real2str_scalar(ctol));
                     end
                 end
             end
@@ -346,7 +427,11 @@ classdef preproc_mod
                     cweight_in = cweight;
                     cweight = consts_obj.CWEIGHT_DFT;
                     if is_constrained_loc
-                        debug_obj.warning(solver, "Invalid CWEIGHT: " + string_obj.real2str_scalar(cweight_in) + "; it should be a nonnegative number; it is set to " + string_obj.real2str_scalar(cweight));
+                        debug_obj.warning(solver, ...
+                                          "Invalid CWEIGHT: " ...
+                                          + string_obj.real2str_scalar(cweight_in) ...
+                                          + "; it should be a nonnegative number; it is set to " ...
+                                          + string_obj.real2str_scalar(cweight));
                     end
                 end
             end

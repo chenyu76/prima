@@ -36,7 +36,9 @@ classdef bobyqb_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [x, nf, f, fhist, xhist, info] = bobyqb(obj, calfun, iprint, maxfun, npt, eta1, eta2, ftarget, gamma1, gamma2, rhobeg, rhoend, xl, xu, x, fhist, xhist, varargin)
+        function [x, nf, f, fhist, xhist, info] = ...
+                bobyqb(obj, calfun, iprint, maxfun, npt, eta1, eta2, ftarget, gamma1, gamma2, ...
+                       rhobeg, rhoend, xl, xu, x, fhist, xhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine performs the major calculations of BOBYQA.
             %
@@ -122,7 +124,9 @@ classdef bobyqb_mod
             %====================%
 
             % Initialize XBASE, XPT, SL, SU, FVAL, and KOPT, together with the history, NF, and IJ.
-            [x, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, subinfo] = initialize_bobyqa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x, fhist, fval, xhist, xpt);
+            [x, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, subinfo] = ...
+                initialize_bobyqa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x, ...
+                                             fhist, fval, xhist, xpt);
 
             % Report the current best value, and check if user asks for early termination.
 
@@ -138,7 +142,9 @@ classdef bobyqb_mod
             end
 
             % Initialize X and F according to KOPT.
-            x = xinbd_obj.xinbd(xbase, xpt(:, kopt), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT.
+            x = ...
+                xinbd_obj.xinbd(xbase, xpt(:, kopt), xl, xu, sl, ...
+                                su); % In precise arithmetic, X = XBASE + XOPT.
             f = fval(kopt);
 
             % Finish the initialization if INITXF completed normally and CALLBACK did not request termination;
@@ -150,7 +156,8 @@ classdef bobyqb_mod
                 % Initialize the quadratic represented by [GOPT, HQ, PQ], so that its gradient at XBASE+XOPT is
                 % GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
                 [gopt, hq, pq] = initialize_bobyqa_obj.initq(ij, fval, xpt, hq, pq);
-                if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
+                     && all(isfinite(pq), 'all'))
                     subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
@@ -214,13 +221,17 @@ classdef bobyqb_mod
             % BOBYQA never sets IMPROVE_GEO and REDUCE_RHO to TRUE simultaneously.
             for tr = 1:maxtr
                 % Generate the next trust region step D.
-                [crvmin, d] = trustregion_bobyqa_obj.trsbox(delta, gopt, hq, pq, sl, su, trtol, xpt(:, kopt), xpt, d);
+                [crvmin, d] = ...
+                    trustregion_bobyqa_obj.trsbox(delta, gopt, hq, pq, sl, su, trtol, ...
+                                                  xpt(:, kopt), xpt, d);
                 dnorm = min(delta, norm(d));
                 shortd = dnorm <= 0.5 * rho; % `<=` works better than `<` in case of underflow.
 
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
-                qred = -powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
+                qred = ...
+                    -powalg_obj.quadinc_d0(d, xpt, gopt, pq, ...
+                                           'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
                 trfail = ~(qred > 1.0e-6 * rho ^ 2); % QRED is tiny/negative or NaN.
 
                 % When D is short, make a choice between reducing RHO and improving the geometry depending
@@ -241,10 +252,14 @@ classdef bobyqb_mod
 
                     end
                     % Evaluate EBOUND. It will be used as a bound to test if the entries of MODERR_REC are small.
-                    ebound = obj.errbd(crvmin, d, gopt, hq, moderr_rec, pq, rho, sl, su, xpt(:, kopt), xpt);
+                    ebound = ...
+                        obj.errbd(crvmin, d, gopt, hq, moderr_rec, pq, rho, sl, su, ...
+                                  xpt(:, kopt), xpt);
                 else
                     % Calculate the next value of the objective function.
-                    x = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % X = XBASE + XOPT + D without rounding.
+                    x = ...
+                        xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, ...
+                                        su); % X = XBASE + XOPT + D without rounding.
                     f = evaluate_obj.evaluatef(calfun, x);
                     nf = nf + 1;
                     rescued = false; % Set RESCUED to FALSE after evaluating F at a new point.
@@ -273,7 +288,9 @@ classdef bobyqb_mod
                     ratio = ratio_obj.redrat(fval(kopt) - f, qred, eta1);
 
                     % Update DELTA. After this, DELTA < DNORM may hold.
-                    delta = trustregion_bobyqa_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ratio);
+                    delta = ...
+                        trustregion_bobyqa_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ...
+                                                     ratio);
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
 
@@ -287,7 +304,10 @@ classdef bobyqb_mod
                     % improve the performance, especially when pursing high-precision solutions.
                     vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat);
                     den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
-                    to_rescue = ximproved && ~(isfinite(sum(abs(vlag), 'all')) && any(den > max(vlag(1:npt) .^ 2), 'all'));
+                    to_rescue = ...
+                        ximproved ...
+                        && ~(isfinite(sum(abs(vlag), 'all')) ...
+                             && any(den > max(vlag(1:npt) .^ 2), 'all'));
                     % Below are some alternatives conditions for calling RESCUE. They perform fairly well.
                     % %to_rescue = .false.  ! Do not call RESCUE at all.
                     % %to_rescue = (ximproved .and. .not. any(den > 0.25_RP * maxval(vlag(1:npt)**2)))
@@ -296,10 +316,15 @@ classdef bobyqb_mod
                     % %to_rescue = (.not. any(den > maxval(vlag(1:npt)**2)))
                     if to_rescue
                         if rescued
-                            info = infos_obj.DAMAGING_ROUNDING; % The last RESCUE did not improve the situation.
+                            info = ...
+                                infos_obj.DAMAGING_ROUNDING; % The last RESCUE did not improve the situation.
                             break
                         end
-                        [kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat, subinfo] = rescue_obj.rescue(calfun, solver, iprint, maxfun, delta, ftarget, xl, xu, kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat);
+                        [kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, ...
+                         zmat, subinfo] = ...
+                            rescue_obj.rescue(calfun, solver, iprint, maxfun, delta, ftarget, ...
+                                              xl, xu, kopt, nf, fhist, fval, gopt, hq, pq, sl, ...
+                                              su, xbase, xhist, xpt, bmat, zmat);
                         if subinfo ~= infos_obj.INFO_DFT
                             info = subinfo;
                             break
@@ -318,7 +343,8 @@ classdef bobyqb_mod
 
                     % Set KNEW_TR to the index of the interpolation point to be replaced with XOPT + D.
                     % KNEW_TR will ensure that the geometry of XPT is "good enough" after the replacement.
-                    knew_tr = geometry_bobyqa_obj.setdrop_tr(kopt, ximproved, bmat, d, rho, xpt, zmat);
+                    knew_tr = ...
+                        geometry_bobyqa_obj.setdrop_tr(kopt, ximproved, bmat, d, rho, xpt, zmat);
 
                     % Update [BMAT, ZMAT] (representing H in the BOBYQA paper), [GQ, HQ, PQ] (the quadratic
                     % model), and [FVAL, XPT, KOPT, FOPT, XOPT] so that XPT(:, KNEW_TR) becomes XOPT + D. If
@@ -328,12 +354,20 @@ classdef bobyqb_mod
                         xdrop = xpt(:, knew_tr);
                         xosav = xpt(:, kopt);
                         [bmat, zmat] = update_bobyqa_obj.updateh(knew_tr, kopt, d, xpt, bmat, zmat);
-                        [kopt, fval, xpt] = update_bobyqa_obj.updatexf(knew_tr, ximproved, f, max(sl, min(su, xosav + d)), kopt, fval, xpt);
-                        [gopt, hq, pq] = update_bobyqa_obj.updateq(knew_tr, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
+                        [kopt, fval, xpt] = ...
+                            update_bobyqa_obj.updatexf(knew_tr, ximproved, f, ...
+                                                       max(sl, min(su, xosav + d)), kopt, fval, ...
+                                                       xpt);
+                        [gopt, hq, pq] = ...
+                            update_bobyqa_obj.updateq(knew_tr, ximproved, bmat, d, moderr, ...
+                                                      xdrop, xosav, xpt, zmat, gopt, hq, pq);
                         % Try whether to replace the new quadratic model with the alternative model, namely the
                         % least Frobenius norm interpolant.
-                        [itest, gopt, hq, pq] = update_bobyqa_obj.tryqalt(bmat, fval - fval(kopt), ratio, sl, su, xpt(:, kopt), xpt, zmat, itest, gopt, hq, pq);
-                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                        [itest, gopt, hq, pq] = ...
+                            update_bobyqa_obj.tryqalt(bmat, fval - fval(kopt), ratio, sl, su, ...
+                                                      xpt(:, kopt), xpt, zmat, itest, gopt, hq, pq);
+                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
+                             && all(isfinite(pq), 'all'))
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
@@ -352,7 +386,8 @@ classdef bobyqb_mod
                 % 2. If an iteration sets IMPROVE_GEO = TRUE, it must also reduce DELTA or set DELTA to RHO.
 
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
-                accurate_mod = all(abs(moderr_rec) <= ebound, 'all') && all(dnorm_rec <= rho, 'all');
+                accurate_mod = ...
+                    all(abs(moderr_rec) <= ebound, 'all') && all(dnorm_rec <= rho, 'all');
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
                 distsq(:) = sum((xpt - xpt(:, kopt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
@@ -367,7 +402,8 @@ classdef bobyqb_mod
                 % still be inadequate/improvable if XPT contains points far away from XOPT.
                 adequate_geo = shortd && accurate_mod || close_itpset;
                 % SMALL_TRRAD: Is the trust-region radius small? This indicator seems not impactive in practice.
-                small_trrad = max(delta, dnorm) <= rho; % Powell's code. See also (6.7) of the BOBYQA paper.
+                small_trrad = ...
+                    max(delta, dnorm) <= rho; % Powell's code. See also (6.7) of the BOBYQA paper.
                 %small_trrad = (delsav <= rho)  ! Behaves the same as Powell's version. DELSAV = unupdated DELTA.
 
                 % IMPROVE_GEO and REDUCE_RHO are defined as follows.
@@ -376,10 +412,12 @@ classdef bobyqb_mod
 
                 % BAD_TRSTEP (for IMPROVE_GEO): Is the last trust-region step bad?
                 bad_trstep = shortd || trfail || ratio <= eta1 || knew_tr == 0;
-                improve_geo = bad_trstep && ~adequate_geo; % See the text above (6.7) of the BOBYQA paper.
+                improve_geo = ...
+                    bad_trstep && ~adequate_geo; % See the text above (6.7) of the BOBYQA paper.
                 % BAD_TRSTEP (for REDUCE_RHO): Is the last trust-region step bad?
                 bad_trstep = shortd || trfail || ratio <= 0 || knew_tr == 0;
-                reduce_rho = bad_trstep && adequate_geo && small_trrad; % See (6.7) of the BOBYQA paper.
+                reduce_rho = ...
+                    bad_trstep && adequate_geo && small_trrad; % See (6.7) of the BOBYQA paper.
                 % Zaikun 20221111: What if RESCUE has been called? Is it still reasonable to use RATIO?
                 % Zaikun 20221127: If RESCUE has been called, then KNEW_TR may be 0 even if RATIO > 0.
 
@@ -422,7 +460,9 @@ classdef bobyqb_mod
                     %delbar = max(TENTH * delta, rho)  ! Powell's LINCOA code
 
                     % Find D so that the geometry of XPT will be improved when XPT(:, KNEW_GEO) becomes XOPT + D.
-                    d(:) = geometry_bobyqa_obj.geostep(knew_geo, kopt, bmat, delbar, sl, su, xpt, zmat);
+                    d(:) = ...
+                        geometry_bobyqa_obj.geostep(knew_geo, kopt, bmat, delbar, sl, su, xpt, ...
+                                                    zmat);
 
                     % Call RESCUE if rounding errors have damaged the denominator corresponding to D.
                     % 1. This does make a difference, yet RESCUE seems not invoked often after a geometry step.
@@ -437,13 +477,20 @@ classdef bobyqb_mod
                     % KNEW_GEO, the step D will become improper as it was chosen according to the old KNEW_GEO.
                     vlag(:) = powalg_obj.calvlag_lfqint(kopt, bmat, d, xpt, zmat);
                     den(:) = powalg_obj.calden(kopt, bmat, d, xpt, zmat);
-                    to_rescue = ~(isfinite(sum(abs(vlag), 'all')) && den(knew_geo) > 0.5 * vlag(knew_geo) ^ 2);
+                    to_rescue = ...
+                        ~(isfinite(sum(abs(vlag), 'all')) ...
+                          && den(knew_geo) > 0.5 * vlag(knew_geo) ^ 2);
                     if to_rescue
                         if rescued
-                            info = infos_obj.DAMAGING_ROUNDING; % The last RESCUE did not improve the situation.
+                            info = ...
+                                infos_obj.DAMAGING_ROUNDING; % The last RESCUE did not improve the situation.
                             break
                         end
-                        [kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat, subinfo] = rescue_obj.rescue(calfun, solver, iprint, maxfun, delta, ftarget, xl, xu, kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat);
+                        [kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, ...
+                         zmat, subinfo] = ...
+                            rescue_obj.rescue(calfun, solver, iprint, maxfun, delta, ftarget, ...
+                                              xl, xu, kopt, nf, fhist, fval, gopt, hq, pq, sl, ...
+                                              su, xbase, xhist, xpt, bmat, zmat);
                         if subinfo ~= infos_obj.INFO_DFT
                             info = subinfo;
                             break
@@ -453,7 +500,9 @@ classdef bobyqb_mod
                         moderr_rec(:) = realmax;
                     else
                         % Calculate the next value of the objective function.
-                        x = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % X = XBASE + XOPT + D without rounding.
+                        x = ...
+                            xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, ...
+                                            su); % X = XBASE + XOPT + D without rounding.
                         f = evaluate_obj.evaluatef(calfun, x);
                         nf = nf + 1;
                         rescued = false; % Set RESCUED to FALSE after evaluating F at a new point.
@@ -478,7 +527,10 @@ classdef bobyqb_mod
                         dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
                         % MODERR is the error of the current model in predicting the change in F due to D.
                         % MODERR_REC records the prediction errors of the recent models with the current RHO.
-                        moderr = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
+                        moderr = ...
+                            f - fval(kopt) ...
+                            - powalg_obj.quadinc_d0(d, xpt, gopt, pq, ...
+                                                    'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
                         moderr_rec(:) = [moderr_rec(2:numel(moderr_rec)); moderr];
 
                         % Is the newly generated X better than current best point?
@@ -488,10 +540,17 @@ classdef bobyqb_mod
                         % and [GQ, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_GEO) becomes XOPT + D.
                         xdrop = xpt(:, knew_geo);
                         xosav = xpt(:, kopt);
-                        [bmat, zmat] = update_bobyqa_obj.updateh(knew_geo, kopt, d, xpt, bmat, zmat);
-                        [kopt, fval, xpt] = update_bobyqa_obj.updatexf(knew_geo, ximproved, f, max(sl, min(su, xosav + d)), kopt, fval, xpt);
-                        [gopt, hq, pq] = update_bobyqa_obj.updateq(knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
-                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                        [bmat, zmat] = ...
+                            update_bobyqa_obj.updateh(knew_geo, kopt, d, xpt, bmat, zmat);
+                        [kopt, fval, xpt] = ...
+                            update_bobyqa_obj.updatexf(knew_geo, ximproved, f, ...
+                                                       max(sl, min(su, xosav + d)), kopt, fval, ...
+                                                       xpt);
+                        [gopt, hq, pq] = ...
+                            update_bobyqa_obj.updateq(knew_geo, ximproved, bmat, d, moderr, ...
+                                                      xdrop, xosav, xpt, zmat, gopt, hq, pq);
+                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
+                             && all(isfinite(pq), 'all'))
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
@@ -508,7 +567,8 @@ classdef bobyqb_mod
                     delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
                     rho = redrho_obj.redrho(rho, rhoend);
                     % Print a message about the reduction of RHO according to IPRINT.
-                    message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, xbase + xpt(:, kopt));
+                    message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, ...
+                                       xbase + xpt(:, kopt));
                     % DNORM_REC and MODERR_REC are corresponding to the recent function evaluations with
                     % the current RHO. Update them after reducing RHO.
                     dnorm_rec(:) = realmax;
@@ -524,7 +584,8 @@ classdef bobyqb_mod
                     % Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E4*RHO**2.
                     sl = min(sl - xpt(:, kopt), 0.0);
                     su = max(su - xpt(:, kopt), 0.0);
-                    [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq);
+                    [xbase, xpt, bmat, hq] = ...
+                        shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq);
                     xbase = max(xl, min(xu, xbase));
                 end
 
@@ -541,7 +602,9 @@ classdef bobyqb_mod
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             if info == infos_obj.SMALL_TR_RADIUS && shortd && dnorm > 0.1 * rhoend && nf < maxfun
-                x = xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT + D.
+                x = ...
+                    xinbd_obj.xinbd(xbase, xpt(:, kopt) + d, xl, xu, sl, ...
+                                    su); % In precise arithmetic, X = XBASE + XOPT + D.
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 % Print a message about the function evaluation according to IPRINT.
@@ -553,7 +616,9 @@ classdef bobyqb_mod
 
             % Choose the [X, F] to return: either the current [X, F] or [XBASE + XOPT, FOPT].
             if fval(kopt) < f || isnan(f)
-                x = xinbd_obj.xinbd(xbase, xpt(:, kopt), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XOPT.
+                x = ...
+                    xinbd_obj.xinbd(xbase, xpt(:, kopt), xl, xu, sl, ...
+                                    su); % In precise arithmetic, X = XBASE + XOPT.
                 f = fval(kopt);
             end
 

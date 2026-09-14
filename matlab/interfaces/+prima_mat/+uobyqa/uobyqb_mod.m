@@ -12,7 +12,9 @@ classdef uobyqb_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [x, nf, f, fhist, xhist, info] = uobyqb(~, calfun, iprint, maxfun, eta1, eta2, ftarget, gamma1, gamma2, rhobeg, rhoend, x, fhist, xhist, varargin)
+        function [x, nf, f, fhist, xhist, info] = ...
+                uobyqb(~, calfun, iprint, maxfun, eta1, eta2, ftarget, gamma1, gamma2, rhobeg, ...
+                       rhoend, x, fhist, xhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine performs the major calculations of UOBYQA.
             %
@@ -89,7 +91,9 @@ classdef uobyqb_mod
             %====================%
 
             % Initialize XBASE, XPT, FVAL, and KOPT, together with the history and NF.
-            [kopt, nf, fhist, fval, xbase, xhist, xpt, subinfo] = initialize_uobyqa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, x, fhist, fval, xhist, xpt);
+            [kopt, nf, fhist, fval, xbase, xhist, xpt, subinfo] = ...
+                initialize_uobyqa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, x, fhist, ...
+                                             fval, xhist, xpt);
 
             % Report the current best value, and check if user asks for early termination.
 
@@ -219,7 +223,9 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x = xbase + (xpt(:, kopt) + d);
-                    distsq = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
+                    distsq = ...
+                        arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), ...
+                                 (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2
@@ -247,7 +253,9 @@ classdef uobyqb_mod
                     ratio = ratio_obj.redrat(fval(kopt) - f, qred, eta1);
 
                     % Update DELTA. After this, DELTA < DNORM may hold.
-                    delta = trustregion_uobyqa_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ratio);
+                    delta = ...
+                        trustregion_uobyqa_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ...
+                                                     ratio);
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
 
@@ -264,7 +272,9 @@ classdef uobyqb_mod
                     if knew_tr > 0
                         xdrop = xpt(:, knew_tr);
                         % Update PL, PQ, XPT, FVAL, and KOPT so that XPT(:, KNEW_TR) becomes XOPT + D.
-                        [kopt, fval, pl, pq, xpt] = update_uobyqa_obj.update(knew_tr, d, f, moderr, kopt, fval, pl, pq, xpt);
+                        [kopt, fval, pl, pq, xpt] = ...
+                            update_uobyqa_obj.update(knew_tr, d, f, moderr, kopt, fval, pl, pq, ...
+                                                     xpt);
                         if ~all(isfinite(pq), 'all')
                             info = infos_obj.NAN_INF_MODEL;
                             break
@@ -293,7 +303,9 @@ classdef uobyqb_mod
                 % 2. If an iteration sets IMPROVE_GEO = TRUE, it must also reduce DELTA or set DELTA to RHO.
 
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
-                accurate_mod = all(abs(moderr_rec) <= 0.125 * crvmin * rho ^ 2, 'all') && all(dnorm_rec <= rho, 'all');
+                accurate_mod = ...
+                    all(abs(moderr_rec) <= 0.125 * crvmin * rho ^ 2, 'all') ...
+                    && all(dnorm_rec <= rho, 'all');
                 % ADEQUATE_GEO: Is the geometry of the interpolation set "adequate"?
                 adequate_geo = shortd && accurate_mod || close_itpset;
                 % SMALL_TRRAD: Is the trust-region radius small? This indicator seems not impactive in practice.
@@ -330,11 +342,14 @@ classdef uobyqb_mod
 
                 % BAD_TRSTEP (for IMPROVE_GEO): Is the last trust-region step bad? For UOBYQA, it is CRUCIAL to
                 % include DMOVE <= 4.0_RP*RHO**2 in the definition of BAD_TRSTEP for IMPROVE_GEO.
-                bad_trstep = shortd || trfail || ratio <= eta1 && ddmove <= 4.0 * delta ^ 2 || knew_tr == 0;
+                bad_trstep = ...
+                    shortd || trfail || ratio <= eta1 && ddmove <= 4.0 * delta ^ 2 || knew_tr == 0;
                 %bad_trstep = (shortd .or. trfail .or. ratio <= eta1 .or. knew_tr == 0)  ! Works poorly!
                 improve_geo = bad_trstep && ~adequate_geo;
                 % BAD_TRSTEP (for REDUCE_RHO): Is the last trust-region step bad?
-                bad_trstep = shortd || trfail || ratio <= 0 || knew_tr == 0; % Performs better than the one below from Powell.
+                bad_trstep = ...
+                    shortd || trfail || ratio <= 0 ...
+                    || knew_tr == 0; % Performs better than the one below from Powell.
                 %bad_trstep = (shortd .or. trfail .or. (ratio <= 0 .and. ddmove <= 4.0_RP * delta**2) .or. knew_tr == 0)
                 reduce_rho = bad_trstep && adequate_geo && small_trrad;
 
@@ -385,7 +400,9 @@ classdef uobyqb_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x = xbase + (xpt(:, kopt) + d);
-                    distsq = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
+                    distsq = ...
+                        arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), ...
+                                 (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-4 * rhoend) ^ 2
@@ -407,11 +424,15 @@ classdef uobyqb_mod
                     dnorm_rec(:) = [dnorm_rec(2:numel(dnorm_rec)); dnorm];
                     % MODERR is the error of the current model in predicting the change in F due to D.
                     % MODERR_REC records the prediction errors of the recent models with the current RHO.
-                    moderr = f - fval(kopt) - powalg_obj.quadinc_ghv(pq, d, xpt(:, kopt)); % QUADINC = Q(XOPT + D) - Q(XOPT)
+                    moderr = ...
+                        f - fval(kopt) ...
+                        - powalg_obj.quadinc_ghv(pq, d, ...
+                                                 xpt(:, kopt)); % QUADINC = Q(XOPT + D) - Q(XOPT)
                     moderr_rec(:) = [moderr_rec(2:numel(moderr_rec)); moderr];
 
                     % Update PL, PQ, XPT, FVAL, and KOPT so that XPT(:, KNEW_GEO) becomes XOPT + D.
-                    [kopt, fval, pl, pq, xpt] = update_uobyqa_obj.update(knew_geo, d, f, moderr, kopt, fval, pl, pq, xpt);
+                    [kopt, fval, pl, pq, xpt] = ...
+                        update_uobyqa_obj.update(knew_geo, d, f, moderr, kopt, fval, pl, pq, xpt);
                     if ~all(isfinite(pq), 'all')
                         info = infos_obj.NAN_INF_MODEL;
                         break
@@ -435,7 +456,8 @@ classdef uobyqb_mod
                     delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
                     rho = redrho_obj.redrho(rho, rhoend);
                     % Print a message about the reduction of RHO according to IPRINT.
-                    message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, xbase + xpt(:, kopt));
+                    message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, ...
+                                       xbase + xpt(:, kopt));
                     % DNORM_REC and MODERR_REC are corresponding to the recent function evaluations with
                     % the current RHO. Update them after reducing RHO.
                     dnorm_rec(:) = realmax;
@@ -466,7 +488,8 @@ classdef uobyqb_mod
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             % Ensure that D has not been updated after SHORTD == TRUE occurred, or the code below is incorrect.
             x = xbase + (xpt(:, kopt) + d);
-            if info == infos_obj.SMALL_TR_RADIUS && shortd && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
+            if info == infos_obj.SMALL_TR_RADIUS && shortd ...
+               && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 % Save X, F into the history.

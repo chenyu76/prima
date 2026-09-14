@@ -19,7 +19,10 @@ classdef lincob_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [x, nf, chist, cstrv, f, fhist, xhist, info] = lincob(~, calfun, iprint, maxfilt, maxfun, npt, Aeq, Aineq, amat, beq, bineq, bvec, ctol, cweight, eta1, eta2, ftarget, gamma1, gamma2, rhobeg, rhoend, xl, xu, x, chist, fhist, xhist, varargin)
+        function [x, nf, chist, cstrv, f, fhist, xhist, info] = ...
+                lincob(~, calfun, iprint, maxfilt, maxfun, npt, Aeq, Aineq, amat, beq, bineq, ...
+                       bvec, ctol, cweight, eta1, eta2, ftarget, gamma1, gamma2, rhobeg, rhoend, ...
+                       xl, xu, x, chist, fhist, xhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine performs the actual calculations of LINCOA.
             %
@@ -96,7 +99,9 @@ classdef lincob_mod
 
             bmat = NaN(numel(x), npt + numel(x));
             cfilt = NaN(maxfilt, 1);
-            constr = NaN(nnz(xl > -consts_obj.BOUNDMAX) + nnz(xu < consts_obj.BOUNDMAX) + 2 * numel(beq) + numel(bineq), 1);
+            constr = ...
+                NaN(nnz(xl > -consts_obj.BOUNDMAX) + nnz(xu < consts_obj.BOUNDMAX) ...
+                    + 2 * numel(beq) + numel(bineq), 1);
             constr_leq = NaN(size(beq));
             cval = NaN(npt, 1);
             d = NaN(size(x));
@@ -139,7 +144,10 @@ classdef lincob_mod
 
             % Initialize B, XBASE, XPT, FVAL, CVAL, and KOPT, together with the history, NF, IJ, and EVALUATED.
             b = bvec;
-            [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, subinfo] = initialize_lincoa_obj.initxf(calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, rhobeg, xl, xu, x, b, chist, cval, fhist, fval, xhist, xpt, evaluated);
+            [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, subinfo] = ...
+                initialize_lincoa_obj.initxf(calfun, iprint, maxfun, Aeq, Aineq, amat, beq, ...
+                                             bineq, ctol, ftarget, rhobeg, xl, xu, x, b, chist, ...
+                                             cval, fhist, fval, xhist, xpt, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
 
@@ -148,7 +156,8 @@ classdef lincob_mod
             parse(ipObj, varargin{:});
             callback_fcn = ipObj.Results.callback_fcn;
             if ~ismember('callback_fcn', ipObj.UsingDefaults)
-                terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, 0, 'cstrv', cval(kopt));
+                terminate = ...
+                    callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, 0, 'cstrv', cval(kopt));
                 if terminate
                     subinfo = infos_obj.CALLBACK_TERMINATE;
                 end
@@ -160,7 +169,8 @@ classdef lincob_mod
             x = xbase + xpt(:, kopt);
 
             constr_leq(:) = Aeq * x - beq;
-            constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
+            constr(:) = ...
+                [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
             cstrv = max([0.0; constr], [], 'all');
 
             % Initialize the filter, including XFILT, FFILT, CONFILT, CFILT, and NFILT.
@@ -172,7 +182,9 @@ classdef lincob_mod
             nfilt = 0;
             for k = 1:npt
                 if evaluated(k)
-                    [nfilt, cfilt, ffilt, xfilt] = selectx_obj.savefilt(cval(k), ctol, cweight, fval(k), xbase + xpt(:, k), nfilt, cfilt, ffilt, xfilt);
+                    [nfilt, cfilt, ffilt, xfilt] = ...
+                        selectx_obj.savefilt(cval(k), ctol, cweight, fval(k), xbase + xpt(:, k), ...
+                                             nfilt, cfilt, ffilt, xfilt);
                 end
             end
 
@@ -189,7 +201,8 @@ classdef lincob_mod
                 gopt(:) = bmat(:, 1:npt) * fval + powalg_obj.hess_mul(xpt(:, kopt), xpt, pq);
                 pqalt = pq;
                 galt = gopt;
-                if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
+                     && all(isfinite(pq), 'all'))
                     subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
@@ -203,9 +216,12 @@ classdef lincob_mod
                 x = xfilt(:, kopt);
                 f = ffilt(kopt);
                 constr_leq(:) = Aeq * x - beq;
-                constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
+                constr(:) = ...
+                    [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
+                     Aineq * x - bineq];
                 cstrv = max([0.0; constr], [], 'all');
-                message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, 'constr', constr);
+                message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, ...
+                                   'constr', constr);
                 % Arrange CHIST, FHIST, and XHIST so that they are in the chronological order.
                 [xhist, fhist, chist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist);
 
@@ -266,7 +282,9 @@ classdef lincob_mod
             % LINCOA never sets IMPROVE_GEO and REDUCE_RHO to TRUE simultaneously.
             for tr = 1:maxtr
                 % Generate the next trust region step D by calling TRSTEP. Note that D is feasible.
-                [iact, nact, qfac, rfac, d, ngetact] = trustregion_lincoa_obj.trstep(amat, delta, gopt, hq, pq, rescon, trtol, xpt, iact, nact, qfac, rfac, d);
+                [iact, nact, qfac, rfac, d, ngetact] = ...
+                    trustregion_lincoa_obj.trstep(amat, delta, gopt, hq, pq, rescon, trtol, xpt, ...
+                                                  iact, nact, qfac, rfac, d);
                 dnorm = min(delta, norm(d));
 
                 % A trust region step is applied whenever its length is at least 0.5*DELTA. It is also
@@ -301,7 +319,9 @@ classdef lincob_mod
 
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
                 % should be positive. If it is nonpositive due to rounding errors, we will not take this step.
-                qred = -powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
+                qred = ...
+                    -powalg_obj.quadinc_d0(d, xpt, gopt, pq, ...
+                                           'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
                 trfail = ~(qred > 1.0e-6 * rho ^ 2); % QRED is tiny/negative or NaN.
 
                 if shortd || trfail
@@ -325,15 +345,22 @@ classdef lincob_mod
 
                     % Evaluate the constraints. They are used only for printing messages.
                     constr_leq(:) = Aeq * x - beq;
-                    constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
+                    constr(:) = ...
+                        [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
+                         Aineq * x - bineq];
                     cstrv = max([0.0; constr], [], 'all');
 
                     % Print a message about the function evaluation according to IPRINT.
-                    message_obj.fmsg(solver, "Trust region", iprint, nf, delta, f, x, 'cstrv', cstrv, 'constr', constr);
+                    message_obj.fmsg(solver, "Trust region", iprint, nf, delta, f, x, ...
+                                     'cstrv', cstrv, 'constr', constr);
                     % Save X, F, CSTRV into the history.
-                    [xhist, fhist, chist] = history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist);
+                    [xhist, fhist, chist] = ...
+                        history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, ...
+                                             'chist', chist);
                     % Save X, F, CSTRV into the filter.
-                    [nfilt, cfilt, ffilt, xfilt] = selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt);
+                    [nfilt, cfilt, ffilt, xfilt] = ...
+                        selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, ...
+                                             xfilt);
 
                     % Check whether to exit.
                     subinfo = checkexit_obj.checkexit_con(maxfun, nf, cstrv, ctol, f, ftarget, x);
@@ -348,14 +375,17 @@ classdef lincob_mod
                     % reasonable if the two values being compared are both ZERO or INF.
                     moderr = f - fval(kopt) + qred;
                     moderr_alt = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, galt, pqalt);
-                    qalt_better(:) = [qalt_better(2:numel(qalt_better)); abs(moderr_alt) < 0.1 * abs(moderr)];
+                    qalt_better(:) = ...
+                        [qalt_better(2:numel(qalt_better)); abs(moderr_alt) < 0.1 * abs(moderr)];
 
                     % Calculate the reduction ratio by REDRAT, which handles Inf/NaN carefully.
                     ratio = ratio_obj.redrat(fval(kopt) - f, qred, eta1);
 
                     % Update DELTA. After this, DELTA < DNORM may hold.
                     % The new DELTA lies in [GAMMA1*DNORM, GAMMA2*DNORM].
-                    delta = trustregion_lincoa_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ratio);
+                    delta = ...
+                        trustregion_lincoa_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ...
+                                                     ratio);
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
 
@@ -366,28 +396,41 @@ classdef lincob_mod
 
                     % Set KNEW_TR to the index of the interpolation point to be replaced with XNEW = XOPT + D.
                     % KNEW_TR will ensure that the geometry of XPT is "good enough" after the replacement.
-                    knew_tr = geometry_lincoa_obj.setdrop_tr(idz, kopt, ximproved, bmat, d, delta, rho, xpt, zmat);
+                    knew_tr = ...
+                        geometry_lincoa_obj.setdrop_tr(idz, kopt, ximproved, bmat, d, delta, ...
+                                                       rho, xpt, zmat);
                     if knew_tr > 0
                         % Update [BMAT, ZMAT, IDZ] (represents H in the NEWUOA paper), [XPT, FVAL, KOPT] and
                         % [GOPT, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_TR) becomes XNEW = XOPT + D.
                         xdrop = xpt(:, knew_tr);
                         xosav = xpt(:, kopt);
-                        [idz, bmat, zmat] = powalg_obj.updateh(knew_tr, kopt, d, xpt, idz, bmat, zmat);
-                        [kopt, fval, xpt] = update_lincoa_obj.updatexf(knew_tr, ximproved, f, xosav + d, kopt, fval, xpt);
-                        [gopt, hq, pq] = update_lincoa_obj.updateq(idz, knew_tr, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
+                        [idz, bmat, zmat] = ...
+                            powalg_obj.updateh(knew_tr, kopt, d, xpt, idz, bmat, zmat);
+                        [kopt, fval, xpt] = ...
+                            update_lincoa_obj.updatexf(knew_tr, ximproved, f, xosav + d, kopt, ...
+                                                       fval, xpt);
+                        [gopt, hq, pq] = ...
+                            update_lincoa_obj.updateq(idz, knew_tr, ximproved, bmat, d, moderr, ...
+                                                      xdrop, xosav, xpt, zmat, gopt, hq, pq);
 
                         % Establish the alternative model, namely the least Frobenius norm interpolant. Replace
                         % the current model with the alternative model if the recent few (three) alternative
                         % models are more accurate in predicting the function value of XOPT + D.
-                        [qalt_better, gopt, pq, hq, galt, pqalt] = update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), xpt, zmat, qalt_better, gopt, pq, hq);
-                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                        [qalt_better, gopt, pq, hq, galt, pqalt] = ...
+                            update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), ...
+                                                      xpt(:, kopt), xpt, zmat, qalt_better, ...
+                                                      gopt, pq, hq);
+                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
+                             && all(isfinite(pq), 'all'))
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
 
                         % Update RESCON if XOPT is changed.
                         % Zaikun 20221115: Shouldn't we do it after DELTA is updated?
-                        rescon = update_lincoa_obj.updateres(ximproved, amat, b, delta, norm(d), xpt(:, kopt), rescon);
+                        rescon = ...
+                            update_lincoa_obj.updateres(ximproved, amat, b, delta, norm(d), ...
+                                                        xpt(:, kopt), rescon);
                     end
 
                 end % End of IF (SHORTD .OR. TRFAIL). The normal trust-region calculation ends.
@@ -409,7 +452,9 @@ classdef lincob_mod
                 % verify a curvature condition that really indicates that recent models are sufficiently
                 % accurate. Here, however, we are not really sure whether they are accurate or not. Therefore,
                 % ACCURATE_MOD is not the best name, but we keep it to align with the other solvers.
-                accurate_mod = all(dnorm_rec <= rho, 'all') || all(dnorm_rec(2:numel(dnorm_rec)) <= 0.2 * rho, 'all');
+                accurate_mod = ...
+                    all(dnorm_rec <= rho, 'all') ...
+                    || all(dnorm_rec(2:numel(dnorm_rec)) <= 0.2 * rho, 'all');
                 % Powell's version (note that size(dnorm_rec) = 5 in his implementation):
                 %accurate_mod = all(dnorm_rec <= HALF * rho) .or. all(dnorm_rec(3:size(dnorm_rec)) <= TENTH * rho)
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
@@ -474,7 +519,9 @@ classdef lincob_mod
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), HALF * delta), rho)  ! Powell's NEWUOA code
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), delta), rho)  ! Powell's BOBYQA code
                     % Find D so that the geometry of XPT will be improved when XPT(:, KNEW_GEO) becomes XOPT + D.
-                    [feasible, d] = geometry_lincoa_obj.geostep(iact, idz, knew_geo, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat);
+                    [feasible, d] = ...
+                        geometry_lincoa_obj.geostep(iact, idz, knew_geo, kopt, nact, amat, bmat, ...
+                                                    delbar, qfac, rescon, xpt, zmat);
 
                     % Calculate the next value of the objective function.
                     x = xbase + (xpt(:, kopt) + d);
@@ -483,15 +530,22 @@ classdef lincob_mod
 
                     % Evaluate the constraints. They are used only for printing messages.
                     constr_leq(:) = Aeq * x - beq;
-                    constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
+                    constr(:) = ...
+                        [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
+                         Aineq * x - bineq];
                     cstrv = max([0.0; constr], [], 'all');
 
                     % Print a message about the function evaluation according to IPRINT.
-                    message_obj.fmsg(solver, "Geometry", iprint, nf, delbar, f, x, 'cstrv', cstrv, 'constr', constr);
+                    message_obj.fmsg(solver, "Geometry", iprint, nf, delbar, f, x, ...
+                                     'cstrv', cstrv, 'constr', constr);
                     % Save X, F, CSTRV into the history.
-                    [xhist, fhist, chist] = history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist);
+                    [xhist, fhist, chist] = ...
+                        history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, ...
+                                             'chist', chist);
                     % Save X, F, CSTRV into the filter.
-                    [nfilt, cfilt, ffilt, xfilt] = selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt);
+                    [nfilt, cfilt, ffilt, xfilt] = ...
+                        selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, ...
+                                             xfilt);
 
                     % Check whether to exit.
                     subinfo = checkexit_obj.checkexit_con(maxfun, nf, cstrv, ctol, f, ftarget, x);
@@ -507,7 +561,8 @@ classdef lincob_mod
                     % reasonable if the two values being compared are both ZERO or INF.
                     moderr = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq);
                     moderr_alt = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, galt, pqalt);
-                    qalt_better(:) = [qalt_better(2:numel(qalt_better)); abs(moderr_alt) < 0.1 * abs(moderr)];
+                    qalt_better(:) = ...
+                        [qalt_better(2:numel(qalt_better)); abs(moderr_alt) < 0.1 * abs(moderr)];
 
                     % Is the newly generated X better than current best point?
                     ximproved = f < fval(kopt) && feasible;
@@ -517,22 +572,31 @@ classdef lincob_mod
                     xdrop = xpt(:, knew_geo);
                     xosav = xpt(:, kopt);
                     [idz, bmat, zmat] = powalg_obj.updateh(knew_geo, kopt, d, xpt, idz, bmat, zmat);
-                    [kopt, fval, xpt] = update_lincoa_obj.updatexf(knew_geo, ximproved, f, xosav + d, kopt, fval, xpt);
-                    [gopt, hq, pq] = update_lincoa_obj.updateq(idz, knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
+                    [kopt, fval, xpt] = ...
+                        update_lincoa_obj.updatexf(knew_geo, ximproved, f, xosav + d, kopt, ...
+                                                   fval, xpt);
+                    [gopt, hq, pq] = ...
+                        update_lincoa_obj.updateq(idz, knew_geo, ximproved, bmat, d, moderr, ...
+                                                  xdrop, xosav, xpt, zmat, gopt, hq, pq);
 
                     % Establish the alternative model, namely the least Frobenius norm interpolant. Replace the
                     % current model with the alternative model if the recent few (three) alternative models are
                     % more accurate in predicting the function value of XOPT + D.
                     % N.B.: Powell's code does this only if XOPT + D is feasible.
-                    [qalt_better, gopt, pq, hq, galt, pqalt] = update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), xpt, zmat, qalt_better, gopt, pq, hq);
-                    if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                    [qalt_better, gopt, pq, hq, galt, pqalt] = ...
+                        update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), ...
+                                                  xpt, zmat, qalt_better, gopt, pq, hq);
+                    if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
+                         && all(isfinite(pq), 'all'))
                         info = infos_obj.NAN_INF_MODEL;
                         break
                     end
 
                     % Update RESCON. Zaikun 20221115: Currently, UPDATERES does not update RESCON if XIMPROVED
                     % is FALSE. Shouldn't we do it whenever DELTA is updated? Have we MISUNDERSTOOD RESCON?
-                    rescon = update_lincoa_obj.updateres(ximproved, amat, b, delta, norm(d), xpt(:, kopt), rescon);
+                    rescon = ...
+                        update_lincoa_obj.updateres(ximproved, amat, b, delta, norm(d), ...
+                                                    xpt(:, kopt), rescon);
                 end % End of IF (IMPROVE_GEO). The procedure of improving geometry ends.
 
                 % The calculations with the current RHO are complete. Enhance the resolution of the algorithm
@@ -545,7 +609,8 @@ classdef lincob_mod
                     delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
                     rho = redrho_obj.redrho(rho, rhoend);
                     % Print a message about the reduction of RHO according to IPRINT.
-                    message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, xbase + xpt(:, kopt), 'cstrv', cstrv, 'constr', constr);
+                    message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, ...
+                                       xbase + xpt(:, kopt), 'cstrv', cstrv, 'constr', constr);
                     % DNORM_REC is corresponding to the latest function evaluations with the current RHO.
                     % Update it after reducing RHO.
                     dnorm_rec(:) = realmax;
@@ -557,16 +622,21 @@ classdef lincob_mod
                 if sum(xpt(:, kopt) .^ 2, 'all') >= 1000.0 * delta ^ 2
                     % Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E3*RHO**2.
                     b = b - amat.' * xpt(:, kopt);
-                    [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq, 'idz', idz);
+                    [xbase, xpt, bmat, hq] = ...
+                        shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq, ...
+                                                       'idz', idz);
                     % SHIFTBASE shifts XBASE to XBASE + XOPT and XOPT to 0.
                     pqalt(:) = powalg_obj.omega_mul(idz, zmat, fval - fval(kopt));
-                    galt(:) = bmat(:, 1:npt) * (fval - fval(kopt)) + powalg_obj.hess_mul(xpt(:, kopt), xpt, pqalt);
+                    galt(:) = ...
+                        bmat(:, 1:npt) * (fval - fval(kopt)) ...
+                        + powalg_obj.hess_mul(xpt(:, kopt), xpt, pqalt);
                 end
 
                 % Report the current best value, and check if user asks for early termination.
                 if ~ismember('callback_fcn', ipObj.UsingDefaults)
                     % FIXME: CVAL(KOP) is WRONG! CVAL is not updated.
-                    terminate = callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, tr, 'cstrv', cval(kopt));
+                    terminate = ...
+                        callback_fcn(xbase + xpt(:, kopt), fval(kopt), nf, tr, 'cstrv', cval(kopt));
                     if terminate
                         info = infos_obj.CALLBACK_TERMINATE;
                         break
@@ -581,15 +651,20 @@ classdef lincob_mod
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 constr_leq(:) = Aeq * x - beq;
-                constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
+                constr(:) = ...
+                    [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
+                     Aineq * x - bineq];
                 cstrv = max([0.0; constr], [], 'all');
                 % Print a message about the function evaluation according to IPRINT.
                 % Zaikun 20230512: DELTA has been updated. RHO is only indicative here. TO BE IMPROVED.
-                message_obj.fmsg(solver, "Trust region", iprint, nf, rho, f, x, 'cstrv', cstrv, 'constr', constr);
+                message_obj.fmsg(solver, "Trust region", iprint, nf, rho, f, x, 'cstrv', cstrv, ...
+                                 'constr', constr);
                 % Save X, F, CSTRV into the history.
-                [xhist, fhist, chist] = history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist);
+                [xhist, fhist, chist] = ...
+                    history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist);
                 % Save X, F, CSTRV into the filter.
-                [nfilt, cfilt, ffilt, xfilt] = selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt);
+                [nfilt, cfilt, ffilt, xfilt] = ...
+                    selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt);
             end
 
             % Return the best calculated values of the variables.
@@ -597,7 +672,8 @@ classdef lincob_mod
             x = xfilt(:, kopt);
             f = ffilt(kopt);
             constr_leq(:) = Aeq * x - beq;
-            constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
+            constr(:) = ...
+                [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
             cstrv = max([0.0; constr], [], 'all');
 
             % Deallocate IXL and IXU as they have finished their job.

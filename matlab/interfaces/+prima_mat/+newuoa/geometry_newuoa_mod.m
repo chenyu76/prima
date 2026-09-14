@@ -218,7 +218,10 @@ classdef geometry_newuoa_mod
             dd = sum(d .* d, 'all');
             gd(:) = powalg_obj.hess_mul(d, xpt, pqlag); % GD = MATPROD(XPT, PQLAG * MATPROD(D, XPT))
 
-            gc = bmat(:, knew) + powalg_obj.hess_mul(x, xpt, pqlag); % GC = BMAT(:,KNEW) + MATPROD(XPT,PQLAG*MATPROD(X,XPT))
+            gc = ...
+                bmat(:, knew) ...
+                + powalg_obj.hess_mul(x, xpt, ...
+                                      pqlag); % GC = BMAT(:,KNEW) + MATPROD(XPT,PQLAG*MATPROD(X,XPT))
 
             % Scale D and GD, with a sign change if needed. Set S to another vector in the initial 2-D subspace.
             gg = sum(gc .* gc, 'all');
@@ -265,7 +268,10 @@ classdef geometry_newuoa_mod
 
                 % We calculate S as follows. It did improve the performance of NEWUOA in our test.
                 ss = sum(s .* s, 'all');
-                s = s - linalg_obj.project1(s, d); % PROJECT(X, V) is the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||)
+                s = ...
+                    s ...
+                    - linalg_obj.project1(s, ...
+                                          d); % PROJECT(X, V) is the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||)
                 % N.B.:
                 % 1. The condition ||S||<=TOL*SQRT(SS) below is equivalent to DS^2>=(1-TOL^2)*DD*SS in theory.
                 % As shown above, Powell's code triggers an exit if DS^2>=(1-1.0E-8)*DD*SS. So our condition is
@@ -281,7 +287,8 @@ classdef geometry_newuoa_mod
                     break
                 end
 
-                w(:) = powalg_obj.hess_mul(s, xpt, pqlag); % W = MATPROD(XPT, PQLAG * MATPROD(S, XPT))
+                w(:) = ...
+                    powalg_obj.hess_mul(s, xpt, pqlag); % W = MATPROD(XPT, PQLAG * MATPROD(S, XPT))
 
                 % Seek the value of the angle that maximizes ||TAU||.
                 % First, calculate the coefficients of the objective function on the circle.
@@ -292,7 +299,9 @@ classdef geometry_newuoa_mod
                 cf(5) = sum(s .* gd, 'all');
                 % The 50 in the line below was chosen by Powell. It works the best in tests, MAGICALLY. Larger
                 % (e.g., 60, 100) or smaller (e.g., 20, 40) values will worsen the performance of NEWUOA. Why??
-                angle = univar_obj.circle_maxabs(@(varargin) obj.circle_fun_biglag(varargin{:}), cf, 50);
+                angle = ...
+                    univar_obj.circle_maxabs(@(varargin) obj.circle_fun_biglag(varargin{:}), cf, ...
+                                             50);
 
                 % Calculate the new D and GD.
                 cth = cos(angle);
@@ -307,7 +316,8 @@ classdef geometry_newuoa_mod
                 end
 
                 % Test for convergence.
-                if abs(obj.circle_fun_biglag(angle, cf)) <= 1.1 * abs(obj.circle_fun_biglag(0.0, cf))
+                if abs(obj.circle_fun_biglag(angle, cf)) ...
+                   <= 1.1 * abs(obj.circle_fun_biglag(0.0, cf))
                     break
                 end
 
@@ -429,7 +439,10 @@ classdef geometry_newuoa_mod
 
                 % We calculate S as below. It did improve the performance of NEWUOA in our test.
                 ss = sum(s .* s, 'all');
-                s = s - linalg_obj.project1(s, d); % PROJECT(X, V) is the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||)
+                s = ...
+                    s ...
+                    - linalg_obj.project1(s, ...
+                                          d); % PROJECT(X, V) is the projection of X to SPAN(V): X'*(V/||V||)*(V/||V||)
                 % N.B.:
                 % 1. The condition ||S||<=TOL*SQRT(SS) below is equivalent to DS^2>=(1-TOL^2)*DD*SS in theory.
                 % As shown above, Powell's code triggers an exit if DS^2>=(1-1.0E-8)*DD*SS. So our condition is
@@ -477,7 +490,8 @@ classdef geometry_newuoa_mod
                     prod_custom(1:npt, j) = powalg_obj.omega_mul(idz, zmat, w(1:npt, j));
                     nw = npt;
                     if j == 2 || j == 3
-                        prod_custom(1:npt, j) = prod_custom(1:npt, j) + bmat(:, 1:npt).' * w(npt + 1:npt + n, j);
+                        prod_custom(1:npt, j) = ...
+                            prod_custom(1:npt, j) + bmat(:, 1:npt).' * w(npt + 1:npt + n, j);
                         nw = npt + n;
                     end
                     prod_custom(npt + 1:npt + n, j) = bmat(:, 1:nw) * w(1:nw, j);
@@ -527,7 +541,9 @@ classdef geometry_newuoa_mod
                 denex(9) = alpha * den(9) + prod_custom(knew, 4) * prod_custom(knew, 5);
 
                 % Seek the value of the angle that maximizes the |DENOM|.
-                angle = univar_obj.circle_maxabs(@(varargin) obj.circle_fun_bigden(varargin{:}), denex, 50);
+                angle = ...
+                    univar_obj.circle_maxabs(@(varargin) obj.circle_fun_bigden(varargin{:}), ...
+                                             denex, 50);
 
                 % Calculate the new D.
                 dold = d;

@@ -12,7 +12,9 @@ classdef newuob_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [x, nf, f, fhist, xhist, info] = newuob(~, calfun, iprint, maxfun, npt, eta1, eta2, ftarget, gamma1, gamma2, rhobeg, rhoend, x, fhist, xhist, varargin)
+        function [x, nf, f, fhist, xhist, info] = ...
+                newuob(~, calfun, iprint, maxfun, npt, eta1, eta2, ftarget, gamma1, gamma2, ...
+                       rhobeg, rhoend, x, fhist, xhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine performs the actual calculations of NEWUOA.
             %
@@ -92,7 +94,9 @@ classdef newuob_mod
             %====================%
 
             % Initialize XBASE, XPT, FVAL, and KOPT, together with the history, NF, and IJ.
-            [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, subinfo] = initialize_newuoa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, x, fhist, fval, xhist, xpt);
+            [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, subinfo] = ...
+                initialize_newuoa_obj.initxf(calfun, iprint, maxfun, ftarget, rhobeg, x, fhist, ...
+                                             fval, xhist, xpt);
 
             % Report the current best value, and check if user asks for early termination.
 
@@ -121,7 +125,8 @@ classdef newuob_mod
                 % Initialize the quadratic represented by [GOPT, HQ, PQ], so that its gradient at XBASE+XOPT is
                 % GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
                 [gopt, hq, pq] = initialize_newuoa_obj.initq(ij, fval, xpt, gopt, hq, pq);
-                if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
+                     && all(isfinite(pq), 'all'))
                     subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
@@ -211,7 +216,9 @@ classdef newuob_mod
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x = xbase + (xpt(:, kopt) + d);
-                    distsq = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
+                    distsq = ...
+                        arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), ...
+                                 (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-3 * rhoend) ^ 2
@@ -239,7 +246,9 @@ classdef newuob_mod
                     ratio = ratio_obj.redrat(fval(kopt) - f, qred, eta1);
 
                     % Update DELTA. After this, DELTA < DNORM may hold.
-                    delta = trustregion_newuoa_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ratio);
+                    delta = ...
+                        trustregion_newuoa_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ...
+                                                     ratio);
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
 
@@ -256,7 +265,9 @@ classdef newuob_mod
                     % In this case, the geometry of XPT likely needs improvement, which will be handled below.
                     % 2. If XIMPROVED = TRUE (i.e., RATIO > 0), then SETDROP_TR should ensure KNEW_TR > 0 so that
                     % XNEW is included into XPT. Otherwise, SETDROP_TR is buggy.
-                    knew_tr = geometry_newuoa_obj.setdrop_tr(idz, kopt, ximproved, bmat, d, delta, rho, xpt, zmat);
+                    knew_tr = ...
+                        geometry_newuoa_obj.setdrop_tr(idz, kopt, ximproved, bmat, d, delta, ...
+                                                       rho, xpt, zmat);
 
                     % Update [BMAT, ZMAT, IDZ] (represents H in the NEWUOA paper), [XPT, FVAL, KOPT] and
                     % [GOPT, HQ, PQ] (the quadratic model), so that XPT(:, KNEW_TR) becomes XNEW = XOPT + D.
@@ -265,9 +276,14 @@ classdef newuob_mod
                     if knew_tr > 0
                         xdrop = xpt(:, knew_tr);
                         xosav = xpt(:, kopt);
-                        [idz, bmat, zmat] = powalg_obj.updateh(knew_tr, kopt, d, xpt, idz, bmat, zmat);
-                        [kopt, fval, xpt] = update_newuoa_obj.updatexf(knew_tr, ximproved, f, xosav + d, kopt, fval, xpt);
-                        [gopt, hq, pq] = update_newuoa_obj.updateq(idz, knew_tr, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
+                        [idz, bmat, zmat] = ...
+                            powalg_obj.updateh(knew_tr, kopt, d, xpt, idz, bmat, zmat);
+                        [kopt, fval, xpt] = ...
+                            update_newuoa_obj.updatexf(knew_tr, ximproved, f, xosav + d, kopt, ...
+                                                       fval, xpt);
+                        [gopt, hq, pq] = ...
+                            update_newuoa_obj.updateq(idz, knew_tr, ximproved, bmat, d, moderr, ...
+                                                      xdrop, xosav, xpt, zmat, gopt, hq, pq);
 
                         % Test whether to replace the new quadratic model Q by the least-Frobenius norm
                         % interpolant Q_alt. Perform the replacement if certain criteria are satisfied.
@@ -285,8 +301,11 @@ classdef newuob_mod
                         % not equal FOPT_OLD --- it may happen that KNEW_TR = KOPT_OLD so that FVAL(KOPT_OLD)
                         % has been revised after the last function evaluation.
                         % 5. Powell's code tries Q_alt only when DELTA == RHO.
-                        [itest, gopt, hq, pq] = update_newuoa_obj.tryqalt(idz, bmat, fval - fval(kopt), ratio, xpt(:, kopt), xpt, zmat, itest, gopt, hq, pq);
-                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                        [itest, gopt, hq, pq] = ...
+                            update_newuoa_obj.tryqalt(idz, bmat, fval - fval(kopt), ratio, ...
+                                                      xpt(:, kopt), xpt, zmat, itest, gopt, hq, pq);
+                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
+                             && all(isfinite(pq), 'all'))
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
@@ -312,7 +331,9 @@ classdef newuob_mod
                 % 2. If an iteration sets IMPROVE_GEO = TRUE, it must also reduce DELTA or set DELTA to RHO.
 
                 % ACCURATE_MOD: Are the recent models sufficiently accurate? Used only if SHORTD is TRUE.
-                accurate_mod = all(abs(moderr_rec) <= 0.125 * crvmin * rho ^ 2, 'all') && all(dnorm_rec <= rho, 'all');
+                accurate_mod = ...
+                    all(abs(moderr_rec) <= 0.125 * crvmin * rho ^ 2, 'all') ...
+                    && all(dnorm_rec <= rho, 'all');
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT? It affects IMPROVE_GEO, REDUCE_RHO.
                 distsq(:) = sum((xpt - xpt(:, kopt)) .^ 2, 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
@@ -453,13 +474,16 @@ classdef newuob_mod
 
                     % Find D so that the geometry of XPT will be improved when XPT(:, KNEW_GEO) becomes XOPT + D.
                     % The GEOSTEP subroutine will call Powell's BIGLAG and BIGDEN.
-                    d(:) = geometry_newuoa_obj.geostep(idz, knew_geo, kopt, bmat, delbar, xpt, zmat);
+                    d(:) = ...
+                        geometry_newuoa_obj.geostep(idz, knew_geo, kopt, bmat, delbar, xpt, zmat);
 
                     % Calculate the next value of the objective function.
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
                     % objective function X, assuming it to have the value at the closest point.
                     x = xbase + (xpt(:, kopt) + d);
-                    distsq = arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), (1:npt)'); % Implied do-loop
+                    distsq = ...
+                        arrayfun(@(k) sum((x - (xbase + xpt(:, k))) .^ 2, 1), ...
+                                 (1:npt)'); % Implied do-loop
                     %%MATLAB: distsq = sum((x - (xbase + xpt))**2, 1)  % Implicit expansion
                     [~, k] = min(distsq);
                     if distsq(k) <= (1.0e-3 * rhoend) ^ 2
@@ -499,9 +523,14 @@ classdef newuob_mod
                     xdrop = xpt(:, knew_geo);
                     xosav = xpt(:, kopt);
                     [idz, bmat, zmat] = powalg_obj.updateh(knew_geo, kopt, d, xpt, idz, bmat, zmat);
-                    [kopt, fval, xpt] = update_newuoa_obj.updatexf(knew_geo, ximproved, f, xosav + d, kopt, fval, xpt);
-                    [gopt, hq, pq] = update_newuoa_obj.updateq(idz, knew_geo, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq);
-                    if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') && all(isfinite(pq), 'all'))
+                    [kopt, fval, xpt] = ...
+                        update_newuoa_obj.updatexf(knew_geo, ximproved, f, xosav + d, kopt, ...
+                                                   fval, xpt);
+                    [gopt, hq, pq] = ...
+                        update_newuoa_obj.updateq(idz, knew_geo, ximproved, bmat, d, moderr, ...
+                                                  xdrop, xosav, xpt, zmat, gopt, hq, pq);
+                    if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
+                         && all(isfinite(pq), 'all'))
                         info = infos_obj.NAN_INF_MODEL;
                         break
                     end
@@ -524,7 +553,8 @@ classdef newuob_mod
                     delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
                     rho = redrho_obj.redrho(rho, rhoend);
                     % Print a message about the reduction of RHO according to IPRINT.
-                    message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, xbase + xpt(:, kopt));
+                    message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, ...
+                                       xbase + xpt(:, kopt));
                     % DNORM_REC and MODERR_REC are corresponding to the recent function evaluations with
                     % the current RHO. Update them after reducing RHO.
                     dnorm_rec(:) = realmax;
@@ -538,7 +568,9 @@ classdef newuob_mod
                 % 3. 1.0E2 works better than 1.0E3 on 20230227. In addition, 1.0E2 works better than 2.0E2,
                 % 5.0E2, and 1.0E3 on 20240406, especially if RP = REAL32.
                 if sum(xpt(:, kopt) .^ 2, 'all') >= 100.0 * delta ^ 2
-                    [xbase, xpt, bmat, hq] = shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq, 'idz', idz);
+                    [xbase, xpt, bmat, hq] = ...
+                        shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq, ...
+                                                       'idz', idz);
                 end
 
                 % Report the current best value, and check if user asks for early termination.
@@ -554,7 +586,8 @@ classdef newuob_mod
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             x = xbase + (xpt(:, kopt) + d);
-            if info == infos_obj.SMALL_TR_RADIUS && shortd && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
+            if info == infos_obj.SMALL_TR_RADIUS && shortd ...
+               && norm(x - (xbase + xpt(:, kopt))) > 0.1 * rhoend && nf < maxfun
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
                 % Save X, F into the history.

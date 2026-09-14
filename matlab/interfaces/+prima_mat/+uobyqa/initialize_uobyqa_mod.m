@@ -12,7 +12,8 @@ classdef initialize_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [kopt, nf, fhist, fval, xbase, xhist, xpt, info] = initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, fhist, fval, xhist, xpt)
+        function [kopt, nf, fhist, fval, xbase, xhist, xpt, info] = ...
+                initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, fhist, fval, xhist, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization about the interpolation points & their function values.
             % See Section 4 of the UOBYQA paper.
@@ -201,7 +202,9 @@ classdef initialize_uobyqa_mod
                 end
                 % Find the (IQ, IP) entry of the Hessian.
                 ih = n + (iq - 1) * iq / 2 + ip;
-                pq(ih) = (fval(k) - fbase - xpt(ip, k) * pq(ip) - xpt(iq, k) * pq(iq) - 0.5 * rhosq * (deriv(ip) + deriv(iq))) / (xpt(ip, k) * xpt(iq, k));
+                pq(ih) = ...
+                    (fval(k) - fbase - xpt(ip, k) * pq(ip) - xpt(iq, k) * pq(iq) ...
+                     - 0.5 * rhosq * (deriv(ip) + deriv(iq))) / (xpt(ip, k) * xpt(iq, k));
             end
 
             if nargout >= 2

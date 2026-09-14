@@ -23,9 +23,14 @@ classdef string_mod
             obj.MAX_WIDTH = 100;
         end
         function varargout = num2str_custom(obj, varargin)
-            if numel(varargin) == 1 && (isinteger(varargin{1}) || isnumeric(varargin{1}) && (isreal(varargin{1}) && all(fix(varargin{1}) == varargin{1}, 'all'))) && isscalar(varargin{1})
+            if numel(varargin) == 1 ...
+               && (isinteger(varargin{1}) ...
+                   || isnumeric(varargin{1}) ...
+                      && (isreal(varargin{1}) && all(fix(varargin{1}) == varargin{1}, 'all'))) ...
+               && isscalar(varargin{1})
                 [varargout{1:nargout}] = int2str(varargin{:});
-            elseif numel(varargin) >= 1 && numel(varargin) <= 3 && isfloat(varargin{1}) && isscalar(varargin{1})
+            elseif numel(varargin) >= 1 && numel(varargin) <= 3 && isfloat(varargin{1}) ...
+                   && isscalar(varargin{1})
                 [varargout{1:nargout}] = obj.real2str_scalar(varargin{:});
             else
                 [varargout{1:nargout}] = obj.real2str_vector(varargin{:});
@@ -37,7 +42,9 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            y = arrayfun(@(i) fix(double(unicode2native(extractBetween(x, i, i)))), (1:fix(strlength(x)))');
+            y = ...
+                arrayfun(@(i) fix(double(unicode2native(extractBetween(x, i, i)))), ...
+                         (1:fix(strlength(x)))');
 
         end
         function s = real2str_scalar(obj, x, varargin)
@@ -53,7 +60,8 @@ classdef string_mod
 
 
             ipObj = inputParser();
-            addParameter(ipObj, 'ndgt', min(floor(-log10(eps(class(x)))), floor(-log10(eps('double')))) + 1);
+            addParameter(ipObj, 'ndgt', ...
+                         min(floor(-log10(eps(class(x)))), floor(-log10(eps('double')))) + 1);
             addParameter(ipObj, 'nexp', ceil(log10(double(floor(log10(realmax(class(x)))) + 0.1))));
             parse(ipObj, varargin{:});
             ndgt_loc = ipObj.Results.ndgt;
@@ -73,7 +81,8 @@ classdef string_mod
             if isfinite(x)
                 wx = ndgt_loc + nexp_loc + 5;
                 if ~(wx <= obj.MAX_NUM_STR_LEN)
-                    error("The width of the printed number is at most " + int2str(obj.MAX_NUM_STR_LEN));
+                    error("The width of the printed number is at most " ...
+                          + int2str(obj.MAX_NUM_STR_LEN));
                 end
 
                 str = sprintf('%s \n', num2str(x));
@@ -138,7 +147,9 @@ classdef string_mod
             ndgt_loc = min(ndgt_loc, floor(double(obj.MAX_NUM_STR_LEN - 5) / 2.0)); % Safeguard
 
             if ismember('nexp', ipObj.UsingDefaults)
-                nexp_loc = ceil(log10(double(floor(log10(realmax(class(x))))) + 0.1)); % Use + 0.1 in case RANGE(X) = 10^k.
+                nexp_loc = ...
+                    ceil(log10(double(floor(log10(realmax(class(x))))) ...
+                               + 0.1)); % Use + 0.1 in case RANGE(X) = 10^k.
             else
                 nexp_loc = nexp;
             end
@@ -147,7 +158,10 @@ classdef string_mod
             wx = strlength(obj.real2str_scalar(0.0, 'ndgt', ndgt, 'nexp', nexp));
             n = numel(x);
             if ismember('nx', ipObj.UsingDefaults)
-                nx_loc = max(1, min(floor(double(obj.MAX_WIDTH + strlength(spaces)) / (double(wx) + strlength(spaces))), numel(x)));
+                nx_loc = ...
+                    max(1, ...
+                        min(floor(double(obj.MAX_WIDTH + strlength(spaces)) ...
+                                  / (double(wx) + strlength(spaces))), numel(x)));
             else
                 nx_loc = max(1, min(nx, n));
             end
@@ -163,7 +177,9 @@ classdef string_mod
 
             j = 0; % J is the index of the last up-to-date character in S.
             for i = 1:n
-                s = replaceBetween(s, j + 1, j + wx, obj.real2str_scalar(x(i), 'ndgt', ndgt_loc, 'nexp', nexp_loc));
+                s = ...
+                    replaceBetween(s, j + 1, j + wx, ...
+                                   obj.real2str_scalar(x(i), 'ndgt', ndgt_loc, 'nexp', nexp_loc));
                 if i == n
                     break
                 end

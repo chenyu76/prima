@@ -46,7 +46,9 @@ classdef cobyla_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [x, f_loc, cstrv_loc, nlconstr, nf_loc, xhist, fhist, chist, nlchist, info_loc] = cobyla(obj, calcfc, m_nlcon, x, varargin)
+        function [x, f_loc, cstrv_loc, nlconstr, nf_loc, xhist, fhist, chist, nlchist, ...
+                  info_loc] = ...
+                cobyla(obj, calcfc, m_nlcon, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % Among all the arguments, only CALCFC, M_NLCON, and X are obligatory. The others are OPTIONAL and
             % you can neglect them unless you are familiar with the algorithm. Any unspecified optional input
@@ -361,7 +363,9 @@ classdef cobyla_mod
 
             % Read the inputs.
 
-            Aineq_loc = NaN(mineq, n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
+            Aineq_loc = ...
+                NaN(mineq, ...
+                    n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
             if ~ismember('Aineq', ipObj.UsingDefaults) && mineq > 0
                 % We must check Mineq > 0. Otherwise, the size of Aineq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aineq; we allow Aineq to be 0-by-0, but
@@ -374,7 +378,8 @@ classdef cobyla_mod
                 bineq_loc = bineq;
             end
 
-            Aeq_loc = NaN(meq, n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
+            Aeq_loc = ...
+                NaN(meq, n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
             if ~ismember('Aeq', ipObj.UsingDefaults) && meq > 0
                 % We must check Meq > 0. Otherwise, the size of Aeq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aeq; we allow Aeq to be 0-by-0, but
@@ -415,15 +420,19 @@ classdef cobyla_mod
             % If NLCONSTR0 is present, then F0 must be present, and we assume that F(X0) = F0 even if F0 is NaN.
             % If NLCONSTR0 is absent, then F0 must be either absent or NaN, both of which will be interpreted as
             % F(X0) is not provided and we have to evaluate F(X0) and NLCONSTR(X0) now.
-            constr_loc(1:m - m_nlcon) = evaluate_obj.moderatec(amat.' * x - bvec); % Linear and bound constraints
+            constr_loc(1:m - m_nlcon) = ...
+                evaluate_obj.moderatec(amat.' * x - bvec); % Linear and bound constraints
             % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
             % bound/linear constraint values here to make CSTRV consistent.
-            if ~ismember('f0', ipObj.UsingDefaults) && ~ismember('nlconstr0', ipObj.UsingDefaults) && all(isfinite(x), 'all')
+            if ~ismember('f0', ipObj.UsingDefaults) ...
+               && ~ismember('nlconstr0', ipObj.UsingDefaults) && all(isfinite(x), 'all')
                 f_loc = evaluate_obj.moderatef(f0);
                 constr_loc(m - m_nlcon + 1:m) = evaluate_obj.moderatec(nlconstr0);
             else
                 x = evaluate_obj.moderatex(x);
-                [f_loc, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr_loc(m - m_nlcon + 1:m)); constr_loc(m - m_nlcon + 1:m) = constr_slice; % Nonlinear constraints
+                [f_loc, constr_slice] = ...
+                    evaluate_obj.evaluatefc(calcfc, x, constr_loc(m - m_nlcon + 1:m));
+                constr_loc(m - m_nlcon + 1:m) = constr_slice; % Nonlinear constraints
                 % N.B.: Do NOT call FMSG, SAVEHIST, or SAVEFILT for the function/constraint evaluation at X0.
                 % They will be called during the initialization, which will read the function/constraint at X0.
             end
@@ -450,7 +459,10 @@ classdef cobyla_mod
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(eps, min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, consts_obj.RHOEND_DFT));
+                rhoend_loc = ...
+                    max(eps, ...
+                        min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, ...
+                            consts_obj.RHOEND_DFT));
             else
                 rhoend_loc = consts_obj.RHOEND_DFT;
             end
@@ -486,19 +498,40 @@ classdef cobyla_mod
             end
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
-            [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, ~, maxfilt_loc, ctol_loc, cweight_loc, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, 'm', m, 'is_constrained', m > 0, 'ctol', ctol_loc, 'cweight', cweight_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc, 'maxfilt', maxfilt_loc);
+            [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, ~, ...
+             maxfilt_loc, ctol_loc, cweight_loc, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = ...
+                preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, ...
+                                    rhobeg_loc, rhoend_loc, 'm', m, 'is_constrained', m > 0, ...
+                                    'ctol', ctol_loc, 'cweight', cweight_loc, 'eta1', eta1_loc, ...
+                                    'eta2', eta2_loc, 'gamma1', gamma1_loc, ...
+                                    'gamma2', gamma2_loc, 'maxfilt', maxfilt_loc);
 
             % Further revise MAXHIST_LOC according to MAXHISTMEM, and allocate memory for the history.
             % In MATLAB/Python/Julia/R implementation, we should simply set MAXHIST = MAXFUN and initialize
             % CHIST = NaN(1, MAXFUN), NLCHIST = NaN(M_NLCON, MAXFUN), FHIST = NaN(1, MAXFUN), XHIST =
             % NaN(N, MAXFUN) if they are requested; replace MAXFUN with 0 for the history not requested.
-            [maxhist_loc, xhist_loc, fhist_loc, chist_loc, conhist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 6, nargout >= 7, 'output_chist', nargout >= 8, 'm', m, 'output_conhist', nargout >= 9);
+            [maxhist_loc, xhist_loc, fhist_loc, chist_loc, conhist_loc] = ...
+                history_obj.prehist(maxhist_loc, n, nargout >= 6, nargout >= 7, ...
+                                    'output_chist', nargout >= 8, 'm', m, ...
+                                    'output_conhist', nargout >= 9);
 
             %-------------------- Call COBYLB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
-                [constr_loc, f_loc, x, nf_loc, chist_loc, conhist_loc, cstrv_loc, fhist_loc, xhist_loc, info_loc] = cobylb_obj.cobylb(calcfc, iprint_loc, maxfilt_loc, maxfun_loc, amat, bvec, ctol_loc, cweight_loc, eta1_loc, eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, constr_loc, f_loc, x, chist_loc, conhist_loc, fhist_loc, xhist_loc);
+                [constr_loc, f_loc, x, nf_loc, chist_loc, conhist_loc, cstrv_loc, fhist_loc, ...
+                 xhist_loc, info_loc] = ...
+                    cobylb_obj.cobylb(calcfc, iprint_loc, maxfilt_loc, maxfun_loc, amat, bvec, ...
+                                      ctol_loc, cweight_loc, eta1_loc, eta2_loc, ftarget_loc, ...
+                                      gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, ...
+                                      constr_loc, f_loc, x, chist_loc, conhist_loc, fhist_loc, ...
+                                      xhist_loc);
             else
-                [constr_loc, f_loc, x, nf_loc, chist_loc, conhist_loc, cstrv_loc, fhist_loc, xhist_loc, info_loc] = cobylb_obj.cobylb(calcfc, iprint_loc, maxfilt_loc, maxfun_loc, amat, bvec, ctol_loc, cweight_loc, eta1_loc, eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, constr_loc, f_loc, x, chist_loc, conhist_loc, fhist_loc, xhist_loc, 'callback_fcn', callback_fcn);
+                [constr_loc, f_loc, x, nf_loc, chist_loc, conhist_loc, cstrv_loc, fhist_loc, ...
+                 xhist_loc, info_loc] = ...
+                    cobylb_obj.cobylb(calcfc, iprint_loc, maxfilt_loc, maxfun_loc, amat, bvec, ...
+                                      ctol_loc, cweight_loc, eta1_loc, eta2_loc, ftarget_loc, ...
+                                      gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, ...
+                                      constr_loc, f_loc, x, chist_loc, conhist_loc, fhist_loc, ...
+                                      xhist_loc, 'callback_fcn', callback_fcn);
             end
             %--------------------------------------------------------------------------------------------------%
 
@@ -554,13 +587,17 @@ classdef cobyla_mod
             % A similar comment can be made on CONSTR_LOC and NLCONSTR, which are related to CONFILT in COBYLB.
             if nargout >= 9
                 nhist = min(nf_loc, size(conhist_loc, 2));
-                nlchist = conhist_loc(m - m_nlcon + 1:m, 1:nhist); % The same as XHIST, we must cap NLCHIST at NF_LOC.
+                nlchist = ...
+                    conhist_loc(m - m_nlcon + 1:m, ...
+                                1:nhist); % The same as XHIST, we must cap NLCHIST at NF_LOC.
 
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if nargout >= 6 && maxhist_loc < nf_loc
-                debug_obj.warning(solver, "Only the history of the last " + int2str(maxhist_loc) + " function evaluation(s) is recorded");
+                debug_obj.warning(solver, ...
+                                  "Only the history of the last " + int2str(maxhist_loc) ...
+                                  + " function evaluation(s) is recorded");
             end
 
         end
@@ -593,7 +630,8 @@ classdef cobyla_mod
             mxu = nnz(xu < consts_obj.BOUNDMAX);
             meq = numel(beq);
             mineq = numel(bineq);
-            m_lcon = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
+            m_lcon = ...
+                mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
 
             % Allocate memory. Removable in F2003.
 
@@ -611,7 +649,10 @@ classdef cobyla_mod
             % 1. The treatment of the equality constraints is naive. One may choose to eliminate them instead.
             % 2. The code below is quite inefficient in terms of memory, but we prefer readability.
             idmat(:) = eye(n);
-            amat = reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), reshape(-Aeq.', 1, []), reshape(Aeq.', 1, []), reshape(Aineq.', 1, [])], size(amat));
+            amat = ...
+                reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), ...
+                         reshape(-Aeq.', 1, []), reshape(Aeq.', 1, []), ...
+                         reshape(Aineq.', 1, [])], size(amat));
             bvec = [-xl(ixl); xu(ixu); -beq; beq; bineq];
             %%MATLAB code:
             %%amat = [-idmat(:, ixl), idmat(:, ixu), -Aeq', Aeq', Aineq'];

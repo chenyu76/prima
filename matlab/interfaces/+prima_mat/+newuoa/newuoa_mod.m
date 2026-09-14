@@ -224,7 +224,10 @@ classdef newuoa_mod
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(eps, min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, consts_obj.RHOEND_DFT));
+                rhoend_loc = ...
+                    max(eps, ...
+                        min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, ...
+                            consts_obj.RHOEND_DFT));
             else
                 rhoend_loc = consts_obj.RHOEND_DFT;
             end
@@ -263,19 +266,31 @@ classdef newuoa_mod
             end
 
             % Preprocess the inputs in case some of them are invalid.
-            [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, npt_loc, ~, ~, ~, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, 'npt', npt_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc);
+            [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, npt_loc, ...
+             ~, ~, ~, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = ...
+                preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, ...
+                                    rhobeg_loc, rhoend_loc, 'npt', npt_loc, 'eta1', eta1_loc, ...
+                                    'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc);
 
             % Further revise MAXHIST_LOC according to MAXHISTMEM, and allocate memory for the history.
             % In MATLAB/Python/Julia/R implementation, we should simply set MAXHIST = MAXFUN and initialize
             % FHIST = NaN(1, MAXFUN), XHIST = NaN(N, MAXFUN) if they are requested; replace MAXFUN with 0 for
             % the history that is not requested.
-            [maxhist_loc, xhist_loc, fhist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 4, nargout >= 5);
+            [maxhist_loc, xhist_loc, fhist_loc] = ...
+                history_obj.prehist(maxhist_loc, n, nargout >= 4, nargout >= 5);
 
             %-------------------- Call NEWUOB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
-                [x, nf_loc, f_loc, fhist_loc, xhist_loc, info_loc] = newuob_obj.newuob(calfun, iprint_loc, maxfun_loc, npt_loc, eta1_loc, eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, x, fhist_loc, xhist_loc);
+                [x, nf_loc, f_loc, fhist_loc, xhist_loc, info_loc] = ...
+                    newuob_obj.newuob(calfun, iprint_loc, maxfun_loc, npt_loc, eta1_loc, ...
+                                      eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, ...
+                                      rhoend_loc, x, fhist_loc, xhist_loc);
             else
-                [x, nf_loc, f_loc, fhist_loc, xhist_loc, info_loc] = newuob_obj.newuob(calfun, iprint_loc, maxfun_loc, npt_loc, eta1_loc, eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, x, fhist_loc, xhist_loc, 'callback_fcn', callback_fcn);
+                [x, nf_loc, f_loc, fhist_loc, xhist_loc, info_loc] = ...
+                    newuob_obj.newuob(calfun, iprint_loc, maxfun_loc, npt_loc, eta1_loc, ...
+                                      eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, ...
+                                      rhoend_loc, x, fhist_loc, xhist_loc, ...
+                                      'callback_fcn', callback_fcn);
             end
             %--------------------------------------------------------------------------------------------------%
 
@@ -313,7 +328,9 @@ classdef newuoa_mod
 
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
             if nargout >= 4 && maxhist_loc < nf_loc
-                debug_obj.warning(solver, "Only the history of the last " + int2str(maxhist_loc) + " function evaluation(s) is recorded");
+                debug_obj.warning(solver, ...
+                                  "Only the history of the last " + int2str(maxhist_loc) ...
+                                  + " function evaluation(s) is recorded");
             end
 
         end

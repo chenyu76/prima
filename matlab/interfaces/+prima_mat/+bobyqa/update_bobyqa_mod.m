@@ -83,10 +83,12 @@ classdef update_bobyqa_mod
             % Update the matrix BMAT. It implements the last N rows of (4.9) in the BOBYQA paper.
             v1(:) = (alpha * vlag(npt + 1:npt + n) - tau * hcol(npt + 1:npt + n)) ./ denom;
             v2(:) = (-beta * hcol(npt + 1:npt + n) - tau * vlag(npt + 1:npt + n)) ./ denom;
-            bmat = bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
+            bmat = ...
+                bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             % Numerically, the update above does not guarantee BMAT(:, NPT+1 : NPT+N) to be symmetric.
-            A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n)); bmat(:, npt + 1:npt + n) = A_slice;
+            A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n));
+            bmat(:, npt + 1:npt + n) = A_slice;
 
             % Apply Givens rotations to put zeros in the KNEW-th row of ZMAT. After this, ZMAT(KNEW, :) contains
             % only one nonzero at ZMAT(KNEW, 1). Entries of ZMAT are treated as 0 if the moduli are quite small.
@@ -144,7 +146,8 @@ classdef update_bobyqa_mod
 
 
         end
-        function [gopt, hq, pq] = updateq(~, knew, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq)
+        function [gopt, hq, pq] = ...
+                updateq(~, knew, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates GOPT, HQ, and PQ when XPT(:, KNEW) changes from XDROP to XNEW = XOSAV + D,
             % where XOSAV is the unupdated XOPT, namely the XOPT before UPDATEXF is called.
@@ -179,7 +182,8 @@ classdef update_bobyqa_mod
             pq(knew) = 0.0;
 
             % Update the implicit part of the Hessian.
-            pqinc(:) = moderr * (zmat * zmat(knew, :).'); % pqinc = moderr * omega_col(1_IK, zmat, knew)
+            pqinc(:) = ...
+                moderr * (zmat * zmat(knew, :).'); % pqinc = moderr * omega_col(1_IK, zmat, knew)
             pq = pq + pqinc;
 
             % Update the gradient, which needs the updated XPT.
@@ -196,7 +200,8 @@ classdef update_bobyqa_mod
 
 
         end
-        function [itest, gopt, hq, pq] = tryqalt(~, bmat, fval, ratio, sl, su, xopt, xpt, zmat, itest, gopt, hq, pq)
+        function [itest, gopt, hq, pq] = ...
+                tryqalt(~, bmat, fval, ratio, sl, su, xopt, xpt, zmat, itest, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine tests whether to replace Q by the alternative model, namely the model that
             % minimizes the F-norm of the Hessian subject to the interpolation conditions. It does the

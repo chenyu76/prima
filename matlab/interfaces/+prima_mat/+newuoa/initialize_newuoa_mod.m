@@ -12,7 +12,8 @@ classdef initialize_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, info] = initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, fhist, fval, xhist, xpt)
+        function [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, info] = ...
+                initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, fhist, fval, xhist, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization about the interpolation points & their function values.
             %
@@ -128,8 +129,10 @@ classdef initialize_newuoa_mod
             % on FVAL(2 : 2*N + 1), and it is the sole origin of the such dependency. If we remove the revision
             % IJ, then the evaluations of FVAL(1 : NPT) can be merged, and they are totally PARALLELIZABLE; this
             % can be beneficial if the function evaluations are expensive, which is likely the case.
-            ij(1, fval(ij(1, :).' + n + 1) < fval(ij(1, :).' + 1)) = ij(1, fval(ij(1, :).' + n + 1) < fval(ij(1, :).' + 1)) + n;
-            ij(2, fval(ij(2, :).' + n + 1) < fval(ij(2, :).' + 1)) = ij(2, fval(ij(2, :).' + n + 1) < fval(ij(2, :).' + 1)) + n;
+            ij(1, fval(ij(1, :).' + n + 1) < fval(ij(1, :).' + 1)) = ...
+                ij(1, fval(ij(1, :).' + n + 1) < fval(ij(1, :).' + 1)) + n;
+            ij(2, fval(ij(2, :).' + n + 1) < fval(ij(2, :).' + 1)) = ...
+                ij(2, fval(ij(2, :).' + n + 1) < fval(ij(2, :).' + 1)) + n;
             % MATLAB (but not Fortran) can index a vector by a 2D array of indices, thus the MATLAB code is
             %%MATLAB: ij(fval(ij + n + 1) < fval(ij + 1)) = ij(fval(ij + n  + 1) < fval(ij + 1)) + n;
 
@@ -206,7 +209,8 @@ classdef initialize_newuoa_mod
             % prefer to decouple the initialization of GOPT and HQ. We are not concerned by this amount of flops.
             hq(:) = 0.0;
             for k = 1:ndiag
-                hq(k, k) = ((fval(k + 1) - fbase) / rhobeg - (fbase - fval(k + n + 1)) / rhobeg) / rhobeg;
+                hq(k, k) = ...
+                    ((fval(k + 1) - fbase) / rhobeg - (fbase - fval(k + n + 1)) / rhobeg) / rhobeg;
             end
             %%MATLAB:
             %%hdiag = ((fval(2 : ndiag+1) - fbase) / rhobeg - (fbase - fval(n+2 : n+ndiag+1)) / rhobeg) / rhobeg
@@ -227,7 +231,9 @@ classdef initialize_newuoa_mod
                 j = mod(ij(2, k) - 1, n) + 1;
                 xi = xpt(i, k + 2 * n + 1);
                 xj = xpt(j, k + 2 * n + 1);
-                hq(i, j) = (fbase - fval(ij(1, k) + 1) - fval(ij(2, k) + 1) + fval(k + 2 * n + 1)) / (xi * xj);
+                hq(i, j) = ...
+                    (fbase - fval(ij(1, k) + 1) - fval(ij(2, k) + 1) + fval(k + 2 * n + 1)) ...
+                    / (xi * xj);
                 hq(j, i) = hq(i, j);
             end
 

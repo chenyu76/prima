@@ -40,7 +40,8 @@ classdef lincoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [x, f_loc, cstrv_loc, nf_loc, xhist, fhist, chist, info_loc] = lincoa(obj, calfun, x, varargin)
+        function [x, f_loc, cstrv_loc, nf_loc, xhist, fhist, chist, info_loc] = ...
+                lincoa(obj, calfun, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % Among all the arguments, only CALFUN, and X are obligatory. The others are OPTIONAL and you can
             % neglect them unless you are familiar with the algorithm. Any unspecified optional input will take
@@ -290,7 +291,9 @@ classdef lincoa_mod
 
             x = evaluate_obj.moderatex(x);
 
-            Aineq_loc = NaN(mineq, n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
+            Aineq_loc = ...
+                NaN(mineq, ...
+                    n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
             if ~ismember('Aineq', ipObj.UsingDefaults) && mineq > 0
                 % We must check Mineq > 0. Otherwise, the size of Aineq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aineq; we allow Aineq to be 0-by-0, but
@@ -303,7 +306,8 @@ classdef lincoa_mod
                 bineq_loc = bineq;
             end
 
-            Aeq_loc = NaN(meq, n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
+            Aeq_loc = ...
+                NaN(meq, n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
             if ~ismember('Aeq', ipObj.UsingDefaults) && meq > 0
                 % We must check Meq > 0. Otherwise, the size of Aeq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aeq; we allow Aeq to be 0-by-0, but
@@ -354,7 +358,10 @@ classdef lincoa_mod
             if ~ismember('rhoend', ipObj.UsingDefaults)
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
-                rhoend_loc = max(eps, min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, consts_obj.RHOEND_DFT));
+                rhoend_loc = ...
+                    max(eps, ...
+                        min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, ...
+                            consts_obj.RHOEND_DFT));
             else
                 rhoend_loc = consts_obj.RHOEND_DFT;
             end
@@ -399,22 +406,43 @@ classdef lincoa_mod
             end
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
-            [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, npt_loc, maxfilt_loc, ctol_loc, cweight_loc, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, 'npt', npt_loc, 'ctol', ctol_loc, 'cweight', cweight_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, 'gamma1', gamma1_loc, 'gamma2', gamma2_loc, 'maxfilt', maxfilt_loc);
+            [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, npt_loc, ...
+             maxfilt_loc, ctol_loc, cweight_loc, eta1_loc, eta2_loc, gamma1_loc, gamma2_loc] = ...
+                preproc_obj.preproc(solver, n, iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, ...
+                                    rhobeg_loc, rhoend_loc, 'npt', npt_loc, 'ctol', ctol_loc, ...
+                                    'cweight', cweight_loc, 'eta1', eta1_loc, 'eta2', eta2_loc, ...
+                                    'gamma1', gamma1_loc, 'gamma2', gamma2_loc, ...
+                                    'maxfilt', maxfilt_loc);
 
             % Further revise MAXHIST_LOC according to MAXHISTMEM, and allocate memory for the history.
             % In MATLAB/Python/Julia/R implementation, we should simply set MAXHIST = MAXFUN and initialize
             % CHIST = NaN(1, MAXFUN), FHIST = NaN(1, MAXFUN), XHIST = NaN(N, MAXFUN)
             % if they are requested; replace MAXFUN with 0 for the history that is not requested.
-            [maxhist_loc, xhist_loc, fhist_loc, chist_loc] = history_obj.prehist(maxhist_loc, n, nargout >= 5, nargout >= 6, 'output_chist', nargout >= 7);
+            [maxhist_loc, xhist_loc, fhist_loc, chist_loc] = ...
+                history_obj.prehist(maxhist_loc, n, nargout >= 5, nargout >= 6, ...
+                                    'output_chist', nargout >= 7);
 
             % Wrap the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
-            [amat, bvec] = obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, rhoend_loc, xl_loc, xu_loc, x);
+            [amat, bvec] = ...
+                obj.get_lincon(Aeq_loc, Aineq_loc, beq_loc, bineq_loc, rhoend_loc, xl_loc, ...
+                               xu_loc, x);
 
             %-------------------- Call LINCOB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
-                [x, nf_loc, chist_loc, cstrv_loc, f_loc, fhist_loc, xhist_loc, info_loc] = lincob_obj.lincob(calfun, iprint_loc, maxfilt_loc, maxfun_loc, npt_loc, Aeq_loc, Aineq_loc, amat, beq_loc, bineq_loc, bvec, ctol_loc, cweight_loc, eta1_loc, eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, xl_loc, xu_loc, x, chist_loc, fhist_loc, xhist_loc);
+                [x, nf_loc, chist_loc, cstrv_loc, f_loc, fhist_loc, xhist_loc, info_loc] = ...
+                    lincob_obj.lincob(calfun, iprint_loc, maxfilt_loc, maxfun_loc, npt_loc, ...
+                                      Aeq_loc, Aineq_loc, amat, beq_loc, bineq_loc, bvec, ...
+                                      ctol_loc, cweight_loc, eta1_loc, eta2_loc, ftarget_loc, ...
+                                      gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, xl_loc, ...
+                                      xu_loc, x, chist_loc, fhist_loc, xhist_loc);
             else
-                [x, nf_loc, chist_loc, cstrv_loc, f_loc, fhist_loc, xhist_loc, info_loc] = lincob_obj.lincob(calfun, iprint_loc, maxfilt_loc, maxfun_loc, npt_loc, Aeq_loc, Aineq_loc, amat, beq_loc, bineq_loc, bvec, ctol_loc, cweight_loc, eta1_loc, eta2_loc, ftarget_loc, gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, xl_loc, xu_loc, x, chist_loc, fhist_loc, xhist_loc, 'callback_fcn', callback_fcn);
+                [x, nf_loc, chist_loc, cstrv_loc, f_loc, fhist_loc, xhist_loc, info_loc] = ...
+                    lincob_obj.lincob(calfun, iprint_loc, maxfilt_loc, maxfun_loc, npt_loc, ...
+                                      Aeq_loc, Aineq_loc, amat, beq_loc, bineq_loc, bvec, ...
+                                      ctol_loc, cweight_loc, eta1_loc, eta2_loc, ftarget_loc, ...
+                                      gamma1_loc, gamma2_loc, rhobeg_loc, rhoend_loc, xl_loc, ...
+                                      xu_loc, x, chist_loc, fhist_loc, xhist_loc, ...
+                                      'callback_fcn', callback_fcn);
             end
             %--------------------------------------------------------------------------------------------------%
 
@@ -459,7 +487,9 @@ classdef lincoa_mod
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if nargout >= 5 && maxhist_loc < nf_loc
-                debug_obj.warning(solver, "Only the history of the last " + int2str(maxhist_loc) + " function evaluation(s) is recorded");
+                debug_obj.warning(solver, ...
+                                  "Only the history of the last " + int2str(maxhist_loc) ...
+                                  + " function evaluation(s) is recorded");
             end
 
         end
@@ -505,7 +535,8 @@ classdef lincoa_mod
 
             % Print a warning if some constraints are invalid. They will be ignored (Powell's code would stop).
             if meq < size(Aeq, 1) || mineq < size(Aineq, 1)
-                debug_obj.warning(solver, "Some linear constraints have zero gradients; they are ignored");
+                debug_obj.warning(solver, ...
+                                  "Some linear constraints have zero gradients; they are ignored");
             end
 
             % Allocate memory. Removable in F2003.
@@ -526,7 +557,10 @@ classdef lincoa_mod
             % 1. The treatment of the equality constraints is naive. One may choose to eliminate them instead.
             % 2. The code below is quite inefficient in terms of memory, but we prefer readability.
             idmat(:) = eye(n);
-            amat = reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), reshape(-Aeq(ieq, :).', 1, []), reshape(Aeq(ieq, :).', 1, []), reshape(Aineq(iineq, :).', 1, [])], size(amat));
+            amat = ...
+                reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), ...
+                         reshape(-Aeq(ieq, :).', 1, []), reshape(Aeq(ieq, :).', 1, []), ...
+                         reshape(Aineq(iineq, :).', 1, [])], size(amat));
             bvec = [-xl(ixl); xu(ixu); -beq(ieq); beq(ieq); bineq(iineq)];
             %%MATLAB code:
             %%amat = [-idmat(:, ixl), idmat(:, ixu), -Aeq(ieq, :)', Aeq(ieq, :)', Aineq(iineq, :)'];
@@ -547,9 +581,14 @@ classdef lincoa_mod
 
             % Print a warning if the starting point is sufficiently infeasible and the constraints are modified.
             smallx = 10.0 ^ max(-6, -floor(log10(realmax))) * rhoend;
-            constr_modified = any(x0 + smallx < xl, 'all') || any(x0 - smallx > xu, 'all') || any(abs(Aeqx0 - beq) > smallx * Aeq_norm, 'all') || any(Aineqx0 - bineq > smallx * Aineq_norm, 'all');
+            constr_modified = ...
+                any(x0 + smallx < xl, 'all') || any(x0 - smallx > xu, 'all') ...
+                || any(abs(Aeqx0 - beq) > smallx * Aeq_norm, 'all') ...
+                || any(Aineqx0 - bineq > smallx * Aineq_norm, 'all');
             if constr_modified
-                debug_obj.warning(solver, "The starting point is infeasible. " + solver + " modified the right-hand sides of the constraints to make it feasible");
+                debug_obj.warning(solver, ...
+                                  "The starting point is infeasible. " + solver ...
+                                  + " modified the right-hand sides of the constraints to make it feasible");
             end
 
             %====================%

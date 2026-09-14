@@ -55,7 +55,9 @@ classdef debug_mod
             %--------------------------------------------------------------------------------------------------%
 
 
-            fprintf(2, '\n%s\n\n', "Warning: " + strtrim(strjust(srname, 'left')) + ": " + strtrim(strjust(msg, 'left')) + ".");
+            fprintf(2, '\n%s\n\n', ...
+                    "Warning: " + strtrim(strjust(srname, 'left')) + ": " ...
+                    + strtrim(strjust(msg, 'left')) + ".");
         end
 
     end

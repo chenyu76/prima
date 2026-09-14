@@ -183,7 +183,8 @@ classdef geometry_uobyqa_mod
             else                % GG is 0 or NaN due to rounding errors. Set DCAUCHY to a displacement from XOPT to XPT(:, KNEW).
                 dcauchy = xpt(:, knew) - xopt;
                 scaling = delbar / norm(dcauchy);
-                dcauchy = max(0.6 * scaling, min(0.5, scaling)) * dcauchy; % 0.6: ensure |D| > DELBAR/2
+                dcauchy = ...
+                    max(0.6 * scaling, min(0.5, scaling)) * dcauchy; % 0.6: ensure |D| > DELBAR/2
                 if sum(g .* dcauchy, 'all') * sum(dcauchy .* (h * dcauchy), 'all') < 0
                     dcauchy = -dcauchy;
                 end

@@ -13,7 +13,10 @@ classdef initialize_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, info] = initxf(~, calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, rhobeg, xl, xu, x0, b, chist, cval, fhist, fval, xhist, xpt, evaluated)
+        function [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, ...
+                  info] = ...
+                initxf(~, calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, ...
+                       rhobeg, xl, xu, x0, b, chist, cval, fhist, fval, xhist, xpt, evaluated)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization about the interpolation points & their function values.
             %
@@ -47,7 +50,9 @@ classdef initialize_lincoa_mod
 
             solver = "LINCOA";
 
-            constr = NaN(nnz(xl > -consts_obj.BOUNDMAX) + nnz(xu < consts_obj.BOUNDMAX) + 2 * numel(beq) + numel(bineq), 1);
+            constr = ...
+                NaN(nnz(xl > -consts_obj.BOUNDMAX) + nnz(xu < consts_obj.BOUNDMAX) ...
+                    + 2 * numel(beq) + numel(bineq), 1);
             constr_leq = NaN(size(beq));
 
             n = size(xpt, 1);
@@ -85,7 +90,8 @@ classdef initialize_lincoa_mod
             % later to make a constraint violation sufficiently large.
             xpt(:, 1) = 0.0;
             xpt(:, 2:n + 1) = rhobeg * eye(n);
-            xpt(:, n + 2:npt) = -rhobeg * eye(n, npt - n - 1); % XPT(:, 2*N+2 : NPT) = ZERO if it is nonempty.
+            xpt(:, n + 2:npt) = ...
+                -rhobeg * eye(n, npt - n - 1); % XPT(:, 2*N+2 : NPT) = ZERO if it is nonempty.
 
             % Set IJ.
             % In general, when NPT = (N+1)*(N+2)/2, we can set IJ(:, 1 : NPT - (2*N+1)) to ANY permutation
@@ -135,13 +141,17 @@ classdef initialize_lincoa_mod
                 f = evaluate_obj.evaluatef(calfun, x);
                 % Evaluate the constraints.
                 constr_leq(:) = Aeq * x - beq;
-                constr(:) = [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
+                constr(:) = ...
+                    [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
+                     Aineq * x - bineq];
                 cstrv = max([0.0; constr], [], 'all');
 
                 % Print a message about the function evaluation according to IPRINT.
-                message_obj.fmsg(solver, "Initialization", iprint, k, rhobeg, f, x, 'cstrv', cstrv, 'constr', constr);
+                message_obj.fmsg(solver, "Initialization", iprint, k, rhobeg, f, x, ...
+                                 'cstrv', cstrv, 'constr', constr);
                 % Save X, F, CSTRV into the history.
-                [xhist, fhist, chist] = history_obj.savehist(k, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist);
+                [xhist, fhist, chist] = ...
+                    history_obj.savehist(k, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist);
 
                 evaluated(k) = true;
                 cval(k) = cstrv; % CVAL will be used to initialize CFILT.

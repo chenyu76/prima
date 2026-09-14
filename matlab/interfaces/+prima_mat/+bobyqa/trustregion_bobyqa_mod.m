@@ -78,13 +78,16 @@ classdef trustregion_bobyqa_mod
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
             if max(abs(gopt_in)) > 1.0e12
                 % The threshold is empirical.
-                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in))); % MAX: precaution against underflow.
+                modscal = ...
+                    max(2.0 * realmin, ...
+                        1.0 / max(abs(gopt_in))); % MAX: precaution against underflow.
                 gopt = gopt_in * modscal;
                 pq = pq_in * modscal;
                 hq = hq_in * modscal;
                 scaled = true;
             else
-                modscal = 1.0; % This value is not used, but Fortran compilers may complain without it.
+                modscal = ...
+                    1.0; % This value is not used, but Fortran compilers may complain without it.
                 gopt = gopt_in;
                 pq = pq_in;
                 hq = hq_in;
@@ -218,8 +221,10 @@ classdef trustregion_bobyqa_mod
                 xnew = xopt + d;
                 xtest(:) = xnew + stplen * s;
                 sbound(:) = stplen;
-                sbound(s > 0 & xtest > su) = (su(s > 0 & xtest > su) - xnew(s > 0 & xtest > su)) ./ s(s > 0 & xtest > su);
-                sbound(s < 0 & xtest < sl) = (sl(s < 0 & xtest < sl) - xnew(s < 0 & xtest < sl)) ./ s(s < 0 & xtest < sl);
+                sbound(s > 0 & xtest > su) = ...
+                    (su(s > 0 & xtest > su) - xnew(s > 0 & xtest > su)) ./ s(s > 0 & xtest > su);
+                sbound(s < 0 & xtest < sl) = ...
+                    (sl(s < 0 & xtest < sl) - xnew(s < 0 & xtest < sl)) ./ s(s < 0 & xtest < sl);
                 %%MATLAB:
                 %%sbound(s > 0) = (su(s > 0) - xnew(s > 0)) / s(s > 0);
                 %%sbound(s < 0) = (sl(s < 0) - xnew(s < 0)) / s(s < 0);
@@ -352,7 +357,9 @@ classdef trustregion_bobyqa_mod
                 gredsq = sum(gnew(find(xbdi == 0)) .^ 2, 'all');
                 dredg = sum(d(find(xbdi == 0)) .* gnew(find(xbdi == 0)), 'all');
                 if iter == 1 || nact > nactsav
-                    dredsq = sum(d(find(xbdi == 0)) .^ 2, 'all'); % In theory, DREDSQ changes only when NACT increases.
+                    dredsq = ...
+                        sum(d(find(xbdi == 0)) .^ 2, ...
+                            'all'); % In theory, DREDSQ changes only when NACT increases.
                     dred = d;
                     dred(xbdi ~= 0) = 0.0;
                     hdred(:) = powalg_obj.hess_mul(dred, xpt, pq, 'hq', hq);
@@ -390,11 +397,25 @@ classdef trustregion_bobyqa_mod
                 ssq = d .^ 2 + s .^ 2; % Indeed, only SSQ(TRUELOC(XBDI == 0)) is needed.
                 tanbd(:) = 1.0;
                 sqdscr(:) = -realmax;
-                sqdscr(xbdi == 0 & xopt - sl < sqrt(ssq)) = sqrt(max(0.0, ssq(xbdi == 0 & xopt - sl < sqrt(ssq)) - (xopt(xbdi == 0 & xopt - sl < sqrt(ssq)) - sl(xbdi == 0 & xopt - sl < sqrt(ssq))) .^ 2));
-                tanbd(sqdscr - s > 0) = min(tanbd(sqdscr - s > 0), (xnew(sqdscr - s > 0) - sl(sqdscr - s > 0)) ./ (sqdscr(sqdscr - s > 0) - s(sqdscr - s > 0)));
+                sqdscr(xbdi == 0 & xopt - sl < sqrt(ssq)) = ...
+                    sqrt(max(0.0, ...
+                             ssq(xbdi == 0 & xopt - sl < sqrt(ssq)) ...
+                             - (xopt(xbdi == 0 & xopt - sl < sqrt(ssq)) ...
+                                - sl(xbdi == 0 & xopt - sl < sqrt(ssq))) .^ 2));
+                tanbd(sqdscr - s > 0) = ...
+                    min(tanbd(sqdscr - s > 0), ...
+                        (xnew(sqdscr - s > 0) - sl(sqdscr - s > 0)) ...
+                        ./ (sqdscr(sqdscr - s > 0) - s(sqdscr - s > 0)));
                 sqdscr(:) = -realmax;
-                sqdscr(xbdi == 0 & su - xopt < sqrt(ssq)) = sqrt(max(0.0, ssq(xbdi == 0 & su - xopt < sqrt(ssq)) - (su(xbdi == 0 & su - xopt < sqrt(ssq)) - xopt(xbdi == 0 & su - xopt < sqrt(ssq))) .^ 2));
-                tanbd(sqdscr + s > 0) = min(tanbd(sqdscr + s > 0), (su(sqdscr + s > 0) - xnew(sqdscr + s > 0)) ./ (sqdscr(sqdscr + s > 0) + s(sqdscr + s > 0)));
+                sqdscr(xbdi == 0 & su - xopt < sqrt(ssq)) = ...
+                    sqrt(max(0.0, ...
+                             ssq(xbdi == 0 & su - xopt < sqrt(ssq)) ...
+                             - (su(xbdi == 0 & su - xopt < sqrt(ssq)) ...
+                                - xopt(xbdi == 0 & su - xopt < sqrt(ssq))) .^ 2));
+                tanbd(sqdscr + s > 0) = ...
+                    min(tanbd(sqdscr + s > 0), ...
+                        (su(sqdscr + s > 0) - xnew(sqdscr + s > 0)) ...
+                        ./ (sqdscr(sqdscr + s > 0) + s(sqdscr + s > 0)));
                 tanbd(isnan(tanbd)) = 0.0;
                 %----------------------------------------------------------------------------------------------%
                 %%MATLAB code for defining TANBD:
@@ -441,7 +462,9 @@ classdef trustregion_bobyqa_mod
                 %grid_size = nint(17.0_RP * hangt_bd + 4.1_RP, kind(grid_size))  ! Powell's version
                 grid_size = 2 * round(17.0 * hangt_bd + 4.1);
                 %%MATLAB: grid_size = 2 * round(17 * hangt_bd + 4.1_RP)
-                hangt = univar_obj.interval_max(@(varargin) obj.interval_fun_trsbox(varargin{:}), 0.0, hangt_bd, args, grid_size);
+                hangt = ...
+                    univar_obj.interval_max(@(varargin) obj.interval_fun_trsbox(varargin{:}), ...
+                                            0.0, hangt_bd, args, grid_size);
                 sdec = obj.interval_fun_trsbox(hangt, args);
                 if ~(sdec > 0)
                     break
@@ -466,7 +489,8 @@ classdef trustregion_bobyqa_mod
                 qred = qred + sdec;
                 if iact >= 1 && iact <= n && hangt >= hangt_bd
                     % D(IACT) reaches lower/upper bound.
-                    xbdi(iact) = round((xopt(iact) + d(iact) - 0.5 * (sl(iact) + su(iact)) > 0) .* 2 - 1);
+                    xbdi(iact) = ...
+                        round((xopt(iact) + d(iact) - 0.5 * (sl(iact) + su(iact)) > 0) .* 2 - 1);
                     %%MATLAB: xbdi(iact) = sign(xopt(iact)+d(iact) - 0.5*(sl+su));
 
                 elseif ~(sdec > tol * qred)

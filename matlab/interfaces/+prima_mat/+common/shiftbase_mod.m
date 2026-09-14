@@ -14,13 +14,16 @@ classdef shiftbase_mod
 
     methods
         function varargout = shiftbase(obj, varargin)
-            if numel(varargin) >= 7 && numel(varargin) <= 8 && isvector(varargin{2}) && (~isvector(varargin{3}) && ~isscalar(varargin{3})) && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
+            if numel(varargin) >= 7 && numel(varargin) <= 8 && isvector(varargin{2}) ...
+               && (~isvector(varargin{3}) && ~isscalar(varargin{3})) ...
+               && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
                 [varargout{1:nargout}] = obj.shiftbase_lfqint(varargin{:});
             else
                 [varargout{1:nargout}] = obj.shiftbase_qint(varargin{:});
             end
         end
-        function [xbase, xpt, bmat, hq] = shiftbase_lfqint(~, kopt, xbase, xpt, zmat, bmat, pq, hq, varargin)
+        function [xbase, xpt, bmat, hq] = ...
+                shiftbase_lfqint(~, kopt, xbase, xpt, zmat, bmat, pq, hq, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine shifts the base point from XBASE to XBASE + XOPT and updates BMAT and HQ
             % accordingly. PQ and ZMAT remain the same after the shifting. See Section 7 of the NEWUOA paper.
@@ -92,13 +95,15 @@ classdef shiftbase_mod
             % Then the revisions of BMAT that depend on ZMAT are calculated.
             yzmat(:) = ymat * zmat;
             yzmat_c = yzmat;
-            yzmat_c(:, 1:idz_loc - 1) = -yzmat(:, 1:idz_loc - 1); % IDZ_LOC is usually small. So this assignment is cheap.
+            yzmat_c(:, 1:idz_loc - 1) = ...
+                -yzmat(:, 1:idz_loc - 1); % IDZ_LOC is usually small. So this assignment is cheap.
             bmat(:, npt + 1:npt + n) = bmat(:, npt + 1:npt + n) + yzmat * yzmat_c.';
             bmat(:, 1:npt) = bmat(:, 1:npt) + yzmat_c * zmat.';
 
             % Update the quadratic model. Note that PQ remains unchanged. For HQ, see (7.14) of the NEWUOA paper.
             %v = matprod(xptxav, pq)  ! Vector V in (7.14) of the NEWUOA paper
-            v(:) = xpt * pq - 0.5 * sum(pq, 'all') * xopt; % This one seems to work better numerically.
+            v(:) = ...
+                xpt * pq - 0.5 * sum(pq, 'all') * xopt; % This one seems to work better numerically.
             vxopt(:) = v * xopt.'; %%MATLAB: vxopt = v * xopt';  % v and xopt should be both columns
             hq = vxopt + vxopt.' + hq; %call r2update(hq, ONE, xopt, v)
             %call symmetrize(hq)  ! Do this if the update above does not ensure symmetry.

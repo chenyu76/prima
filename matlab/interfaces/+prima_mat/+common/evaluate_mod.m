@@ -100,7 +100,9 @@ classdef evaluate_mod
                 f = sum(x, 'all');
                 constr(:) = f;
             else
-                [f, constr] = calcfc(obj.moderatex(x), constr); % Evaluate F and CONSTR; We moderate X before doing so.
+                [f, constr] = ...
+                    calcfc(obj.moderatex(x), ...
+                           constr); % Evaluate F and CONSTR; We moderate X before doing so.
 
                 % Moderated extreme barrier: replace NaN/huge objective or constraint values with a large but
                 % finite value. This is naive, and better approaches surely exist.

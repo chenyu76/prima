@@ -22,7 +22,10 @@ classdef rescue_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat, info] = rescue(obj, calfun, solver, iprint, maxfun, delta, ftarget, xl, xu, kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat)
+        function [kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat, ...
+                  info] = ...
+                rescue(obj, calfun, solver, iprint, maxfun, delta, ftarget, xl, xu, kopt, nf, ...
+                       fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine implements "the method of RESCUE" introduced in Section 5 of BOBYQA paper. The
             % purpose of this subroutine is to replace a few interpolation points by new points in order to
@@ -222,7 +225,11 @@ classdef rescue_mod
             % Originally, it is a WHILE loop, but we change it to a DO loop to avoid infinite cycling.
             % N.B.: Overflow will occur in NPT^2 if NPT > 180 and IK = 16. The following is a workaround, which
             % is **not needed in Python/MATLAB/Julia/R. In MATLAB, we can just take maxiter = npt^2**.
-            maxiter = fix(min(10 ^ min(floor(log10(double(intmax('int64')))), floor(log10(double(intmax('int64'))))), npt ^ 2)); %%MATLAB: maxiter = npt^2;
+            maxiter = ...
+                fix(min(10 ...
+                        ^ min(floor(log10(double(intmax('int64')))), ...
+                              floor(log10(double(intmax('int64'))))), ...
+                        npt ^ 2)); %%MATLAB: maxiter = npt^2;
             for iter = 1:maxiter
                 % %DO WHILE (ANY(SCORE > 0) .AND. NPROV > 1)   ! WHILE version.
                 % %IF (ALL(SCORE <= 0) .AND. NPROV <= 0) THEN ! Powell's code. May not take any provisional point.
@@ -261,7 +268,8 @@ classdef rescue_mod
                         iq = floor(double(n + 1) * ptsid(k) - double((n + 1) * ip));
                         debug_obj.assert();
                         if ip > 0 && iq > 0
-                            wmv(k) = xpt(ip, korig) * ptsaux(1, ip) + xpt(iq, korig) * ptsaux(1, iq);
+                            wmv(k) = ...
+                                xpt(ip, korig) * ptsaux(1, ip) + xpt(iq, korig) * ptsaux(1, iq);
                         elseif ip > 0
                             wmv(k) = xpt(ip, korig) * ptsaux(1, ip);
                         elseif iq > 0
@@ -275,7 +283,8 @@ classdef rescue_mod
                 wmv(npt + 1:npt + n) = xpt(:, korig);
 
                 % Now calculate VLAG = H*WMV + e_KOPT according to (4.26) of the NEWUOA paper except VLAG(KOPT).
-                vlag(1:npt) = zmat * (zmat.' * wmv(1:npt)) + bmat(:, 1:npt).' * wmv(npt + 1:npt + n);
+                vlag(1:npt) = ...
+                    zmat * (zmat.' * wmv(1:npt)) + bmat(:, 1:npt).' * wmv(npt + 1:npt + n);
                 vlag(npt + 1:npt + n) = bmat * wmv(1:npt + n);
 
                 % Now calculate BETA. According to (4.12) of the NEWUOA paper (also (4.10) of the BOBYQA paper),
@@ -284,7 +293,9 @@ classdef rescue_mod
                 % B2 = BMAT(:, NPT+1:NPT+N). Denoting W1 = WMV(1:NPT) and W2 = WMV(NPT+1:NPT+N), we then have
                 % WMV'*H*WMV = ||W1'*Z||^2 + 2*W1'*B1*W2 + W1'*B2*W2 = ||W1'*Z||^2 + W1'(B1*W2 + [B1, B2]*WMV).
                 bsum = sum(wmv(1:n) .* (bmat(:, 1:npt) * wmv(1:npt) + bmat * wmv), 'all');
-                beta = 0.5 * sum(xpt(:, korig) .^ 2, 'all') ^ 2 - sum((zmat.' * wmv(1:npt)) .^ 2, 'all') - bsum;
+                beta = ...
+                    0.5 * sum(xpt(:, korig) .^ 2, 'all') ^ 2 ...
+                    - sum((zmat.' * wmv(1:npt)) .^ 2, 'all') - bsum;
 
                 % Finally, set VLAG(KOPT) to the correct value.
                 vlag(kopt) = vlag(kopt) + 1.0;
@@ -313,7 +324,8 @@ classdef rescue_mod
                 % point will be ranked lower if it fails to fulfill MAXVAL(DEN) > C*MAXVAL(VLAG(1:NPT)**2).
                 % Even if KORIG cannot satisfy this condition for now, it may validate the inequality in future
                 % attempts, as BMAT and ZMAT will be updated.
-                if ~(isfinite(sum(abs(vlag), 'all')) && any(den > 5.0e-2 * max(vlag(1:npt) .^ 2), 'all'))
+                if ~(isfinite(sum(abs(vlag), 'all')) ...
+                     && any(den > 5.0e-2 * max(vlag(1:npt) .^ 2), 'all'))
                     % The above condition works a bit better than Powell's version below due to the factor 0.05.
                     % %IF (.NOT. (ANY(DEN > 1.0E-2_RP * MAXVAL(VLAG(1:NPT)**2)))) THEN  ! Powell' code
                     score(korig) = -score(korig) - scoreinc;
@@ -399,7 +411,8 @@ classdef rescue_mod
                     % Skipping an XNEW that is close but not identical to XPT(:, KPT) will cause discrepancy
                     % between [BMAT, ZMAT] and XPT, since the former has been updated, but it is not severe as
                     % the difference between XNEW and XPT(:, KPT) is tiny.
-                    if sum(abs(xnew - xpt(:, kpt)), 'all') <= 1.0e-2 * delta || ~isfinite(sum(abs(xnew), 'all'))
+                    if sum(abs(xnew - xpt(:, kpt)), 'all') <= 1.0e-2 * delta ...
+                       || ~isfinite(sum(abs(xnew), 'all'))
                         continue
                     end
                     xpt(:, kpt) = xnew;
@@ -407,7 +420,9 @@ classdef rescue_mod
                     % Calculate F at the new interpolation point, and set MODERR to the factor that is going to
                     % multiply the KPT-th Lagrange function when the model is updated to provide interpolation
                     % to the new function value.
-                    x(:) = xinbd_obj.xinbd(xbase, xpt(:, kpt), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XPT(:, KPT).
+                    x(:) = ...
+                        xinbd_obj.xinbd(xbase, xpt(:, kpt), xl, xu, sl, ...
+                                        su); % In precise arithmetic, X = XBASE + XPT(:, KPT).
                     f = evaluate_obj.evaluatef(calfun, x);
                     nf = nf + 1;
 
@@ -581,16 +596,19 @@ classdef rescue_mod
             sqrtdn = sqrt(denom);
             zknew1 = zmat(knew, 1) / sqrtdn;
             zmat(:, 1) = tau / sqrtdn * zmat(:, 1) - zknew1 * vlag(1:npt);
-            zmat(knew, 1) = zknew1; % Because TAU = VLAG(KNEW) + 1. Powell's code does not have this.
+            zmat(knew, 1) = ...
+                zknew1; % Because TAU = VLAG(KNEW) + 1. Powell's code does not have this.
 
             % Finally, update the matrix BMAT. It implements the last N rows of (4.9) in the BOBYQA paper.
             alpha = hcol(knew);
             v1(:) = (alpha * vlag(npt + 1:npt + n) - tau * hcol(npt + 1:npt + n)) ./ denom;
             v2(:) = (-beta * hcol(npt + 1:npt + n) - tau * vlag(npt + 1:npt + n)) ./ denom;
-            bmat = bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
+            bmat = ...
+                bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             % Numerically, the update above does not guarantee BMAT(:, NPT+1 : NPT+N) to be symmetric.
-            A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n)); bmat(:, npt + 1:npt + n) = A_slice;
+            A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n));
+            bmat(:, npt + 1:npt + n) = A_slice;
 
             %====================%
             %  Calculation ends  %

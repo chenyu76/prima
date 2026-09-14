@@ -105,7 +105,8 @@ classdef geometry_cobyla_mod
                 distsq(n + 1) = 0.0;
             end
 
-            weight = max(1.0, distsq ./ max(rho, 0.1 * delta) ^ 2); % Similar to Powell's NEWUOA code
+            weight = ...
+                max(1.0, distsq ./ max(rho, 0.1 * delta) ^ 2); % Similar to Powell's NEWUOA code
             % Other possible definitions of WEIGHT.
             % %weight = distsq  ! Similar to Powell's LINCOA code, but WRONG. See comments in LINCOA/geometry.f90.
             % %weight = max(ONE, 25.0_RP * distsq / delta**2)  ! Similar to Powell's BOBYQA code, works well
@@ -182,7 +183,8 @@ classdef geometry_cobyla_mod
             % So we cannot pass G and A from outside.
             g(:) = simi.' * (fval(1:n) - fval(n + 1));
             A(:, 1:m_lcon) = amat;
-            A(:, m_lcon + 1:m) = ((conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1)) * simi).';
+            A(:, m_lcon + 1:m) = ...
+                ((conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1)) * simi).';
             %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
             % CVPD and CVND are the predicted constraint violation of D and -D by the linear models.
             cvpd = max([0.0; conmat(:, n + 1) + A.' * d], [], 'all');

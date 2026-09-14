@@ -37,7 +37,9 @@ classdef univar_mod
             % Calculation starts %
             %====================%
 
-            agrid = linspace(0.0, 2.0 * pi, grid_size + 1).'; % Size: GRID_SIZE+1; the last entry will be unused
+            agrid = ...
+                linspace(0.0, 2.0 * pi, ...
+                         grid_size + 1).'; % Size: GRID_SIZE+1; the last entry will be unused
             fgrid = arrayfun(@(k) fun(agrid(k), args), (1:grid_size)');
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 
@@ -89,7 +91,9 @@ classdef univar_mod
             % Calculation starts %
             %====================%
 
-            agrid = linspace(0.0, 2.0 * pi, grid_size + 1).'; % Size: GRID_SIZE+1; the last entry is not used
+            agrid = ...
+                linspace(0.0, 2.0 * pi, ...
+                         grid_size + 1).'; % Size: GRID_SIZE+1; the last entry is not used
             fgrid = arrayfun(@(k) fun(agrid(k), args), (1:grid_size)');
             %%MATLAB: fgrid = arrayfun(@(angle) fun(angle, args), agrid(1:grid_size));  % Same shape as `agrid`
 

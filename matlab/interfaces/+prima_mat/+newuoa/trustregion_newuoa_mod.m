@@ -64,13 +64,16 @@ classdef trustregion_newuoa_mod
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
             if max(abs(gopt_in)) > 1.0e12
                 % The threshold is empirical.
-                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in))); % MAX: precaution against underflow.
+                modscal = ...
+                    max(2.0 * realmin, ...
+                        1.0 / max(abs(gopt_in))); % MAX: precaution against underflow.
                 gopt = gopt_in * modscal;
                 pq = pq_in * modscal;
                 hq = hq_in * modscal;
                 scaled = true;
             else
-                modscal = 1.0; % This value is not used, but Fortran compilers may complain without it.
+                modscal = ...
+                    1.0; % This value is not used, but Fortran compilers may complain without it.
                 gopt = gopt_in;
                 pq = pq_in;
                 hq = hq_in;
@@ -212,7 +215,8 @@ classdef trustregion_newuoa_mod
                 % Exit if CG path cuts the boundary. It is the only possibility that TWOD_SEARCH is true.
                 if alpha >= bstep || ss >= delsq
                     crvmin = 0.0;
-                    twod_search = n >= 2 && gg > tol ^ 2 * gg0; % TWOD_SEARCH should be FALSE if N = 1.
+                    twod_search = ...
+                        n >= 2 && gg > tol ^ 2 * gg0; % TWOD_SEARCH should be FALSE if N = 1.
                     break
                 end
 
@@ -309,7 +313,8 @@ classdef trustregion_newuoa_mod
                 args(:) = [sg, 0.5 * (shs - dhd), dg, dhs];
                 % The 50 in the line below was chosen by Powell. It works the best in tests, MAGICALLY. Larger
                 % (e.g., 60, 100) or smaller (e.g., 20, 40) values will worsen the performance of NEWUOA. Why??
-                angle = univar_obj.circle_min(@(varargin) obj.circle_fun_trsapp(varargin{:}), args, 50);
+                angle = ...
+                    univar_obj.circle_min(@(varargin) obj.circle_fun_trsapp(varargin{:}), args, 50);
 
                 % Calculate the new S.
                 cth = cos(angle);

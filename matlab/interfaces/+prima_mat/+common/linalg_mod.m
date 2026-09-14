@@ -69,7 +69,8 @@ classdef linalg_mod
             end
         end
         function varargout = lsqr(obj, varargin)
-            if numel(varargin) == 3 && isvector(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2}))
+            if numel(varargin) == 3 && isvector(varargin{1}) ...
+               && (~isvector(varargin{2}) && ~isscalar(varargin{2}))
                 [varargout{1:nargout}] = obj.lsqr_Rfull(varargin{:});
             else
                 [varargout{1:nargout}] = obj.lsqr_Rdiag(varargin{:});
@@ -206,7 +207,8 @@ classdef linalg_mod
             n = size(A, 1);
 
             ipObj = inputParser();
-            addParameter(ipObj, 'tol', min(1.0e-3, 100.0 * eps * double(max(size(A, 1), size(A, 2)))));
+            addParameter(ipObj, 'tol', ...
+                         min(1.0e-3, 100.0 * eps * double(max(size(A, 1), size(A, 2)))));
             parse(ipObj, varargin{:});
             tol_loc = ipObj.Results.tol;
 
@@ -215,8 +217,11 @@ classdef linalg_mod
             %====================%
 
 
-            tol_loc = max([tol_loc, tol_loc * max(abs(A), [], 'all'), tol_loc * max(abs(B), [], 'all')]);
-            is_inv = all(abs(A * B - eye(n)) <= tol_loc, 'all') || all(abs(B * A - eye(n)) <= tol_loc, 'all');
+            tol_loc = ...
+                max([tol_loc, tol_loc * max(abs(A), [], 'all'), tol_loc * max(abs(B), [], 'all')]);
+            is_inv = ...
+                all(abs(A * B - eye(n)) <= tol_loc, 'all') ...
+                || all(abs(B * A - eye(n)) <= tol_loc, 'all');
 
             %====================%
             %  Calculation ends  %
@@ -240,7 +245,8 @@ classdef linalg_mod
             Q = ipObj.Results.Q;
             R = ipObj.Results.R;
             P = ipObj.Results.P;
-            if ~(~ismember('Q', ipObj.UsingDefaults) || ~ismember('R', ipObj.UsingDefaults) || ~ismember('R', ipObj.UsingDefaults))
+            if ~(~ismember('Q', ipObj.UsingDefaults) || ~ismember('R', ipObj.UsingDefaults) ...
+                 || ~ismember('R', ipObj.UsingDefaults))
                 return
             end
 
@@ -269,7 +275,9 @@ classdef linalg_mod
                 end
                 for i = m:-1:j + 1
                     G = obj.planerot(T(j, [j, i]).').';
-                    T(j, [j, i]) = [hypot(T(j, j), T(j, i)), 0.0]; %T(j, [j, i]) = [sqrt(T(j, j)**2 + T(j, i)**2), ZERO]
+                    T(j, [j, i]) = ...
+                        [hypot(T(j, j), T(j, i)), ...
+                         0.0]; %T(j, [j, i]) = [sqrt(T(j, j)**2 + T(j, i)**2), ZERO]
                     T(j + 1:n, [j, i]) = T(j + 1:n, [j, i]) * G;
                     Q_loc(:, [j, i]) = Q_loc(:, [j, i]) * G;
                 end
@@ -443,7 +451,9 @@ classdef linalg_mod
 
             is_banded = true;
             for i = 1:n
-                is_banded = all(abs(A(i + lwidth + 1:m, i)) <= tol_loc, 'all') && all(abs(A(1:i - uwidth - 1, i)) <= tol_loc, 'all');
+                is_banded = ...
+                    all(abs(A(i + lwidth + 1:m, i)) <= tol_loc, 'all') ...
+                    && all(abs(A(1:i - uwidth - 1, i)) <= tol_loc, 'all');
                 if ~is_banded
                     break
                 end
@@ -531,7 +541,9 @@ classdef linalg_mod
             elseif any(isnan(A), 'all')
                 is_orth = false;
             elseif consts_obj.ORTHTOL_DFT < realmax
-                is_orth = all(abs(A.' * A - eye(n)) <= max(tol_loc, tol_loc * max(abs(A), [], 'all')), 'all');
+                is_orth = ...
+                    all(abs(A.' * A - eye(n)) <= max(tol_loc, tol_loc * max(abs(A), [], 'all')), ...
+                        'all');
             end
 
             %====================%
@@ -675,13 +687,17 @@ classdef linalg_mod
                     s = x(2) / r;
                 elseif abs(x(1)) > abs(x(2))
                     t = x(2) / x(1);
-                    u = max([1.0, abs(t), sqrt(1.0 + t ^ 2)]); % MAXVAL: precaution against rounding error.
+                    u = ...
+                        max([1.0, abs(t), ...
+                             sqrt(1.0 + t ^ 2)]); % MAXVAL: precaution against rounding error.
                     u = u .* ((x(1) > 0) .* 2 - 1); %%MATLAB: u = sign(x(1))*sqrt(ONE + t**2)
                     c = 1.0 / u;
                     s = t / u;
                 else
                     t = x(1) / x(2);
-                    u = max([1.0, abs(t), sqrt(1.0 + t ^ 2)]); % MAXVAL: precaution against rounding error.
+                    u = ...
+                        max([1.0, abs(t), ...
+                             sqrt(1.0 + t ^ 2)]); % MAXVAL: precaution against rounding error.
                     u = u .* ((x(2) > 0) .* 2 - 1); %%MATLAB: u = sign(x(2))*sqrt(ONE + t**2)
                     c = t / u;
                     s = 1.0 / u;
@@ -803,7 +819,9 @@ classdef linalg_mod
             if size(A, 1) ~= size(A, 2)
                 is_symmetric = false;
             elseif consts_obj.SYMTOL_DFT < 0.9 * realmax
-                is_symmetric = ~any(abs(A - A.') > tol_loc * max(max(abs(A), [], 'all'), 1.0), 'all') && all(isnan(A) == isnan(A.'), 'all');
+                is_symmetric = ...
+                    ~any(abs(A - A.') > tol_loc * max(max(abs(A), [], 'all'), 1.0), 'all') ...
+                    && all(isnan(A) == isnan(A.'), 'all');
             end
 
             %====================%
@@ -880,9 +898,11 @@ classdef linalg_mod
                 end
                 wz = sum(w(k + 1:n) .* z(k + 1:n), 'all');
 
-                tdiag(k + 1:n) = tdiag(k + 1:n) + w(k + 1:n) .* (wz * w(k + 1:n) - 2.0 * z(k + 1:n));
+                tdiag(k + 1:n) = ...
+                    tdiag(k + 1:n) + w(k + 1:n) .* (wz * w(k + 1:n) - 2.0 * z(k + 1:n));
                 for j = k + 1:n
-                    A(j + 1:n, j) = A(j + 1:n, j) - w(j + 1:n) * z(j) - w(j) * (z(j + 1:n) - wz * w(j + 1:n));
+                    A(j + 1:n, j) = ...
+                        A(j + 1:n, j) - w(j + 1:n) * z(j) - w(j) * (z(j + 1:n) - wz * w(j + 1:n));
                 end
             end
 
@@ -962,7 +982,8 @@ classdef linalg_mod
                 %----------------------------------------------------------------------------------------------%
 
                 for i = j + 1:n
-                    H(j + 1:n, i) = H(j + 1:n, i) - sum(H(j + 1:n, i) .* v(j + 1:n), 'all') * v(j + 1:n);
+                    H(j + 1:n, i) = ...
+                        H(j + 1:n, i) - sum(H(j + 1:n, i) .* v(j + 1:n), 'all') * v(j + 1:n);
                 end
                 H(j + 1, j) = subd;
                 H(j + 2:n, j) = 0.0;
@@ -1068,7 +1089,8 @@ classdef linalg_mod
             end
 
             ksav = 0;
-            pivksv = 0.0; % This initial value will not be used, but Fortran compilers may complain without it.
+            pivksv = ...
+                0.0; % This initial value will not be used, but Fortran compilers may complain without it.
             for iter = 1:maxiter                % Powell's code is essentially a DO WHILE loop. We impose an explicit MAXITER.
                 if eminub - eminlb <= tol_loc * max(abs(eminlb), abs(eminub))
                     break

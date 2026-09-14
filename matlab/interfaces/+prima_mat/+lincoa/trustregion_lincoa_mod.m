@@ -15,7 +15,9 @@ classdef trustregion_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [iact, nact, qfac, rfac, s, ngetact] = trstep(~, amat, delta, gopt_in, hq_in, pq_in, rescon, tol, xpt, iact, nact, qfac, rfac, s)
+        function [iact, nact, qfac, rfac, s, ngetact] = ...
+                trstep(~, amat, delta, gopt_in, hq_in, pq_in, rescon, tol, xpt, iact, nact, ...
+                       qfac, rfac, s)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine solves
             %       minimize Q(XOPT + D)  s.t. ||D|| <= DELTA, AMAT^T*D <= B.
@@ -85,7 +87,9 @@ classdef trustregion_lincoa_mod
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
             if max(abs(gopt_in)) > 1.0e12
                 % The threshold is empirical.
-                modscal = max(2.0 * realmin, 1.0 / max(abs(gopt_in))); % MAX: precaution against underflow.
+                modscal = ...
+                    max(2.0 * realmin, ...
+                        1.0 / max(abs(gopt_in))); % MAX: precaution against underflow.
                 gopt = gopt_in * modscal;
                 pq = pq_in * modscal;
                 hq = hq_in * modscal;
@@ -158,7 +162,9 @@ classdef trustregion_lincoa_mod
                     % by at most 0.2*DELTA, but the residuals of these constraints at no less than 0.2*DELTA.
                     % N.B.: The magic number 0.2 appears also in GETACT (TDEL = 0.2_RP * DELTA). It works well.
                     ngetact_loc = ngetact_loc + 1;
-                    [iact, nact, qfac, resact, resnew, rfac, psd] = getact_obj.getact(amat, delta, g, iact, nact, qfac, resact, resnew, rfac, psd);
+                    [iact, nact, qfac, resact, resnew, rfac, psd] = ...
+                        getact_obj.getact(amat, delta, g, iact, nact, qfac, resact, resnew, ...
+                                          rfac, psd);
                     dd = sum(psd .* psd, 'all');
                     if dd <= eps * delsq || isnan(dd)
                         % Powell's code: IF (DD <= 0) THEN
@@ -215,9 +221,12 @@ classdef trustregion_lincoa_mod
                             ad(:) = -1.0;
                             ad(find(resnew > 0)) = amat(:, find(resnew > 0)).' * dproj;
                             frac(:) = 1.0;
-                            restmp(find(ad > 0)) = resnew(find(ad > 0)) - amat(:, find(ad > 0)).' * psd;
+                            restmp(find(ad > 0)) = ...
+                                resnew(find(ad > 0)) - amat(:, find(ad > 0)).' * psd;
                             frac(ad > 0) = restmp(ad > 0) ./ ad(ad > 0);
-                            gamma = min([gamma; 1.0; frac]); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
+                            gamma = ...
+                                min([gamma; 1.0
+                                     frac]); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
 
                         end
                     end

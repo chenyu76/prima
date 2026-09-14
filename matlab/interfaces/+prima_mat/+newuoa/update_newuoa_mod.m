@@ -43,7 +43,9 @@ classdef update_newuoa_mod
 
 
         end
-        function [gopt, hq, pq] = updateq(~, idz, knew, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, hq, pq)
+        function [gopt, hq, pq] = ...
+                updateq(~, idz, knew, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, ...
+                        hq, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates GOPT, HQ, and PQ when XPT(:, KNEW) changes from XDROP to XNEW = XOSAV + D,
             % where XOSAV is the unupdated XOPT, namely the XOPT before UPDATEXF is called.
@@ -100,7 +102,8 @@ classdef update_newuoa_mod
 
 
         end
-        function [itest, gopt, hq, pq] = tryqalt(~, idz, bmat, fval, ratio, xopt, xpt, zmat, itest, gopt, hq, pq)
+        function [itest, gopt, hq, pq] = ...
+                tryqalt(~, idz, bmat, fval, ratio, xopt, xpt, zmat, itest, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine tests whether to replace Q by the alternative model, namely the model that
             % minimizes the F-norm of the Hessian subject to the interpolation conditions. It does the

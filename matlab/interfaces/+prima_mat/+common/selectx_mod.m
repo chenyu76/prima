@@ -13,13 +13,15 @@ classdef selectx_mod
 
     methods
         function varargout = isbetter(obj, varargin)
-            if numel(varargin) == 5 && isscalar(varargin{1}) && isscalar(varargin{2}) && isvector(varargin{3}) && isvector(varargin{4})
+            if numel(varargin) == 5 && isscalar(varargin{1}) && isscalar(varargin{2}) ...
+               && isvector(varargin{3}) && isvector(varargin{4})
                 [varargout{1:nargout}] = obj.isbetter01(varargin{:});
             else
                 [varargout{1:nargout}] = obj.isbetter10(varargin{:});
             end
         end
-        function [nfilt, cfilt, ffilt, xfilt, confilt] = savefilt(obj, cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt, varargin)
+        function [nfilt, cfilt, ffilt, xfilt, confilt] = ...
+                savefilt(obj, cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine saves X, F, and CSTRV in XFILT, FFILT, and CFILT (and CONSTR in CONFILT if they
             % are present), unless a vector in XFILT(:, 1:NFILT) is better than X. If X is better than some
@@ -61,7 +63,8 @@ classdef selectx_mod
             % Return immediately if any column of XFILT is better than X. Note that ISBETTER checks "strictly
             % better", handling NaN/Inf properly, but we need "non-strictly better" here, allowing equality.
             % This is why we need to supplement ISBETTER with (FFILT <= F .AND. CFILT <= CSTRV).
-            if any(obj.isbetter10(ffilt(1:nfilt), cfilt(1:nfilt), f, cstrv, ctol), 'all') || any(ffilt(1:nfilt) <= f & cfilt(1:nfilt) <= cstrv, 'all')
+            if any(obj.isbetter10(ffilt(1:nfilt), cfilt(1:nfilt), f, cstrv, ctol), 'all') ...
+               || any(ffilt(1:nfilt) <= f & cfilt(1:nfilt) <= cstrv, 'all')
                 return
             end
 
@@ -93,8 +96,12 @@ classdef selectx_mod
                 % 2. In finite-precision arithmetic, PHI_1 == PHI_2 and CSTRV_SHIFTED_1 == CSTRV_SHIFTED_2 do
                 % not ensure that F_1 == F_2!
                 phimax = max(phi);
-                cref = max(fortran.merge('tsource', cfilt_shifted, 'fsource', -realmax, 'mask', phi >= phimax));
-                fref = max(fortran.merge('tsource', ffilt, 'fsource', -realmax, 'mask', cfilt_shifted >= cref));
+                cref = ...
+                    max(fortran.merge('tsource', cfilt_shifted, 'fsource', -realmax, ...
+                                      'mask', phi >= phimax));
+                fref = ...
+                    max(fortran.merge('tsource', ffilt, 'fsource', -realmax, ...
+                                      'mask', cfilt_shifted >= cref));
                 kworst = fortran.maxloc(cfilt, 'mask', ffilt >= fref, 'dim', 1);
                 %%MATLAB: cmax = max(cfilt(ffilt >= fref)); kworst = find(ffilt >= fref & ~(cfilt < cmax), 1,'first');
                 if kworst < 1 || kworst > numel(keep)
@@ -165,7 +172,9 @@ classdef selectx_mod
                 % Shift the constraint violations by CTOL, so that CSTRV <= CTOL is regarded as no violation.
                 chist_shifted = max(chist - ctol, 0.0);
                 % CMIN is the minimal shifted constraint violation attained in the history.
-                cmin = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', fhist < fref));
+                cmin = ...
+                    min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, ...
+                                      'mask', fhist < fref));
                 % We consider only the points whose shifted constraint violations are at most the CREF below.
                 % N.B.: Without taking MAX(EPS, .), CREF would be 0 if CMIN = 0. In that case, asking for
                 % CSTRV_SHIFTED < CREF would be WRONG!
@@ -192,9 +201,15 @@ classdef selectx_mod
                 % 1. This process is the opposite of selecting KWORST in SAVEFILT.
                 % 2. In finite-precision arithmetic, PHI_1 == PHI_2 and CSTRV_SHIFTED_1 == CSTRV_SHIFTED_2 do
                 % not ensure that F_1 == F_2!
-                phimin = min(fortran.merge('tsource', phi, 'fsource', realmax, 'mask', fhist < fref & chist_shifted <= cref));
-                cref = min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, 'mask', fhist < fref & phi <= phimin));
-                fref = min(fortran.merge('tsource', fhist, 'fsource', realmax, 'mask', chist_shifted <= cref));
+                phimin = ...
+                    min(fortran.merge('tsource', phi, 'fsource', realmax, ...
+                                      'mask', fhist < fref & chist_shifted <= cref));
+                cref = ...
+                    min(fortran.merge('tsource', chist_shifted, 'fsource', realmax, ...
+                                      'mask', fhist < fref & phi <= phimin));
+                fref = ...
+                    min(fortran.merge('tsource', fhist, 'fsource', realmax, ...
+                                      'mask', chist_shifted <= cref));
                 kopt = fortran.minloc(chist, 'mask', fhist <= fref, 'dim', 1);
                 %%MATLAB: cmin = min(chist(fhist <= fref)); kopt = find(fhist <= fref & ~(chist > cmin), 1,'first');
             else
@@ -226,14 +241,20 @@ classdef selectx_mod
             is_better = false;
             % Even though NaN/+Inf should not occur in FC1 or FC2 due to the moderated extreme barrier, for
             % security and robustness, the code below does not make this assumption.
-            is_better = is_better || any(isnan([f2, c2]).' | isinf([f2, c2]) & [f2, c2] > 0, 'all') && ~any(isnan([f1, c1]).' | isinf([f1, c1]) & [f1, c1] > 0, 'all');
+            is_better = ...
+                is_better ...
+                || any(isnan([f2, c2]).' | isinf([f2, c2]) & [f2, c2] > 0, 'all') ...
+                   && ~any(isnan([f1, c1]).' | isinf([f1, c1]) & [f1, c1] > 0, 'all');
             is_better = is_better || f1 < f2 && c1 <= c2;
             is_better = is_better || f1 <= f2 && c1 < c2;
             % If C1 <= CTOL and C2 is significantly larger/worse than CTOL, i.e., C2 > MAX(CTOL, CREF),
             % then FC1 is better than FC2 as long as F1 < REALMAX. Normally CREF >= CTOL so MAX(CTOL, CREF)
             % is indeed CREF. However, this may not be true if CTOL > 1E-1*CONSTRMAX.
-            cref = 10.0 * max(eps, min(ctol, 1.0e-2 * consts_obj.CONSTRMAX)); % The MIN avoids overflow.
-            is_better = is_better || f1 < realmax && c1 <= ctol && (c2 > max(ctol, cref) || isnan(c2));
+            cref = ...
+                10.0 ...
+                * max(eps, min(ctol, 1.0e-2 * consts_obj.CONSTRMAX)); % The MIN avoids overflow.
+            is_better = ...
+                is_better || f1 < realmax && c1 <= ctol && (c2 > max(ctol, cref) || isnan(c2));
 
             %====================%
             %  Calculation ends  %

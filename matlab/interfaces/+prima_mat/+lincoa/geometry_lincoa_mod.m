@@ -138,7 +138,8 @@ classdef geometry_lincoa_mod
 
 
         end
-        function [feasible, s] = geostep(~, iact, idz, knew, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat)
+        function [feasible, s] = ...
+                geostep(~, iact, idz, knew, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine finds a step S hat intends to improve the geometry of the interpolation set when
             % XPT(:, KNEW) is changed to XOPT + S, where XOPT = XPT(:, KOPT).
@@ -241,7 +242,8 @@ classdef geometry_lincoa_mod
             if dderiv(knew) * (dderiv(knew) - 1.0) < 0
                 stplen(knew) = -stplen(knew);
             end
-            vlagabs(knew) = abs(stplen(knew) * dderiv(knew)) + stplen(knew) ^ 2 * abs(dderiv(knew) - 1.0);
+            vlagabs(knew) = ...
+                abs(stplen(knew) * dderiv(knew)) + stplen(knew) ^ 2 * abs(dderiv(knew) - 1.0);
             % It does not make sense to consider "the straight line through XOPT and XPT(:, KOPT)". Thus we set
             % VLAGABS(KOPT) to -1 so that KOPT is skipped when we maximize VLAGABS.
             vlagabs(kopt) = -1.0;
@@ -257,7 +259,9 @@ classdef geometry_lincoa_mod
             end
             % Set S to the step corresponding to VLAGABS(K), and calculate DENABS for it.
             s = stplen(k) * (xpt(:, k) - xopt);
-            den = powalg_obj.calden(kopt, bmat, s, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
+            den = ...
+                powalg_obj.calden(kopt, bmat, s, xpt, zmat, ...
+                                  'idz', idz); % Indeed, only DEN(KNEW) is needed.
             denabs = abs(den(knew));
 
             % Replace S with a steepest ascent step from XOPT if the latter provides a larger value of DENABS.
@@ -268,7 +272,9 @@ classdef geometry_lincoa_mod
                     % <GSTP, HESS_LAG*GSTP> is negative
                     gstp = -gstp;
                 end
-                den = powalg_obj.calden(kopt, bmat, gstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
+                den = ...
+                    powalg_obj.calden(kopt, bmat, gstp, xpt, zmat, ...
+                                      'idz', idz); % Indeed, only DEN(KNEW) is needed.
                 if abs(den(knew)) > denabs || isnan(denabs)
                     denabs = abs(den(knew));
                     s = gstp;
@@ -283,7 +289,8 @@ classdef geometry_lincoa_mod
             rstat(iact(1:nact)) = 0; % Active
 
             % Set FEASIBLE for the calculated S.
-            cstrv = max([0.0; amat(:, find(rstat >= 0)).' * s - rescon(find(rstat >= 0))], [], 'all');
+            cstrv = ...
+                max([0.0; amat(:, find(rstat >= 0)).' * s - rescon(find(rstat >= 0))], [], 'all');
             feasible = cstrv <= 0;
 
             % If NACT <= 0 or NACT >= N, the calculation has finished. Otherwise, define PGSTP by maximizing
@@ -306,7 +313,9 @@ classdef geometry_lincoa_mod
                 % Decide whether to replace S with PGSTP and set FEASIBLE accordingly. CSTRV is the constraint
                 % violation of XOPT+PGSTP. Note that we only need to check the constraints that are inactive and
                 % relevant, as the value of the active constraints is not changed by moving along PGSTP.
-                cstrv = max([0.0; amat(:, find(rstat == 1)).' * pgstp - rescon(find(rstat == 1))], [], 'all');
+                cstrv = ...
+                    max([0.0; amat(:, find(rstat == 1)).' * pgstp - rescon(find(rstat == 1))], ...
+                        [], 'all');
                 % The purpose of CVTOL below is to provide a check on feasibility that includes a tolerance for
                 % contributions from computer rounding errors.
                 % Powell's code is as follows. Note that MATPROD(PGSTP, AMAT(:, IACT(1:NACT))) is 0 in theory.
@@ -315,7 +324,9 @@ classdef geometry_lincoa_mod
                 cvtol = max(eps * norm(pgstp), 10.0 * norm(amat(:, iact(1:nact)).' * pgstp, "inf"));
                 take_pgstp = false;
                 if cstrv <= cvtol
-                    den = powalg_obj.calden(kopt, bmat, pgstp, xpt, zmat, 'idz', idz); % Indeed, only DEN(KNEW) is needed.
+                    den = ...
+                        powalg_obj.calden(kopt, bmat, pgstp, xpt, zmat, ...
+                                          'idz', idz); % Indeed, only DEN(KNEW) is needed.
                     take_pgstp = abs(den(knew)) > 0.1 * denabs;
                 end
                 if take_pgstp || isnan(denabs)
@@ -330,7 +341,9 @@ classdef geometry_lincoa_mod
                 s = xpt(:, knew) - xopt;
                 scaling = delbar / norm(s);
                 s = max(0.6 * scaling, min(0.5, scaling)) * s; % 0.6: ensure |D| > DELBAR/2
-                cstrv = max([0.0; amat(:, find(rstat >= 0)).' * s - rescon(find(rstat >= 0))], [], 'all');
+                cstrv = ...
+                    max([0.0; amat(:, find(rstat >= 0)).' * s - rescon(find(rstat >= 0))], [], ...
+                        'all');
                 feasible = cstrv <= 0;
             end
 

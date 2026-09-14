@@ -11,7 +11,8 @@ classdef history_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [maxhist, xhist, fhist, chist, conhist] = prehist(~, maxhist, n, output_xhist, output_fhist, varargin)
+        function [maxhist, xhist, fhist, chist, conhist] = ...
+                prehist(~, maxhist, n, output_xhist, output_fhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine revises MAXHIST according to MAXHISTMEM, and allocates memory for the history.
             % In MATLAB/Python/Julia/R implementation, we should simply set MAXHIST = MAXFUN and initialize
@@ -47,7 +48,8 @@ classdef history_mod
             if ~ismember('output_chist', ipObj.UsingDefaults) && nargout >= 4
                 unit_memo = unit_memo + fix(output_chist);
             end
-            if ~ismember('m', ipObj.UsingDefaults) && ~ismember('output_conhist', ipObj.UsingDefaults) && nargout >= 5
+            if ~ismember('m', ipObj.UsingDefaults) ...
+               && ~ismember('output_conhist', ipObj.UsingDefaults) && nargout >= 5
                 unit_memo = unit_memo + fix(output_conhist) * m;
             end
             unit_memo = unit_memo * fix(8); % INT(*) avoids overflow when IK is 16-bit.
@@ -68,7 +70,8 @@ classdef history_mod
                 chist = NaN(maxhist * fix(output_chist), 1);
             end
             % Even if OUTPUT_CONHIST is FALSE, CONHIST still needs to be allocated.
-            if ~ismember('m', ipObj.UsingDefaults) && ~ismember('output_conhist', ipObj.UsingDefaults) && nargout >= 5
+            if ~ismember('m', ipObj.UsingDefaults) ...
+               && ~ismember('output_conhist', ipObj.UsingDefaults) && nargout >= 5
                 conhist = NaN(m, maxhist * fix(output_conhist));
             end
 
@@ -173,7 +176,9 @@ classdef history_mod
                 % We could replace MODULO(NF - 1_IK, MAXXHIST) + 1_IK) with MODULO(NF - 1_IK, MAXHIST) + 1_IK)
                 % based on the assumption that MAXXHIST == 0 or MAXHIST. For robustness, we do not do that.
                 khist = mod(nf - 1, maxxhist) + 1;
-                xhist(:) = [reshape(xhist(:, khist + 1:maxxhist), 1, []), reshape(xhist(:, 1:khist), 1, [])];
+                xhist(:) = ...
+                    [reshape(xhist(:, khist + 1:maxxhist), 1, []), ...
+                     reshape(xhist(:, 1:khist), 1, [])];
                 % N.B.:
                 % 1. The result of the array constructor is always a rank-1 array (e.g., vector), no matter what
                 % elements are used for the construction.
@@ -190,7 +195,9 @@ classdef history_mod
             % The ranging should be done only if 0 < MAXCONHIST < NF. Otherwise, it leads to errors/wrong results.
             if maxconhist > 0 && maxconhist < nf
                 khist = mod(nf - 1, maxconhist) + 1;
-                conhist(:) = [reshape(conhist(:, khist + 1:maxconhist), 1, []), reshape(conhist(:, 1:khist), 1, [])];
+                conhist(:) = ...
+                    [reshape(conhist(:, khist + 1:maxconhist), 1, []), ...
+                     reshape(conhist(:, 1:khist), 1, [])];
             end
             % The ranging should be done only if 0 < MAXCHIST < NF. Otherwise, it leads to errors/wrong results.
             if maxchist > 0 && maxchist < nf

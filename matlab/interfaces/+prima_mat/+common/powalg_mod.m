@@ -45,7 +45,11 @@ classdef powalg_mod
             end
         end
         function varargout = qrexc(obj, varargin)
-            if numel(varargin) == 3 && (isinteger(varargin{3}) || isnumeric(varargin{3}) && (isreal(varargin{3}) && all(fix(varargin{3}) == varargin{3}, 'all'))) && isscalar(varargin{3})
+            if numel(varargin) == 3 ...
+               && (isinteger(varargin{3}) ...
+                   || isnumeric(varargin{3}) ...
+                      && (isreal(varargin{3}) && all(fix(varargin{3}) == varargin{3}, 'all'))) ...
+               && isscalar(varargin{3})
                 [varargout{1:nargout}] = obj.qrexc_Rfull(varargin{:});
             else
                 [varargout{1:nargout}] = obj.qrexc_Rdiag(varargin{:});
@@ -59,7 +63,12 @@ classdef powalg_mod
             end
         end
         function varargout = calvlag(obj, varargin)
-            if numel(varargin) >= 5 && numel(varargin) <= 6 && (isinteger(varargin{1}) || isnumeric(varargin{1}) && (isreal(varargin{1}) && all(fix(varargin{1}) == varargin{1}, 'all'))) && isscalar(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2})) && isfloat(varargin{4}) && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
+            if numel(varargin) >= 5 && numel(varargin) <= 6 ...
+               && (isinteger(varargin{1}) ...
+                   || isnumeric(varargin{1}) ...
+                      && (isreal(varargin{1}) && all(fix(varargin{1}) == varargin{1}, 'all'))) ...
+               && isscalar(varargin{1}) && (~isvector(varargin{2}) && ~isscalar(varargin{2})) ...
+               && isfloat(varargin{4}) && (~isvector(varargin{4}) && ~isscalar(varargin{4}))
                 [varargout{1:nargout}] = obj.calvlag_lfqint(varargin{:});
             else
                 [varargout{1:nargout}] = obj.calvlag_qint(varargin{:});
@@ -272,7 +281,9 @@ classdef powalg_mod
             % Calculate RDIAG(I:N) from scratch.
             Rdiag(i:n - 1) = arrayfun(@(k) sum(Q(:, k) .* A(:, k + 1), 'all'), (i:n - 1)');
             %%MATLAB: Rdiag(i:n-1) = sum(Q(:, i:n-1) .* A(:, i+1:n), 1);  % Row vector
-            Rdiag(n) = sum(Q(:, n) .* A(:, i), 'all'); % Calculate RDIAG(N) from scratch. See the comments above.
+            Rdiag(n) = ...
+                sum(Q(:, n) .* A(:, i), ...
+                    'all'); % Calculate RDIAG(N) from scratch. See the comments above.
 
             %====================%
             %  Calculation ends  %
@@ -330,7 +341,9 @@ classdef powalg_mod
             for k = i:n - 1
                 G = linalg_obj.planerot(R([k + 1, k], k + 1));
                 % HYPT must be calculated before R is updated.
-                hypt = hypot(R(k + 1, k + 1), R(k, k + 1)); %hypt = sqrt(R(k, k + 1)**2 + R(k + 1, k + 1)**2)
+                hypt = ...
+                    hypot(R(k + 1, k + 1), ...
+                          R(k, k + 1)); %hypt = sqrt(R(k, k + 1)**2 + R(k + 1, k + 1)**2)
 
                 % Update Q(:, [K, K+1]).
                 Q(:, [k, k + 1]) = Q(:, [k + 1, k]) * G.';
@@ -421,7 +434,8 @@ classdef powalg_mod
             if ismember('hq', ipObj.UsingDefaults)
                 qinc = sum(d .* gq, 'all') + 0.5 * sum(dxpt .* (pq .* dxpt), 'all');
             else
-                qinc = sum(d .* (gq + 0.5 * (hq * d)), 'all') + 0.5 * sum(dxpt .* (pq .* dxpt), 'all');
+                qinc = ...
+                    sum(d .* (gq + 0.5 * (hq * d)), 'all') + 0.5 * sum(dxpt .* (pq .* dxpt), 'all');
             end
             %%MATLAB:
             %%if nargin >= 5
@@ -495,7 +509,9 @@ classdef powalg_mod
             if ismember('kref', ipObj.UsingDefaults)
                 qval = arrayfun(@(k) obj.quadinc_d0(xpt(:, k), xpt, gq, pq, 'hq', hq), (1:npt)');
             else
-                qval = arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, 'hq', hq), (1:npt)');
+                qval = ...
+                    arrayfun(@(k) obj.quadinc_d0(xpt(:, k) - xpt(:, kref), xpt, gq, pq, ...
+                                                 'hq', hq), (1:npt)');
             end
             %%MATLAB:
             %%if nargin >= 5
@@ -644,8 +660,12 @@ classdef powalg_mod
             %====================%
 
             A(:) = 0.5 * (xpt.' * xpt) .^ 2;
-            Omega(:) = -(zmat(:, 1:idz - 1) * zmat(:, 1:idz - 1).') + zmat(:, idz:npt - n - 1) * zmat(:, idz:npt - n - 1).';
-            maxabs = max([1.0, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), max(abs(bmat), [], 'all')]);
+            Omega(:) = ...
+                -(zmat(:, 1:idz - 1) * zmat(:, 1:idz - 1).') ...
+                + zmat(:, idz:npt - n - 1) * zmat(:, idz:npt - n - 1).';
+            maxabs = ...
+                max([1.0, max(abs(A), [], 'all'), max(abs(Omega), [], 'all'), ...
+                     max(abs(bmat), [], 'all')]);
             U(:) = eye(npt) - A * Omega - xpt.' * bmat(:, 1:npt);
             V(:) = -(bmat(:, 1:npt) * A) - bmat(:, npt + 1:npt + n) * xpt;
             r = sum(U, 1).' ./ double(npt);
@@ -748,7 +768,9 @@ classdef powalg_mod
             % N.B.: Powell's original comments mention that VLAG is "the vector THETA*WCHECK + e_b of the
             % updating formula (6.11)", which does not match the published version of the NEWUOA paper.
             vlag(:) = obj.calvlag_lfqint(kref, bmat, d, xpt, zmat, 'idz', idz);
-            beta = obj.calbeta(kref, bmat, d, xpt, zmat, 'idz', idz); % Nonnegative in precise arithmetic.
+            beta = ...
+                obj.calbeta(kref, bmat, d, xpt, zmat, ...
+                            'idz', idz); % Nonnegative in precise arithmetic.
 
             % Calculate the parameters of the updating formula (4.18)--(4.20) in the NEWUOA paper.
             alpha = hcol(knew); % Nonnegative in precise arithmetic.
@@ -761,7 +783,8 @@ classdef powalg_mod
             % Quite rarely, due to rounding errors, VLAG or BETA may not be finite, and ABS(DENOM) may not be
             % positive. In such cases, [BMAT, ZMAT] would be destroyed by the update, and hence we would rather
             % not update them at all. Or should we simply terminate the algorithm?
-            if ~(isfinite(sum(abs(hcol), 'all') + sum(abs(vlag), 'all') + abs(beta)) && abs(denom) > 0)
+            if ~(isfinite(sum(abs(hcol), 'all') + sum(abs(vlag), 'all') + abs(beta)) ...
+                 && abs(denom) > 0)
                 if nargout >= 4
                     info = infos_obj.DAMAGING_ROUNDING;
                 end
@@ -771,10 +794,12 @@ classdef powalg_mod
             % Update the matrix BMAT. It implements the last N rows of (4.11) in the NEWUOA paper.
             v1(:) = (alpha * vlag(npt + 1:npt + n) - tau * hcol(npt + 1:npt + n)) ./ denom;
             v2(:) = (-beta * hcol(npt + 1:npt + n) - tau * vlag(npt + 1:npt + n)) ./ denom;
-            bmat = bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
+            bmat = ...
+                bmat + v1 * vlag.' + v2 * hcol.'; %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             % Numerically, the update above does not guarantee BMAT(:, NPT+1 : NPT+N) to be symmetric.
-            A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n)); bmat(:, npt + 1:npt + n) = A_slice;
+            A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n));
+            bmat(:, npt + 1:npt + n) = A_slice;
 
             % Apply Givens rotations to put zeros in the KNEW-th row of ZMAT and set JL. After this,
             % ZMAT(KNEW, :) contains at most two nonzero entries ZMAT(KNEW, 1) and ZMAT(KNEW, JL), one
@@ -785,10 +810,12 @@ classdef powalg_mod
             % 2. If 2 <= IDZ <= NPT - N -1, then JL = IDZ, and ZMAT(KNEW, 1) is L2-norm of ZMAT(KNEW, 1 : IDZ-1),
             % while ZMAT(KNEW, JL) is L2 norm of ZMAT(KNEW, IDZ : NPT-N-1).
             % See (4.15)--(4.17) of the NEWUOA paper and the elaboration around them.
-            jl = 1; % In the loop below, if 2 <= J < IDZ, then JL = 1; if IDZ < J <= NPT-N-1, then JL = IDZ.
+            jl = ...
+                1; % In the loop below, if 2 <= J < IDZ, then JL = 1; if IDZ < J <= NPT-N-1, then JL = IDZ.
             for j = 2:npt - n - 1
                 if j == idz
-                    jl = idz; % Do nothing but changing JL from 1 to IDZ. It occurs at most once along the loop.
+                    jl = ...
+                        idz; % Do nothing but changing JL from 1 to IDZ. It occurs at most once along the loop.
                     continue
                 end
 
@@ -797,7 +824,10 @@ classdef powalg_mod
                 if abs(zmat(knew, j)) > 1.0e-20 * max(abs(zmat), [], 'all')
                     % Threshold comes from Powell's BOBYQA
                     % Multiply a Givens rotation to ZMAT from the right so that ZMAT(KNEW, [JL,J]) becomes [*,0].
-                    grot = linalg_obj.planerot(zmat(knew, [jl, j]).'); %%MATLAB: grot = planerot(zmat(knew, [jl, j])')
+                    grot = ...
+                        linalg_obj.planerot(zmat(knew, ...
+                                                 [jl, ...
+                                                  j]).'); %%MATLAB: grot = planerot(zmat(knew, [jl, j])')
                     zmat(:, [jl, j]) = zmat(:, [jl, j]) * grot.';
                 end
                 zmat(knew, j) = 0.0;
@@ -880,7 +910,10 @@ classdef powalg_mod
                 tempa = beta / denom * zmat(knew, jb);
                 tempb = tau / denom * zmat(knew, jb);
                 temp = zmat(knew, ja);
-                scala = 1.0 / sqrt(abs(beta) * temp ^ 2 + tau ^ 2); % 1/SQRT(ZETA) in (4.19)-(4.20) of NEWUOA paper
+                scala = ...
+                    1.0 ...
+                    / sqrt(abs(beta) * temp ^ 2 ...
+                           + tau ^ 2); % 1/SQRT(ZETA) in (4.19)-(4.20) of NEWUOA paper
                 scalb = scala * sqrtdn;
                 zmat(:, ja) = scala * (tau * zmat(:, ja) - temp * vlag(1:npt));
                 zmat(:, jb) = scalb * (zmat(:, jb) - tempa * hcol(1:npt) - tempb * vlag(1:npt));
@@ -1176,7 +1209,8 @@ classdef powalg_mod
             % Calculation starts %
             %====================%
 
-            hdiag = -sum(zmat(:, 1:idz_loc - 1) .^ 2, 2) + sum(zmat(:, idz_loc:size(zmat, 2)) .^ 2, 2);
+            hdiag = ...
+                -sum(zmat(:, 1:idz_loc - 1) .^ 2, 2) + sum(zmat(:, idz_loc:size(zmat, 2)) .^ 2, 2);
             vlag = obj.calvlag_lfqint(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             beta = obj.calbeta(kref, bmat, d, xpt, zmat, 'idz', idz_loc);
             den = hdiag * beta + vlag(1:npt) .^ 2;
@@ -1251,13 +1285,17 @@ classdef powalg_mod
 
             ell = fix((n:npt - n - 2).' ./ n); % The ell below (2.4) of the BOBYQA paper.
             ij(1, :) = (n:npt - n - 2).' - n * ell + 1;
-            ij(2, :) = mod(ij(1, :).' + ell - 1, n) + 1; % MODULO(K-1, N) + 1 = K-N for K in [N+1, 2N]
+            ij(2, :) = ...
+                mod(ij(1, :).' + ell - 1, n) + 1; % MODULO(K-1, N) + 1 = K-N for K in [N+1, 2N]
             ipObj = inputParser();
             addParameter(ipObj, 'sorting_direction', "");
             parse(ipObj, varargin{:});
             sorting_direction = ipObj.Results.sorting_direction;
             if ~ismember('sorting_direction', ipObj.UsingDefaults)
-                ij(:) = sort(ij, 'dim', 1, 'direction', sorting_direction); % SORTING_DIRECTION is 'DESCEND' of 'ASCEND'
+                ij(:) = ...
+                    sort(ij, 'dim', 1, ...
+                         'direction', ...
+                         sorting_direction); % SORTING_DIRECTION is 'DESCEND' of 'ASCEND'
 
             end
             %%MATLAB: (N.B.: Fortran MODULO == MATLAB `mod`, Fortran MOD == MATLAB `rem`)

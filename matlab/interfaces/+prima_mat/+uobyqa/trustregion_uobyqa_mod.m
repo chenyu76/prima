@@ -84,12 +84,14 @@ classdef trustregion_uobyqa_mod
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
             if max(abs(g)) > 1.0e8
                 % The threshold is empirical.
-                modscal = max(2.0 * realmin, 1.0 / max(abs(g))); % MAX: precaution against underflow.
+                modscal = ...
+                    max(2.0 * realmin, 1.0 / max(abs(g))); % MAX: precaution against underflow.
                 gg = g * modscal;
                 hh = h * modscal;
                 scaled = true;
             else
-                modscal = 1.0; % This value is not used, but Fortran compilers may complain without it.
+                modscal = ...
+                    1.0; % This value is not used, but Fortran compilers may complain without it.
                 gg = g;
                 hh = h;
                 scaled = false;
@@ -133,11 +135,14 @@ classdef trustregion_uobyqa_mod
             % form of H), and put the elements of the Householder vectors in the lower triangular part of HH.
             % Further, TD and TN will contain the diagonal and other nonzero elements of the tridiagonal matrix.
             % In the comments hereafter, H indeed means this tridiagonal matrix.
-            [hh, td, tn] = linalg_obj.hessenberg_hhd_trid(hh, td, tn); %%MATLAB: [P, hh] = hess(hh); td = diag(hh); tn = diag(hh, 1)
+            [hh, td, tn] = ...
+                linalg_obj.hessenberg_hhd_trid(hh, td, ...
+                                               tn); %%MATLAB: [P, hh] = hess(hh); td = diag(hh); tn = diag(hh, 1)
 
             % Form GG by applying the similarity transformation.
             for k = 1:n - 1
-                gg(k + 1:n) = gg(k + 1:n) - sum(gg(k + 1:n) .* hh(k + 1:n, k), 'all') * hh(k + 1:n, k);
+                gg(k + 1:n) = ...
+                    gg(k + 1:n) - sum(gg(k + 1:n) .* hh(k + 1:n, k), 'all') * hh(k + 1:n, k);
             end
             %%MATLAB: gg = (gg'*P)';  % gg = P'*gg;
 
@@ -149,7 +154,8 @@ classdef trustregion_uobyqa_mod
             % This is probably because the behavior of MAX is undefined if it receives NaN (if GNORM and HNORM
             % are both Inf, then GNORM/DELTA - HNORM = NaN).
             %--------------------------------------------------------------------------------------------------%
-            if ~isfinite(sum(abs(gg), 'all') + sum(abs(hh), 'all') + sum(abs(td), 'all') + sum(abs(tn), 'all'))
+            if ~isfinite(sum(abs(gg), 'all') + sum(abs(hh), 'all') + sum(abs(td), 'all') ...
+                         + sum(abs(tn), 'all'))
                 return
             end
 
@@ -165,7 +171,8 @@ classdef trustregion_uobyqa_mod
             parl = max([0.0, -min(td), gnorm / delta - hnorm]); % Lower bound for the optimal PAR
             parlest = parl; % Estimation for PARL
             par = parl;
-            paru = 0.0; % Upper bound for the optimal PAR ??? The initial value is less than PARL. Why?
+            paru = ...
+                0.0; % Upper bound for the optimal PAR ??? The initial value is less than PARL. Why?
             paruest = 0.0; % Estimation for PARU
             posdef = false;
             dold(:) = 0.0;
@@ -192,7 +199,8 @@ classdef trustregion_uobyqa_mod
                 % H + PAR*I easily: it is L*diag(PIV)*L^T, where diag(PIV) is the diagonal matrix with PIV being
                 % the diagonal, and L is the lower triangular matrix with all the diagonal entries being 1, the
                 % subdiagonal being the vector TN/PIV(1:N-1) (entrywise), and all the other entries being 0.
-                piv(:) = 0.0; % Initialize PIV, so that we know that any NaN in PIV is due to the loop below.
+                piv(:) = ...
+                    0.0; % Initialize PIV, so that we know that any NaN in PIV is due to the loop below.
                 piv(1) = td(1) + par;
                 % Powell implemented the loop by a GOTO, and K = N when the loop exits. It may not be true here.
                 for k = 1:n - 1
@@ -343,7 +351,9 @@ classdef trustregion_uobyqa_mod
                     for k = 1:n - 1
                         d(k + 1) = -(gg(k + 1) + tn(k) * d(k)) / piv(k + 1);
                     end
-                    wsq = sum(piv .* d .^ 2, 'all'); % GG^T*(H+PAR*I)^{-1}*GG. Needed in the convergence test.
+                    wsq = ...
+                        sum(piv .* d .^ 2, ...
+                            'all'); % GG^T*(H+PAR*I)^{-1}*GG. Needed in the convergence test.
                     % The loop sets D = L^{-T}*D = -L^{-T}*PIV^{-1}*L^{-1}*GG = -(H+PAR*I)^{-1}*GG.
                     for k = n - 1:-1:1
                         d(k) = d(k) - tn(k) * d(k + 1) / piv(k);
@@ -436,7 +446,10 @@ classdef trustregion_uobyqa_mod
                             tempa = abs(delsq - dsq);
                             tempb = sqrt(dtz * dtz + tempa * zsq);
                             if abs(dtz) > 0
-                                gam = tempa / (tempb .* ((dtz > 0) .* 2 - 1) + dtz); %%MATLAB: gam = tempa / (sign(dtz)*tempb + dtz)
+                                gam = ...
+                                    tempa ...
+                                    / (tempb .* ((dtz > 0) .* 2 - 1) ...
+                                       + dtz); %%MATLAB: gam = tempa / (sign(dtz)*tempb + dtz)
 
                             else                                % This ELSE covers the unlikely yet possible case where DTZ is zero or even NaN.
                                 gam = sqrt(tempa / zsq);
@@ -537,7 +550,9 @@ classdef trustregion_uobyqa_mod
                 delta = max(gamma1 * delta_in, dnorm); % Powell's UOBYQA/NEWUOA/BOBYQA/LINCOA
 
             else
-                delta = max(gamma1 * delta_in, gamma2 * dnorm); % Powell's NEWUOA/BOBYQA. Works well for UOBYQA.
+                delta = ...
+                    max(gamma1 * delta_in, ...
+                        gamma2 * dnorm); % Powell's NEWUOA/BOBYQA. Works well for UOBYQA.
                 %delta = max(delta_in, 1.25_RP * dnorm, dnorm + rho)  ! Powell's original UOBYQA code.
                 %delta = max(delta_in, gamma2 * dnorm)  ! This works evidently better than Powell's version.
                 %delta = min(max(gamma1 * delta_in, gamma2 * dnorm), sqrt(gamma2) * delta_in)  ! Powell's LINCOA.

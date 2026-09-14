@@ -12,7 +12,8 @@ classdef update_cobyla_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [conmat, cval, fval, sim, simi, info] = updatexfc(obj, jdrop, constr, cpen, cstrv, d, f, conmat, cval, fval, sim, simi)
+        function [conmat, cval, fval, sim, simi, info] = ...
+                updatexfc(obj, jdrop, constr, cpen, cstrv, d, f, conmat, cval, fval, sim, simi)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine revises the simplex by updating the elements of SIM, SIMI, FVAL, CONMAT, and CVAL.
             %--------------------------------------------------------------------------------------------------%
@@ -56,7 +57,9 @@ classdef update_cobyla_mod
 
             % Check whether SIMI is a poor approximation to the inverse of SIM(:, 1:N).
             % Calculate SIMI from scratch if the current one is damaged by rounding errors.
-            erri = max(abs(simi * sim(:, 1:n) - eye(n)), [], 'all'); % MAXIMUM(X) returns NaN if X contains NaN
+            erri = ...
+                max(abs(simi * sim(:, 1:n) - eye(n)), [], ...
+                    'all'); % MAXIMUM(X) returns NaN if X contains NaN
             if erri > 0.1 * itol || isnan(erri)
                 simi_test(:) = inv(sim(:, 1:n));
                 erri_test = max(abs(simi_test * sim(:, 1:n) - eye(n)), [], 'all');
@@ -73,7 +76,8 @@ classdef update_cobyla_mod
                 conmat(:, jdrop) = constr;
                 cval(jdrop) = cstrv;
                 % Switch the best vertex to the pole position SIM(:, N+1) if it is not there already.
-                [conmat, cval, fval, sim, simi, info] = obj.updatepole(cpen, conmat, cval, fval, sim, simi);
+                [conmat, cval, fval, sim, simi, info] = ...
+                    obj.updatepole(cpen, conmat, cval, fval, sim, simi);
             else                % ERRI > ITOL or ERRI is NaN
                 info = infos_obj.DAMAGING_ROUNDING;
                 sim = sim_old;
@@ -86,7 +90,8 @@ classdef update_cobyla_mod
 
 
         end
-        function [conmat, cval, fval, sim, simi, info] = updatepole(obj, cpen, conmat, cval, fval, sim, simi)
+        function [conmat, cval, fval, sim, simi, info] = ...
+                updatepole(obj, cpen, conmat, cval, fval, sim, simi)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine identifies the best vertex of the current simplex with respect to the merit
             % function PHI = F + CPEN * CSTRV, and then switch this vertex to SIM(:, N + 1), which Powell called
@@ -156,7 +161,9 @@ classdef update_cobyla_mod
 
             % Check whether SIMI is a poor approximation to the inverse of SIM(:, 1:N).
             % Calculate SIMI from scratch if the current one is damaged by rounding errors.
-            erri = max(abs(simi * sim(:, 1:n) - eye(n)), [], 'all'); % MAXIMUM(X) returns NaN if X contains NaN
+            erri = ...
+                max(abs(simi * sim(:, 1:n) - eye(n)), [], ...
+                    'all'); % MAXIMUM(X) returns NaN if X contains NaN
             if erri > 0.1 * itol || isnan(erri)
                 simi_test(:) = inv(sim(:, 1:n));
                 erri_test = max(abs(simi_test * sim(:, 1:n) - eye(n)), [], 'all');

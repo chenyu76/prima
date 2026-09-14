@@ -16,7 +16,8 @@ classdef getact_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [iact, nact, qfac, resact, resnew, rfac, psd] = getact(obj, amat, delta, g, iact, nact, qfac, resact, resnew, rfac, psd)
+        function [iact, nact, qfac, resact, resnew, rfac, psd] = ...
+                getact(obj, amat, delta, g, iact, nact, qfac, resact, resnew, rfac, psd)
             %--------------------------------------------------------------------------------------------------%
             %-------------------------------------------------------------%
             % THE FOLLOWING DESCRIPTION NEEDS VERIFICATION!               %
@@ -99,7 +100,9 @@ classdef getact_mod
 
             % Set some constants.
             gg = sum(g .* g, 'all');
-            tdel = 0.2 * delta; % Changing TDEL to 0.1_RP*DELTA does not improve the performance of LINCOA.
+            tdel = ...
+                0.2 ...
+                * delta; % Changing TDEL to 0.1_RP*DELTA does not improve the performance of LINCOA.
 
             % Set the initial QFAC to the identity matrix in the case NACT = 0.
             if nact == 0
@@ -112,7 +115,8 @@ classdef getact_mod
             for icon = nact:-1:1
                 if resact(icon) > tdel
                     % Delete constraint IACT(ICON) from the active set, and set NACT = NACT - 1.
-                    [iact, nact, qfac, resact, resnew, rfac, vlam] = obj.delact(icon, iact, nact, qfac, resact, resnew, rfac, vlam);
+                    [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
+                        obj.delact(icon, iact, nact, qfac, resact, resnew, rfac, vlam);
                 end
             end
 
@@ -126,7 +130,8 @@ classdef getact_mod
                 end
                 icon = max(find(vlam(1:nact) >= 0));
                 %%MATLAB: icon = max(find(vlam(1:nact) >= 0)); % OR: icon = find(vlam(1:nact) >= 0, 1, 'last')
-                [iact, nact, qfac, resact, resnew, rfac, vlam] = obj.delact(icon, iact, nact, qfac, resact, resnew, rfac, vlam);
+                [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
+                    obj.delact(icon, iact, nact, qfac, resact, resnew, rfac, vlam);
             end
             % Zaikun 20220330: What if NACT = 0 at this point?
 
@@ -134,8 +139,11 @@ classdef getact_mod
             % NACT=N holds. The situation NACT=N occurs for sufficiently large DELTA if the origin is in the
             % convex hull of the constraint gradients.
             % Start with initialization of PSDSAV and DDSAV.
-            psdsav(:) = 0.0; % Must be set, in case the loop exits due to abnormality at iteration 1.
-            ddsav = 2.0 * gg; % By Powell. This value is used at iteration 1 to test whether DD >= DDSAV. Why?
+            psdsav(:) = ...
+                0.0; % Must be set, in case the loop exits due to abnormality at iteration 1.
+            ddsav = ...
+                2.0 ...
+                * gg; % By Powell. This value is used at iteration 1 to test whether DD >= DDSAV. Why?
 
             % What is the theoretical maximal number of iterations in the following procedure? Powell's code for
             % this part is essentially a `DO WHILE (NACT < N) ... END DO` loop. We enforce the following maximal
@@ -234,12 +242,14 @@ classdef getact_mod
                 % The following condition works essentially the same as Powell's. However, it ensures that
                 % VIOLMX > EPS * DNORM when the EXIT is not triggered, which implies that AMAT(:, L) is not in
                 % the range of QFAC(:, 1:NACT).
-                if all(~mask, 'all') || violmx <= max(eps * dnorm, 10.0 * norm(apsd(iact(1:nact)), "inf"))
+                if all(~mask, 'all') ...
+                   || violmx <= max(eps * dnorm, 10.0 * norm(apsd(iact(1:nact)), "inf"))
                     break
                 end
 
                 % Add constraint L to the active set. ADDACT sets NACT = NACT + 1 and VLAM(NACT) = 0.
-                [iact, nact, qfac, resact, resnew, rfac, vlam] = obj.addact(l, amat(:, l), iact, nact, qfac, resact, resnew, rfac, vlam);
+                [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
+                    obj.addact(l, amat(:, l), iact, nact, qfac, resact, resnew, rfac, vlam);
 
                 % Set the components of the vector VMU if VIOLMX is positive.
                 % N.B.: 1. In theory, NACT > 0 is not needed in the condition below, because VIOLMX must be 0
@@ -250,14 +260,17 @@ classdef getact_mod
                     v(1:nact - 1) = 0.0;
                     v(nact) = 1.0 / rfac(nact, nact); % This is why we must ensure NACT > 0.
                     % Solve the linear system RFAC(1:NACT, 1:NACT) * VMU(1:NACT) = V(1:NACT) .
-                    vmu(1:nact) = rfac(1:nact, 1:nact) \ v(1:nact); % VMU(NACT) = V(NACT)/RFAC(NACT,NACT)>0
+                    vmu(1:nact) = ...
+                        rfac(1:nact, 1:nact) \ v(1:nact); % VMU(NACT) = V(NACT)/RFAC(NACT,NACT)>0
                     %%MATLAB: vmu(1:nact) = rfac(1:nact, 1:nact) \ v(1:nact);
 
                     % Calculate the multiple of VMU to subtract from VLAM, and update VLAM.
                     % N.B.: 1. VLAM(1:NACT-1) < 0 and VLAM(NACT) <= 0 by the updates of VLAM. 2. VMU(NACT) > 0.
                     % 3. Only the places where VMU(1:NACT) < 0 is relevant below, if any.
                     frac(:) = realmax;
-                    frac(vmu(1:nact) < 0 & vlam(1:nact) < 0) = vlam(vmu(1:nact) < 0 & vlam(1:nact) < 0) ./ vmu(vmu(1:nact) < 0 & vlam(1:nact) < 0);
+                    frac(vmu(1:nact) < 0 & vlam(1:nact) < 0) = ...
+                        vlam(vmu(1:nact) < 0 & vlam(1:nact) < 0) ...
+                        ./ vmu(vmu(1:nact) < 0 & vlam(1:nact) < 0);
                     %%MATLAB: frac = vlam / vmu; frac(vmu >= 0 | vlam >= 0) = Inf;
                     vmult = min([violmx; frac(1:nact)]);
                     icon = max([0; find(frac(1:nact) <= vmult)], [], 'all');
@@ -286,7 +299,8 @@ classdef getact_mod
                         if vlam(icon) >= 0
                             % Powell's version: IF (.NOT. VLAM(ICON) < 0) THEN
                             % Delete the constraint with index IACT(ICON) from the active set; set NACT = NACT-1.
-                            [iact, nact, qfac, resact, resnew, rfac, vlam] = obj.delact(icon, iact, nact, qfac, resact, resnew, rfac, vlam);
+                            [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
+                                obj.delact(icon, iact, nact, qfac, resact, resnew, rfac, vlam);
                         end
                     end
                 end % End of DO WHILE (VIOLMX > 0 .AND. NACT > 0)
@@ -317,7 +331,8 @@ classdef getact_mod
 
 
         end
-        function [iact, nact, qfac, resact, resnew, rfac, vlam] = addact(~, l, c, iact, nact, qfac, resact, resnew, rfac, vlam)
+        function [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
+                addact(~, l, c, iact, nact, qfac, resact, resnew, rfac, vlam)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine adds the constraint with index L to the active set as the (NACT+ )-th active
             % constraint, updates IACT, QFAC, etc accordingly, and increments NACT to NACT+1. Here, C is the
@@ -339,7 +354,8 @@ classdef getact_mod
             % appropriate column to RFAC.
             % N.B.: QRADD always augment NACT by 1, which differs from the corresponding subroutine in COBYLA.
             % It is ensured that C cannot be represented by the gradients of the existing active constraints.
-            [qfac, rfac, nact] = powalg_obj.qradd_Rfull(c, qfac, rfac, nact); % NACT is increased by 1!
+            [qfac, rfac, nact] = ...
+                powalg_obj.qradd_Rfull(c, qfac, rfac, nact); % NACT is increased by 1!
             % Indeed, it suffices to pass RFAC(:, 1:NACT+1) to QRADD as follows.
             % %call qradd(c, qfac, rfac(:, 1:nact + 1), nact)  ! NACT is increased by 1!
 
@@ -355,7 +371,8 @@ classdef getact_mod
 
 
         end
-        function [iact, nact, qfac, resact, resnew, rfac, vlam] = delact(~, icon, iact, nact, qfac, resact, resnew, rfac, vlam)
+        function [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
+                delact(~, icon, iact, nact, qfac, resact, resnew, rfac, vlam)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine deletes the constraint with index IACT(ICON) from the active set, updates IACT,
             % QFAC, etc accordingly, and reduces NACT to NACT-1.
@@ -376,7 +393,8 @@ classdef getact_mod
             % the old value of IACT(ICON). QREXC implements the updates of QFAC and RFAC by a sequence of Givens
             % rotations. Then NACT is reduced by one.
 
-            [qfac, R_slice] = powalg_obj.qrexc_Rfull(qfac, rfac(:, 1:nact), icon); rfac(:, 1:nact) = R_slice; % QREXC does nothing if ICON == NACT.
+            [qfac, R_slice] = powalg_obj.qrexc_Rfull(qfac, rfac(:, 1:nact), icon);
+            rfac(:, 1:nact) = R_slice; % QREXC does nothing if ICON == NACT.
             % Indeed, it suffices to pass QFAC(:, 1:NACT) and RFAC(1:NACT, 1:NACT) to QREXC as follows. However,
             % compilers may create a temporary copy of RFAC(1:NACT, 1:NACT), which is not contiguous in memory.
             % %call qrexc(qfac(:, 1:nact), rfac(1:nact, 1:nact), icon)

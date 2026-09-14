@@ -181,7 +181,9 @@ classdef geometry_bobyqa_mod
             % geometry step is nonzero.
             if ~isfinite(sum(abs(glag), 'all'))
                 d = xpt(:, knew) - xopt;
-                d = min(0.5, delbar / norm(d)) * d; % Since XPT respects the bounds, so does XOPT + D.
+                d = ...
+                    min(0.5, delbar / norm(d)) ...
+                    * d; % Since XPT respects the bounds, so does XOPT + D.
                 return
             end
 
@@ -216,7 +218,9 @@ classdef geometry_bobyqa_mod
                     continue
                 end
 
-                subd = delbar / sqrt(distsq(k)); % DISTSQ(K) > 0 unless K == KOPT or the input is incorrect.
+                subd = ...
+                    delbar ...
+                    / sqrt(distsq(k)); % DISTSQ(K) > 0 unless K == KOPT or the input is incorrect.
                 slbd = -subd;
                 ilbd = 0;
                 iubd = 0;
@@ -232,9 +236,13 @@ classdef geometry_bobyqa_mod
                 % Similar things can be said about UFRAC.
                 xdiff = xpt(:, k) - xopt;
                 lfrac = subd .* ((-xdiff > 0) .* 2 - 1);
-                lfrac(sl - xopt > -abs(xdiff) * subd) = (sl(sl - xopt > -abs(xdiff) * subd) - xopt(sl - xopt > -abs(xdiff) * subd)) ./ xdiff(sl - xopt > -abs(xdiff) * subd);
+                lfrac(sl - xopt > -abs(xdiff) * subd) = ...
+                    (sl(sl - xopt > -abs(xdiff) * subd) - xopt(sl - xopt > -abs(xdiff) * subd)) ...
+                    ./ xdiff(sl - xopt > -abs(xdiff) * subd);
                 ufrac = subd .* ((xdiff > 0) .* 2 - 1);
-                ufrac(su - xopt < abs(xdiff) * subd) = (su(su - xopt < abs(xdiff) * subd) - xopt(su - xopt < abs(xdiff) * subd)) ./ xdiff(su - xopt < abs(xdiff) * subd);
+                ufrac(su - xopt < abs(xdiff) * subd) = ...
+                    (su(su - xopt < abs(xdiff) * subd) - xopt(su - xopt < abs(xdiff) * subd)) ...
+                    ./ xdiff(su - xopt < abs(xdiff) * subd);
                 %%MATLAB code for LFRAC and UFRAC (the code is simpler as we are not concerned about overflow):
                 %%xdiff = xpt(:, k) - xopt;
                 %%lfrac = (sl - xopt) / xdiff;
@@ -292,7 +300,8 @@ classdef geometry_bobyqa_mod
             % PHI_K(t) = t*(1-t)*PHI_K'(0) for K /= KNEW, and PHI_KNEW = t*[t*(1-PHI_K'(0)) + PHI_K'(0)].
             vlag = stplen .* (1.0 - stplen) .* dderiv.';
             %%MATLAB: vlag = stplen .* (1 - stplen) .* dderiv; % Implicit expansion; dderiv is a row!
-            vlag(:, knew) = stplen(:, knew) .* (stplen(:, knew) * (1.0 - dderiv(knew)) + dderiv(knew));
+            vlag(:, knew) = ...
+                stplen(:, knew) .* (stplen(:, knew) * (1.0 - dderiv(knew)) + dderiv(knew));
             % Set NaNs in VLAG to 0 so that the behavior of MAXVAL(ABS(VLAG)) is predictable. VLAG does not have
             % NaN unless XPT does, which would be a bug. MAXVAL(ABS(VLAG)) appears in Powell's code, not here.
             vlag(isnan(vlag)) = 0.0; %%MATLAB: vlag(isnan(vlag)) = 0;
@@ -322,7 +331,9 @@ classdef geometry_bobyqa_mod
             % 2. Recall that we have set the NaN entries of PREDSQ to zero, if there is any. Thus the KSQS below
             % is a well defined integer array, all the three entries lying between 1 and NPT.
             ksqs = fortran.maxloc(predsq, 'dim', 2);
-            isq = fortran.maxloc([predsq(1, ksqs(1)), predsq(2, ksqs(2)), predsq(3, ksqs(3))], 'dim', 1);
+            isq = ...
+                fortran.maxloc([predsq(1, ksqs(1)), predsq(2, ksqs(2)), predsq(3, ksqs(3))], ...
+                               'dim', 1);
             ksq = ksqs(isq);
             %%MATLAB:
             %%[~, ksqs] = max(predsq, [], 'omitnan');
@@ -425,7 +436,8 @@ classdef geometry_bobyqa_mod
                 % than ONE if that can reduce the modulus of the Lagrange function at XOPT+S. Set CAUCHY to the
                 % final value of the square of this function.
                 sxpt = xpt.' * s;
-                curv = sum(sxpt .* (pqlag .* sxpt), 'all'); % CURV = INPROD(S, HESS_MUL(S, XPT, PQLAG))
+                curv = ...
+                    sum(sxpt .* (pqlag .* sxpt), 'all'); % CURV = INPROD(S, HESS_MUL(S, XPT, PQLAG))
                 if uphill == 1
                     curv = -curv;
                 end
@@ -458,7 +470,9 @@ classdef geometry_bobyqa_mod
             % Powell's code does not have this. Note that it is crucial to ensure that a geometry step is nonzero.
             if sum(abs(d), 'all') <= 0 || ~isfinite(sum(abs(d), 'all'))
                 d = xpt(:, knew) - xopt;
-                d = min(0.5, delbar / norm(d)) * d; % Since XPT respects the bounds, so does XOPT + D.
+                d = ...
+                    min(0.5, delbar / norm(d)) ...
+                    * d; % Since XPT respects the bounds, so does XOPT + D.
 
             end
 

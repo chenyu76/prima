@@ -21,7 +21,10 @@ classdef cobylb_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [constr, f, x, nf, chist, conhist, cstrv, fhist, xhist, info] = cobylb(obj, calcfc, iprint, maxfilt, maxfun, amat, bvec, ctol, cweight, eta1, eta2, ftarget, gamma1, gamma2, rhobeg, rhoend, constr, f, x, chist, conhist, fhist, xhist, varargin)
+        function [constr, f, x, nf, chist, conhist, cstrv, fhist, xhist, info] = ...
+                cobylb(obj, calcfc, iprint, maxfilt, maxfun, amat, bvec, ctol, cweight, eta1, ...
+                       eta2, ftarget, gamma1, gamma2, rhobeg, rhoend, constr, f, x, chist, ...
+                       conhist, fhist, xhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine performs the actual calculations of COBYLA.
             %
@@ -57,7 +60,9 @@ classdef cobylb_mod
 
             evaluated = false(numel(x) + 1, 1);
 
-            A = NaN(numel(x), numel(constr)); % A contains the approximate gradient for the constraints
+            A = ...
+                NaN(numel(x), ...
+                    numel(constr)); % A contains the approximate gradient for the constraints
 
             cfilt = NaN(min(max(maxfilt, 1), maxfun), 1);
             confilt = NaN(numel(constr), numel(cfilt));
@@ -105,7 +110,11 @@ classdef cobylb_mod
             % function value (regardless of the constraint violation), and SIM(:, 1:N) holds the displacements
             % from the other vertices to SIM(:, N+1). FVAL, CONMAT, and CVAL hold the function values,
             % constraint values, and constraint violations on the vertices in the order corresponding to SIM.
-            [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, subinfo] = initialize_cobyla_obj.initxfc(calcfc, iprint, maxfun, amat, bvec, constr, ctol, f, ftarget, rhobeg, x, chist, conhist, conmat, cval, fhist, fval, sim, xhist, evaluated);
+            [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, ...
+             subinfo] = ...
+                initialize_cobyla_obj.initxfc(calcfc, iprint, maxfun, amat, bvec, constr, ctol, ...
+                                              f, ftarget, rhobeg, x, chist, conhist, conmat, ...
+                                              cval, fhist, fval, sim, xhist, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
 
@@ -114,7 +123,9 @@ classdef cobylb_mod
             parse(ipObj, varargin{:});
             callback_fcn = ipObj.Results.callback_fcn;
             if ~ismember('callback_fcn', ipObj.UsingDefaults)
-                terminate = callback_fcn(sim(:, n + 1), fval(n + 1), nf, 0, 'cstrv', cval(n + 1), 'nlconstr', conmat(m_lcon + 1:m, n + 1));
+                terminate = ...
+                    callback_fcn(sim(:, n + 1), fval(n + 1), nf, 0, 'cstrv', cval(n + 1), ...
+                                 'nlconstr', conmat(m_lcon + 1:m, n + 1));
                 if terminate
                     subinfo = infos_obj.CALLBACK_TERMINATE;
                 end
@@ -125,7 +136,9 @@ classdef cobylb_mod
             % the iterations. COBYLA is NOT a filter method but a trust-region method based on an L-infinity
             % merit function. Powell's implementation does not use a filter to select the iterate, possibly
             % returning a suboptimal iterate.
-            [nfilt, cfilt, confilt, ffilt, xfilt] = initialize_cobyla_obj.initfilt(conmat, ctol, cweight, cval, fval, sim, evaluated, cfilt, confilt, ffilt, xfilt);
+            [nfilt, cfilt, confilt, ffilt, xfilt] = ...
+                initialize_cobyla_obj.initfilt(conmat, ctol, cweight, cval, fval, sim, ...
+                                               evaluated, cfilt, confilt, ffilt, xfilt);
 
             % Check whether to return due to abnormal cases that may occur during the initialization.
             if subinfo ~= infos_obj.INFO_DFT
@@ -138,9 +151,11 @@ classdef cobylb_mod
                 constr = confilt(:, kopt);
                 cstrv = cfilt(kopt);
                 % Arrange CHIST, CONHIST, FHIST, and XHIST so that they are in the chronological order.
-                [xhist, fhist, chist, conhist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist, 'conhist', conhist);
+                [xhist, fhist, chist, conhist] = ...
+                    history_obj.rangehist(nf, xhist, fhist, 'chist', chist, 'conhist', conhist);
                 % Print a return message according to IPRINT.
-                message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, 'constr', constr);
+                message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, ...
+                                   'constr', constr);
 
                 return
             end
@@ -156,7 +171,8 @@ classdef cobylb_mod
             % code simply initializes CPEN to 0.
             rho = rhobeg;
             delta = rhobeg;
-            cpen = max(cpenmin, min(1000.0, obj.fcratio(conmat, fval))); % Powell's code: CPEN = ZERO
+            cpen = ...
+                max(cpenmin, min(1000.0, obj.fcratio(conmat, fval))); % Powell's code: CPEN = ZERO
 
 
             shortd = false;
@@ -204,7 +220,8 @@ classdef cobylb_mod
                 cpen = obj.getcpen(amat, bvec, conmat, cpen, cval, delta, fval, sim, simi);
 
                 % Switch the best vertex of the current simplex to SIM(:, N + 1).
-                [conmat, cval, fval, sim, simi, subinfo] = update_cobyla_obj.updatepole(cpen, conmat, cval, fval, sim, simi);
+                [conmat, cval, fval, sim, simi, subinfo] = ...
+                    update_cobyla_obj.updatepole(cpen, conmat, cval, fval, sim, simi);
                 % Check whether to exit due to damaging rounding in UPDATEPOLE.
                 if subinfo == infos_obj.DAMAGING_ROUNDING
                     info = subinfo;
@@ -224,7 +241,8 @@ classdef cobylb_mod
                 % (not necessarily a good algorithm). No preconditioning or scaling was used.
                 g(:) = simi.' * (fval(1:n) - fval(n + 1));
                 A(:, 1:m_lcon) = amat;
-                A(:, m_lcon + 1:m) = ((conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1)) * simi).';
+                A(:, m_lcon + 1:m) = ...
+                    ((conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1)) * simi).';
                 %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
 
                 % Calculate the trust-region trial step D. Note that D does NOT depend on CPEN.
@@ -251,7 +269,8 @@ classdef cobylb_mod
                 % Evaluate PREREM, which is the predicted reduction in the merit function.
                 % In theory, PREREM >= 0 and it is 0 iff CPEN = 0 = PREREF. This may not be true numerically.
                 prerem = preref + cpen * prerec;
-                trfail = ~(prerem > 1.0e-6 * min(cpen, 1.0) * rho); % PREREM is tiny/negative or NaN.
+                trfail = ...
+                    ~(prerem > 1.0e-6 * min(cpen, 1.0) * rho); % PREREM is tiny/negative or NaN.
 
                 if shortd || trfail
                     % Reduce DELTA if D is short or D fails to render PREREM > 0. The latter can happen due to
@@ -268,7 +287,9 @@ classdef cobylb_mod
                     % N.B.: If this happens, do NOT include X into the filter, as F and CONSTR are inaccurate.
                     x = sim(:, n + 1) + d;
                     distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
-                    distsq(1:n) = arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n)'); % Implied do-loop
+                    distsq(1:n) = ...
+                        arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), ...
+                                 (1:n)'); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     [~, j] = min(distsq);
                     if distsq(j) <= (1.0e-4 * rhoend) ^ 2
@@ -277,20 +298,30 @@ classdef cobylb_mod
                         cstrv = cval(j);
                     else
                         % Evaluate the objective and constraints at X, taking care of possible Inf/NaN values.
-                        constr(1:m_lcon) = evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints
-                        [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m)); constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
+                        constr(1:m_lcon) = ...
+                            evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints
+                        [f, constr_slice] = ...
+                            evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m));
+                        constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
                         % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
                         % linear constraint values here to make CSTRV consistent.
                         cstrv = max([0.0; constr], [], 'all');
                         nf = nf + 1;
                         % Save X, F, CONSTR, CSTRV into the history.
-                        [xhist, fhist, chist, conhist] = history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist, 'constr', constr, 'conhist', conhist);
+                        [xhist, fhist, chist, conhist] = ...
+                            history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, ...
+                                                 'chist', chist, 'constr', constr, ...
+                                                 'conhist', conhist);
                         % Save X, F, CONSTR, CSTRV into the filter.
-                        [nfilt, cfilt, ffilt, xfilt, confilt] = selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt, 'constr', constr, 'confilt', confilt);
+                        [nfilt, cfilt, ffilt, xfilt, confilt] = ...
+                            selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ...
+                                                 ffilt, xfilt, 'constr', constr, ...
+                                                 'confilt', confilt);
                     end
 
                     % Print a message about the function/constraint evaluation according to IPRINT.
-                    message_obj.fmsg(solver, "Trust region", iprint, nf, delta, f, x, 'cstrv', cstrv, 'constr', constr);
+                    message_obj.fmsg(solver, "Trust region", iprint, nf, delta, f, x, ...
+                                     'cstrv', cstrv, 'constr', constr);
 
                     % Evaluate ACTREM, which is the actual reduction in the merit function.
                     actrem = fval(n + 1) + cpen * cval(n + 1) - (f + cpen * cstrv);
@@ -317,14 +348,17 @@ classdef cobylb_mod
                     % without reducing DELTA. However, according to a test on 20230206, it does not improve the
                     % performance if we skip the update of DELTA when ADEQUATE_GEO is FALSE and RATIO < 0.1.
                     % Therefore, we choose to update DELTA without checking ADEQUATE_GEO.
-                    delta = trustregion_cobyla_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ratio);
+                    delta = ...
+                        trustregion_cobyla_obj.trrad(delta, dnorm, eta1, eta2, gamma1, gamma2, ...
+                                                     ratio);
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
 
                     end
 
                     % Is the newly generated X better than current best point?
-                    ximproved = actrem > 0; % If ACTREM is NaN, then XIMPROVED should & will be FALSE.
+                    ximproved = ...
+                        actrem > 0; % If ACTREM is NaN, then XIMPROVED should & will be FALSE.
 
                     % Set JDROP_TR to the index of the vertex to be replaced with X. JDROP_TR = 0 means there
                     % is no good point to replace, and X will not be included into the simplex; in this case,
@@ -333,7 +367,9 @@ classdef cobylb_mod
 
                     % Update SIM, SIMI, FVAL, CONMAT, and CVAL so that SIM(:, JDROP_TR) is replaced with D.
                     % UPDATEXFC does nothing if JDROP_TR == 0, as the algorithm decides to discard X.
-                    [conmat, cval, fval, sim, simi, subinfo] = update_cobyla_obj.updatexfc(jdrop_tr, constr, cpen, cstrv, d, f, conmat, cval, fval, sim, simi);
+                    [conmat, cval, fval, sim, simi, subinfo] = ...
+                        update_cobyla_obj.updatexfc(jdrop_tr, constr, cpen, cstrv, d, f, conmat, ...
+                                                    cval, fval, sim, simi);
                     % Check whether to exit due to damaging rounding in UPDATEXFC.
                     if subinfo == infos_obj.DAMAGING_ROUNDING
                         info = subinfo;
@@ -453,7 +489,9 @@ classdef cobylb_mod
 
                     % Calculate the geometry step D.
                     delbar = 0.5 * delta;
-                    d(:) = geometry_cobyla_obj.geostep(jdrop_geo, amat, bvec, conmat, cpen, delbar, fval, simi);
+                    d(:) = ...
+                        geometry_cobyla_obj.geostep(jdrop_geo, amat, bvec, conmat, cpen, delbar, ...
+                                                    fval, simi);
 
                     % Calculate the next value of the objective and constraint functions.
                     % If X is close to one of the points in the interpolation set, then we do not evaluate the
@@ -465,7 +503,9 @@ classdef cobylb_mod
                     % rounding. In an experiment with single precision on 20240317, X = SIM(:, N+1) occurred.
                     x = sim(:, n + 1) + d;
                     distsq(n + 1) = sum((x - sim(:, n + 1)) .^ 2, 'all');
-                    distsq(1:n) = arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), (1:n)'); % Implied do-loop
+                    distsq(1:n) = ...
+                        arrayfun(@(j) sum((x - (sim(:, n + 1) + sim(:, j))) .^ 2, 'all'), ...
+                                 (1:n)'); % Implied do-loop
                     %%MATLAB: distsq(1:n) = sum((x - (sim(:,1:n) + sim(:, n+1)))**2, 1)  % Implicit expansion
                     [~, j] = min(distsq);
                     if distsq(j) <= (1.0e-4 * rhoend) ^ 2
@@ -474,22 +514,34 @@ classdef cobylb_mod
                         cstrv = cval(j);
                     else
                         % Evaluate the objective and constraints at X, taking care of possible Inf/NaN values.
-                        constr(1:m_lcon) = evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints
-                        [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m)); constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
+                        constr(1:m_lcon) = ...
+                            evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints
+                        [f, constr_slice] = ...
+                            evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m));
+                        constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
                         % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
                         % linear constraint values here to make CSTRV consistent.
                         cstrv = max([0.0; constr], [], 'all');
                         nf = nf + 1;
                         % Save X, F, CONSTR, CSTRV into the history.
-                        [xhist, fhist, chist, conhist] = history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist, 'constr', constr, 'conhist', conhist);
+                        [xhist, fhist, chist, conhist] = ...
+                            history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, ...
+                                                 'chist', chist, 'constr', constr, ...
+                                                 'conhist', conhist);
                         % Save X, F, CONSTR, CSTRV into the filter.
-                        [nfilt, cfilt, ffilt, xfilt, confilt] = selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt, 'constr', constr, 'confilt', confilt);
+                        [nfilt, cfilt, ffilt, xfilt, confilt] = ...
+                            selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ...
+                                                 ffilt, xfilt, 'constr', constr, ...
+                                                 'confilt', confilt);
                     end
 
                     % Print a message about the function/constraint evaluation according to IPRINT.
-                    message_obj.fmsg(solver, "Geometry", iprint, nf, delta, f, x, 'cstrv', cstrv, 'constr', constr);
+                    message_obj.fmsg(solver, "Geometry", iprint, nf, delta, f, x, ...
+                                     'cstrv', cstrv, 'constr', constr);
                     % Update SIM, SIMI, FVAL, CONMAT, and CVAL so that SIM(:, JDROP_GEO) is replaced with D.
-                    [conmat, cval, fval, sim, simi, subinfo] = update_cobyla_obj.updatexfc(jdrop_geo, constr, cpen, cstrv, d, f, conmat, cval, fval, sim, simi);
+                    [conmat, cval, fval, sim, simi, subinfo] = ...
+                        update_cobyla_obj.updatexfc(jdrop_geo, constr, cpen, cstrv, d, f, ...
+                                                    conmat, cval, fval, sim, simi);
                     % Check whether to exit due to damaging rounding in UPDATEXFC.
                     if subinfo == infos_obj.DAMAGING_ROUNDING
                         info = subinfo;
@@ -518,9 +570,12 @@ classdef cobylb_mod
                     % Powell's code: CPEN = MIN(CPEN, FCRATIO(FVAL, CONMAT)), which may set CPEN to 0.
                     cpen = max(cpenmin, min(cpen, obj.fcratio(conmat, fval)));
                     % Print a message about the reduction of RHO according to IPRINT.
-                    message_obj.rhomsg(solver, iprint, nf, delta, fval(n + 1), rho, sim(:, n + 1), 'cstrv', cval(n + 1), 'constr', conmat(:, n + 1), 'cpen', cpen);
+                    message_obj.rhomsg(solver, iprint, nf, delta, fval(n + 1), rho, ...
+                                       sim(:, n + 1), 'cstrv', cval(n + 1), ...
+                                       'constr', conmat(:, n + 1), 'cpen', cpen);
                     % Switch the best vertex of the current simplex to SIM(:, N + 1).
-                    [conmat, cval, fval, sim, simi, subinfo] = update_cobyla_obj.updatepole(cpen, conmat, cval, fval, sim, simi);
+                    [conmat, cval, fval, sim, simi, subinfo] = ...
+                        update_cobyla_obj.updatepole(cpen, conmat, cval, fval, sim, simi);
                     % Check whether to exit due to damaging rounding in UPDATEPOLE.
                     if subinfo == infos_obj.DAMAGING_ROUNDING
                         info = subinfo;
@@ -531,7 +586,9 @@ classdef cobylb_mod
 
                 % Report the current best value, and check if user asks for early termination.
                 if ~ismember('callback_fcn', ipObj.UsingDefaults)
-                    terminate = callback_fcn(sim(:, n + 1), fval(n + 1), nf, tr, 'cstrv', cval(n + 1), 'nlconstr', conmat(m_lcon + 1:m, n + 1));
+                    terminate = ...
+                        callback_fcn(sim(:, n + 1), fval(n + 1), nf, tr, 'cstrv', cval(n + 1), ...
+                                     'nlconstr', conmat(m_lcon + 1:m, n + 1));
                     if terminate
                         info = infos_obj.CALLBACK_TERMINATE;
                         break
@@ -543,20 +600,27 @@ classdef cobylb_mod
             % Return from the calculation, after trying the last trust-region step if it has not been tried yet.
             % Ensure that D has not been updated after SHORTD == TRUE occurred, or the code below is incorrect.
             x = sim(:, n + 1) + d;
-            if info == infos_obj.SMALL_TR_RADIUS && shortd && norm(x - sim(:, n + 1)) > 1.0e-3 * rhoend && nf < maxfun
+            if info == infos_obj.SMALL_TR_RADIUS && shortd ...
+               && norm(x - sim(:, n + 1)) > 1.0e-3 * rhoend && nf < maxfun
                 constr(1:m_lcon) = evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints
-                [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m)); constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
+                [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m));
+                constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
                 % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the linear
                 % constraint values here to make CSTRV consistent.
                 cstrv = max([0.0; constr], [], 'all');
                 nf = nf + 1;
                 % Save X, F, CONSTR, CSTRV into the history.
-                [xhist, fhist, chist, conhist] = history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist, 'constr', constr, 'conhist', conhist);
+                [xhist, fhist, chist, conhist] = ...
+                    history_obj.savehist(nf, x, xhist, f, fhist, 'cstrv', cstrv, 'chist', chist, ...
+                                         'constr', constr, 'conhist', conhist);
                 % Save X, F, CONSTR, CSTRV into the filter.
-                [nfilt, cfilt, ffilt, xfilt, confilt] = selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt, 'constr', constr, 'confilt', confilt);
+                [nfilt, cfilt, ffilt, xfilt, confilt] = ...
+                    selectx_obj.savefilt(cstrv, ctol, cweight, f, x, nfilt, cfilt, ffilt, xfilt, ...
+                                         'constr', constr, 'confilt', confilt);
                 % Print a message about the function/constraint evaluation according to IPRINT.
                 % Zaikun 20230512: DELTA has been updated. RHO is only indicative here. TO BE IMPROVED.
-                message_obj.fmsg(solver, "Trust region", iprint, nf, rho, f, x, 'cstrv', cstrv, 'constr', constr);
+                message_obj.fmsg(solver, "Trust region", iprint, nf, rho, f, x, 'cstrv', cstrv, ...
+                                 'constr', constr);
             end
 
             % Return the best calculated values of the variables.
@@ -568,7 +632,8 @@ classdef cobylb_mod
             cstrv = cfilt(kopt);
 
             % Arrange CHIST, CONHIST, FHIST, and XHIST so that they are in the chronological order.
-            [xhist, fhist, chist, conhist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist, 'conhist', conhist);
+            [xhist, fhist, chist, conhist] = ...
+                history_obj.rangehist(nf, xhist, fhist, 'chist', chist, 'conhist', conhist);
 
             % Print a return message according to IPRINT.
             message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, 'constr', constr);
@@ -578,7 +643,8 @@ classdef cobylb_mod
 
 
         end
-        function cpen = getcpen(~, amat, bvec, conmat_in, cpen_in, cval_in, delta, fval_in, sim_in, simi_in)
+        function cpen = ...
+                getcpen(~, amat, bvec, conmat_in, cpen_in, cval_in, delta, fval_in, sim_in, simi_in)
             %--------------------------------------------------------------------------------------------------%
             % This function gets the penalty parameter CPEN so that PREREM = PREREF + CPEN * PREREC > 0.
             % See the discussions around equation (9) of the COBYLA paper.
@@ -632,7 +698,8 @@ classdef cobylb_mod
             % one more loop is needed to calculate CPEN, and hence the loop can occur at most N+1 times.
             for iter = 1:n + 1
                 % Switch the best vertex of the current simplex to SIM(:, N + 1).
-                [conmat, cval, fval, sim, simi, info] = update_cobyla_obj.updatepole(cpen, conmat, cval, fval, sim, simi);
+                [conmat, cval, fval, sim, simi, info] = ...
+                    update_cobyla_obj.updatepole(cpen, conmat, cval, fval, sim, simi);
                 % Check whether to exit due to damaging rounding in UPDATEPOLE.
                 if info == infos_obj.DAMAGING_ROUNDING
                     break
@@ -641,7 +708,8 @@ classdef cobylb_mod
                 % Calculate the linear approximations to the objective and constraint functions.
                 g(:) = simi.' * (fval(1:n) - fval(n + 1));
                 A(:, 1:m_lcon) = amat;
-                A(:, m_lcon + 1:m) = ((conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1)) * simi).';
+                A(:, m_lcon + 1:m) = ...
+                    ((conmat(m_lcon + 1:m, 1:n) - conmat(m_lcon + 1:m, n + 1)) * simi).';
                 %%MATLAB: A(:, m_lcon+1:m) = simi'*(conmat(m_lcon+1:m, 1:n) - conmat(m_lcon+1:m, n+1))' % Implicit expansion for subtraction
 
                 % Calculate the trust-region trial step D. Note that D does NOT depend on CPEN.
@@ -693,7 +761,9 @@ classdef cobylb_mod
             fmax = max(fval);
             r = 0.0;
             if any(cmin < 0.5 * cmax, 'all') && fmin < fmax
-                denom = min(fortran.merge('tsource', max(cmax, 0.0) - cmin, 'fsource', realmax, 'mask', cmin < 0.5 * cmax));
+                denom = ...
+                    min(fortran.merge('tsource', max(cmax, 0.0) - cmin, 'fsource', realmax, ...
+                                      'mask', cmin < 0.5 * cmax));
                 % Powell mentioned the following alternative in Section 4 of his COBYLA paper. According to a
                 % test on 20230610, it does not make much difference to the performance.
                 % %denom = maxval(max(cmax, ZERO) - cmin, mask=(cmin < HALF * cmax))

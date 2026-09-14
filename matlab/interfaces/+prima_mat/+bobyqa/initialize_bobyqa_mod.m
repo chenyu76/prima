@@ -12,7 +12,9 @@ classdef initialize_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function [x0, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, info] = initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x0, fhist, fval, xhist, xpt)
+        function [x0, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, info] = ...
+                initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x0, fhist, fval, ...
+                       xhist, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization about the interpolation points & their function values.
             %
@@ -132,7 +134,9 @@ classdef initialize_bobyqa_mod
 
             % Set FVAL(1 : MIN(2*N + 1, NPT)) by evaluating F. Totally parallelizable except for FMSG.
             for k = 1:min(npt, 2 * n + 1)
-                x(:) = xinbd_obj.xinbd(xbase, xpt(:, k), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XPT(:, K).
+                x(:) = ...
+                    xinbd_obj.xinbd(xbase, xpt(:, k), xl, xu, sl, ...
+                                    su); % In precise arithmetic, X = XBASE + XPT(:, K).
                 f = evaluate_obj.evaluatef(calfun, x);
 
                 % Print a message about the function evaluation according to IPRINT.
@@ -186,7 +190,9 @@ classdef initialize_bobyqa_mod
             % Set FVAL(2*N + 2 : NPT) by evaluating F. Totally parallelizable except for FMSG.
             if info == infos_obj.INFO_DFT
                 for k = 2 * n + 2:npt
-                    x(:) = xinbd_obj.xinbd(xbase, xpt(:, k), xl, xu, sl, su); % In precise arithmetic, X = XBASE + XPT(:, K).
+                    x(:) = ...
+                        xinbd_obj.xinbd(xbase, xpt(:, k), xl, xu, sl, ...
+                                        su); % In precise arithmetic, X = XBASE + XPT(:, K).
                     f = evaluate_obj.evaluatef(calfun, x);
 
                     % Print a message about the function evaluation according to IPRINT.
@@ -245,14 +251,18 @@ classdef initialize_bobyqa_mod
             xb = diag(xpt(:, n + 2:n + ndiag + 1));
 
             % Revise GOPT(1:NDIAG) to the value provided by the three-point interpolation.
-            gopt(1:ndiag) = (gopt(1:ndiag) .* xb - (fval(n + 2:n + ndiag + 1) - fbase) ./ xb .* xa) ./ (xb - xa);
+            gopt(1:ndiag) = ...
+                (gopt(1:ndiag) .* xb - (fval(n + 2:n + ndiag + 1) - fbase) ./ xb .* xa) ...
+                ./ (xb - xa);
 
             % Set the diagonal of HQ by the three-point interpolation. If we do this before the revision of
             % GOPT(1:NDIAG), we can avoid the calculation of FVAL(K + 1) - FBASE) / RHOBEG. But we prefer to
             % decouple the initialization of GOPT and HQ. We are not concerned by this amount of flops.
             hq(:) = 0.0;
             for k = 1:ndiag
-                hq(k, k) = 2.0 * ((fval(k + 1) - fbase) / xa(k) - (fval(n + k + 1) - fbase) / xb(k)) / (xa(k) - xb(k));
+                hq(k, k) = ...
+                    2.0 * ((fval(k + 1) - fbase) / xa(k) - (fval(n + k + 1) - fbase) / xb(k)) ...
+                    / (xa(k) - xb(k));
             end
             %%MATLAB:
             %%hdiag = 2*((fval(2 : ndiag+1) - fbase) / xa - (fval(n+2 : n+ndiag+1) - fbase) / xb) / (xa-xb)
