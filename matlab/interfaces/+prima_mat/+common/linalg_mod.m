@@ -610,8 +610,8 @@ classdef linalg_mod
 
             elseif any(isinf(V), 'all')
                 mask00 = isinf(V);
-                V_loc(mask00) = (V(mask00) > 0) .* 2 - 1;
                 mask01 = ~mask00;
+                V_loc(mask00) = (V(mask00) > 0) .* 2 - 1;
                 V_loc(mask01) = 0.0;
 
                 %%MATLAB: V_loc = 0; V_loc(isinf(V)) = sign(V);
@@ -1059,7 +1059,7 @@ classdef linalg_mod
             %====================%
 
             maxiter = 100;
-            tol_loc = 10.0 ^ max(-6, -floor(log10(realmax)));
+            tol_loc = 10.0 ^ max(-6, -(floor(log10(realmax)) - 1));
             if ~ismember('tol', ipObj.UsingDefaults)
                 tol_loc = tol;
             end

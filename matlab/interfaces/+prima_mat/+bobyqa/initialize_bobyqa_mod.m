@@ -70,15 +70,15 @@ classdef initialize_bobyqa_mod
             % not be true due to rounding. The following lines revise SL and SU to ensure it. X0 is also revised
             % accordingly. In precise arithmetic, the "revisions" do not change SL, SU, or X0.
             mask00 = sl < 0;
-            sl(mask00) = min(sl(mask00), -rhobeg);
             mask01 = ~mask00;
+            sl(mask00) = min(sl(mask00), -rhobeg);
             x0(mask01) = xl(mask01);
             sl(mask01) = 0.0;
             su(mask01) = xu(mask01) - xl(mask01);
 
             mask00 = su > 0;
-            su(mask00) = max(su(mask00), rhobeg);
             mask01 = ~mask00;
+            su(mask00) = max(su(mask00), rhobeg);
             x0(mask01) = xu(mask01);
             sl(mask01) = xl(mask01) - xu(mask01);
             su(mask01) = 0.0;

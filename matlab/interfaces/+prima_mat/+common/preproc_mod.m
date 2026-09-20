@@ -122,9 +122,7 @@ classdef preproc_mod
                 else                    % We assume that non-positive values of MAXFUN are produced by overflow.
                     maxfun = ...
                         fix(max(min_maxfun, ...
-                                10 ...
-                                ^ min(4, ...
-                                      floor(log10(realmax(class(maxfun))))))); %%MATLAB: maxfun =  max(min_maxfun, 10^4);
+                                10 ^ min(4, 9))); %%MATLAB: maxfun =  max(min_maxfun, 10^4);
                     % N.B.: Do NOT set MAXFUN to HUGE(MAXFUN), as it may cause overflow and infinite cycling
                     % when used as the upper bound of DO loops. This occurred on 20240225 with gfortran 13. See
                     % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop
@@ -342,13 +340,13 @@ classdef preproc_mod
                     % which should hold at this point due to the revision of RHOBEG and moderation of X0.
                     % The cases below are mutually exclusive in precise arithmetic as MINVAL(XU-XL) >= 2*RHOBEG.
                     mask00 = x0 <= xl + 0.5 * rhobeg;
-                    x0(mask00) = xl(mask00);
                     mask01 = ~mask00 & x0 < xl + rhobeg;
+                    x0(mask00) = xl(mask00);
                     x0(mask01) = xl(mask01) + rhobeg;
 
                     mask00 = x0 >= xu - 0.5 * rhobeg;
-                    x0(mask00) = xu(mask00);
                     mask01 = ~mask00 & x0 > xu - rhobeg;
+                    x0(mask00) = xu(mask00);
                     x0(mask01) = xu(mask01) - rhobeg;
 
                     %%MATLAB code:

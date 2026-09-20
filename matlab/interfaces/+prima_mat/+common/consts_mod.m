@@ -146,7 +146,7 @@ classdef consts_mod
             % R: double.xmax
             obj.REALMAX = realmax;
 
-            obj.MAXPOW10 = floor(log10(realmax(class(obj.ZERO))));
+            obj.MAXPOW10 = floor(log10(realmax(class(obj.ZERO)))) - 1;
             obj.HALF_MAXPOW10 = floor(double(obj.MAXPOW10) / 2.0);
 
             % TINYCV is used in LINCOA. Powell set TINYCV = 1.0D-60. What about setting TINYCV = REALMIN?

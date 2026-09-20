@@ -78,6 +78,7 @@ def preprocess_sources(src_dir, src_files, output_dir):
                     "-E",
                     "-cpp",
                     "-P",
+                    # "-DPRIMA_DEBUGGING=1",
                     str(source_path),
                     f"-I{src_dir}",
                     "-o",

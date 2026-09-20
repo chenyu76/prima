@@ -152,7 +152,7 @@ classdef trustregion_lincoa_mod
             % What is the THEORETICAL upper bound of ITER? For the moment, we set the following MAXITER.
             % The formulation of MAXITER below contains a precaution against overflow. In MATLAB/Python/Julia/R,
             % we can write maxiter = min(10000, 10*(m + n))
-            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 10 * (m + n)));
+            maxiter = fix(min(10 ^ min(4, 9), 10 * (m + n)));
             for iter = 1:maxiter                % Powell's code is essentially a DO WHILE loop. We impose an explicit MAXITER.
                 if newact
                     % GETACT picks the active set for the current S. It also sets PSD to the vector closest to

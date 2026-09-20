@@ -62,7 +62,8 @@ classdef string_mod
             ipObj = inputParser();
             addParameter(ipObj, 'ndgt', ...
                          min(floor(-log10(eps(class(x)))), floor(-log10(eps('double')))) + 1);
-            addParameter(ipObj, 'nexp', ceil(log10(double(floor(log10(realmax(class(x)))) + 0.1))));
+            addParameter(ipObj, 'nexp', ...
+                         ceil(log10(double(floor(log10(realmax(class(x)))) - 1 + 0.1))));
             parse(ipObj, varargin{:});
             ndgt_loc = ipObj.Results.ndgt;
             nexp_loc = ipObj.Results.nexp;
@@ -148,7 +149,7 @@ classdef string_mod
 
             if ismember('nexp', ipObj.UsingDefaults)
                 nexp_loc = ...
-                    ceil(log10(double(floor(log10(realmax(class(x))))) ...
+                    ceil(log10(double(floor(log10(realmax(class(x)))) - 1) ...
                                + 0.1)); % Use + 0.1 in case RANGE(X) = 10^k.
             else
                 nexp_loc = nexp;

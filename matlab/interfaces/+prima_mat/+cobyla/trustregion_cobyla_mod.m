@@ -198,7 +198,7 @@ classdef trustregion_cobyla_mod
             % this, we set the maximal number of iterations to MAXITER, and terminate if Inf/NaN occurs in D.
             % The formulation of MAXITER below contains a precaution against overflow. In MATLAB/Python/Julia/R,
             % we can write maxiter = min(10000, 100*max(m, n))
-            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 100 * max(m, n)));
+            maxiter = fix(min(10 ^ min(4, 9), 100 * max(m, n)));
             for iter = 1:maxiter
 
                 if stage == 1

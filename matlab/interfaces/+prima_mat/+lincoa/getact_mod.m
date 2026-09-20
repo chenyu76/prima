@@ -152,7 +152,7 @@ classdef getact_mod
             % MATLAB/Python/Julia/R, we can write maxiter = min(10000, 2*(m + n))
             % 2. The iteration counter ITER never appears in the code of the iterations, as its purpose is
             % merely to impose an upper bound on the number of iterations.
-            maxiter = fix(min(10 ^ min(4, floor(log10(double(intmax('int64'))))), 2 * (m + n)));
+            maxiter = fix(min(10 ^ min(4, 9), 2 * (m + n)));
             for iter = 1:maxiter
                 % When NACT == N, exit with PSD = 0. Indeed, with a correctly implemented matrix product, the
                 % lines below this IF should render DD = 0 and trigger an exit. We make it explicit for clarity.

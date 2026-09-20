@@ -167,8 +167,8 @@ classdef update_lincoa_mod
             mask = abs(rescon) < dnorm + delta;
             ax(find(mask)) = amat(:, find(mask)).' * xopt;
             mask00 = mask;
-            rescon(mask00) = max(b(mask00) - ax(mask00), 0.0);
             mask01 = ~mask00;
+            rescon(mask00) = max(b(mask00) - ax(mask00), 0.0);
             rescon(mask01) = min(-abs(rescon(mask01)) + dnorm, -delta);
 
             rescon(rescon >= delta) = -rescon(rescon >= delta);
