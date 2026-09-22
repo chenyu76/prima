@@ -198,6 +198,9 @@ classdef bobyqa_mod
             % Solver-specific modules
             bobyqb_obj = prima_mat.bobyqa.bobyqb_mod();
 
+            fhist = [];
+            xhist = [];
+
             solver = "BOBYQA";
 
             nf_loc = NaN;

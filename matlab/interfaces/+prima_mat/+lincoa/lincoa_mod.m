@@ -221,6 +221,10 @@ classdef lincoa_mod
             % Solver-specific modules
             lincob_obj = prima_mat.lincoa.lincob_mod();
 
+            chist = [];
+            fhist = [];
+            xhist = [];
+
             solver = "LINCOA";
 
             eta1_loc = NaN;

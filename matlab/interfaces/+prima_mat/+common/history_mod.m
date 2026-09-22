@@ -21,6 +21,9 @@ classdef history_mod
             %--------------------------------------------------------------------------------------------------%
             consts_obj = prima_mat.common.consts_mod();
 
+            chist = [];
+            conhist = [];
+
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
 
 

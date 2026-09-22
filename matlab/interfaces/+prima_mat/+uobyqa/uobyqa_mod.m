@@ -157,6 +157,9 @@ classdef uobyqa_mod
             % Solver-specific modules
             uobyqb_obj = prima_mat.uobyqa.uobyqb_mod();
 
+            fhist = [];
+            xhist = [];
+
             solver = "UOBYQA";
 
             eta1_loc = NaN;

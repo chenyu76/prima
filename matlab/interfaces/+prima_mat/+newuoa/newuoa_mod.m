@@ -165,6 +165,9 @@ classdef newuoa_mod
             % Solver-specific modules
             newuob_obj = prima_mat.newuoa.newuob_mod();
 
+            fhist = [];
+            xhist = [];
+
             solver = "NEWUOA";
 
             eta1_loc = NaN;

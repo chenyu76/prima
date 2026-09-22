@@ -225,15 +225,6 @@ classdef consts_mod
             obj.MIN_MAXFILT = 200; % Should be positive; < 200 is not recommended.
             obj.MAXFILT_DFT = 10 * obj.MIN_MAXFILT;
         end
-        function varargout = INT16(obj, varargin)
-            [varargout{1:nargout}] = obj.iso_fortran_env_obj.int16(varargin{:});
-        end
-        function varargout = INT32(obj, varargin)
-            [varargout{1:nargout}] = obj.iso_fortran_env_obj.int32(varargin{:});
-        end
-        function varargout = INT64(obj, varargin)
-            [varargout{1:nargout}] = obj.iso_fortran_env_obj.int64(varargin{:});
-        end
         function varargout = DP(obj, varargin)
             [varargout{1:nargout}] = obj.iso_fortran_env_obj.real64(varargin{:});
         end

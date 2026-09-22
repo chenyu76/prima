@@ -75,7 +75,7 @@ classdef uobyqb_mod
             pq = NaN(numel(distsq) + -1, 1);
 
             xpt = NaN(numel(x), numel(distsq));
-            pl = NaN;
+            pl = [];
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
 

@@ -262,6 +262,11 @@ classdef cobyla_mod
             % Number of constraints defined in CALCFC
 
 
+            chist = [];
+            fhist = [];
+            nlchist = [];
+            xhist = [];
+
             solver = "COBYLA";
             srname = "COBYLA";
             info_loc = NaN;
