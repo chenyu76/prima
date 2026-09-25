@@ -256,7 +256,7 @@ classdef lincoa_mod
             addParameter(ipObj, 'gamma2', 2.0);
             addParameter(ipObj, 'maxhist', NaN);
             addParameter(ipObj, 'maxfilt', consts_obj.MAXFILT_DFT);
-            addParameter(ipObj, 'callback_fcn', struct());
+            addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
             Aineq = ipObj.Results.Aineq;
             bineq = ipObj.Results.bineq;

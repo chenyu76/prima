@@ -229,7 +229,7 @@ classdef bobyqa_mod
             addParameter(ipObj, 'gamma2', 2.0);
             addParameter(ipObj, 'maxhist', NaN);
             addParameter(ipObj, 'honour_x0', false);
-            addParameter(ipObj, 'callback_fcn', struct());
+            addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
             xl = ipObj.Results.xl;
             xu = ipObj.Results.xu;

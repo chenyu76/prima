@@ -119,7 +119,7 @@ classdef cobylb_mod
             % Report the current best value, and check if user asks for early termination.
 
             ipObj = inputParser();
-            addParameter(ipObj, 'callback_fcn', struct());
+            addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
             callback_fcn = ipObj.Results.callback_fcn;
             if ~ismember('callback_fcn', ipObj.UsingDefaults)

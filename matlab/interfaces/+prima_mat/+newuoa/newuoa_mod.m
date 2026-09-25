@@ -194,7 +194,7 @@ classdef newuoa_mod
             addParameter(ipObj, 'gamma1', 0.5);
             addParameter(ipObj, 'gamma2', 2.0);
             addParameter(ipObj, 'maxhist', NaN);
-            addParameter(ipObj, 'callback_fcn', struct());
+            addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
