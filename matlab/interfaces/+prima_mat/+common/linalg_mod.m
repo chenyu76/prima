@@ -844,8 +844,9 @@ classdef linalg_mod
             Q = ipObj.Results.Q;
             R = ipObj.Results.R;
             P = ipObj.Results.P;
-            if ~(~ismember('Q', ipObj.UsingDefaults) || ~ismember('R', ipObj.UsingDefaults) ...
-                 || ~ismember('R', ipObj.UsingDefaults))
+            if ~(nargout >= 1 || ~ismember('Q', ipObj.UsingDefaults) ...
+                 || (nargout >= 2 || ~ismember('R', ipObj.UsingDefaults)) ...
+                 || (nargout >= 2 || ~ismember('R', ipObj.UsingDefaults)))
                 return
             end
 
@@ -855,20 +856,21 @@ classdef linalg_mod
 
             % Preconditions
             if consts_obj.DEBUGGING
-                if ~ismember('Q', ipObj.UsingDefaults)
+                if nargout >= 1 || ~ismember('Q', ipObj.UsingDefaults)
                     debug_obj.assert(size(Q, 1) == m ...
                                      && (size(Q, 2) == m || size(Q, 2) == min(m, n)), ...
                                      "SIZE(Q) == [M, N] .or. SIZE(Q) == [M, MIN(M, N)]", srname);
                 end
-                if ~ismember('R', ipObj.UsingDefaults)
+                if nargout >= 2 || ~ismember('R', ipObj.UsingDefaults)
                     debug_obj.assert((size(R, 1) == m || size(R, 1) == min(m, n)) ...
                                      && size(R, 2) == n, ...
                                      "SIZE(R) == [M, N] .or. SIZE(R) == [MIN(M, N), N]", srname);
                 end
-                if ~ismember('Q', ipObj.UsingDefaults) && ~ismember('R', ipObj.UsingDefaults)
+                if (nargout >= 1 || ~ismember('Q', ipObj.UsingDefaults)) ...
+                   && (nargout >= 2 || ~ismember('R', ipObj.UsingDefaults))
                     debug_obj.assert(size(Q, 2) == size(R, 1), "SIZE(Q, 2) == SIZE(R, 1)", srname);
                 end
-                if ~ismember('P', ipObj.UsingDefaults)
+                if nargout >= 3 || ~ismember('P', ipObj.UsingDefaults)
                     debug_obj.assert(numel(P) == n, "SIZE(P) == N", srname);
                 end
             end
@@ -877,7 +879,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            pivot = ~ismember('P', ipObj.UsingDefaults);
+            pivot = nargout >= 3 || ~ismember('P', ipObj.UsingDefaults);
             Q_loc(:) = obj.eye1(m);
             T = A.'; % T is the transpose of R. We consider T in order to work on columns.
             if pivot
@@ -903,10 +905,10 @@ classdef linalg_mod
                 end
             end
 
-            if ~ismember('Q', ipObj.UsingDefaults)
+            if nargout >= 1 || ~ismember('Q', ipObj.UsingDefaults)
                 Q = Q_loc(:, 1:size(Q, 2));
             end
-            if ~ismember('R', ipObj.UsingDefaults)
+            if nargout >= 2 || ~ismember('R', ipObj.UsingDefaults)
                 R = T(:, 1:size(R, 1)).';
             end
 
@@ -2758,7 +2760,7 @@ classdef linalg_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(size(A, 1) == size(A, 2), "A is square", srname);
                 debug_obj.assert(size(H, 1) == n && size(H, 2) == n, "SIZE(H) == [N, N]", srname);
-                if ~ismember('Q', ipObj.UsingDefaults)
+                if nargout >= 2 || ~ismember('Q', ipObj.UsingDefaults)
                     debug_obj.assert(size(Q, 1) == n && size(Q, 2) == n, "SIZE(Q) == [N, N]", ...
                                      srname);
                 end
@@ -2770,7 +2772,7 @@ classdef linalg_mod
             end
 
             H = A;
-            if ~ismember('Q', ipObj.UsingDefaults)
+            if nargout >= 2 || ~ismember('Q', ipObj.UsingDefaults)
                 Q = obj.eye1(n);
             end
 
@@ -2817,7 +2819,7 @@ classdef linalg_mod
                     H(:, i) = H(:, i) - w * v(i);
                 end
 
-                if ~ismember('Q', ipObj.UsingDefaults)
+                if nargout >= 2 || ~ismember('Q', ipObj.UsingDefaults)
                     w(:) = obj.matprod21(Q(:, j + 1:n), v(j + 1:n));
                     for i = j + 1:n
                         Q(:, i) = Q(:, i) - w * v(i);
@@ -2844,7 +2846,7 @@ classdef linalg_mod
                             * consts_obj.EPS * double(n)));
                 debug_obj.assert(obj.issymmetric(H, 'tol', tol) || ~obj.issymmetric(A), ...
                                  "H is symmetric if so is A", srname);
-                if ~ismember('Q', ipObj.UsingDefaults)
+                if nargout >= 2 || ~ismember('Q', ipObj.UsingDefaults)
                     debug_obj.assert(size(Q, 1) == n && size(Q, 2) == n, "SIZE(Q) == [N, N]", ...
                                      srname);
                     debug_obj.assert(obj.isorth(Q, 'tol', tol), "Q is orthogonal", srname);

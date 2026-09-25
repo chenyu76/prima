@@ -395,7 +395,7 @@ classdef cobyla_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(m_nlcon >= 0, "M_NLCON >= 0", srname);
                 debug_obj.assert(n >= 1, "N >= 1", srname);
-                if ~ismember('nlconstr', ipObj.UsingDefaults)
+                if nargout >= 4 || ~ismember('nlconstr', ipObj.UsingDefaults)
                     debug_obj.assert(numel(nlconstr) == m_nlcon, "SIZE(NLCONSTR) == M_NLCON", ...
                                      srname);
                 end
@@ -690,7 +690,7 @@ classdef cobyla_mod
             % Write the outputs.
 
 
-            if ~ismember('nlconstr', ipObj.UsingDefaults)
+            if nargout >= 4 || ~ismember('nlconstr', ipObj.UsingDefaults)
                 nlconstr = constr_loc(m - m_nlcon + 1:m);
             end
 
