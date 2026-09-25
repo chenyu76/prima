@@ -70,21 +70,72 @@ classdef getact_mod
             % See Section 3 of Powell (2015) for more information.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
-
+            infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
+
+            % Inputs
+            % AMAT(N, M)
+
+            % G(N)
+
+            % In-outputs
+            % IACT(M)
+
+            % QFAC(N, N)
+            % RESACT(M)
+            % RESNEW(M)
+            % RFAC(N, N)
+
+            % Outputs
+            % PSD(N)
+
+            % Local variables
+            srname = "GETACT";
+
+            iter = NaN;
 
             frac = NaN(size(g));
             psdsav = NaN(size(psd));
 
+            tol = NaN;
             v = NaN(size(g));
 
             vlam = NaN(size(g));
             vmu = NaN(size(g));
 
+            % Sizes.
             m = size(amat, 2);
             n = numel(g);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(m >= 0, "M >= 0", srname);
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(size(amat, 1) == n && size(amat, 2) == m, ...
+                                 "SIZE(AMAT) == [N, M]", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(g), 'all'), "G is finite", srname);
+                debug_obj.assert(nact >= 0 && nact <= min(m, n), "0 <= NACT <= MIN(M, N)", srname);
+                debug_obj.assert(numel(iact) == m, "SIZE(IACT) == M", srname);
+                debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), ...
+                                 "1 <= IACT <= M", srname);
+                debug_obj.assert(numel(resact) == m, "SIZE(RESACT) == M", srname);
+                debug_obj.assert(numel(resnew) == m, "SIZE(RESNEW) == M", srname);
+                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, ...
+                                 "SIZE(QFAC) == [N, N]", srname);
+                tol = ...
+                    max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), ...
+                        min(0.1, ...
+                            fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) ...
+                            * consts_obj.EPS * double(n)));
+                debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
+                debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, ...
+                                 "SIZE(RFAC) == [N, N]", srname);
+                debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
+                debug_obj.assert(numel(psd) == n, "SIZE(PSD) == N", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -93,25 +144,25 @@ classdef getact_mod
             % Quick return when M = 0.
             if m <= 0
                 nact = 0;
-                qfac = eye(n);
+                qfac = linalg_obj.eye1(n);
                 psd = -g;
                 return
             end
 
             % Set some constants.
-            gg = sum(g .* g, 'all');
+            gg = linalg_obj.inprod(g, g);
             tdel = ...
                 0.2 ...
                 * delta; % Changing TDEL to 0.1_RP*DELTA does not improve the performance of LINCOA.
 
             % Set the initial QFAC to the identity matrix in the case NACT = 0.
             if nact == 0
-                qfac = eye(n);
+                qfac = linalg_obj.eye1(n);
             end
 
             % Remove any constraints from the initial active set whose residuals exceed TDEL.
             % Compilers may complain if VLAM is not set. The value does not matter, as it will be overwritten.
-            vlam(:) = 0.0;
+            vlam(:) = consts_obj.ZERO;
             for icon = nact:-1:1
                 if resact(icon) > tdel
                     % Delete constraint IACT(ICON) from the active set, and set NACT = NACT - 1.
@@ -128,7 +179,7 @@ classdef getact_mod
                 if ~any(vlam(1:nact) >= 0, 'all')
                     break
                 end
-                icon = max(find(vlam(1:nact) >= 0));
+                icon = max(linalg_obj.trueloc(vlam(1:nact) >= 0));
                 %%MATLAB: icon = max(find(vlam(1:nact) >= 0)); % OR: icon = find(vlam(1:nact) >= 0, 1, 'last')
                 [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
                     obj.delact(icon, iact, nact, qfac, resact, resnew, rfac, vlam);
@@ -140,9 +191,9 @@ classdef getact_mod
             % convex hull of the constraint gradients.
             % Start with initialization of PSDSAV and DDSAV.
             psdsav(:) = ...
-                0.0; % Must be set, in case the loop exits due to abnormality at iteration 1.
+                consts_obj.ZERO; % Must be set, in case the loop exits due to abnormality at iteration 1.
             ddsav = ...
-                2.0 ...
+                consts_obj.TWO ...
                 * gg; % By Powell. This value is used at iteration 1 to test whether DD >= DDSAV. Why?
 
             % What is the theoretical maximal number of iterations in the following procedure? Powell's code for
@@ -152,18 +203,20 @@ classdef getact_mod
             % MATLAB/Python/Julia/R, we can write maxiter = min(10000, 2*(m + n))
             % 2. The iteration counter ITER never appears in the code of the iterations, as its purpose is
             % merely to impose an upper bound on the number of iterations.
-            maxiter = fix(min(10 ^ min(4, 9), 2 * (m + n)));
+            maxiter = fix(min(fortran.power(10, min(4, 9)), 2 * (m + n)));
             for iter = 1:maxiter
                 % When NACT == N, exit with PSD = 0. Indeed, with a correctly implemented matrix product, the
                 % lines below this IF should render DD = 0 and trigger an exit. We make it explicit for clarity.
                 if nact >= n
                     % Indeed, NACT > N should never happen.
-                    psd(:) = 0.0;
+                    psd(:) = consts_obj.ZERO;
                     break
                 end
 
                 % Set PSD to the projection of -G to range(QFAC(:,NACT+1:N))
-                psd = -(qfac(:, nact + 1:n) * (qfac(:, nact + 1:n).' * g));
+                psd = ...
+                    -linalg_obj.matprod21(qfac(:, nact + 1:n), ...
+                                          linalg_obj.matprod12(g, qfac(:, nact + 1:n)));
                 %%MATLAB: psd = -qfac(:, nact + 1:n) * (g' * qfac(:, nact + 1:n))';
                 %----------------------------------------------------------------------------------------------%
                 % Zaikun: The schemes below work evidently worse than the one above in a test on 20220417. Why?
@@ -180,22 +233,23 @@ classdef getact_mod
                 %-------------------------------------------------------------------------%
                 %----------------------------------------------------------------------------------------------%
 
-                dd = sum(psd .* psd, 'all');
-                dnorm = sqrt(dd);
+                dd = linalg_obj.inprod(psd, psd);
+                dnorm = fortran.sqrt(dd);
 
-                if dnorm <= eps || isnan(dnorm)
+                if dnorm <= consts_obj.EPS || infnan_obj.is_nan_sp(dnorm)
                     break
                 end
 
                 if dd >= ddsav
-                    psd(:) = 0.0; % Zaikun 20220329: Powell wrote this. Why?
+                    psd(:) = consts_obj.ZERO; % Zaikun 20220329: Powell wrote this. Why?
                     %psd = psdsav  ! This does not seem to improve the performance.
                     break
                 end
 
                 %---------------------------------------------------------------------------------------%
                 % Powell's code does not handle the following pathological cases.
-                if sum(psd .* g, 'all') > 0 || ~isfinite(sum(abs(psd), 'all'))
+                if linalg_obj.inprod(psd, g) > 0 ...
+                   || ~infnan_obj.is_finite(fortran.sum(abs(psd), 'all'))
                     psd = psdsav;
                     break
                 end
@@ -213,7 +267,7 @@ classdef getact_mod
                 ddsav = dd;
 
                 % Pick the next integer L or terminate; a positive L is the index of the most violated constraint.
-                apsd = amat.' * psd;
+                apsd = linalg_obj.matprod12(psd, amat);
                 mask = resnew > 0 & resnew <= tdel & apsd > dnorm / delta * resnew;
                 %----------------------------------------------------------------------------------------------%
                 % N.B.: the definition of L and VIOLMX can be simplified as follows, but we prefer explicitness.
@@ -224,7 +278,7 @@ classdef getact_mod
                     violmx = apsd(l);
                 else
                     l = 0;
-                    violmx = -realmax;
+                    violmx = -consts_obj.REALMAX;
                 end
                 %%MATLAB: apsd(mask) = -Inf; [violmx, l] = max(apsd);
                 % N.B.: the value of L will differ from the Fortran version if MASK is all FALSE, but this is OK
@@ -243,7 +297,9 @@ classdef getact_mod
                 % VIOLMX > EPS * DNORM when the EXIT is not triggered, which implies that AMAT(:, L) is not in
                 % the range of QFAC(:, 1:NACT).
                 if all(~mask, 'all') ...
-                   || violmx <= max(eps * dnorm, 10.0 * norm(apsd(iact(1:nact)), "inf"))
+                   || violmx ...
+                      <= max(consts_obj.EPS * dnorm, ...
+                             consts_obj.TEN * linalg_obj.named_norm_vec(apsd(iact(1:nact)), "inf"))
                     break
                 end
 
@@ -257,23 +313,25 @@ classdef getact_mod
                 % 2. The loop will run for at most NACT <= N times: if VIOLMX > 0, then ICON > 0, and hence
                 % VLAM(ICON) = 0, which implies that DELACT will be called to reduce NACT by 1.
                 while violmx > 0 && nact > 0
-                    v(1:nact - 1) = 0.0;
-                    v(nact) = 1.0 / rfac(nact, nact); % This is why we must ensure NACT > 0.
+                    v(1:nact - 1) = consts_obj.ZERO;
+                    v(nact) = ...
+                        consts_obj.ONE / rfac(nact, nact); % This is why we must ensure NACT > 0.
                     % Solve the linear system RFAC(1:NACT, 1:NACT) * VMU(1:NACT) = V(1:NACT) .
                     vmu(1:nact) = ...
-                        rfac(1:nact, 1:nact) \ v(1:nact); % VMU(NACT) = V(NACT)/RFAC(NACT,NACT)>0
+                        linalg_obj.solve(rfac(1:nact, 1:nact), ...
+                                         v(1:nact)); % VMU(NACT) = V(NACT)/RFAC(NACT,NACT)>0
                     %%MATLAB: vmu(1:nact) = rfac(1:nact, 1:nact) \ v(1:nact);
 
                     % Calculate the multiple of VMU to subtract from VLAM, and update VLAM.
                     % N.B.: 1. VLAM(1:NACT-1) < 0 and VLAM(NACT) <= 0 by the updates of VLAM. 2. VMU(NACT) > 0.
                     % 3. Only the places where VMU(1:NACT) < 0 is relevant below, if any.
-                    frac(:) = realmax;
+                    frac(:) = consts_obj.REALMAX;
                     frac(vmu(1:nact) < 0 & vlam(1:nact) < 0) = ...
                         vlam(vmu(1:nact) < 0 & vlam(1:nact) < 0) ...
                         ./ vmu(vmu(1:nact) < 0 & vlam(1:nact) < 0);
                     %%MATLAB: frac = vlam / vmu; frac(vmu >= 0 | vlam >= 0) = Inf;
                     vmult = min([violmx; frac(1:nact)]);
-                    icon = max([0; find(frac(1:nact) <= vmult)], [], 'all');
+                    icon = max([0; linalg_obj.trueloc(frac(1:nact) <= vmult)], [], 'all');
                     %%MATLAB: icon = max([0; find(frac(1:nact) <= vmult)]); % find(frac(1:nact)<=vmult) can be empty
 
                     % N.B.: 0. The definition of ICON given above is mathematically equivalent to the following.
@@ -286,11 +344,11 @@ classdef getact_mod
                     % 1. The BACK argument in MINLOC is available in F2008. Not supported by Absoft as of 2022.
                     % 2. A motivation for backward MINLOC is to save computation in DELACT below (what else?).
 
-                    violmx = max(violmx - vmult, 0.0);
+                    violmx = max(violmx - vmult, consts_obj.ZERO);
                     vlam(1:nact) = vlam(1:nact) - vmult * vmu(1:nact);
                     if icon > 0 && icon <= nact
                         % Powell: IF (ICON>0). We check ICON<=NACT for safety.
-                        vlam(icon) = 0.0;
+                        vlam(icon) = consts_obj.ZERO;
                     end
 
                     % Reduce the active set if necessary, so that all components of the new VLAM are negative,
@@ -310,7 +368,7 @@ classdef getact_mod
                 % if NACT happens to be 1 when the WHILE loop starts. However, we have never observed a failure
                 % of the assertion below as of 20220329. Why?
                 %-----------------------------------------%
-                debug_obj.assert(); %
+                debug_obj.assert(nact > 0, "NACT > 0", srname); %
                 %-----------------------------------------%
                 if nact == 0
                     break
@@ -321,7 +379,7 @@ classdef getact_mod
             % It is possible to have NACT == 0 here. The following lines improve the performance of LINCOA.
             % Powell's code does not take care of this case explicitly.
             if nact == 0
-                qfac = eye(n);
+                qfac = linalg_obj.eye1(n);
                 psd = -g;
             end
 
@@ -329,6 +387,33 @@ classdef getact_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                % During the development, we want to get alerted if ITER reaches MAXITER.
+                debug_obj.assert(iter < maxiter, "ITER < MAXITER", srname);
+                debug_obj.assert(nact >= 0 && nact <= min(m, n), "0 <= NACT <= MIN(M, N)", ...
+                                 srname); % Can NACT be 0?
+                debug_obj.assert(numel(iact) == m, "SIZE(IACT) == M", srname);
+                debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), ...
+                                 "1 <= IACT <= M", srname);
+                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, ...
+                                 "SIZE(QFAC) == [N, N]", srname);
+                debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
+                debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, ...
+                                 "SIZE(RFAC) == [N, N]", srname);
+                debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
+                debug_obj.assert(numel(psd) == n, "SIZE(PSD) == N", srname);
+                % PSD = -G when NACT == 0; G may contain Inf/NaN.
+                debug_obj.assert(all(infnan_obj.is_finite(psd), 'all') || nact == 0, ...
+                                 "PSD is finite unless NACT == 0", srname);
+                % In theory, ||PSD||^2 <= GG and -GG <= PSD^T*G <= 0.
+                % N.B. 1. Do not use DD, which may not be up to date. 2. PSD^T*G can be NaN if G is huge.
+                debug_obj.assert(linalg_obj.inprod(psd, psd) <= consts_obj.TWO * gg, ...
+                                 "||PSD||^2 <= 2*GG", srname);
+                debug_obj.assert(~(linalg_obj.inprod(psd, g) > 100.0 * consts_obj.EPS * gg ...
+                                   || linalg_obj.inprod(psd, g) < -consts_obj.TWO * gg), ...
+                                 "-2*GG <= PSD^T*G <= 0", srname);
+            end
 
         end
         function [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
@@ -339,11 +424,61 @@ classdef getact_mod
             % gradient of the new active constraint.
             %--------------------------------------------------------------------------------------------------%
 
-
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % Local variables (debugging only)
+            % Inputs
 
+            % C(N)
+
+            % In-outputs
+            % IACT(M)
+
+            % QFAC(N, N)
+            % RESACT(M)
+            % RESNEW(M)
+            % RFAC(N, N)
+            % VLAM(N)
+
+            % Local variables (debugging only)
+            srname = "ADD_ACT";
+
+            nsave = NaN;
+            tol = NaN;
+
+            % Sizes
+            m = numel(iact);
+            n = numel(vlam);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(m >= 1, "M >= 1", srname); % Should not be called when M == 0.
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(nact >= 0 && nact <= min(m, n) - 1, "0 <= NACT <= MIN(M, N)-1", ...
+                                 srname);
+                debug_obj.assert(l >= 1 && l <= m, "1 <= L <= M", srname);
+                debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), ...
+                                 "1 <= IACT <= M", srname);
+                debug_obj.assert(~any(iact(1:nact) == l, 'all'), "L is not in IACT(1:NACT)", ...
+                                 srname);
+                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, ...
+                                 "SIZE(QFAC) == [N, N]", srname);
+                tol = ...
+                    max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), ...
+                        min(0.1, ...
+                            fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) ...
+                            * consts_obj.EPS * double(n)));
+                debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
+                debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, ...
+                                 "SIZE(RFAC) == [N, N]", srname);
+                debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
+                debug_obj.assert(numel(resact) == m, "SIZE(RESACT) == M", srname);
+                debug_obj.assert(numel(resnew) == m, "SIZE(RESNEW) == M", srname);
+                nsave = nact; % For debugging only
+
+            end
 
             %====================%
             % Calculation starts %
@@ -362,13 +497,28 @@ classdef getact_mod
             % Update IACT, RESACT, RESNEW, and VLAM. N.B.: NACT has been increased by 1 in QRADD.
             iact(nact) = l;
             resact(nact) = resnew(l); % RESACT(NACT) = RESNEW(IACT(NACT))
-            resnew(l) = 0.0; % RESNEW(IACT(NACT)) = ZERO  ! Why not TINYCV? See DECACT.
-            vlam(nact) = 0.0;
+            resnew(l) = consts_obj.ZERO; % RESNEW(IACT(NACT)) = ZERO  ! Why not TINYCV? See DECACT.
+            vlam(nact) = consts_obj.ZERO;
 
             %====================%
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(nact == nsave + 1, "NACT = NSAVE + 1", srname);
+                debug_obj.assert(nact >= 1 && nact <= min(m, n), "1 <= NACT <= MIN(M, N)", srname);
+                debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), ...
+                                 "1 <= IACT <= M", srname);
+                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, ...
+                                 "SIZE(QFAC) == [N, N]", srname);
+                debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
+                debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, ...
+                                 "SIZE(RFAC) == [N, N]", srname);
+                debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
+                debug_obj.assert(numel(resact) == m, "SIZE(RESACT) == M", srname);
+                debug_obj.assert(numel(resnew) == m, "SIZE(RESNEW) == M", srname);
+            end
 
         end
         function [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
@@ -379,11 +529,59 @@ classdef getact_mod
             %--------------------------------------------------------------------------------------------------%
 
             consts_obj = prima_mat.common.consts_mod();
-
+            debug_obj = prima_mat.common.debug_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % Local variables (debugging only)
+            % Inputs
 
+
+            % In-outputs
+            % IACT(M)
+
+            % QFAC(N, N)
+            % RESACT(M)
+            % RESNEW(M)
+            % RFAC(N, N)
+            % VLAM(N)
+
+            % Local variables (debugging only)
+            srname = "DELACT";
+            l = NaN;
+
+            nsave = NaN;
+            tol = NaN;
+
+            % Sizes
+            m = numel(iact);
+            n = numel(vlam);
+
+            % Preconditions
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(m >= 1, "M >= 1", srname); % Should not be called when M == 0.
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(nact >= 1 && nact <= min(m, n), "1 <= NACT <= MIN(M, N)", srname);
+                debug_obj.assert(icon >= 1 && icon <= nact, "1 <= ICON <= NACT", srname);
+                debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), ...
+                                 "1 <= IACT <= M", srname);
+                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, ...
+                                 "SIZE(QFAC) == [N, N]", srname);
+                tol = ...
+                    max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), ...
+                        min(0.1, ...
+                            fortran.power(consts_obj.TEN, min(8, consts_obj.MAXPOW10)) ...
+                            * consts_obj.EPS * double(n)));
+                debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
+                debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, ...
+                                 "SIZE(RFAC) == [N, N]", srname);
+                debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
+                debug_obj.assert(numel(resact) == m, "SIZE(RESACT) == M", srname);
+                debug_obj.assert(numel(resnew) == m, "SIZE(RESNEW) == M", srname);
+                nsave = nact; % For debugging only
+                l = iact(icon); % For debugging only
+
+            end
 
             %====================%
             % Calculation starts %
@@ -409,6 +607,24 @@ classdef getact_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(nact == nsave - 1, "NACT = NSAVE - 1", srname);
+                debug_obj.assert(nact >= 0 && nact <= min(m, n) - 1, "1 <= NACT <= MIN(M, N)-1", ...
+                                 srname);
+                debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), ...
+                                 "1 <= IACT <= M", srname);
+                debug_obj.assert(~any(iact(1:nact) == l, 'all'), "L is not in IACT(1:NACT)", ...
+                                 srname);
+                debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, ...
+                                 "SIZE(QFAC) == [N, N]", srname);
+                debug_obj.assert(linalg_obj.isorth(qfac, 'tol', tol), "QFAC is orthogonal", srname);
+                debug_obj.assert(size(rfac, 1) == n && size(rfac, 2) == n, ...
+                                 "SIZE(RFAC) == [N, N]", srname);
+                debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
+                debug_obj.assert(numel(resact) == m, "SIZE(RESACT) == M", srname);
+                debug_obj.assert(numel(resnew) == m, "SIZE(RESNEW) == M", srname);
+            end
 
         end
 

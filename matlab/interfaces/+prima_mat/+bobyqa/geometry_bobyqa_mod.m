@@ -12,7 +12,7 @@ classdef geometry_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function knew = setdrop_tr(~, kopt, ximproved, bmat, d, rho, xpt, zmat)
+        function knew = setdrop_tr(~, kopt, ximproved, bmat, d, delta, rho, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine sets KNEW to the index of the interpolation point to be deleted AFTER A TRUST
             % REGION STEP. KNEW will be set in a way ensuring that the geometry of XPT is "optimal" after
@@ -30,10 +30,50 @@ classdef geometry_bobyqa_mod
             % landscape of the function sufficiently.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+            % Inputs
+
+
+            % BMAT(N, NPT + N)
+            % D(N)
+
+
+            % XPT(N, NPT)
+            % ZMAT(NPT, NPT - N - 1)
+
+            % Outputs
+
+
+            % Local variables
+            srname = "SETDROP_TR";
+
             distsq = NaN(size(xpt, 2), 1);
+
+            % Sizes
+            n = size(xpt, 1);
+            npt = size(xpt, 2);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
+                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
+                debug_obj.assert(delta >= rho && rho > 0, "DELTA >= RHO > 0", srname);
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                                 "SIZE(D) == N, D is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
+                                 "SIZE(BMAT)==[N, NPT+N]", srname);
+                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
+                                 "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
+                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
+                                 "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -54,15 +94,15 @@ classdef geometry_bobyqa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum((xpt - (xpt(:, kopt) + d)) .^ 2, 1);
+                distsq(:) = fortran.sum(fortran.power(xpt - (xpt(:, kopt) + d), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = sum((xpt - xpt(:, kopt)) .^ 2, 1);
+                distsq(:) = fortran.sum(fortran.power(xpt - xpt(:, kopt), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
-            weight = max(1.0, distsq ./ rho ^ 2) .^ 4;
+            weight = fortran.power(max(consts_obj.ONE, distsq ./ fortran.power(rho, 2)), 4);
             % Other possible definitions of WEIGHT.
             % %weight = max(ONE, distsq / rho**2)**3.5  ! Quite similar to power 4
             % %weight = max(ONE, distsq / rho**2)**3  ! Not bad
@@ -87,18 +127,18 @@ classdef geometry_bobyqa_mod
 
             % If the new F is not better than FVAL(KOPT), we set SCORE(KOPT) = -1 to avoid KNEW = KOPT.
             if ~ximproved
-                score(kopt) = -1.0;
+                score(kopt) = -consts_obj.ONE;
             end
 
             % SCORE(K) = NaN implies DEN(K) = NaN. We exclude such K as we want DEN to be big.
-            score(isnan(score)) = -1.0;
+            score(linalg_obj.trueloc(infnan_obj.is_nan_sp(score))) = -consts_obj.ONE;
 
             knew = 0;
             % The following IF works slightly better than `IF (ANY(SCORE > 0))` from Powell's BOBYQA/LINCOA code.
             if any(score > 1, 'all') || ximproved && any(score > 0, 'all')
                 % Powell's UOBYQA and NEWUOA code.
                 % See (6.1) of the BOBYQA paper for the definition of KNEW in this case.
-                [~, knew] = max(score);
+                knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
 
             end
@@ -110,13 +150,24 @@ classdef geometry_bobyqa_mod
             % would be destroyed by the NaNs.
             if ximproved && knew == 0 || knew < 0
                 % KNEW < 0 is impossible in theory.
-                [~, knew] = max(distsq);
+                knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
             %====================%
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(knew >= 0 && knew <= npt, "0 <= KNEW <= NPT", srname);
+                debug_obj.assert(knew ~= kopt || ximproved, ...
+                                 "KNEW /= KOPT unless XIMPROVED = TRUE", srname);
+                debug_obj.assert(knew >= 1 || ~ximproved, "KNEW >= 1 unless XIMPROVED = FALSE", ...
+                                 srname);
+                % KNEW >= 1 when XIMPROVED = TRUE unless NaN occurs in DISTSQ, which should not happen if the
+                % starting point does not contain NaN and the trust-region/geometry steps never contain NaN.
+
+            end
 
         end
         function d = geostep(~, knew, kopt, bmat, delbar, sl, su, xpt, zmat)
@@ -138,8 +189,28 @@ classdef geometry_bobyqa_mod
             %   is a bound-constrained version of the Cauchy step within the trust region.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
+
+            % Inputs
+
+
+            % BMAT(N, NPT + N)
+
+            % SL(N)
+            % SU(N)
+            % XPT(N, NPT)
+            % ZMAT(NPT, NPT-N-1)
+
+            % Outputs
+            % D(N)
+
+            % Local variables
+            srname = "GEOSTEP";
 
             isbd = NaN(3, size(xpt, 2));
 
@@ -157,8 +228,31 @@ classdef geometry_bobyqa_mod
 
             x = NaN(size(xpt, 1), 1);
 
+            % Sizes.
             n = size(xpt, 1);
             npt = size(xpt, 2);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
+                debug_obj.assert(knew >= 1 && knew <= npt, "1 <= KNEW <= NPT", srname);
+                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
+                debug_obj.assert(knew ~= kopt, "KNEW /= KOPT", srname);
+                debug_obj.assert(delbar > 0, "DELBAR > 0", srname);
+                debug_obj.assert(numel(sl) == n && all(sl <= 0, 'all'), ...
+                                 "SIZE(SL) == N, SL <= 0", srname);
+                debug_obj.assert(numel(su) == n && all(su >= 0, 'all'), ...
+                                 "SIZE(SU) == N, SU >= 0", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), ...
+                                 "SL <= XPT <= SU", srname);
+                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
+                                 "SIZE(BMAT) == [N, NPT+N]", srname);
+                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
+                                 "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
+                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
+                                 "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -167,7 +261,7 @@ classdef geometry_bobyqa_mod
             % PQLAG contains the leading NPT elements of the KNEW-th column of H, and it provides the second
             % derivative parameters of LFUNC, which is the KNEW-th Lagrange function. ALPHA will is the KNEW-th
             % diagonal element of the H matrix.
-            pqlag(:) = zmat * zmat(knew, :).';
+            pqlag(:) = linalg_obj.matprod21(zmat, zmat(knew, :).');
             alpha = pqlag(knew);
 
             % Read XOPT.
@@ -179,10 +273,10 @@ classdef geometry_bobyqa_mod
             % In case GLAG contains NaN, set D to a displacement from XOPT to XPT(:, KNEW) and return. Powell's
             % code does not have this, and D may be NaN in the end. Note that it is crucial to ensure that a
             % geometry step is nonzero.
-            if ~isfinite(sum(abs(glag), 'all'))
+            if ~infnan_obj.is_finite(fortran.sum(abs(glag), 'all'))
                 d = xpt(:, knew) - xopt;
                 d = ...
-                    min(0.5, delbar / norm(d)) ...
+                    min(consts_obj.HALF, delbar / linalg_obj.p_norm(d)) ...
                     * d; % Since XPT respects the bounds, so does XOPT + D.
                 return
             end
@@ -204,27 +298,29 @@ classdef geometry_bobyqa_mod
             % whether the corresponding trial points lie on bounds; SBDI(I, K) = J > 0 means that the I-th trail
             % point on the K-th line attains the J-th upper bound, SBDI(I, K) = -J < 0 indicates reaching the
             % J-th lower bound, and SBDI(I, K) = 0 means not touching any bound.
-            dderiv = xpt.' * glag - sum(glag .* xopt, 'all'); % The derivatives PHI_K'(0).
-            distsq(:) = sum((xpt - xopt) .^ 2, 1);
+            dderiv = ...
+                linalg_obj.matprod12(glag, xpt) ...
+                - linalg_obj.inprod(glag, xopt); % The derivatives PHI_K'(0).
+            distsq(:) = fortran.sum(fortran.power(xpt - xopt, 2), 1);
             for k = 1:npt
                 % It does not make sense to consider "straight line through XOPT and XPT(:, KOPT)". Hence set
                 % STPLEN(:, KOPT) = 0 and ISBD(:, KOPT) = 0 so that VLAG(:, K) and PREDSQ(:, K) obtained after
                 % this loop will be both zero and the search will skip K = KOPT. To avoid undesired/unpredictable
                 % behavior due to possible NaN, set DDERIV(K) = 0 if K = KOPT or if DDERIV(K) is originally NaN.
-                if k == kopt || isnan(dderiv(k))
-                    dderiv(k) = 0.0;
-                    stplen(:, k) = 0.0;
+                if k == kopt || infnan_obj.is_nan_sp(dderiv(k))
+                    dderiv(k) = consts_obj.ZERO;
+                    stplen(:, k) = consts_obj.ZERO;
                     isbd(:, k) = 0;
                     continue
                 end
 
                 subd = ...
                     delbar ...
-                    / sqrt(distsq(k)); % DISTSQ(K) > 0 unless K == KOPT or the input is incorrect.
+                    / fortran.sqrt(distsq(k)); % DISTSQ(K) > 0 unless K == KOPT or the input is incorrect.
                 slbd = -subd;
                 ilbd = 0;
                 iubd = 0;
-                sumin = min(1.0, subd);
+                sumin = min(consts_obj.ONE, subd);
 
                 % Revise SLBD and SUBD if necessary because of the bounds in SL and SU according to LFRAC, UFRAC.
                 % N.B.: We calculate LFRAC only at the positions where SL - XOPT > -ABS(XDIFF) * SUBD, because
@@ -235,11 +331,11 @@ classdef geometry_bobyqa_mod
                 % need to worry about the case where XDIFF = 0, because we only use LFRAC when XDIFF /= 0.
                 % Similar things can be said about UFRAC.
                 xdiff = xpt(:, k) - xopt;
-                lfrac = subd .* ((-xdiff > 0) .* 2 - 1);
+                lfrac = fortran.sign(subd, -xdiff);
                 lfrac(sl - xopt > -abs(xdiff) * subd) = ...
                     (sl(sl - xopt > -abs(xdiff) * subd) - xopt(sl - xopt > -abs(xdiff) * subd)) ...
                     ./ xdiff(sl - xopt > -abs(xdiff) * subd);
-                ufrac = subd .* ((xdiff > 0) .* 2 - 1);
+                ufrac = fortran.sign(subd, xdiff);
                 ufrac(su - xopt < abs(xdiff) * subd) = ...
                     (su(su - xopt < abs(xdiff) * subd) - xopt(su - xopt < abs(xdiff) * subd)) ...
                     ./ xdiff(su - xopt < abs(xdiff) * subd);
@@ -250,11 +346,14 @@ classdef geometry_bobyqa_mod
 
                 % First, revise SLBD. Note that SLBD_TEST <= 0 unless the input violates XOPT >= SL.
                 slbd_test(:) = slbd;
-                slbd_test(xdiff > 0) = lfrac(xdiff > 0);
-                slbd_test(xdiff < 0) = ufrac(xdiff < 0);
+                slbd_test(linalg_obj.trueloc(xdiff > 0)) = lfrac(linalg_obj.trueloc(xdiff > 0));
+                slbd_test(linalg_obj.trueloc(xdiff < 0)) = ufrac(linalg_obj.trueloc(xdiff < 0));
                 if any(slbd_test > slbd, 'all')
-                    [slbd, ilbd] = max(slbd_test, [], 'omitnan');
-                    ilbd = -ilbd * round((xdiff(ilbd) > 0) .* 2 - 1);
+                    ilbd = ...
+                        fortran.maxloc(slbd_test, 'mask', ~infnan_obj.is_nan_sp(slbd_test), ...
+                                       'dim', 1);
+                    slbd = slbd_test(ilbd);
+                    ilbd = -ilbd * round(fortran.sign(consts_obj.ONE, xdiff(ilbd)));
                     %%MATLAB:
                     %%[slbd, ilbd] = max(slbd_test, [], 'omitnan');
                     %%ilbd = -ilbd * sign(xdiff(ilbd));
@@ -263,12 +362,14 @@ classdef geometry_bobyqa_mod
 
                 % Second, revise SUBD. Note that SUBD_TEST >= 0 unless the input violates XOPT <= SU.
                 subd_test(:) = subd;
-                subd_test(xdiff > 0) = ufrac(xdiff > 0);
-                subd_test(xdiff < 0) = lfrac(xdiff < 0);
+                subd_test(linalg_obj.trueloc(xdiff > 0)) = ufrac(linalg_obj.trueloc(xdiff > 0));
+                subd_test(linalg_obj.trueloc(xdiff < 0)) = lfrac(linalg_obj.trueloc(xdiff < 0));
                 if any(subd_test < subd, 'all')
-                    [~, iubd] = min(subd_test, [], 'omitnan');
+                    iubd = ...
+                        fortran.minloc(subd_test, 'mask', ~infnan_obj.is_nan_sp(subd_test), ...
+                                       'dim', 1);
                     subd = max(sumin, subd_test(iubd));
-                    iubd = iubd * round((xdiff(iubd) > 0) .* 2 - 1);
+                    iubd = iubd * round(fortran.sign(consts_obj.ONE, xdiff(iubd)));
                     %%MATLAB:
                     %%[subd, iubd] = min(subd_test, [], 'omitnan');
                     %%subd = max(sumin, subd);
@@ -276,16 +377,20 @@ classdef geometry_bobyqa_mod
 
                 end
 
+                if consts_obj.DEBUGGING
+                    debug_obj.assert(slbd <= 0 && subd >= 0, "SLBD <= 0 <= SUBD", srname);
+                end
+
                 % Now, define the step length STPM between SLBD and SUBD by finding the critical point of the
                 % function PHI_K(t) = LFUNC((1-t)*XOPT + t*XPT(:,K)) mentioned above. It is a quadratic since
                 % LFUNC is the KNEW-th Lagrange function. For K /= KNEW, the critical point is 0.5, as
                 % PHI_K(0) = 1 = PHI_K(1); when K = KNEW, it is -0.5*PHI_K'(0) / (1 - PHI_K'(0)), because
                 % PHI_K(0) = 0 and PHI_K(1) = 1.
-                stpm = 0.5;
+                stpm = consts_obj.HALF;
                 if k == knew
                     stpm = slbd;
-                    if abs(1.0 - dderiv(k)) > 0
-                        stpm = -0.5 * dderiv(k) / (1.0 - dderiv(k));
+                    if abs(consts_obj.ONE - dderiv(k)) > 0
+                        stpm = -consts_obj.HALF * dderiv(k) / (consts_obj.ONE - dderiv(k));
                     end
                 end
                 stpm = max(slbd, min(subd, stpm));
@@ -298,23 +403,26 @@ classdef geometry_bobyqa_mod
             % First, compute VLAG = PHI(STPLEN). Using the fact that PHI_K(0) = 0, PHI_K(1) = delta_{K, KNEW}
             % (Kronecker delta), and recalling the PHI_K is quadratic, we can find that
             % PHI_K(t) = t*(1-t)*PHI_K'(0) for K /= KNEW, and PHI_KNEW = t*[t*(1-PHI_K'(0)) + PHI_K'(0)].
-            vlag = stplen .* (1.0 - stplen) .* dderiv.';
+            vlag = stplen .* (consts_obj.ONE - stplen) .* dderiv.';
             %%MATLAB: vlag = stplen .* (1 - stplen) .* dderiv; % Implicit expansion; dderiv is a row!
             vlag(:, knew) = ...
-                stplen(:, knew) .* (stplen(:, knew) * (1.0 - dderiv(knew)) + dderiv(knew));
+                stplen(:, knew) ...
+                .* (stplen(:, knew) * (consts_obj.ONE - dderiv(knew)) + dderiv(knew));
             % Set NaNs in VLAG to 0 so that the behavior of MAXVAL(ABS(VLAG)) is predictable. VLAG does not have
             % NaN unless XPT does, which would be a bug. MAXVAL(ABS(VLAG)) appears in Powell's code, not here.
-            vlag(isnan(vlag)) = 0.0; %%MATLAB: vlag(isnan(vlag)) = 0;
+            vlag(infnan_obj.is_nan_sp(vlag)) = consts_obj.ZERO; %%MATLAB: vlag(isnan(vlag)) = 0;
             %
             % Second, BETABD is the upper bound of BETA given in (3.10) of the BOBYQA paper.
-            betabd = 0.5 * (stplen .* (1.0 - stplen) .* distsq.') .^ 2;
+            betabd = ...
+                consts_obj.HALF * fortran.power(stplen .* (consts_obj.ONE - stplen) .* distsq.', 2);
             %%MATLAB: betabd = 0.5 * (stplen .* (1-stplen) .* distsq).^2 % Implicit expansion; distsq is a row!
             %
             % Finally, PREDSQ is the quantity defined in (3.11) of the BOBYQA paper.
             predsq = vlag .* vlag .* (vlag .* vlag + alpha * betabd);
             % Set NaNs in PREDSQ to 0 so that the behavior of MAXLOC(PREDSQ) is predictable. PREDSQ does not
             % have NaN unless XPT does, which would be a bug.
-            predsq(isnan(predsq)) = 0.0; %%MATLAB: predsq(isnan(predsq)) = 0
+            predsq(infnan_obj.is_nan_sp(predsq)) = ...
+                consts_obj.ZERO; %%MATLAB: predsq(isnan(predsq)) = 0
 
             % Locate the trial point the renders the maximum of PREDSQ. It is the ISQ-th trial point on the
             % straight line through XOPT and XPT(:, KSQ).
@@ -381,19 +489,19 @@ classdef geometry_bobyqa_mod
             % maximize the Lagrange function.
             bigstp = delbar + delbar; % N.B.: In the sequel, S <= BIGSTP.
             xcauchy = xopt;
-            vlagsq_cauchy = 0.0;
+            vlagsq_cauchy = consts_obj.ZERO;
             for uphill = 0:1
                 if uphill == 1
                     glag = -glag;
                 end
-                s(:) = 0.0;
+                s(:) = consts_obj.ZERO;
                 mask_free = min(xopt - sl, glag) > 0 | max(xopt - su, glag) < 0;
-                s(mask_free) = bigstp;
-                ggfree = sum(glag(find(mask_free)) .^ 2, 'all');
+                s(linalg_obj.trueloc(mask_free)) = bigstp;
+                ggfree = fortran.sum(fortran.power(glag(linalg_obj.trueloc(mask_free)), 2), 'all');
                 % In Powell's code, the subroutine returns immediately if GGFREE is 0. However, GGFREE depends
                 % on GLAG, which in turn depends on UPHILL. It can happen that GGFREE is 0 when UPHILL = 0 but
                 % not so when UPHILL= 1. Thus we skip the iteration for the current UPHILL but do not return.
-                if ggfree <= 0 || isnan(ggfree)
+                if ggfree <= 0 || infnan_obj.is_nan_sp(ggfree)
                     continue
                 end
 
@@ -401,52 +509,61 @@ classdef geometry_bobyqa_mod
                 % appear in the loop body. The purpose of K is only to impose an explicit bound on the number of
                 % loops. Powell's code does not have such a bound. The bound is not a true restriction, because
                 % we can check that (SFIXSQ > SSQSAV .AND. GGFREE > 0) must fail within N loops.
-                sfixsq = 0.0;
-                grdstp = 0.0;
+                sfixsq = consts_obj.ZERO;
+                grdstp = consts_obj.ZERO;
                 for k = 1:n
-                    resis = delbar ^ 2 - sfixsq;
+                    resis = fortran.power(delbar, 2) - sfixsq;
                     if resis <= 0
                         break
                     end
                     ssqsav = sfixsq;
-                    grdstp = sqrt(resis / ggfree);
+                    grdstp = fortran.sqrt(resis / ggfree);
                     xtemp = xopt - grdstp * glag;
                     mask_fixl = s >= bigstp & xtemp <= sl; % S == BIGSTP & XTEMP == SL
                     mask_fixu = s >= bigstp & xtemp >= su; % S == BIGSTP & XTEMP == SU
                     mask_free = s >= bigstp & ~(mask_fixl | mask_fixu);
-                    s(mask_fixl) = sl(mask_fixl) - xopt(mask_fixl);
-                    s(mask_fixu) = su(mask_fixu) - xopt(mask_fixu);
-                    sfixsq = sfixsq + sum(s(find(mask_fixl | mask_fixu)) .^ 2, 'all');
-                    ggfree = sum(glag(find(mask_free)) .^ 2, 'all');
+                    s(linalg_obj.trueloc(mask_fixl)) = ...
+                        sl(linalg_obj.trueloc(mask_fixl)) - xopt(linalg_obj.trueloc(mask_fixl));
+                    s(linalg_obj.trueloc(mask_fixu)) = ...
+                        su(linalg_obj.trueloc(mask_fixu)) - xopt(linalg_obj.trueloc(mask_fixu));
+                    sfixsq = ...
+                        sfixsq ...
+                        + fortran.sum(fortran.power(s(linalg_obj.trueloc(mask_fixl ...
+                                                                         | mask_fixu)), 2), 'all');
+                    ggfree = ...
+                        fortran.sum(fortran.power(glag(linalg_obj.trueloc(mask_free)), 2), 'all');
                     if ~(sfixsq > ssqsav && ggfree > 0)
                         break
                     end
                 end
 
                 % Set the remaining free components of S and all components of XCAUCHY. S may be scaled later.
-                x(glag > 0) = sl(glag > 0);
-                x(glag <= 0) = su(glag <= 0);
-                x(abs(s) <= 0) = xopt(abs(s) <= 0);
+                x(linalg_obj.trueloc(glag > 0)) = sl(linalg_obj.trueloc(glag > 0));
+                x(linalg_obj.trueloc(glag <= 0)) = su(linalg_obj.trueloc(glag <= 0));
+                x(linalg_obj.trueloc(abs(s) <= 0)) = xopt(linalg_obj.trueloc(abs(s) <= 0));
                 xtemp = max(sl, min(su, xopt - grdstp * glag));
-                x(s >= bigstp) = xtemp(s >= bigstp); % S == BIGSTP
-                s(s >= bigstp) = -grdstp * glag(s >= bigstp); % S == BIGSTP
-                gs = sum(glag .* s, 'all');
+                x(linalg_obj.trueloc(s >= bigstp)) = ...
+                    xtemp(linalg_obj.trueloc(s >= bigstp)); % S == BIGSTP
+                s(linalg_obj.trueloc(s >= bigstp)) = ...
+                    -grdstp * glag(linalg_obj.trueloc(s >= bigstp)); % S == BIGSTP
+                gs = linalg_obj.inprod(glag, s);
 
                 % Set CURV to the curvature of the KNEW-th Lagrange function along S. Scale S by a factor less
                 % than ONE if that can reduce the modulus of the Lagrange function at XOPT+S. Set CAUCHY to the
                 % final value of the square of this function.
-                sxpt = xpt.' * s;
+                sxpt = linalg_obj.matprod12(s, xpt);
                 curv = ...
-                    sum(sxpt .* (pqlag .* sxpt), 'all'); % CURV = INPROD(S, HESS_MUL(S, XPT, PQLAG))
+                    linalg_obj.inprod(sxpt, ...
+                                      pqlag .* sxpt); % CURV = INPROD(S, HESS_MUL(S, XPT, PQLAG))
                 if uphill == 1
                     curv = -curv;
                 end
-                if curv > -gs && curv < -(1.0 + sqrt(2.0)) * gs
+                if curv > -gs && curv < -(consts_obj.ONE + fortran.sqrt(consts_obj.TWO)) * gs
                     scaling = -gs / curv;
                     x = max(sl, min(su, xopt + scaling * s));
-                    vlagsq = (0.5 * gs * scaling) ^ 2;
+                    vlagsq = fortran.power(consts_obj.HALF * gs * scaling, 2);
                 else
-                    vlagsq = (gs + 0.5 * curv) ^ 2;
+                    vlagsq = fortran.power(gs + consts_obj.HALF * curv, 2);
                 end
 
                 if vlagsq > vlagsq_cauchy
@@ -461,17 +578,18 @@ classdef geometry_bobyqa_mod
 
             % Take the Cauchy step if it is likely to render a larger denominator.
             %IF (VLAGSQ_CAUCHY > MAX(DEN_LINE(KNEW), ZERO) .OR. IS_NAN(DEN_LINE(KNEW))) THEN  ! Powell's version
-            if den_cauchy(knew) > max(den_line(knew), 0.0) || isnan(den_line(knew))
+            if den_cauchy(knew) > max(den_line(knew), consts_obj.ZERO) ...
+               || infnan_obj.is_nan_sp(den_line(knew))
                 % Works better
                 d = s;
             end
 
             % In case D is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to XOPT.
             % Powell's code does not have this. Note that it is crucial to ensure that a geometry step is nonzero.
-            if sum(abs(d), 'all') <= 0 || ~isfinite(sum(abs(d), 'all'))
+            if fortran.sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                 d = xpt(:, knew) - xopt;
                 d = ...
-                    min(0.5, delbar / norm(d)) ...
+                    min(consts_obj.HALF, delbar / linalg_obj.p_norm(d)) ...
                     * d; % Since XPT respects the bounds, so does XOPT + D.
 
             end
@@ -480,6 +598,27 @@ classdef geometry_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(d), 'all'), "D is finite", srname);
+                % In theory, ||D|| <= DELBAR, which may be false due to rounding, but ||D|| >= 2*DELBAR is unlikely.
+                % It is crucial to ensure that the geometry step is nonzero, which holds in theory. However, due
+                % to the bound constraints, ||D|| may be much smaller than DELBAR.
+                debug_obj.assert(linalg_obj.p_norm(d) > 0 ...
+                                 && linalg_obj.p_norm(d) < consts_obj.TWO * delbar, ...
+                                 "0 < ||D|| < 2*DELBAR", srname);
+                % D is supposed to satisfy the bound constraints SL <= XOPT + D <= SU.
+                debug_obj.assert(all(xopt + d ...
+                                     >= sl ...
+                                        - consts_obj.TEN * consts_obj.EPS ...
+                                          * max(consts_obj.ONE, abs(sl)) ...
+                                     & xopt + d ...
+                                       <= su ...
+                                          + consts_obj.TEN * consts_obj.EPS ...
+                                            * max(consts_obj.ONE, abs(su)), 'all'), ...
+                                 "SL <= XOPT + D <= SU", srname);
+            end
 
         end
 

@@ -17,6 +17,50 @@ classdef update_newuoa_mod
             % This subroutine updates [XPT, FVAL, KOPT] so that XPT(:, KNEW) is updated to XNEW.
             %--------------------------------------------------------------------------------------------------%
 
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+
+            % Inputs
+
+
+            % XNEW(N)
+
+            % In-outputs
+
+
+            % FVAL(NPT)
+            % XPT(N, NPT)
+
+            % Local variables
+            srname = "UPDATEXF";
+
+            % Sizes
+            n = size(xpt, 1);
+            npt = size(xpt, 2);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
+                debug_obj.assert(knew >= 0 && knew <= npt, "0 <= KNEW <= NPT", srname);
+                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
+                debug_obj.assert(knew >= 1 || ~ximproved, "KNEW >= 1 unless X is not improved", ...
+                                 srname);
+                debug_obj.assert(knew ~= kopt || ximproved, "KNEW /= KOPT unless X is improved", ...
+                                 srname);
+                debug_obj.assert(numel(xnew) == n && all(infnan_obj.is_finite(xnew), 'all'), ...
+                                 "SIZE(XNEW) == N, XNEW is finite", srname);
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                                 "F is not NaN or +Inf", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(numel(fval) == npt ...
+                                 && ~any(infnan_obj.is_nan_sp(fval) ...
+                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                 "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", ...
+                                 srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -41,6 +85,15 @@ classdef update_newuoa_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt ...
+                                 && all(infnan_obj.is_finite(xpt), 'all'), ...
+                                 "SIZE(XPT) == [N, NPT], XPT is finite", srname);
+                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
+                debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", ...
+                                 srname);
+            end
 
         end
         function [gopt, hq, pq] = ...
@@ -60,11 +113,60 @@ classdef update_newuoa_mod
             % use GOPT instead of GQ.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+            % Inputs
+
+
+            % BMAT(N, NPT + N)
+            % D(:)
+
+            % XDROP(N)
+            % XOSAV(N)
+            % XPT(N, NPT)
+            % ZMAT(NPT, NPT - N - 1)
+
+            % In-outputs
+            % GOPT(N)
+            % HQ(N, N)
+            % PQ(NPT)
+
+            % Local variables
+            srname = "UPDATEQ";
+
             pqinc = NaN(size(pq));
+
+            % Sizes
+            n = numel(gopt);
+            npt = numel(pq);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
+                debug_obj.assert(idz >= 1 && idz <= size(zmat, 2) + 1, ...
+                                 "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
+                debug_obj.assert(knew >= 0 && knew <= npt, "0 <= KNEW <= NPT", srname);
+                debug_obj.assert(knew >= 1 || ~ximproved, "KNEW >= 1 unless X is not improved", ...
+                                 srname);
+                debug_obj.assert(numel(xdrop) == n && all(infnan_obj.is_finite(xdrop), 'all'), ...
+                                 "SIZE(XDROP) == N, XDROP is finite", srname);
+                debug_obj.assert(numel(xosav) == n && all(infnan_obj.is_finite(xosav), 'all'), ...
+                                 "SIZE(XOSAV) == N, XOSAV is finite", srname);
+                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
+                                 "SIZE(BMAT)==[N, NPT+N]", srname);
+                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
+                                 "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
+                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
+                                 "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
+                                 "HQ is an NxN symmetric matrix", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -82,7 +184,7 @@ classdef update_newuoa_mod
             % Absorb PQ(KNEW)*XDROP*XDROP^T into the explicit part of the Hessian.
             % Implement R1UPDATE properly so that it ensures that HQ is symmetric.
             hq = linalg_obj.r1_sym(hq, pq(knew), xdrop);
-            pq(knew) = 0.0;
+            pq(knew) = consts_obj.ZERO;
 
             % Update the implicit part of the Hessian.
             pqinc(:) = moderr * powalg_obj.omega_col(idz, zmat, knew);
@@ -100,6 +202,13 @@ classdef update_newuoa_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
+                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
+                                 "HQ is an NxN symmetric matrix", srname);
+                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
+            end
 
         end
         function [itest, gopt, hq, pq] = ...
@@ -111,9 +220,27 @@ classdef update_newuoa_mod
             % the NEWUOA paper.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+            % Inputs
+
+            % BMAT(N, NPT+N)
+            % FVAL(NPT)
+
+            % XOPT(N)
+            % XOPT(N, NPT)
+            % ZMAT(NPT, NPT-N-1)
+
+            % In-output
+
+            % GOPT(N)
+            % HQ(N, N)
+            % PQ(NPT)
             % N.B.:
             % GOPT, HQ, and PQ should be INTENT(INOUT) instead of INTENT(OUT). According to the Fortran 2018
             % standard, an INTENT(OUT) dummy argument becomes undefined on invocation of the procedure.
@@ -121,11 +248,37 @@ classdef update_newuoa_mod
             % which is the case for HQ and PQ when ITEST < 3 at exit. In addition, the information in GOPT is
             % needed for defining ITEST, so it must be INTENT(INOUT).
 
+            % Local variables
+            srname = "TRYQALT";
 
             galt = NaN(size(gopt));
             pqalt = NaN(size(pq));
 
+            % Sizes
+            n = numel(gopt);
             npt = numel(pq);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
+                % By the definition of RATIO in ratio.f90, RATIO cannot be NaN unless the actual reduction is
+                % NaN, which should NOT happen due to the moderated extreme barrier.
+                debug_obj.assert(~infnan_obj.is_nan_sp(ratio), "RATIO is not NaN", srname);
+                debug_obj.assert(numel(fval) == npt ...
+                                 && ~any(infnan_obj.is_nan_sp(fval) ...
+                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                 "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
+                                 "SIZE(BMAT)==[N, NPT+N]", srname);
+                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
+                                 "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
+                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
+                                 "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
+                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
+                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
+                                 "HQ is an NxN symmetric matrix", srname);
+                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -133,13 +286,15 @@ classdef update_newuoa_mod
 
             % Calculate the parameters of the least Frobenius norm interpolant to the current data.
             pqalt(:) = powalg_obj.omega_mul(idz, zmat, fval);
-            galt(:) = bmat(:, 1:npt) * fval + powalg_obj.hess_mul(xopt, xpt, pqalt);
+            galt(:) = ...
+                linalg_obj.matprod21(bmat(:, 1:npt), fval) + powalg_obj.hess_mul(xopt, xpt, pqalt);
 
             % Test whether to replace the new quadratic model by the least Frobenius norm interpolant, making
             % the replacement if the test is satisfied. In the sequel, TEN seems to work a bit better than 100.
             % In addition, Powell checked the magnitude of ABS(RATIO) instead of RATIO.
             % %if (abs(ratio) > 0.01 .or. inprod(gopt, gopt) < 1.0E2_RP * inprod(galt, galt)) then ! Powell's code
-            if ratio > 0.1 || sum(gopt .* gopt, 'all') < 10.0 * sum(galt .* galt, 'all')
+            if ratio > consts_obj.TENTH ...
+               || linalg_obj.inprod(gopt, gopt) < consts_obj.TEN * linalg_obj.inprod(galt, galt)
                 itest = 0;
             else
                 itest = itest + 1;
@@ -147,7 +302,7 @@ classdef update_newuoa_mod
             if itest >= 3
                 gopt = galt;
                 pq = pqalt;
-                hq(:) = 0.0;
+                hq(:) = consts_obj.ZERO;
                 itest = 0;
             end
 
@@ -155,6 +310,13 @@ classdef update_newuoa_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
+                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
+                                 "HQ is an NxN symmetric matrix", srname);
+                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
+            end
 
         end
 

@@ -26,17 +26,35 @@ classdef message_mod
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints messages at return.
             %--------------------------------------------------------------------------------------------------%
-
-
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
             fprint_obj = prima_mat.common.fprint_mod();
             infos_obj = prima_mat.common.infos_mod();
-
+            linalg_obj = prima_mat.common.linalg_mod();
             string_obj = prima_mat.common.string_mod();
 
+            % Compulsory inputs
+
+
+            % Optional inputs
+
+
+            % Local variables
             newline_custom = newline;
+            srname = "RETMSG";
 
             funit = NaN; % File storage unit for the writing. Should be an integer of default kind.
+            valid_exit_flags = ...
+                [infos_obj.FTARGET_ACHIEVED, infos_obj.MAXFUN_REACHED, infos_obj.MAXTR_REACHED, ...
+                 infos_obj.SMALL_TR_RADIUS, infos_obj.TRSUBP_FAILED, infos_obj.NAN_INF_F, ...
+                 infos_obj.NAN_INF_X, infos_obj.NAN_INF_MODEL, infos_obj.DAMAGING_ROUNDING, ...
+                 infos_obj.NO_SPACE_BETWEEN_BOUNDS, infos_obj.ZERO_LINEAR_CONSTRAINT].';
 
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(any(info == valid_exit_flags, 'all'), "The exit flag is valid", ...
+                                 srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -47,10 +65,10 @@ classdef message_mod
                 return
             elseif iprint > 0
                 % Print the message to the standard out.
-                funit = 1;
+                funit = consts_obj.STDOUT;
                 fname = "";
             else                % Print the message to a file named FNAME.
-                fname = strip(solver) + "_output.txt";
+                fname = string_obj.strip(solver) + "_output.txt";
             end
 
             % Decide whether the problem is truly constrained.
@@ -71,11 +89,11 @@ classdef message_mod
                 cstrv_loc = cstrv;
             elseif ~ismember('constr', ipObj.UsingDefaults)
                 cstrv_loc = ...
-                    max([0.0; -constr], [], ...
-                        'all'); % N.B.: We assume that the constraint is CONSTR >= 0.
+                    linalg_obj.maximum([consts_obj.ZERO
+                                        -constr]); % N.B.: We assume that the constraint is CONSTR >= 0.
 
             else
-                cstrv_loc = 0.0;
+                cstrv_loc = consts_obj.ZERO;
             end
 
             % Decide the return message.
@@ -107,7 +125,8 @@ classdef message_mod
             otherwise
                 reason = "UNKNOWN EXIT FLAG";
             end
-            ret_message = newline_custom + "Return from " + solver + " because " + strip(reason);
+            ret_message = ...
+                newline_custom + "Return from " + solver + " because " + string_obj.strip(reason);
 
             if numel(x) <= 2
                 x_message = ...
@@ -122,13 +141,14 @@ classdef message_mod
 
             if is_constrained
                 nf_message = ...
-                    newline_custom + "Number of function values = " + int2str(nf) + obj.spaces ...
-                    + "Least value of F = " + string_obj.real2str_scalar(f) + obj.spaces ...
-                    + "Constraint violation = " + string_obj.real2str_scalar(cstrv_loc);
+                    newline_custom + "Number of function values = " + string_obj.int2str(nf) ...
+                    + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f) ...
+                    + obj.spaces + "Constraint violation = " ...
+                    + string_obj.real2str_scalar(cstrv_loc);
             else
                 nf_message = ...
-                    newline_custom + "Number of function values = " + int2str(nf) + obj.spaces ...
-                    + "Least value of F = " + string_obj.real2str_scalar(f);
+                    newline_custom + "Number of function values = " + string_obj.int2str(nf) ...
+                    + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f);
             end
 
             if is_constrained && ~ismember('constr', ipObj.UsingDefaults)
@@ -168,11 +188,18 @@ classdef message_mod
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints messages when RHO is updated.
             %--------------------------------------------------------------------------------------------------%
-
+            consts_obj = prima_mat.common.consts_mod();
             fprint_obj = prima_mat.common.fprint_mod();
-
+            linalg_obj = prima_mat.common.linalg_mod();
             string_obj = prima_mat.common.string_mod();
 
+            % Compulsory inputs
+
+
+            % Optional inputs
+
+
+            % Local variables
             newline_custom = newline;
 
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
@@ -187,10 +214,10 @@ classdef message_mod
                 return
             elseif iprint > 0
                 % Print the message to the standard out.
-                funit = 1;
+                funit = consts_obj.STDOUT;
                 fname = "";
             else                % Print the message to a file named FNAME.
-                fname = strip(solver) + "_output.txt";
+                fname = string_obj.strip(solver) + "_output.txt";
             end
 
             % Decide whether the problem is truly constrained.
@@ -213,11 +240,11 @@ classdef message_mod
                 cstrv_loc = cstrv;
             elseif ~ismember('constr', ipObj.UsingDefaults)
                 cstrv_loc = ...
-                    max([0.0; -constr], [], ...
-                        'all'); % N.B.: We assume that the constraint is CONSTR >= 0.
+                    linalg_obj.maximum([consts_obj.ZERO
+                                        -constr]); % N.B.: We assume that the constraint is CONSTR >= 0.
 
             else
-                cstrv_loc = 0.0;
+                cstrv_loc = consts_obj.ZERO;
             end
 
             if ismember('cpen', ipObj.UsingDefaults)
@@ -244,13 +271,14 @@ classdef message_mod
 
             if is_constrained
                 nf_message = ...
-                    newline_custom + "Number of function values = " + int2str(nf) + obj.spaces ...
-                    + "Least value of F = " + string_obj.real2str_scalar(f) + obj.spaces ...
-                    + "Constraint violation = " + string_obj.real2str_scalar(cstrv_loc);
+                    newline_custom + "Number of function values = " + string_obj.int2str(nf) ...
+                    + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f) ...
+                    + obj.spaces + "Constraint violation = " ...
+                    + string_obj.real2str_scalar(cstrv_loc);
             else
                 nf_message = ...
-                    newline_custom + "Number of function values = " + int2str(nf) + obj.spaces ...
-                    + "Least value of F = " + string_obj.real2str_scalar(f);
+                    newline_custom + "Number of function values = " + string_obj.int2str(nf) ...
+                    + obj.spaces + "Least value of F = " + string_obj.real2str_scalar(f);
             end
 
             if is_constrained && ~ismember('constr', ipObj.UsingDefaults)
@@ -288,10 +316,17 @@ classdef message_mod
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints a message when CPEN is updated.
             %--------------------------------------------------------------------------------------------------%
-
+            consts_obj = prima_mat.common.consts_mod();
             fprint_obj = prima_mat.common.fprint_mod();
             string_obj = prima_mat.common.string_mod();
 
+            % Compulsory inputs
+
+
+            % Optional inputs
+
+
+            % Local variables
             newline_custom = newline;
 
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
@@ -305,10 +340,10 @@ classdef message_mod
                 return
             elseif iprint > 0
                 % Print the message to the standard out.
-                funit = 1;
+                funit = consts_obj.STDOUT;
                 fname = "";
             else                % Print the message to a file named FNAME.
-                fname = strip(solver) + "_output.txt";
+                fname = string_obj.strip(solver) + "_output.txt";
             end
 
             % Print the message.
@@ -337,15 +372,21 @@ classdef message_mod
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints messages for each evaluation of the objective function.
             %--------------------------------------------------------------------------------------------------%
-
+            consts_obj = prima_mat.common.consts_mod();
             fprint_obj = prima_mat.common.fprint_mod();
-
+            linalg_obj = prima_mat.common.linalg_mod();
             string_obj = prima_mat.common.string_mod();
+
+            % Compulsory inputs
 
             % `state` is a string indicating the solver's state when the function evaluation is invoked. Its
             % value can be 'Initialization', 'Trust region', 'Geometry', or 'Rescue'.
 
 
+            % Optional inputs
+
+
+            % Local variables
             newline_custom = newline;
 
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
@@ -360,10 +401,10 @@ classdef message_mod
                 return
             elseif iprint > 0
                 % Print the message to the standard out.
-                funit = 1;
+                funit = consts_obj.STDOUT;
                 fname = "";
             else                % Print the message to a file named FNAME.
-                fname = strip(solver) + "_output.txt";
+                fname = string_obj.strip(solver) + "_output.txt";
             end
 
             % Decide whether the problem is truly constrained.
@@ -384,11 +425,11 @@ classdef message_mod
                 cstrv_loc = cstrv;
             elseif ~ismember('constr', ipObj.UsingDefaults)
                 cstrv_loc = ...
-                    max([0.0; -constr], [], ...
-                        'all'); % N.B.: We assume that the constraint is CONSTR >= 0.
+                    linalg_obj.maximum([consts_obj.ZERO
+                                        -constr]); % N.B.: We assume that the constraint is CONSTR >= 0.
 
             else
-                cstrv_loc = 0.0;
+                cstrv_loc = consts_obj.ZERO;
             end
 
             delta_message = ...
@@ -396,13 +437,13 @@ classdef message_mod
 
             if is_constrained
                 nf_message = ...
-                    newline_custom + "Function number " + int2str(nf) + obj.spaces + "F = " ...
-                    + string_obj.real2str_scalar(f) + obj.spaces + "Constraint violation = " ...
-                    + string_obj.real2str_scalar(cstrv_loc);
+                    newline_custom + "Function number " + string_obj.int2str(nf) + obj.spaces ...
+                    + "F = " + string_obj.real2str_scalar(f) + obj.spaces ...
+                    + "Constraint violation = " + string_obj.real2str_scalar(cstrv_loc);
             else
                 nf_message = ...
-                    newline_custom + "Function number " + int2str(nf) + obj.spaces + "F = " ...
-                    + string_obj.real2str_scalar(f);
+                    newline_custom + "Function number " + string_obj.int2str(nf) + obj.spaces ...
+                    + "F = " + string_obj.real2str_scalar(f);
             end
 
             if numel(x) <= 2

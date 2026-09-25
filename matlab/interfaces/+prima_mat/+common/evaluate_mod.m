@@ -21,11 +21,18 @@ classdef evaluate_mod
             %--------------------------------------------------------------------------------------------------%
             % This function moderates a decision variable. It replaces NaN by 0 and Inf/-Inf by REALMAX/-REALMAX.
             %--------------------------------------------------------------------------------------------------%
+            consts_obj = prima_mat.common.consts_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
+
+            % Inputs
+
+            % Outputs
 
 
             y = x;
-            y(isnan(x)) = 0.0;
-            y = max(-realmax, min(realmax, y));
+            y(linalg_obj.trueloc(infnan_obj.is_nan_sp(x))) = consts_obj.ZERO;
+            y = max(-consts_obj.REALMAX, min(consts_obj.REALMAX, y));
         end
         function y = moderatef(~, f)
             %--------------------------------------------------------------------------------------------------%
@@ -33,12 +40,18 @@ classdef evaluate_mod
             % value above FUNCMAX by FUNCMAX.
             %--------------------------------------------------------------------------------------------------%
             consts_obj = prima_mat.common.consts_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+
+            % Inputs
+
+            % Outputs
+
 
             y = f;
-            if isnan(y)
+            if infnan_obj.is_nan_sp(y)
                 y = consts_obj.FUNCMAX;
             end
-            y = max(-realmax, min(consts_obj.FUNCMAX, y));
+            y = max(-consts_obj.REALMAX, min(consts_obj.FUNCMAX, y));
             % We may moderate huge negative function values as follows, but we decide not to.
             %y = max(-FUNCMAX, min(FUNCMAX, y))
         end
@@ -49,9 +62,16 @@ classdef evaluate_mod
             % CONSTRMAX.
             %--------------------------------------------------------------------------------------------------%
             consts_obj = prima_mat.common.consts_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
+
+            % Inputs
+
+            % Outputs
+
 
             y = c;
-            y(isnan(c)) = consts_obj.CONSTRMAX;
+            y(linalg_obj.trueloc(infnan_obj.is_nan_sp(c))) = consts_obj.CONSTRMAX;
             y = max(-consts_obj.CONSTRMAX, min(consts_obj.CONSTRMAX, y));
         end
         function f = evaluatef(obj, calfun, x)
@@ -59,15 +79,36 @@ classdef evaluate_mod
             % This function evaluates CALFUN at X, setting F to the objective function value. Nan/Inf are
             % handled by a moderated extreme barrier.
             %--------------------------------------------------------------------------------------------------%
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
 
+            % Inputs
+            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
+
+
+            % Output
+
+
+            % Local variables
+            srname = "EVALUATEF";
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                % X should not contain NaN if the initial X does not contain NaN and the subroutines generating
+                % trust-region/geometry steps work properly so that they never produce a step containing NaN/Inf.
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", ...
+                                 srname);
+            end
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if any(isnan(x), 'all')
+            if any(infnan_obj.is_nan_sp(x), 'all')
                 % Although this should not happen unless there is a bug, we include this case for robustness.
-                f = sum(x, 'all'); % Set F to NaN
+                f = fortran.sum(x, 'all'); % Set F to NaN
 
             else
                 f = calfun(obj.moderatex(x)); % Evaluate F; We moderate X before doing so.
@@ -81,6 +122,12 @@ classdef evaluate_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                % With X not containing NaN, and with the moderated extreme barrier, F cannot be NaN/+Inf.
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                                 "F is not NaN/+Inf", srname);
+            end
 
         end
         function [f, constr] = evaluatefc(obj, calcfc, x, constr)
@@ -88,16 +135,37 @@ classdef evaluate_mod
             % This function evaluates CALCFC at X, setting F to the objective function value and CONSTR to the
             % constraint value. Nan/Inf are handled by a moderated extreme barrier.
             %--------------------------------------------------------------------------------------------------%
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
 
+            % Inputs
+            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
+
+
+            % Outputs
+
+
+            % Local variables
+            srname = "EVALUATEFC";
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                % X should not contain NaN if the initial X does not contain NaN and the subroutines generating
+                % trust-region/geometry steps work properly so that they never produce a step containing NaN/Inf.
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", ...
+                                 srname);
+            end
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if any(isnan(x), 'all')
+            if any(infnan_obj.is_nan_sp(x), 'all')
                 % Although this should not happen unless there is a bug, we include this case for robustness.
                 % Set F, CONSTR, and CSTRV to NaN.
-                f = sum(x, 'all');
+                f = fortran.sum(x, 'all');
                 constr(:) = f;
             else
                 [f, constr] = ...
@@ -114,6 +182,16 @@ classdef evaluate_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                % With X not containing NaN, and with the moderated extreme barrier, F cannot be NaN/+Inf, and
+                % CONSTR cannot be NaN/+Inf.
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                                 "F is not NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(constr) ...
+                                      | infnan_obj.is_posinf(constr), 'all'), ...
+                                 "CONSTR does not contain NaN/+Inf", srname);
+            end
 
         end
 

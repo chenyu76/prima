@@ -30,12 +30,45 @@ classdef geometry_uobyqa_mod
             % landscape of the function sufficiently.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
+
+            % Inputs
+
+
+            % D(N)
+            % PL(NPT-1, NPT)
+
+            % XPT(N, NPT)
+
+            % Outputs
+
+
+            % Local variables
+            srname = "SETDROP_TR";
 
             distsq = NaN(size(xpt, 2), 1);
 
             vlag = NaN(size(xpt, 2), 1);
+
+            % Sizes
+            n = size(xpt, 1);
+            npt = size(xpt, 2);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
+                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                                 "SIZE(D) == N, D is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, ...
+                                 "SIZE(PL)==[NPT - 1, NPT]", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -56,15 +89,15 @@ classdef geometry_uobyqa_mod
             % based on the distance to the un-updated "optimal point", which is unreasonable. This has been
             % corrected in our implementation of LINCOA, yet it does not boost the performance.
             if ximproved
-                distsq(:) = sum((xpt - (xpt(:, kopt) + d)) .^ 2, 1);
+                distsq(:) = fortran.sum(fortran.power(xpt - (xpt(:, kopt) + d), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
 
             else
-                distsq(:) = sum((xpt - xpt(:, kopt)) .^ 2, 1);
+                distsq(:) = fortran.sum(fortran.power(xpt - xpt(:, kopt), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
             end
 
-            weight = max(1.0, distsq ./ rho ^ 2) .^ 4;
+            weight = fortran.power(max(consts_obj.ONE, distsq ./ fortran.power(rho, 2)), 4);
             % Other possible definitions of WEIGHT.
             % %weight = max(ONE, distsq / rho**2)**3.5_RP ! ! No better than power 4.
             % %weight = max(ONE, distsq / delta**2)**3.5_RP  ! Not better than DISTSQ/RHO**2.
@@ -89,18 +122,18 @@ classdef geometry_uobyqa_mod
 
             % If the new F is not better than FVAL(KOPT), we set SCORE(KOPT) = -1 to avoid KNEW = KOPT.
             if ~ximproved
-                score(kopt) = -1.0;
+                score(kopt) = -consts_obj.ONE;
             end
 
             % SCORE(K) is NaN implies VLAG(K) is NaN, but we want ABS(VLAG) to be big. So we exclude such K.
-            score(isnan(score)) = -1.0;
+            score(linalg_obj.trueloc(infnan_obj.is_nan_sp(score))) = -consts_obj.ONE;
 
             knew = 0;
             % It makes almost no difference if we change the IF below to `IF (ANY(SCORE>0))`, which is used
             % in Powell's BOBYQA and LINCOA code.
             if any(score > 1, 'all') || ximproved && any(score > 0, 'all')
                 % Powell's UOBYQA and NEWUOA code
-                [~, knew] = max(score);
+                knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
 
             end
@@ -112,13 +145,24 @@ classdef geometry_uobyqa_mod
             % destroyed by the NaNs.
             if ximproved && knew == 0 || knew < 0
                 % KNEW < 0 is impossible in theory.
-                [~, knew] = max(distsq);
+                knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
             %====================%
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(knew >= 0 && knew <= npt, "0 <= KNEW <= NPT", srname);
+                debug_obj.assert(knew ~= kopt || ximproved, ...
+                                 "KNEW /= KOPT unless XIMPROVED = TRUE", srname);
+                debug_obj.assert(knew >= 1 || ~ximproved, "KNEW >= 1 unless XIMPROVED = FALSE", ...
+                                 srname);
+                % KNEW >= 1 when XIMPROVED = TRUE unless NaN occurs in DISTSQ, which should not happen if the
+                % starting point does not contain NaN and the trust-region/geometry steps never contain NaN.
+
+            end
 
         end
         function d = geostep(~, knew, kopt, delbar, pl, xpt)
@@ -142,11 +186,24 @@ classdef geometry_uobyqa_mod
             % N.B.: In Powell's UOBYQA code, DELBAR = RHO. We take the DELBAR of NEWUOA, which works better.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
-            d = NaN(size(xpt, 1), 1);
+            % Inputs
+
+
+            % PL(NPT-1, NPT)
+            % XPT(N, NPT)
+
+            % Outputs
+            d = NaN(size(xpt, 1), 1); % D(N)
+
+            % Local variables
+            srname = "GEOSTEP";
 
             g = NaN(size(xpt, 1), 1);
 
@@ -156,8 +213,22 @@ classdef geometry_uobyqa_mod
             vlag = NaN(size(xpt, 2), 1);
             vlagc = NaN(size(xpt, 2), 1);
 
+            % Sizes.
             n = size(xpt, 1);
             npt = size(xpt, 2);
+
+            % Preconditions.
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(npt == (n + 1) * (n + 2) / 2, "NPT = (N+1)(N+2)/2", srname);
+                debug_obj.assert(knew >= 1 && knew <= npt, "1 <= KNEW <= NPT", srname);
+                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
+                debug_obj.assert(knew ~= kopt, "KNEW /= KOPT", srname);
+                debug_obj.assert(delbar > 0, "DELBAR > 0", srname);
+                debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, ...
+                                 "SIZE(PL) == [NPT-1, NPT]", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -171,27 +242,30 @@ classdef geometry_uobyqa_mod
             h(:) = linalg_obj.vec2smat(pl(n + 1:npt - 1, knew));
 
             % Evaluate GG = G^T*G and GHG = G^T*H*G. They will be used later.
-            gg = sum(g .^ 2, 'all');
-            ghg = sum(g .* (h * g), 'all');
+            gg = fortran.sum(fortran.power(g, 2), 'all');
+            ghg = linalg_obj.inprod(g, linalg_obj.matprod21(h, g));
 
             % Calculate the Cauchy step as a backup. Powell's code does not have this, and D may be 0 or NaN.
-            if gg > 0 && isfinite(gg)
-                dcauchy = delbar / sqrt(gg) * g;
+            if gg > 0 && infnan_obj.is_finite(gg)
+                dcauchy = delbar / fortran.sqrt(gg) * g;
                 if ghg < 0
                     dcauchy = -dcauchy;
                 end
             else                % GG is 0 or NaN due to rounding errors. Set DCAUCHY to a displacement from XOPT to XPT(:, KNEW).
                 dcauchy = xpt(:, knew) - xopt;
-                scaling = delbar / norm(dcauchy);
+                scaling = delbar / linalg_obj.p_norm(dcauchy);
                 dcauchy = ...
-                    max(0.6 * scaling, min(0.5, scaling)) * dcauchy; % 0.6: ensure |D| > DELBAR/2
-                if sum(g .* dcauchy, 'all') * sum(dcauchy .* (h * dcauchy), 'all') < 0
+                    max(0.6 * scaling, min(consts_obj.HALF, scaling)) ...
+                    * dcauchy; % 0.6: ensure |D| > DELBAR/2
+                if linalg_obj.inprod(g, dcauchy) ...
+                   * linalg_obj.inprod(dcauchy, linalg_obj.matprod21(h, dcauchy)) < 0
                     dcauchy = -dcauchy;
                 end
             end
 
             % Return if H or G contains NaN or H is zero. Powell's code does not do this.
-            if any(isnan(h), 'all') || any(isnan(g), 'all') || all(abs(h) <= 0, 'all')
+            if any(infnan_obj.is_nan_sp(h), 'all') || any(infnan_obj.is_nan_sp(g), 'all') ...
+               || all(abs(h) <= 0, 'all')
                 d = dcauchy;
                 return
             end
@@ -208,37 +282,41 @@ classdef geometry_uobyqa_mod
             end
 
             % Pick V such that ||HV|| / ||V|| is large.
-            v = h(:, fortran.maxloc(sum(h .^ 2, 1), 'dim', 1));
+            v = h(:, fortran.maxloc(fortran.sum(fortran.power(h, 2), 1), 'dim', 1));
             % Normalize V. Powell's code does not do this. It does not change the algorithm as only its
             % direction matters. It slightly improves the performance in the noiseless case.
-            v = v ./ norm(v);
+            v = v ./ linalg_obj.p_norm(v);
 
             % Set D to a vector in the subspace span{V, HV} that maximizes |(D, HD)|/(D, D), except that we set
             % D = HV if V and HV are nearly parallel.
-            vv = sum(v .^ 2, 'all');
-            d(:) = h * v;
-            vhv = sum(v .* d, 'all');
-            if vhv * vhv <= 0.9999 * sum(d .^ 2, 'all') * vv
+            vv = fortran.sum(fortran.power(v, 2), 'all');
+            d(:) = linalg_obj.matprod21(h, v);
+            vhv = linalg_obj.inprod(v, d);
+            if vhv * vhv <= 0.9999 * fortran.sum(fortran.power(d, 2), 'all') * vv
                 d = d - vhv / vv * v;
-                dd = sum(d .^ 2, 'all');
-                scaling = sqrt(dd / vv);
-                dhd = sum(d .* (h * d), 'all');
+                dd = fortran.sum(fortran.power(d, 2), 'all');
+                scaling = fortran.sqrt(dd / vv);
+                dhd = linalg_obj.inprod(d, linalg_obj.matprod21(h, d));
                 v = scaling * v;
                 vhv = scaling * scaling * vhv;
                 vhd = scaling * dd;
-                temp = 0.5 * (dhd - vhv);
+                temp = consts_obj.HALF * (dhd - vhv);
                 if dhd + vhv < 0
-                    d = vhd * v + (temp - sqrt(temp ^ 2 + vhd ^ 2)) * d;
+                    d = ...
+                        vhd * v ...
+                        + (temp - fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhd, 2))) * d;
                 else
-                    d = vhd * v + (temp + sqrt(temp ^ 2 + vhd ^ 2)) * d;
+                    d = ...
+                        vhd * v ...
+                        + (temp + fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhd, 2))) * d;
                 end
             end
 
             % We now turn our attention to the subspace span{G, D}. A multiple of the current D is returned if
             % that choice seems to be adequate.
-            dd = sum(d .^ 2, 'all');
-            gd = sum(g .* d, 'all');
-            dhd = sum(d .* (h * d), 'all');
+            dd = fortran.sum(fortran.power(d, 2), 'all');
+            gd = linalg_obj.inprod(g, d);
+            dhd = linalg_obj.inprod(d, linalg_obj.matprod21(h, d));
 
             % Zaikun 20220504: GG and DD can become 0 at this point due to rounding. Detected by IFORT.
             if ~(gg > 0 && dd > 0)
@@ -247,18 +325,19 @@ classdef geometry_uobyqa_mod
             end
 
             v = d - gd / gg * g;
-            vv = sum(v .^ 2, 'all');
+            vv = fortran.sum(fortran.power(v, 2), 'all');
             if gd * dhd < 0
-                scaling = -delbar / sqrt(dd);
+                scaling = -delbar / fortran.sqrt(dd);
             else
-                scaling = delbar / sqrt(dd);
+                scaling = delbar / fortran.sqrt(dd);
             end
             d = scaling * d;
-            gnorm = sqrt(gg);
+            gnorm = fortran.sqrt(gg);
 
             if ~(gnorm * dd > 5.0e-3 * delbar * abs(dhd) && vv > 1.0e-4 * dd)
                 % It may happen that D = 0 due to overflow in DD, which is used to define SCALING.
-                if sum(abs(d), 'all') <= 0 || ~isfinite(sum(abs(d), 'all'))
+                if fortran.sum(abs(d), 'all') <= 0 ...
+                   || ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
                     d = dcauchy;
                 end
                 return
@@ -266,25 +345,25 @@ classdef geometry_uobyqa_mod
 
             % G and V are now orthogonal in the subspace span{G, D}. Hence we generate an orthonormal basis of
             % this subspace such that (D, HV) is negligible or 0, where D and V will be the basis vectors.
-            hv(:) = h * v;
-            vhg = sum(g .* hv, 'all');
-            vhv = sum(v .* hv, 'all');
-            vnorm = sqrt(vv);
+            hv(:) = linalg_obj.matprod21(h, v);
+            vhg = linalg_obj.inprod(g, hv);
+            vhv = linalg_obj.inprod(v, hv);
+            vnorm = fortran.sqrt(vv);
             ghg = ghg / gg;
             vhg = vhg / (vnorm * gnorm);
             vhv = vhv / vv;
             if abs(vhg) <= 1.0e-2 * max(abs(ghg), abs(vhv))
                 vmu = ghg - vhv;
-                wcos = 1.0;
-                wsin = 0.0;
+                wcos = consts_obj.ONE;
+                wsin = consts_obj.ZERO;
             else
-                temp = 0.5 * (ghg - vhv);
+                temp = consts_obj.HALF * (ghg - vhv);
                 if temp < 0
-                    vmu = temp - sqrt(temp ^ 2 + vhg ^ 2);
+                    vmu = temp - fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhg, 2));
                 else
-                    vmu = temp + sqrt(temp ^ 2 + vhg ^ 2);
+                    vmu = temp + fortran.sqrt(fortran.power(temp, 2) + fortran.power(vhg, 2));
                 end
-                temp = sqrt(vmu ^ 2 + vhg ^ 2);
+                temp = fortran.sqrt(fortran.power(vmu, 2) + fortran.power(vhg, 2));
                 wcos = vmu / temp;
                 wsin = vhg / temp;
             end
@@ -299,18 +378,20 @@ classdef geometry_uobyqa_mod
             % possibilities that is optimal.
             dlin = wcos * gnorm / delbar;
             vlin = -wsin * gnorm / delbar;
-            tempa = abs(dlin) + 0.5 * abs(vmu + vhv);
-            tempb = abs(vlin) + 0.5 * abs(ghg - vmu);
-            tempc = sqrt(0.5) * (abs(dlin) + abs(vlin)) + 0.25 * abs(ghg + vhv);
+            tempa = abs(dlin) + consts_obj.HALF * abs(vmu + vhv);
+            tempb = abs(vlin) + consts_obj.HALF * abs(ghg - vmu);
+            tempc = ...
+                fortran.sqrt(consts_obj.HALF) * (abs(dlin) + abs(vlin)) ...
+                + consts_obj.QUART * abs(ghg + vhv);
             if tempa >= tempb && tempa >= tempc
                 if dlin * (vmu + vhv) < 0
                     tempd = -delbar;
                 else
                     tempd = delbar;
                 end
-                tempv = 0.0;
+                tempv = consts_obj.ZERO;
             elseif tempb >= tempc
-                tempd = 0.0;
+                tempd = consts_obj.ZERO;
                 if vlin * (ghg - vmu) < 0
                     tempv = -delbar;
                 else
@@ -318,14 +399,14 @@ classdef geometry_uobyqa_mod
                 end
             else
                 if dlin * (ghg + vhv) < 0
-                    tempd = -sqrt(0.5) * delbar;
+                    tempd = -fortran.sqrt(consts_obj.HALF) * delbar;
                 else
-                    tempd = sqrt(0.5) * delbar;
+                    tempd = fortran.sqrt(consts_obj.HALF) * delbar;
                 end
                 if vlin * (ghg + vhv) < 0
-                    tempv = -sqrt(0.5) * delbar;
+                    tempv = -fortran.sqrt(consts_obj.HALF) * delbar;
                 else
-                    tempv = sqrt(0.5) * delbar;
+                    tempv = fortran.sqrt(consts_obj.HALF) * delbar;
                 end
             end
             d = tempd * d + tempv * v;
@@ -334,7 +415,8 @@ classdef geometry_uobyqa_mod
             % entries of VLAG and VLAGC are needed.
             vlag(:) = powalg_obj.calvlag_qint(pl, d, xopt, kopt);
             vlagc(:) = powalg_obj.calvlag_qint(pl, dcauchy, xopt, kopt);
-            if abs(vlagc(knew)) > 2.0 * abs(vlag(knew)) || isnan(vlag(knew))
+            if abs(vlagc(knew)) > consts_obj.TWO * abs(vlag(knew)) ...
+               || infnan_obj.is_nan_sp(vlag(knew))
                 d = dcauchy;
             end
 
@@ -342,7 +424,16 @@ classdef geometry_uobyqa_mod
             %  Calculation ends  %
             %====================%
 
-
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                                 "SIZE(D) == N, D is finite", srname);
+                % In theory, ||D|| = DELBAR. Considering rounding errors, we check that DELBAR/2 < ||D|| < 2*DELBAR.
+                % It is crucial to ensure that the geometry step is nonzero.
+                debug_obj.assert(linalg_obj.p_norm(d) > consts_obj.HALF * delbar ...
+                                 && linalg_obj.p_norm(d) < consts_obj.TWO * delbar, ...
+                                 "DELBAR/2 < ||D|| < 2*DELBAR", srname);
+            end
         end
 
     end

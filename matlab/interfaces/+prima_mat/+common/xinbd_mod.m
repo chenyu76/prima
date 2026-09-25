@@ -10,7 +10,41 @@ classdef xinbd_mod
             % 3. SL = XL - XBASE, SU = XU - XBASE;
             % 4. X should be between XL and XU.
             %--------------------------------------------------------------------------------------------------%
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
 
+            % Inputs
+
+
+            % Outputs
+
+
+            % Local variables
+            srname = "XINBD";
+
+            % Sizes
+            n = numel(xbase);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(all(infnan_obj.is_finite(xbase), 'all'), ...
+                                 "SIZE(XBASE) == N, XBASE is finite", srname);
+                debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", ...
+                                 srname);
+                debug_obj.assert(all(xbase >= xl & xbase <= xu, 'all'), "XL <= XBASE <= XU", ...
+                                 srname);
+                debug_obj.assert(numel(sl) == n && numel(su) == n, "SIZE(SL) == N == SIZE(SU)", ...
+                                 srname);
+                debug_obj.assert(all(step ...
+                                     + 100.0 * consts_obj.EPS * max(consts_obj.ONE, abs(step)) ...
+                                     >= sl ...
+                                     & step ...
+                                       - 100.0 * consts_obj.EPS * max(consts_obj.ONE, abs(step)) ...
+                                       <= su, 'all'), "SL <= STEP <= SU", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -18,13 +52,19 @@ classdef xinbd_mod
 
             s = max(sl, min(su, step));
             x = max(xl, min(xu, xbase + s));
-            x(s <= sl) = xl(s <= sl);
-            x(s >= su) = xu(s >= su);
+            x(linalg_obj.trueloc(s <= sl)) = xl(linalg_obj.trueloc(s <= sl));
+            x(linalg_obj.trueloc(s >= su)) = xu(linalg_obj.trueloc(s >= su));
 
             %====================%
             %  Calculation ends  %
             %====================%
 
+            if consts_obj.DEBUGGING
+                debug_obj.assert(numel(x) == n && all(x >= xl & x <= xu, 'all'), ...
+                                 "SIZE(X) == N, XL <= X <= XU", srname);
+                debug_obj.assert(all(x <= xl | step > sl, 'all'), "X == XL if STEP <= SL", srname);
+                debug_obj.assert(all(x >= xu | step < su, 'all'), "X == XU if STEP >= SU", srname);
+            end
 
         end
 

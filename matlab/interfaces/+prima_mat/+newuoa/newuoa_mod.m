@@ -153,25 +153,41 @@ classdef newuoa_mod
             %   %--------------------------------------------------------------------------%
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
             consts_obj = prima_mat.common.consts_mod();
 
             debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            memory_obj = prima_mat.common.memory_mod();
 
             preproc_obj = prima_mat.common.preproc_mod();
+            string_obj = prima_mat.common.string_mod();
 
             % Solver-specific modules
             newuob_obj = prima_mat.newuoa.newuob_mod();
 
+            % Compulsory arguments
+            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
+
+
+            % Optional inputs
+
+
+            % Optional outputs
+
+
             fhist = [];
             xhist = [];
 
+            % Local variables
             solver = "NEWUOA";
+            srname = "NEWUOA";
 
             eta1_loc = NaN;
 
+            % Sizes
             n = numel(x);
 
             % Replace any NaN in X by ZERO and Inf/-Inf in X by REALMAX/-REALMAX.
@@ -191,8 +207,8 @@ classdef newuoa_mod
             addParameter(ipObj, 'iprint', consts_obj.IPRINT_DFT);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
-            addParameter(ipObj, 'gamma1', 0.5);
-            addParameter(ipObj, 'gamma2', 2.0);
+            addParameter(ipObj, 'gamma1', consts_obj.HALF);
+            addParameter(ipObj, 'gamma2', consts_obj.TWO);
             addParameter(ipObj, 'maxhist', NaN);
             addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
@@ -215,8 +231,8 @@ classdef newuoa_mod
                 % combine the evaluation of PRESENT(RHOEND) and the evaluation of IS_FINITE(RHOEND) as
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
-                if isfinite(rhoend) && rhoend > 0
-                    rhobeg_loc = max(10.0 * rhoend, consts_obj.RHOBEG_DFT);
+                if infnan_obj.is_finite(rhoend) && rhoend > 0
+                    rhobeg_loc = max(consts_obj.TEN * rhoend, consts_obj.RHOBEG_DFT);
                 else
                     rhobeg_loc = consts_obj.RHOBEG_DFT;
                 end
@@ -228,7 +244,7 @@ classdef newuoa_mod
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
                 rhoend_loc = ...
-                    max(eps, ...
+                    max(consts_obj.EPS, ...
                         min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, ...
                             consts_obj.RHOEND_DFT));
             else
@@ -248,16 +264,16 @@ classdef newuoa_mod
                 eta1_loc = eta1;
             elseif ~ismember('eta2', ipObj.UsingDefaults)
                 if eta2 > 0 && eta2 < 1
-                    eta1_loc = max(eps, eta2 / 7.0);
+                    eta1_loc = max(consts_obj.EPS, eta2 / 7.0);
                 end
             else
-                eta1_loc = 0.1;
+                eta1_loc = consts_obj.TENTH;
             end
 
             if ~ismember('eta2', ipObj.UsingDefaults)
                 eta2_loc = eta2;
             elseif eta1_loc > 0 && eta1_loc < 1
-                eta2_loc = (eta1_loc + 2.0) / 3.0;
+                eta2_loc = (eta1_loc + consts_obj.TWO) / 3.0;
             else
                 eta2_loc = 0.7;
             end
@@ -304,6 +320,9 @@ classdef newuoa_mod
             % Copy XHIST_LOC to XHIST if needed.
             if nargout >= 4
                 nhist = min(nf_loc, size(xhist_loc, 2));
+                %----------------------------------------------------%
+                memory_obj.alloc_rmatrix_sp(n, nhist); % Removable in F2003.
+                %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
                 % 0. Allocate XHIST as long as it is present, even if the size is 0; otherwise, it will be
@@ -325,6 +344,9 @@ classdef newuoa_mod
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 5
                 nhist = min(nf_loc, numel(fhist_loc));
+                %--------------------------------------------------%
+                memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
+                %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
@@ -332,8 +354,31 @@ classdef newuoa_mod
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
             if nargout >= 4 && maxhist_loc < nf_loc
                 debug_obj.warning(solver, ...
-                                  "Only the history of the last " + int2str(maxhist_loc) ...
+                                  "Only the history of the last " ...
+                                  + string_obj.int2str(maxhist_loc) ...
                                   + " function evaluation(s) is recorded");
+            end
+
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(nf_loc <= maxfun_loc, "NF <= MAXFUN", srname);
+                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
+                                 "SIZE(X) == N, X does not contain NaN", srname);
+                nhist = min(nf_loc, maxhist_loc);
+                if nargout >= 4
+                    debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == nhist, ...
+                                     "SIZE(XHIST) == [N, NHIST]", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist), 'all'), ...
+                                     "XHIST does not contain NaN", srname);
+                end
+                if nargout >= 5
+                    debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) ...
+                                          | infnan_obj.is_posinf(fhist), 'all'), ...
+                                     "FHIST does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(fhist < f_loc, 'all'), "F is the smallest in FHIST", ...
+                                     srname);
+                end
             end
 
         end

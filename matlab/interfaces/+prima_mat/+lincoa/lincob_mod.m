@@ -68,12 +68,13 @@ classdef lincob_mod
             % Generic models
             checkexit_obj = prima_mat.common.checkexit_mod();
             consts_obj = prima_mat.common.consts_mod();
-
+            debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
+            infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
-
+            linalg_obj = prima_mat.common.linalg_mod();
+            memory_obj = prima_mat.common.memory_mod();
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
@@ -88,8 +89,33 @@ classdef lincob_mod
             trustregion_lincoa_obj = prima_mat.lincoa.trustregion_lincoa_mod();
             update_lincoa_obj = prima_mat.lincoa.update_lincoa_mod();
 
-            solver = "LINCOA";
+            % Inputs
+            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
+
+            % Aeq(Meq, N)
+            % Aineq(Mineq, N)
+            % AMAT(N, M)
+            % Beq(Meq)
+            % Bineq(Mineq)
+            % BVEC(M)
+
+
+            % In-outputs
+            % X(N)
+
+            % Outputs
+
+
+            % CHIST(MAXCHIST)
+
+
+            % FHIST(MAXFHIST)
+            % XHIST(N, MAXXHIST)
+
+            % Local variables
+            solver = "LINCOA";
+            srname = "LINCOB";
             iact = NaN(size(bvec));
             idz = NaN;
 
@@ -122,32 +148,72 @@ classdef lincob_mod
 
             rfac = NaN(numel(x));
 
+            xbase = NaN(size(x));
+
             xfilt = NaN(numel(x), maxfilt);
 
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
-
+            % Sizes.
             m = numel(bvec);
             n = numel(x);
+            maxxhist = size(xhist, 2);
+            maxfhist = numel(fhist);
+            maxchist = numel(chist);
+            maxhist = max([maxxhist, maxfhist, maxchist]);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(abs(iprint) <= 3, "IPRINT is 0, 1, -1, 2, -2, 3, or -3", srname);
+                debug_obj.assert(m >= 0, "M >= 0", srname);
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(npt >= n + 2, "NPT >= N+2", srname);
+                debug_obj.assert(maxfun >= npt + 1, "MAXFUN >= NPT+1", srname);
+                debug_obj.assert(size(Aeq, 1) == numel(beq) && size(Aeq, 2) == n, ...
+                                 "SIZE(Aeq) == [SIZE(Beq), N]", srname);
+                debug_obj.assert(size(Aineq, 1) == numel(bineq) && size(Aineq, 2) == n, ...
+                                 "SIZE(Aineq) == [SIZE(Bineq), N]", srname);
+                debug_obj.assert(size(amat, 1) == n && size(amat, 2) == m, ...
+                                 "SIZE(AMAT) == [N, M]", srname);
+                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", ...
+                                 srname);
+                debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, ...
+                                 "0 < GAMMA1 < 1 < GAMMA2", srname);
+                debug_obj.assert(rhobeg >= rhoend && rhoend > 0, "RHOBEG >= RHOEND > 0", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(x), 'all'), "X is finite", srname);
+                debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", ...
+                                 srname);
+                debug_obj.assert(maxfilt >= min(consts_obj.MIN_MAXFILT, maxfun) ...
+                                 && maxfilt <= maxfun, ...
+                                 "MIN(MIN_MAXFILT, MAXFUN) <= MAXFILT <= MAXFUN", srname);
+                debug_obj.assert(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", ...
+                                 srname);
+                debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, ...
+                                 "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
+                debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, ...
+                                 "SIZE(FHIST) == 0 or MAXHIST", srname);
+                debug_obj.assert(maxchist * (maxchist - maxhist) == 0, ...
+                                 "SIZE(CHIST) == 0 or MAXHIST", srname);
+            end
 
             %====================%
             % Calculation starts %
             %====================%
 
             % IXL and IXU are the indices of the nontrivial lower and upper bounds, respectively.
-
-
-            ixl = find(xl > -consts_obj.BOUNDMAX);
-            ixu = find(xu < consts_obj.BOUNDMAX);
+            memory_obj.alloc_ivector(nnz(xl > -consts_obj.BOUNDMAX)); % Removable in F2003.
+            memory_obj.alloc_ivector(nnz(xu < consts_obj.BOUNDMAX)); % Removable in F2003.
+            ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
+            ixu = linalg_obj.trueloc(xu < consts_obj.BOUNDMAX);
 
             % Initialize B, XBASE, XPT, FVAL, CVAL, and KOPT, together with the history, NF, IJ, and EVALUATED.
             b = bvec;
             [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, subinfo] = ...
                 initialize_lincoa_obj.initxf(calfun, iprint, maxfun, Aeq, Aineq, amat, beq, ...
                                              bineq, ctol, ftarget, rhobeg, xl, xu, x, b, chist, ...
-                                             cval, fhist, fval, xhist, xpt, evaluated);
+                                             cval, fhist, fval, xbase, xhist, xpt, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
 
@@ -168,10 +234,11 @@ classdef lincob_mod
             % iteration due to SHORTD, then RHOMSG will be called with CONSTR and CSTRV uninitialized.
             x = xbase + xpt(:, kopt);
 
-            constr_leq(:) = Aeq * x - beq;
+            constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
             constr(:) = ...
-                [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
-            cstrv = max([0.0; constr], [], 'all');
+                [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
+                 linalg_obj.matprod21(Aineq, x) - bineq];
+            cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
             % Initialize the filter, including XFILT, FFILT, CONFILT, CFILT, and NFILT.
             % N.B.: The filter is used only when selecting which iterate to return. It does not interfere with
@@ -196,13 +263,16 @@ classdef lincob_mod
 
                 % Initialize the quadratic represented by [GOPT, HQ, PQ], so that its gradient at XBASE+XOPT is
                 % GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
-                hq(:) = 0.0;
+                hq(:) = consts_obj.ZERO;
                 pq(:) = powalg_obj.omega_mul(idz, zmat, fval);
-                gopt(:) = bmat(:, 1:npt) * fval + powalg_obj.hess_mul(xpt(:, kopt), xpt, pq);
+                gopt(:) = ...
+                    linalg_obj.matprod21(bmat(:, 1:npt), fval) ...
+                    + powalg_obj.hess_mul(xpt(:, kopt), xpt, pq);
                 pqalt = pq;
                 galt = gopt;
-                if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
-                     && all(isfinite(pq), 'all'))
+                if ~(all(infnan_obj.is_finite(gopt), 'all') ...
+                     && all(infnan_obj.is_finite(hq), 'all') ...
+                     && all(infnan_obj.is_finite(pq), 'all'))
                     subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
@@ -215,22 +285,49 @@ classdef lincob_mod
                 kopt = selectx_obj.selectx(ffilt(1:nfilt), cfilt(1:nfilt), cweight, ctol);
                 x = xfilt(:, kopt);
                 f = ffilt(kopt);
-                constr_leq(:) = Aeq * x - beq;
+                constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
                 constr(:) = ...
                     [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
-                     Aineq * x - bineq];
-                cstrv = max([0.0; constr], [], 'all');
+                     linalg_obj.matprod21(Aineq, x) - bineq];
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
                 message_obj.retmsg(solver, info, iprint, nf, f, x, 'cstrv', cstrv, ...
                                    'constr', constr);
                 % Arrange CHIST, FHIST, and XHIST so that they are in the chronological order.
                 [xhist, fhist, chist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist);
-
+                % Postconditions
+                if consts_obj.DEBUGGING
+                    debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
+                    debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
+                                     "SIZE(X) == N, X does not contain NaN", srname);
+                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                                     "F is not NaN/+Inf", srname);
+                    debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
+                                     "SIZE(XHIST) == [N, MAXXHIST]", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), ...
+                                          'all'), "XHIST does not contain NaN", srname);
+                    % The last calculated X can be Inf (finite + finite can be Inf numerically).
+                    debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
+                                          | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                          'all'), "FHIST does not contain NaN/+Inf", srname);
+                    debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
+                    debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 ...
+                                          | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) ...
+                                          | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), ...
+                                          'all'), ...
+                                     "CHIST does not contain negative values or NaN/+Inf", srname);
+                    nhist = min([nf, maxfhist, maxchist]);
+                    debug_obj.assert(~any(selectx_obj.isbetter10(fhist(1:nhist), chist(1:nhist), ...
+                                                                 f, cstrv, ctol), 'all'), ...
+                                     "No point in the history is better than X", srname);
+                end
                 return
             end
 
             % Initialize RESCON.
-            rescon = max(b - amat.' * xpt(:, kopt), 0.0);
-            rescon(rescon >= rhobeg) = -rescon(rescon >= rhobeg);
+            rescon = max(b - linalg_obj.matprod12(xpt(:, kopt), amat), consts_obj.ZERO);
+            rescon(linalg_obj.trueloc(rescon >= rhobeg)) = ...
+                -rescon(linalg_obj.trueloc(rescon >= rhobeg));
             %%MATLAB: rescon(rescon >= rhobeg) = -rescon(rescon >= rhobeg)
 
             % Set some more initial values.
@@ -241,17 +338,17 @@ classdef lincob_mod
             % No need to initialize SHORTD unless MAXTR < 1, but some compilers may complain if we do not do it.
             rho = rhobeg;
             delta = rho;
-            ratio = -1.0;
-            dnorm_rec(:) = realmax;
+            ratio = -consts_obj.ONE;
+            dnorm_rec(:) = consts_obj.REALMAX;
             shortd = false;
 
             qalt_better(:) = false;
             knew_tr = 0;
 
-            qfac(:) = eye(n);
-            rfac(:) = 0.0;
+            qfac(:) = linalg_obj.eye1(n);
+            rfac(:) = consts_obj.ZERO;
             nact = 0;
-            iact(:) = (1:m).';
+            iact(:) = linalg_obj.linspace_i(1, m, m);
 
             % If DELTA <= GAMMA3*RHO after an update, we set DELTA to RHO. GAMMA3 must be less than GAMMA2. The
             % reason is as follows. Imagine a very successful step with DENORM = the un-updated DELTA = RHO.
@@ -260,7 +357,7 @@ classdef lincob_mod
             % T. M. Ragonneau's thesis: "Model-Based Derivative-Free Optimization Methods and Software".
             % According to test on 20230613, for LINCOA, this Powellful updating scheme of DELTA works evidently
             % better than setting directly DELTA = MAX(NEW_DELTA, RHO).
-            gamma3 = max(1.0, min(0.75 * gamma2, 1.5));
+            gamma3 = max(consts_obj.ONE, min(0.75 * gamma2, 1.5));
 
             % MAXTR is the maximal number of trust-region iterations. Here, we set it to HUGE(MAXTR) - 1 so that
             % the algorithm will not terminate due to MAXTR. However, this may not be allowed in other languages
@@ -285,7 +382,7 @@ classdef lincob_mod
                 [iact, nact, qfac, rfac, d, ngetact] = ...
                     trustregion_lincoa_obj.trstep(amat, delta, gopt, hq, pq, rescon, trtol, xpt, ...
                                                   iact, nact, qfac, rfac, d);
-                dnorm = min(delta, norm(d));
+                dnorm = min(delta, linalg_obj.p_norm(d));
 
                 % A trust region step is applied whenever its length is at least 0.5*DELTA. It is also
                 % applied if its length is at least 0.1999*DELTA and if a line search of TRSTEP has caused a
@@ -295,7 +392,7 @@ classdef lincob_mod
                 % considered nearly active if the point under consideration is within 0.2*DELTA to the boundary
                 % of the constraint. See the subroutine GETACT and Section 3 of Powell (2015) for more details.
                 % `<=` works better than `<` in case of underflow.
-                shortd = dnorm <= 0.5 * delta && ngetact < 2 || dnorm <= 0.1999 * delta;
+                shortd = dnorm <= consts_obj.HALF * delta && ngetact < 2 || dnorm <= 0.1999 * delta;
                 %------------------------------------------------------------------------------------------%
                 % The SHORTD defined above needs NGETACT, which relies on Powell's trust region subproblem
                 % solver. If a different subproblem solver is used, we can take the following SHORTD adopted
@@ -314,7 +411,7 @@ classdef lincob_mod
                 % Zaikun 20230609: This does not exist in NEWUOA/BOBYQA/UOBYQA. Try it!
                 if delta > rho || ~shortd
                     % Another possibility: IF (DELTA > RHO) THEN
-                    dnorm_rec(:) = realmax;
+                    dnorm_rec(:) = consts_obj.REALMAX;
                 end
 
                 % Set QRED to the reduction of the quadratic model when the move D is made from XOPT. QRED
@@ -322,7 +419,7 @@ classdef lincob_mod
                 qred = ...
                     -powalg_obj.quadinc_d0(d, xpt, gopt, pq, ...
                                            'hq', hq); % QRED = Q(XOPT) - Q(XOPT + D)
-                trfail = ~(qred > 1.0e-6 * rho ^ 2); % QRED is tiny/negative or NaN.
+                trfail = ~(qred > 1.0e-6 * fortran.power(rho, 2)); % QRED is tiny/negative or NaN.
 
                 if shortd || trfail
                     % In this case, do nothing but reducing DELTA. Afterward, DELTA < DNORM may occur.
@@ -332,7 +429,7 @@ classdef lincob_mod
                     % infinite cycling, because both REDUCE_RHO and IMPROVE_GEO may end up with FALSE in this
                     % case, which did happen in tests.
                     % 3. The factor HALF works better than TENTH (used in NEWUOA/BOBYQA), 0.2, and 0.7.
-                    delta = 0.5 * delta;
+                    delta = consts_obj.HALF * delta;
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
 
@@ -344,11 +441,11 @@ classdef lincob_mod
                     nf = nf + 1;
 
                     % Evaluate the constraints. They are used only for printing messages.
-                    constr_leq(:) = Aeq * x - beq;
+                    constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
                     constr(:) = ...
                         [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
-                         Aineq * x - bineq];
-                    cstrv = max([0.0; constr], [], 'all');
+                         linalg_obj.matprod21(Aineq, x) - bineq];
+                    cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
                     % Print a message about the function evaluation according to IPRINT.
                     message_obj.fmsg(solver, "Trust region", iprint, nf, delta, f, x, ...
@@ -376,7 +473,8 @@ classdef lincob_mod
                     moderr = f - fval(kopt) + qred;
                     moderr_alt = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, galt, pqalt);
                     qalt_better(:) = ...
-                        [qalt_better(2:numel(qalt_better)); abs(moderr_alt) < 0.1 * abs(moderr)];
+                        [qalt_better(2:numel(qalt_better))
+                         abs(moderr_alt) < consts_obj.TENTH * abs(moderr)];
 
                     % Calculate the reduction ratio by REDRAT, which handles Inf/NaN carefully.
                     ratio = ratio_obj.redrat(fval(kopt) - f, qred, eta1);
@@ -419,9 +517,10 @@ classdef lincob_mod
                         [qalt_better, gopt, pq, hq, galt, pqalt] = ...
                             update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), ...
                                                       xpt(:, kopt), xpt, zmat, qalt_better, ...
-                                                      gopt, pq, hq);
-                        if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
-                             && all(isfinite(pq), 'all'))
+                                                      gopt, pq, hq, galt, pqalt);
+                        if ~(all(infnan_obj.is_finite(gopt), 'all') ...
+                             && all(infnan_obj.is_finite(hq), 'all') ...
+                             && all(infnan_obj.is_finite(pq), 'all'))
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
@@ -429,8 +528,8 @@ classdef lincob_mod
                         % Update RESCON if XOPT is changed.
                         % Zaikun 20221115: Shouldn't we do it after DELTA is updated?
                         rescon = ...
-                            update_lincoa_obj.updateres(ximproved, amat, b, delta, norm(d), ...
-                                                        xpt(:, kopt), rescon);
+                            update_lincoa_obj.updateres(ximproved, amat, b, delta, ...
+                                                        linalg_obj.p_norm(d), xpt(:, kopt), rescon);
                     end
 
                 end % End of IF (SHORTD .OR. TRFAIL). The normal trust-region calculation ends.
@@ -458,9 +557,10 @@ classdef lincob_mod
                 % Powell's version (note that size(dnorm_rec) = 5 in his implementation):
                 %accurate_mod = all(dnorm_rec <= HALF * rho) .or. all(dnorm_rec(3:size(dnorm_rec)) <= TENTH * rho)
                 % CLOSE_ITPSET: Are the interpolation points close to XOPT?
-                distsq(:) = sum((xpt - xpt(:, kopt)) .^ 2, 1);
+                distsq(:) = fortran.sum(fortran.power(xpt - xpt(:, kopt), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
-                close_itpset = all(distsq <= 4.0 * delta ^ 2, 'all'); % Powell's NEWUOA code.
+                close_itpset = ...
+                    all(distsq <= 4.0 * fortran.power(delta, 2), 'all'); % Powell's NEWUOA code.
                 % Below are some alternative definitions of CLOSE_ITPSET.
                 % N.B.: The threshold for CLOSE_ITPSET is at least DELBAR, the trust region radius for GEOSTEP.
                 % %close_itpset = all(distsq <= 4.0_RP * rho**2)  ! Powell's UOBYQA code.
@@ -510,11 +610,11 @@ classdef lincob_mod
 
                 if improve_geo
                     % XPT(:, KNEW_GEO) will become  XOPT + D below. KNEW_GEO /= KOPT unless there is a bug.
-                    [~, knew_geo] = max(distsq);
+                    knew_geo = fortran.maxloc(distsq, 'dim', 1);
 
                     % Set DELBAR, which will be used as the trust-region radius for the geometry-improving
                     % scheme GEOSTEP. Note that DELTA has been updated before arriving here.
-                    delbar = max(0.1 * delta, rho); % Powell's code
+                    delbar = max(consts_obj.TENTH * delta, rho); % Powell's code
                     %delbar = rho  ! Powell's UOBYQA code
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), HALF * delta), rho)  ! Powell's NEWUOA code
                     %delbar = max(min(TENTH * sqrt(maxval(distsq)), delta), rho)  ! Powell's BOBYQA code
@@ -529,11 +629,11 @@ classdef lincob_mod
                     nf = nf + 1;
 
                     % Evaluate the constraints. They are used only for printing messages.
-                    constr_leq(:) = Aeq * x - beq;
+                    constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
                     constr(:) = ...
                         [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
-                         Aineq * x - bineq];
-                    cstrv = max([0.0; constr], [], 'all');
+                         linalg_obj.matprod21(Aineq, x) - bineq];
+                    cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
                     % Print a message about the function evaluation according to IPRINT.
                     message_obj.fmsg(solver, "Geometry", iprint, nf, delbar, f, x, ...
@@ -562,7 +662,8 @@ classdef lincob_mod
                     moderr = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, gopt, pq, 'hq', hq);
                     moderr_alt = f - fval(kopt) - powalg_obj.quadinc_d0(d, xpt, galt, pqalt);
                     qalt_better(:) = ...
-                        [qalt_better(2:numel(qalt_better)); abs(moderr_alt) < 0.1 * abs(moderr)];
+                        [qalt_better(2:numel(qalt_better))
+                         abs(moderr_alt) < consts_obj.TENTH * abs(moderr)];
 
                     % Is the newly generated X better than current best point?
                     ximproved = f < fval(kopt) && feasible;
@@ -585,9 +686,11 @@ classdef lincob_mod
                     % N.B.: Powell's code does this only if XOPT + D is feasible.
                     [qalt_better, gopt, pq, hq, galt, pqalt] = ...
                         update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), ...
-                                                  xpt, zmat, qalt_better, gopt, pq, hq);
-                    if ~(all(isfinite(gopt), 'all') && all(isfinite(hq), 'all') ...
-                         && all(isfinite(pq), 'all'))
+                                                  xpt, zmat, qalt_better, gopt, pq, hq, galt, ...
+                                                  pqalt);
+                    if ~(all(infnan_obj.is_finite(gopt), 'all') ...
+                         && all(infnan_obj.is_finite(hq), 'all') ...
+                         && all(infnan_obj.is_finite(pq), 'all'))
                         info = infos_obj.NAN_INF_MODEL;
                         break
                     end
@@ -595,8 +698,8 @@ classdef lincob_mod
                     % Update RESCON. Zaikun 20221115: Currently, UPDATERES does not update RESCON if XIMPROVED
                     % is FALSE. Shouldn't we do it whenever DELTA is updated? Have we MISUNDERSTOOD RESCON?
                     rescon = ...
-                        update_lincoa_obj.updateres(ximproved, amat, b, delta, norm(d), ...
-                                                    xpt(:, kopt), rescon);
+                        update_lincoa_obj.updateres(ximproved, amat, b, delta, ...
+                                                    linalg_obj.p_norm(d), xpt(:, kopt), rescon);
                 end % End of IF (IMPROVE_GEO). The procedure of improving geometry ends.
 
                 % The calculations with the current RHO are complete. Enhance the resolution of the algorithm
@@ -606,29 +709,30 @@ classdef lincob_mod
                         info = infos_obj.SMALL_TR_RADIUS;
                         break
                     end
-                    delta = max(0.5 * rho, redrho_obj.redrho(rho, rhoend));
+                    delta = max(consts_obj.HALF * rho, redrho_obj.redrho(rho, rhoend));
                     rho = redrho_obj.redrho(rho, rhoend);
                     % Print a message about the reduction of RHO according to IPRINT.
                     message_obj.rhomsg(solver, iprint, nf, delta, fval(kopt), rho, ...
                                        xbase + xpt(:, kopt), 'cstrv', cstrv, 'constr', constr);
                     % DNORM_REC is corresponding to the latest function evaluations with the current RHO.
                     % Update it after reducing RHO.
-                    dnorm_rec(:) = realmax;
+                    dnorm_rec(:) = consts_obj.REALMAX;
                 end % End of IF (REDUCE_RHO). The procedure of reducing RHO ends.
 
                 % Shift XBASE if XOPT may be too far from XBASE.
                 % Powell's original criterion for shifting XBASE: before a trust region step or a geometry step,
                 % shift XBASE if SUM(XOPT**2) >= 1.0E3*DELTA**2.
-                if sum(xpt(:, kopt) .^ 2, 'all') >= 1000.0 * delta ^ 2
+                if fortran.sum(fortran.power(xpt(:, kopt), 2), 'all') ...
+                   >= 1000.0 * fortran.power(delta, 2)
                     % Other possible criteria: SUM(XOPT**2) >= 1.0E4*DELTA**2, SUM(XOPT**2) >= 1.0E3*RHO**2.
-                    b = b - amat.' * xpt(:, kopt);
+                    b = b - linalg_obj.matprod12(xpt(:, kopt), amat);
                     [xbase, xpt, bmat, hq] = ...
                         shiftbase_obj.shiftbase_lfqint(kopt, xbase, xpt, zmat, bmat, pq, hq, ...
                                                        'idz', idz);
                     % SHIFTBASE shifts XBASE to XBASE + XOPT and XOPT to 0.
                     pqalt(:) = powalg_obj.omega_mul(idz, zmat, fval - fval(kopt));
                     galt(:) = ...
-                        bmat(:, 1:npt) * (fval - fval(kopt)) ...
+                        linalg_obj.matprod21(bmat(:, 1:npt), fval - fval(kopt)) ...
                         + powalg_obj.hess_mul(xpt(:, kopt), xpt, pqalt);
                 end
 
@@ -646,15 +750,16 @@ classdef lincob_mod
             end % End of DO TR = 1, MAXTR. The iterative procedure ends.
 
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
-            if info == infos_obj.SMALL_TR_RADIUS && shortd && dnorm > 0.1 * rhoend && nf < maxfun
+            if info == infos_obj.SMALL_TR_RADIUS && shortd && dnorm > consts_obj.TENTH * rhoend ...
+               && nf < maxfun
                 x = xbase + (xpt(:, kopt) + d);
                 f = evaluate_obj.evaluatef(calfun, x);
                 nf = nf + 1;
-                constr_leq(:) = Aeq * x - beq;
+                constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
                 constr(:) = ...
                     [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
-                     Aineq * x - bineq];
-                cstrv = max([0.0; constr], [], 'all');
+                     linalg_obj.matprod21(Aineq, x) - bineq];
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
                 % Print a message about the function evaluation according to IPRINT.
                 % Zaikun 20230512: DELTA has been updated. RHO is only indicative here. TO BE IMPROVED.
                 message_obj.fmsg(solver, "Trust region", iprint, nf, rho, f, x, 'cstrv', cstrv, ...
@@ -671,10 +776,11 @@ classdef lincob_mod
             kopt = selectx_obj.selectx(ffilt(1:nfilt), cfilt(1:nfilt), cweight, ctol);
             x = xfilt(:, kopt);
             f = ffilt(kopt);
-            constr_leq(:) = Aeq * x - beq;
+            constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
             constr(:) = ...
-                [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq; Aineq * x - bineq];
-            cstrv = max([0.0; constr], [], 'all');
+                [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
+                 linalg_obj.matprod21(Aineq, x) - bineq];
+            cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
             % Deallocate IXL and IXU as they have finished their job.
 
@@ -689,6 +795,33 @@ classdef lincob_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
+                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
+                                 "SIZE(X) == N, X does not contain NaN", srname);
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                                 "F is not NaN/+Inf", srname);
+                debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
+                                 "SIZE(XHIST) == [N, MAXXHIST]", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), ...
+                                      'all'), "XHIST does not contain NaN", srname);
+                % The last calculated X can be Inf (finite + finite can be Inf numerically).
+                debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
+                                      | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                      'all'), "FHIST does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
+                debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 ...
+                                      | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) ...
+                                      | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), ...
+                                      'all'), ...
+                                 "CHIST does not contain negative values or NaN/+Inf", srname);
+                nhist = min([nf, maxfhist, maxchist]);
+                debug_obj.assert(~any(selectx_obj.isbetter10(fhist(1:nhist), chist(1:nhist), f, ...
+                                                             cstrv, ctol), 'all'), ...
+                                 "No point in the history is better than X", srname);
+            end
 
         end
 

@@ -55,8 +55,23 @@ classdef trustregion_cobyla_mod
             % 3. There are probably better algorithms available for the trust-region linear programming problem.
             %--------------------------------------------------------------------------------------------------%
 
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
 
-            d = NaN(size(A, 1), 1);
+            % Inputs
+            % A(N, M)
+            % B(M)
+
+            % G(N)
+
+            % Outputs
+            d = NaN(size(A, 1), 1); % D(N)
+
+            % Local variables
+            srname = "TRSTLP";
 
             iact = NaN(numel(b) + 1, 1);
 
@@ -67,7 +82,19 @@ classdef trustregion_cobyla_mod
             vmultc = NaN(numel(b) + 1, 1);
             z = NaN(numel(d));
 
+            % Sizes
             m = size(A, 2);
+            n = size(A, 1);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(m >= 0, "M >= 0", srname);
+                debug_obj.assert(numel(g) == n, "SIZE(G) == N", srname);
+                debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
+                debug_obj.assert(numel(b) == m, "SIZE(B) == M", srname);
+                debug_obj.assert(delta > 0, "DELTA > 0", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -76,7 +103,7 @@ classdef trustregion_cobyla_mod
             % Form A_aug and B_aug. This allows the gradient of the objective function to be regarded as the
             % gradient of a constraint in the second stage.
             A_aug(:) = [reshape(A, 1, []), g.']; %%MATLAB: A_aug = [A, g];
-            b_aug(:) = [b; 0.0]; %%MATLAB: b_aug = [b; 0];
+            b_aug(:) = [b; consts_obj.ZERO]; %%MATLAB: b_aug = [b; 0];
 
             % Scale the problem if A_aug contains large values. Otherwise, floating point exceptions may occur.
             % Note that the trust-region step is scale invariant.
@@ -85,7 +112,8 @@ classdef trustregion_cobyla_mod
             for i = 1:m + 1                % Note that SIZE(A, 2) = SIZE(B) = M + 1 /= M.
                 if max(abs(A_aug(:, i))) > 1.0e12
                     modscal = ...
-                        max(2.0 * realmin, 1.0 / max(abs(A_aug(:, i)))); % MAX: avoid underflow.
+                        max(consts_obj.TWO * consts_obj.REALMIN, ...
+                            consts_obj.ONE / max(abs(A_aug(:, i)))); % MAX: avoid underflow.
                     A_aug(:, i) = A_aug(:, i) * modscal;
                     b_aug(i) = b_aug(i) * modscal;
                 end
@@ -104,7 +132,14 @@ classdef trustregion_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(d), 'all'), "D is finite", srname);
+                % Due to rounding, it may happen that ||D|| > DELTA, but ||D|| > 2*DELTA is highly improbable.
+                debug_obj.assert(linalg_obj.p_norm(d) <= consts_obj.TWO * delta, ...
+                                 "||D|| <= 2*DELTA", srname);
+            end
         end
         function [iact, nact, d, vmultc, z] = ...
                 trstlp_sub(~, iact, nact, stage, A, b, delta, d, vmultc, z)
@@ -119,9 +154,28 @@ classdef trustregion_cobyla_mod
             % 5. STEP. STEP <= CVIOL in stage 1.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
+
+            % Inputs
+
+            % A(N, MCON)
+            % B(M)
+
+
+            % In-outputs
+            % IACT(MCON)
+
+            % D(N)
+            % VMULTC(MCON)
+            % Z(N, N)
+
+            % Local variables
+            srname = "TRSTLP_SUB";
 
             %real(RP) :: cvold
             cvsabs = NaN(size(b));
@@ -135,8 +189,37 @@ classdef trustregion_cobyla_mod
             zdasav = NaN(size(z, 2), 1);
             zdota = NaN(size(z, 2), 1);
 
+            % Sizes
             mcon = size(A, 2);
             n = size(A, 1);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(stage == 1 || stage == 2, "STAGE == 1 or 2", srname);
+                debug_obj.assert(mcon >= 0 && stage == 1 || mcon >= 1 && stage == 2, ...
+                                 "MCON >= 1 in stage 1 and MCON >= 0 in stage 2", srname);
+                debug_obj.assert(numel(b) == mcon, "SIZE(B) == MCON", srname);
+                debug_obj.assert(numel(iact) == mcon, "SIZE(IACT) == MCON", srname);
+                debug_obj.assert(numel(vmultc) == mcon, "SIZE(VMULTC) == MCON", srname);
+                debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
+                debug_obj.assert(size(z, 1) == n && size(z, 2) == n, "SIZE(Z) == [N, N]", srname);
+                debug_obj.assert(delta > 0, "DELTA > 0", srname);
+                if stage == 2
+                    debug_obj.assert(all(infnan_obj.is_finite(d), 'all') ...
+                                     && linalg_obj.p_norm(d) <= consts_obj.TWO * delta, ...
+                                     "D is finite and ||D|| <= 2*DELTA at the beginning of stage 2", ...
+                                     srname);
+                    debug_obj.assert(nact >= 0 && nact <= min(mcon, n), ...
+                                     "0 <= NACT <= MIN(MCON, N) at the beginning of stage 2", ...
+                                     srname);
+                    debug_obj.assert(floor(-log10(eps('double'))) < floor(-log10(eps('double'))) ...
+                                     || all(vmultc(1:mcon - 1) >= 0, 'all'), ...
+                                     "VMULTC >= 0 at the beginning of stage 2", srname);
+                    % N.B.: Stage 1 defines only VMULTC(1:M); VMULTC(M+1) is undefined!
+
+                end
+            end
 
             %====================%
             % Calculation starts %
@@ -144,47 +227,50 @@ classdef trustregion_cobyla_mod
 
             % Initialization according to STAGE.
             if stage == 1
-                iact = (1:mcon).'; %%MATLAB: iact = (1:mcon);  % Row vector
+                iact = ...
+                    linalg_obj.linspace_i(1, mcon, mcon); %%MATLAB: iact = (1:mcon);  % Row vector
                 % N.B.: 1. The MATLAB version of LINSPACE returns a row vector. Take a transpose if needed.
                 % 2. In MATLAB, linspace(1, mcon, mcon) can also be written as (1:mcon).
                 nact = 0;
-                d(:) = 0.0;
-                cviol = max([0.0; -b], [], 'all');
+                d(:) = consts_obj.ZERO;
+                cviol = linalg_obj.maximum([consts_obj.ZERO; -b]);
                 vmultc = cviol + b;
-                z = eye(n);
+                z = linalg_obj.eye1(n);
                 if mcon == 0 || cviol <= 0
                     % Check whether a quick return is possible. Make sure the In-outputs have been initialized.
                     return
                 end
 
-                if all(isnan(b), 'all')
+                if all(infnan_obj.is_nan_sp(b), 'all')
                     return
                 else
-                    [~, icon] = min(b, [], 'omitnan');
+                    icon = fortran.maxloc(-b, 'mask', ~infnan_obj.is_nan_sp(b), 'dim', 1);
                     %%MATLAB: [~, icon] = max(b, [], 'omitnan');
                 end
                 m = mcon;
-                sdirn(:) = 0.0;
+                sdirn(:) = consts_obj.ZERO;
             else
-                if sum(d .* d, 'all') >= delta ^ 2
+                if linalg_obj.inprod(d, d) >= fortran.power(delta, 2)
                     % Check whether a quick return is possible.
                     return
                 end
 
                 iact(mcon) = mcon;
-                vmultc(mcon) = 0.0;
+                vmultc(mcon) = consts_obj.ZERO;
                 m = mcon - 1;
                 icon = mcon;
 
                 % In Powell's code, stage 2 uses the ZDOTA and CVIOL calculated by stage 1. Here we re-calculate
                 % them so that they need not be passed from stage 1 to 2, and hence the coupling is reduced.
-                cviol = max([0.0; A(:, 1:m).' * d - b(1:m)], [], 'all');
+                cviol = ...
+                    linalg_obj.maximum1([consts_obj.ZERO
+                                         linalg_obj.matprod12(d, A(:, 1:m)) - b(1:m)]);
             end
-            zdota(1:nact) = arrayfun(@(k) sum(z(:, k) .* A(:, iact(k)), 'all'), (1:nact)');
+            zdota(1:nact) = arrayfun(@(k) linalg_obj.inprod(z(:, k), A(:, iact(k))), (1:nact)');
             %%MATLAB: zdota(1:nact) = sum(z(:, 1:nact) .* A(:, iact(1:nact)), 1);  % Row vector
 
             % More initialization.
-            optold = realmax;
+            optold = consts_obj.REALMAX;
             nactold = nact;
             nfail = 0;
 
@@ -198,13 +284,16 @@ classdef trustregion_cobyla_mod
             % this, we set the maximal number of iterations to MAXITER, and terminate if Inf/NaN occurs in D.
             % The formulation of MAXITER below contains a precaution against overflow. In MATLAB/Python/Julia/R,
             % we can write maxiter = min(10000, 100*max(m, n))
-            maxiter = fix(min(10 ^ min(4, 9), 100 * max(m, n)));
+            maxiter = fix(min(fortran.power(10, min(4, 9)), 100 * max(m, n)));
             for iter = 1:maxiter
-
+                if consts_obj.DEBUGGING
+                    debug_obj.assert(floor(-log10(eps('double'))) < floor(-log10(eps('double'))) ...
+                                     || all(vmultc >= 0, 'all'), "VMULTC >= 0", srname);
+                end
                 if stage == 1
                     optnew = cviol;
                 else
-                    optnew = sum(d .* A(:, mcon), 'all');
+                    optnew = linalg_obj.inprod(d, A(:, mcon));
                 end
 
                 % End the current stage of the calculation if 3 consecutive iterations have either failed to
@@ -236,10 +325,10 @@ classdef trustregion_cobyla_mod
                         % N.B.: It is problematic to index arrays using [NACT, ICON] when NACT == ICON.
                         % Zaikun 20211012: Why should VMULTC(NACT) = 0?
                         if nact ~= icon
-                            vmultc([icon, nact]) = [vmultc(nact), 0.0];
+                            vmultc([icon, nact]) = [vmultc(nact), consts_obj.ZERO];
                             iact([icon, nact]) = iact([nact, icon]);
                         else
-                            vmultc(nact) = 0.0;
+                            vmultc(nact) = consts_obj.ZERO;
                         end
                     else
                         % Zaikun 20211011:
@@ -258,27 +347,29 @@ classdef trustregion_cobyla_mod
                         end
                         % VMULTD(NACT+1:MCON) is not used, but we have to initialize it in Fortran, or compilers
                         % complain about the WHERE construct below (another solution: restrict WHERE to 1:NACT).
-                        vmultd(nact + 1:mcon) = -1.0; % SIZE(VMULTD) = MCON
+                        vmultd(nact + 1:mcon) = -consts_obj.ONE; % SIZE(VMULTD) = MCON
 
                         % Revise the Lagrange multipliers. The revision is not applicable to VMULTC(NACT + 1:M).
-                        fracmult(:) = realmax;
+                        fracmult(:) = consts_obj.REALMAX;
                         fracmult(vmultd > 0 & iact <= m) = ...
                             vmultc(vmultd > 0 & iact <= m) ./ vmultd(vmultd > 0 & iact <= m);
                         %%MATLAB: mask = (vmultd > 0 & iact <= m); fracmult(mask) = vmultc(mask) / vmultd(mask);
                         % Only the places with VMULTD > 0 and IACT <= M is relevant blow, if any.
                         frac = min(fracmult(1:nact)); % FRACMULT(NACT+1:MCON) may contain garbage.
-                        vmultc(1:nact) = max(0.0, vmultc(1:nact) - frac * vmultd(1:nact));
+                        vmultc(1:nact) = ...
+                            max(consts_obj.ZERO, vmultc(1:nact) - frac * vmultd(1:nact));
 
                         % Reorder the active constraints so that the one to be replaced is at the end of the list.
                         % Exit if the new value of ZDOTA(NACT) is not acceptable. Powell's condition for the
                         % following IF: .NOT. ABS(ZDOTA(NACT)) > 0. Note that it is different from
                         % 'ABS(ZDOTA(NACT) <= 0)', as ZDOTA(NACT) can be NaN.
                         % N.B.: We cannot arrive here with NACT == 0, which should have triggered an exit above.
-                        if isnan(zdota(nact)) || abs(zdota(nact)) <= eps ^ 2
+                        if infnan_obj.is_nan_sp(zdota(nact)) ...
+                           || abs(zdota(nact)) <= fortran.power(consts_obj.EPS, 2)
                             break
                         end
                         vmultc([icon, nact]) = ...
-                            [0.0, frac]; % VMULTC([ICON, NACT]) is valid as ICON > NACT.
+                            [consts_obj.ZERO, frac]; % VMULTC([ICON, NACT]) is valid as ICON > NACT.
                         iact([icon, nact]) = iact([nact, icon]);
                     end
 
@@ -305,7 +396,8 @@ classdef trustregion_cobyla_mod
 
                     % Powell's code does not have the following. It avoids subsequent floating point exceptions.
                     %------------------------------------------------------------------------------------------%
-                    if isnan(zdota(nact)) || abs(zdota(nact)) <= eps ^ 2
+                    if infnan_obj.is_nan_sp(zdota(nact)) ...
+                       || abs(zdota(nact)) <= fortran.power(consts_obj.EPS, 2)
                         break
                     end
                     %------------------------------------------------------------------------------------------%
@@ -316,10 +408,10 @@ classdef trustregion_cobyla_mod
                     if stage == 1
                         sdirn = ...
                             sdirn ...
-                            - (sum(sdirn .* A(:, iact(nact)), 'all') + 1.0) / zdota(nact) ...
-                              * z(:, nact);
+                            - (linalg_obj.inprod(sdirn, A(:, iact(nact))) + consts_obj.ONE) ...
+                              / zdota(nact) * z(:, nact);
                     else
-                        sdirn = -(1.0 / zdota(nact)) * z(:, nact);
+                        sdirn = -(consts_obj.ONE / zdota(nact)) * z(:, nact);
                         % SDIRN = Z(:, NACT)/(A(:,IACT(NACT))^T*Z(:, NACT))
                         % SDIRN^T*A(:, IACT(NACT)) = 1, SDIRN is orthogonal to A(:, IACT(1:NACT-1)) and is
                         % parallel to Z(:, NACT).
@@ -328,9 +420,7 @@ classdef trustregion_cobyla_mod
                     % Delete the constraint with the index IACT(ICON) from the active set, which is done by
                     % reordering IACT(ICONT:NACT) into [IACT(ICON+1:NACT), IACT(ICON)] by pairwise exchanges
                     % and then reduce NACT to NACT - 1. In theory, ICON > 0.
-                    if ~(icon > 0)
-                        error("ICON > 0");
-                    end
+                    debug_obj.validate(icon > 0, "ICON > 0", srname);
                     [z, Rdiag_slice] = ...
                         powalg_obj.qrexc_Rdiag(A(:, iact(1:nact)), z, zdota(1:nact), icon);
                     zdota(1:nact) = Rdiag_slice; % QREXC does nothing if ICON==NACT.
@@ -353,7 +443,8 @@ classdef trustregion_cobyla_mod
 
                     end
                     if nact > 0
-                        if isnan(zdota(nact)) || abs(zdota(nact)) <= eps ^ 2
+                        if infnan_obj.is_nan_sp(zdota(nact)) ...
+                           || abs(zdota(nact)) <= fortran.power(consts_obj.EPS, 2)
                             break
                         end
                     end
@@ -361,11 +452,11 @@ classdef trustregion_cobyla_mod
 
                     % Set SDIRN to the direction of the next change to the current vector of variables.
                     if stage == 1
-                        sdirn = sdirn - sum(sdirn .* z(:, nact + 1), 'all') * z(:, nact + 1);
+                        sdirn = sdirn - linalg_obj.inprod(sdirn, z(:, nact + 1)) * z(:, nact + 1);
                         % SDIRN is orthogonal to Z(:, NACT+1)
 
                     else
-                        sdirn = -(1.0 / zdota(nact)) * z(:, nact);
+                        sdirn = -(consts_obj.ONE / zdota(nact)) * z(:, nact);
                         % SDIRN = Z(:, NACT)/(A(:,IACT(NACT))^T*Z(:, NACT))
                         % SDIRN^T*A(:, IACT(NACT)) = 1, SDIRN is orthogonal to A(:, IACT(1:NACT-1)) and is
                         % parallel to Z(:, NACT).
@@ -377,21 +468,24 @@ classdef trustregion_cobyla_mod
                 % The following calculation of STEP is adopted from NEWUOA/BOBYQA/LINCOA. It seems to improve
                 % the performance of COBYLA. We also found that removing the precaution about underflows is
                 % beneficial to the overall performance of COBYLA --- the underflows are harmless anyway.
-                dd = delta ^ 2 - sum(d .* d, 'all');
-                ss = sum(sdirn .* sdirn, 'all');
-                sd = sum(sdirn .* d, 'all');
-                if dd <= 0 || ss <= eps * delta ^ 2 || isnan(sd)
+                dd = fortran.power(delta, 2) - linalg_obj.inprod(d, d);
+                ss = linalg_obj.inprod(sdirn, sdirn);
+                sd = linalg_obj.inprod(sdirn, d);
+                if dd <= 0 || ss <= consts_obj.EPS * fortran.power(delta, 2) ...
+                   || infnan_obj.is_nan_sp(sd)
                     break
                 end
                 % SQRTD: square root of a discriminant. The MAXVAL avoids SQRTD < ABS(SD) due to underflow.
-                sqrtd = max([sqrt(ss * dd + sd ^ 2), abs(sd), sqrt(ss * dd)]);
+                sqrtd = ...
+                    max([fortran.sqrt(ss * dd + fortran.power(sd, 2)), abs(sd), ...
+                         fortran.sqrt(ss * dd)]);
                 if sd > 0
                     step = dd / (sqrtd + sd);
                 else
                     step = (sqrtd - sd) / ss;
                 end
                 % STEP < 0 should not happen. STEP can be 0 or NaN when, e.g., SD or SS becomes Inf.
-                if step <= 0 || ~isfinite(step)
+                if step <= 0 || ~infnan_obj.is_finite(step)
                     break
                 end
                 % Powell's approach and comments are as follows.
@@ -429,7 +523,10 @@ classdef trustregion_cobyla_mod
                 dnew = d + step * sdirn;
                 if stage == 1
                     %cvold = cviol
-                    cviol = max([0.0; A(:, iact(1:nact)).' * dnew - b(iact(1:nact))], [], 'all');
+                    cviol = ...
+                        linalg_obj.maximum1([consts_obj.ZERO
+                                             linalg_obj.matprod12(dnew, A(:, iact(1:nact))) ...
+                                             - b(iact(1:nact))]);
                     % N.B.: CVIOL will be used when calculating VMULTD(NACT+1 : MCON).
 
                 end
@@ -445,33 +542,36 @@ classdef trustregion_cobyla_mod
                     -linalg_obj.lsqr_Rdiag(A(:, iact(1:nact)), dnew, 'Q', z(:, 1:nact), ...
                                            'Rdiag', zdota(1:nact));
                 if stage == 2
-                    vmultd(nact) = max(0.0, vmultd(nact)); % This seems never activated.
+                    vmultd(nact) = max(consts_obj.ZERO, vmultd(nact)); % This seems never activated.
 
                 end
                 % Complete VMULTD by finding the new constraint residuals. (Powell wrote "Complete VMULTC ...")
                 cvshift(:) = ...
-                    cviol - (A(:, iact).' * dnew - b(iact)); % Only CVSHIFT(nact+1:mcon) is needed.
-                cvsabs(:) = abs(A(:, iact)).' * abs(dnew) + abs(b(iact)) + cviol;
-                cvshift(linalg_obj.isminor1(cvshift, cvsabs)) = 0.0;
+                    cviol ...
+                    - (linalg_obj.matprod12(dnew, A(:, iact)) ...
+                       - b(iact)); % Only CVSHIFT(nact+1:mcon) is needed.
+                cvsabs(:) = linalg_obj.matprod12(abs(dnew), abs(A(:, iact))) + abs(b(iact)) + cviol;
+                cvshift(linalg_obj.trueloc(linalg_obj.isminor1(cvshift, cvsabs))) = consts_obj.ZERO;
                 %%MATLAB: cvshift(isminor(cvshift, cvsabs)) = 0;
                 vmultd(nact + 1:mcon) = cvshift(nact + 1:mcon);
 
                 % Calculate the fraction of the step from D to DNEW that will be taken.
-                fracmult(:) = realmax;
+                fracmult(:) = consts_obj.REALMAX;
                 fracmult(vmultd < 0) = ...
                     vmultc(vmultd < 0) ./ (vmultc(vmultd < 0) - vmultd(vmultd < 0));
                 %%MATLAB: mask = (vmultd < 0); fracmult(mask) = vmultc(mask) / (vmultc(mask) - vmultd(mask));
                 % Only the places with VMULTD < 0 is relevant below, if any.
-                icon = fortran.minloc([1.0; fracmult], 'dim', 1) - 1;
-                frac = min([1.0; fracmult]);
+                icon = fortran.minloc([consts_obj.ONE; fracmult], 'dim', 1) - 1;
+                frac = min([consts_obj.ONE; fracmult]);
                 %%MATLAB: [frac, icon] = min([1, fracmult]); icon = icon - 1
 
                 % Update D, VMULTC and CVIOL.
                 dold = d;
-                d = (1.0 - frac) * d + frac * dnew;
-                vmultc = max(0.0, (1.0 - frac) * vmultc + frac * vmultd);
+                d = (consts_obj.ONE - frac) * d + frac * dnew;
+                vmultc = max(consts_obj.ZERO, (consts_obj.ONE - frac) * vmultc + frac * vmultd);
                 % Exit in case of Inf/NaN in D or VMULTC.
-                if ~(isfinite(sum(abs(d), 'all')) && isfinite(sum(abs(vmultc), 'all')))
+                if ~(infnan_obj.is_finite(fortran.sum(abs(d), 'all')) ...
+                     && infnan_obj.is_finite(fortran.sum(abs(vmultc), 'all')))
                     d = dold; % Should we restore also IACT, NACT, VMULTC, and Z?
                     break
                 end
@@ -480,7 +580,7 @@ classdef trustregion_cobyla_mod
                     %cviol = (ONE - frac) * cvold + frac * cviol  ! Powell's version
                     % In theory, CVIOL = MAXVAL([MATPROD(D, A) - B, ZERO]), yet the CVIOL updated as above
                     % can be quite different from this value if A has huge entries (e.g., > 1E20).
-                    cviol = max([0.0; A.' * d - b], [], 'all');
+                    cviol = linalg_obj.maximum1([consts_obj.ZERO; linalg_obj.matprod12(d, A) - b]);
                 end
 
                 if icon < 1 || icon > mcon
@@ -494,6 +594,20 @@ classdef trustregion_cobyla_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(numel(iact) == mcon, "SIZE(IACT) == MCON", srname);
+                debug_obj.assert(numel(vmultc) == mcon, "SIZE(VMULTC) == MCON", srname);
+                debug_obj.assert(floor(-log10(eps('double'))) < floor(-log10(eps('double'))) ...
+                                 || all(vmultc >= 0, 'all'), "VMULTC >= 0", srname);
+                debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(d), 'all'), "D is finite", srname);
+                debug_obj.assert(linalg_obj.p_norm(d) <= consts_obj.TWO * delta, ...
+                                 "||D|| <= 2*DELTA", srname);
+                debug_obj.assert(size(z, 1) == n && size(z, 2) == n, "SIZE(Z) == [N, N]", srname);
+                debug_obj.assert(nact >= 0 && nact <= min(mcon, n), "0 <= NACT <= MIN(MCON, N)", ...
+                                 srname);
+            end
 
         end
         function delta = trrad(~, delta_in, dnorm, eta1, eta2, gamma1, gamma2, ratio)
@@ -501,7 +615,12 @@ classdef trustregion_cobyla_mod
             % This function updates the trust region radius according to RATIO and DNORM.
             %--------------------------------------------------------------------------------------------------%
 
+            % Generic module
+            consts_obj = prima_mat.common.consts_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            debug_obj = prima_mat.common.debug_mod();
 
+            % Input
             % Current trust-region radius
             % Norm of current trust-region step
             % Ratio threshold for contraction
@@ -510,6 +629,25 @@ classdef trustregion_cobyla_mod
             % Expansion factor
             % Reduction ratio
 
+            % Outputs
+
+
+            % Local variables
+            srname = "TRRAD";
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(delta_in >= dnorm && dnorm > 0, "DELTA_IN >= DNORM > 0", srname);
+                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", ...
+                                 srname);
+                debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", ...
+                                 srname);
+                debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, ...
+                                 "0 < GAMMA1 < 1 < GAMMA2", srname);
+                % By the definition of RATIO in ratio.f90, RATIO cannot be NaN unless the actual reduction is
+                % NaN, which should NOT happen due to the moderated extreme barrier.
+                debug_obj.assert(~infnan_obj.is_nan_sp(ratio), "RATIO is not NaN", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -545,6 +683,10 @@ classdef trustregion_cobyla_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(delta > 0, "DELTA > 0", srname);
+            end
 
         end
 

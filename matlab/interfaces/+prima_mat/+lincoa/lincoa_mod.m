@@ -209,32 +209,65 @@ classdef lincoa_mod
             %   %--------------------------------------------------------------------------%
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
             consts_obj = prima_mat.common.consts_mod();
 
             debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
+            memory_obj = prima_mat.common.memory_mod();
 
             preproc_obj = prima_mat.common.preproc_mod();
+            selectx_obj = prima_mat.common.selectx_mod();
+            string_obj = prima_mat.common.string_mod();
 
             % Solver-specific modules
             lincob_obj = prima_mat.lincoa.lincob_mod();
 
-            chist = [];
-            fhist = [];
-            xhist = [];
+            % Compulsory arguments
+            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
+            % X(N)
 
+            % Optional inputs
+
+
+            % Aeq(Meq, N)
+            % Aineq(Mineq, N)
+            % Beq(Meq)
+            % Bineq(Mineq)
+
+
+            % XL(N)
+            % XU(N)
+
+            % Optional outputs
+
+
+            chist = []; % CHIST(MAXCHIST)
+            fhist = []; % FHIST(MAXFHIST)
+            xhist = []; % XHIST(N, MAXXHIST)
+
+            % Local variables
             solver = "LINCOA";
+            srname = "LINCOA";
 
             eta1_loc = NaN;
 
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
-
+            % Aeq_LOC(Meq, N)
+            % Aineq_LOC(Mineq, N)
             % AMAT(N, M); each column corresponds to a constraint
+            % Beq_LOC(Meq)
+            % Bineq_LOC(Mineq)
+            % BVEC(M)
+            % CHIST_LOC(MAXCHIST)
+            % FHIST_LOC(MAXFHIST)
+            % XHIST_LOC(N, MAXXHIST)
 
-
+            % Sizes
             ipObj = inputParser();
             addParameter(ipObj, 'Aineq', NaN);
             addParameter(ipObj, 'bineq', NaN);
@@ -244,18 +277,18 @@ classdef lincoa_mod
             addParameter(ipObj, 'xu', NaN);
             addParameter(ipObj, 'rhobeg', NaN);
             addParameter(ipObj, 'rhoend', NaN);
-            addParameter(ipObj, 'ftarget', consts_obj.FTARGET_DFT);
-            addParameter(ipObj, 'ctol', consts_obj.CTOL_DFT);
-            addParameter(ipObj, 'cweight', consts_obj.CWEIGHT_DFT);
+            addParameter(ipObj, 'ftarget', NaN);
+            addParameter(ipObj, 'ctol', NaN);
+            addParameter(ipObj, 'cweight', NaN);
             addParameter(ipObj, 'maxfun', NaN);
             addParameter(ipObj, 'npt', NaN);
-            addParameter(ipObj, 'iprint', consts_obj.IPRINT_DFT);
+            addParameter(ipObj, 'iprint', NaN);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
-            addParameter(ipObj, 'gamma1', 0.5);
-            addParameter(ipObj, 'gamma2', 2.0);
+            addParameter(ipObj, 'gamma1', NaN);
+            addParameter(ipObj, 'gamma2', NaN);
             addParameter(ipObj, 'maxhist', NaN);
-            addParameter(ipObj, 'maxfilt', consts_obj.MAXFILT_DFT);
+            addParameter(ipObj, 'maxfilt', NaN);
             addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
             Aineq = ipObj.Results.Aineq;
@@ -266,18 +299,18 @@ classdef lincoa_mod
             xu = ipObj.Results.xu;
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
-            ftarget_loc = ipObj.Results.ftarget;
-            ctol_loc = ipObj.Results.ctol;
-            cweight_loc = ipObj.Results.cweight;
+            ftarget = ipObj.Results.ftarget;
+            ctol = ipObj.Results.ctol;
+            cweight = ipObj.Results.cweight;
             maxfun = ipObj.Results.maxfun;
             npt = ipObj.Results.npt;
-            iprint_loc = ipObj.Results.iprint;
+            iprint = ipObj.Results.iprint;
             eta1 = ipObj.Results.eta1;
             eta2 = ipObj.Results.eta2;
-            gamma1_loc = ipObj.Results.gamma1;
-            gamma2_loc = ipObj.Results.gamma2;
+            gamma1 = ipObj.Results.gamma1;
+            gamma2 = ipObj.Results.gamma2;
             maxhist = ipObj.Results.maxhist;
-            maxfilt_loc = ipObj.Results.maxfilt;
+            maxfilt = ipObj.Results.maxfilt;
             callback_fcn = ipObj.Results.callback_fcn;
             if ismember('bineq', ipObj.UsingDefaults)
                 mineq = 0;
@@ -291,13 +324,46 @@ classdef lincoa_mod
             end
             n = numel(x);
 
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(mineq >= 0, "Mineq >= 0", srname);
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(~ismember('Aineq', ipObj.UsingDefaults) ...
+                                 == ~ismember('bineq', ipObj.UsingDefaults), ...
+                                 "Aineq and Bineq are both present or both absent", srname);
+                if ~ismember('Aineq', ipObj.UsingDefaults)
+                    debug_obj.assert(size(Aineq, 1) == mineq && size(Aineq, 2) == n ...
+                                     || size(Aineq, 1) == 0 && size(Aineq, 2) == 0 ...
+                                        && mineq == 0, ...
+                                     "SIZE(Aineq) == [Mineq, N] unless Aineq and Bineq are both empty", ...
+                                     srname);
+                end
+                debug_obj.assert(~ismember('Aeq', ipObj.UsingDefaults) ...
+                                 == ~ismember('beq', ipObj.UsingDefaults), ...
+                                 "Aeq and Beq are both present or both absent", srname);
+                if ~ismember('Aeq', ipObj.UsingDefaults)
+                    debug_obj.assert(size(Aeq, 1) == meq && size(Aeq, 2) == n ...
+                                     || size(Aeq, 1) == 0 && size(Aeq, 2) == 0 && meq == 0, ...
+                                     "SIZE(Aeq) == [Meq, N] unless Aeq and Beq are both empty", ...
+                                     srname);
+                end
+                if ~ismember('xl', ipObj.UsingDefaults)
+                    debug_obj.assert(numel(xl) == n || numel(xl) == 0, ...
+                                     "SIZE(XL) == N unless XL is empty", srname);
+                end
+                if ~ismember('xu', ipObj.UsingDefaults)
+                    debug_obj.assert(numel(xu) == n || numel(xu) == 0, ...
+                                     "SIZE(XU) == N unless XU is empty", srname);
+                end
+            end
+
             % Read the inputs
 
             x = evaluate_obj.moderatex(x);
 
             Aineq_loc = ...
-                NaN(mineq, ...
-                    n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
+                memory_obj.alloc_rmatrix_sp(mineq, ...
+                                            n); % NOT removable even in F2003, as Aineq may be absent or of size 0-by-0.
             if ~ismember('Aineq', ipObj.UsingDefaults) && mineq > 0
                 % We must check Mineq > 0. Otherwise, the size of Aineq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aineq; we allow Aineq to be 0-by-0, but
@@ -305,13 +371,15 @@ classdef lincoa_mod
                 Aineq_loc = Aineq;
             end
 
-            bineq_loc = NaN(mineq, 1); % NOT removable even in F2003, as Bineq may be absent.
+            bineq_loc = ...
+                memory_obj.alloc_rvector_sp(mineq); % NOT removable even in F2003, as Bineq may be absent.
             if ~ismember('bineq', ipObj.UsingDefaults)
                 bineq_loc = bineq;
             end
 
             Aeq_loc = ...
-                NaN(meq, n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
+                memory_obj.alloc_rmatrix_sp(meq, ...
+                                            n); % NOT removable even in F2003, as Aeq may be absent or of size 0-by-0.
             if ~ismember('Aeq', ipObj.UsingDefaults) && meq > 0
                 % We must check Meq > 0. Otherwise, the size of Aeq_LOC may be changed to 0-by-0 due to
                 % automatic (re)allocation if that is the size of Aeq; we allow Aeq to be 0-by-0, but
@@ -319,7 +387,8 @@ classdef lincoa_mod
                 Aeq_loc = Aeq;
             end
 
-            beq_loc = NaN(meq, 1); % NOT removable even in F2003, as Beq may be absent.
+            beq_loc = ...
+                memory_obj.alloc_rvector_sp(meq); % NOT removable even in F2003, as Beq may be absent.
             if ~ismember('beq', ipObj.UsingDefaults)
                 beq_loc = beq;
             end
@@ -330,7 +399,9 @@ classdef lincoa_mod
                     xl_loc = xl;
                 end
             end
-            xl_loc(isnan(xl_loc) | xl_loc < -consts_obj.BOUNDMAX) = -consts_obj.BOUNDMAX;
+            xl_loc(linalg_obj.trueloc(infnan_obj.is_nan_sp(xl_loc) ...
+                                      | xl_loc < -consts_obj.BOUNDMAX)) = ...
+                -consts_obj.BOUNDMAX;
 
             xu_loc(:) = consts_obj.BOUNDMAX;
             if ~ismember('xu', ipObj.UsingDefaults)
@@ -338,7 +409,9 @@ classdef lincoa_mod
                     xu_loc = xu;
                 end
             end
-            xu_loc(isnan(xu_loc) | xu_loc > consts_obj.BOUNDMAX) = consts_obj.BOUNDMAX;
+            xu_loc(linalg_obj.trueloc(infnan_obj.is_nan_sp(xu_loc) ...
+                                      | xu_loc > consts_obj.BOUNDMAX)) = ...
+                consts_obj.BOUNDMAX;
 
             % If RHOBEG is present, then RHOBEG_LOC is a copy of RHOBEG; otherwise, RHOBEG_LOC takes the default
             % value for RHOBEG, taking the value of RHOEND into account. Note that RHOEND is considered only if
@@ -350,8 +423,8 @@ classdef lincoa_mod
                 % combine the evaluation of PRESENT(RHOEND) and the evaluation of IS_FINITE(RHOEND) as
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
-                if isfinite(rhoend) && rhoend > 0
-                    rhobeg_loc = max(10.0 * rhoend, consts_obj.RHOBEG_DFT);
+                if infnan_obj.is_finite(rhoend) && rhoend > 0
+                    rhobeg_loc = max(consts_obj.TEN * rhoend, consts_obj.RHOBEG_DFT);
                 else
                     rhobeg_loc = consts_obj.RHOBEG_DFT;
                 end
@@ -363,11 +436,29 @@ classdef lincoa_mod
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
                 rhoend_loc = ...
-                    max(eps, ...
+                    max(consts_obj.EPS, ...
                         min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, ...
                             consts_obj.RHOEND_DFT));
             else
                 rhoend_loc = consts_obj.RHOEND_DFT;
+            end
+
+            if ismember('ctol', ipObj.UsingDefaults)
+                ctol_loc = consts_obj.CTOL_DFT;
+            else
+                ctol_loc = ctol;
+            end
+
+            if ismember('cweight', ipObj.UsingDefaults)
+                cweight_loc = consts_obj.CWEIGHT_DFT;
+            else
+                cweight_loc = cweight;
+            end
+
+            if ismember('ftarget', ipObj.UsingDefaults)
+                ftarget_loc = consts_obj.FTARGET_DFT;
+            else
+                ftarget_loc = ftarget;
             end
 
             if ismember('maxfun', ipObj.UsingDefaults)
@@ -385,28 +476,52 @@ classdef lincoa_mod
                 npt_loc = 2 * n + 1;
             end
 
+            if ismember('iprint', ipObj.UsingDefaults)
+                iprint_loc = consts_obj.IPRINT_DFT;
+            else
+                iprint_loc = iprint;
+            end
+
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
             elseif ~ismember('eta2', ipObj.UsingDefaults)
                 if eta2 > 0 && eta2 < 1
-                    eta1_loc = max(eps, eta2 / 7.0);
+                    eta1_loc = max(consts_obj.EPS, eta2 / 7.0);
                 end
             else
-                eta1_loc = 0.1;
+                eta1_loc = consts_obj.TENTH;
             end
 
             if ~ismember('eta2', ipObj.UsingDefaults)
                 eta2_loc = eta2;
             elseif eta1_loc > 0 && eta1_loc < 1
-                eta2_loc = (eta1_loc + 2.0) / 3.0;
+                eta2_loc = (eta1_loc + consts_obj.TWO) / 3.0;
             else
                 eta2_loc = 0.7;
+            end
+
+            if ismember('gamma1', ipObj.UsingDefaults)
+                gamma1_loc = consts_obj.HALF;
+            else
+                gamma1_loc = gamma1;
+            end
+
+            if ismember('gamma2', ipObj.UsingDefaults)
+                gamma2_loc = consts_obj.TWO;
+            else
+                gamma2_loc = gamma2;
             end
 
             if ismember('maxhist', ipObj.UsingDefaults)
                 maxhist_loc = max([maxfun_loc, n + 3, consts_obj.MAXFUN_DIM_DFT * n]);
             else
                 maxhist_loc = maxhist;
+            end
+
+            if ismember('maxfilt', ipObj.UsingDefaults)
+                maxfilt_loc = consts_obj.MAXFILT_DFT;
+            else
+                maxfilt_loc = maxfilt;
             end
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
@@ -450,6 +565,8 @@ classdef lincoa_mod
             end
             %--------------------------------------------------------------------------------------------------%
 
+            % Deallocate variables not needed any more. We prefer explicit deallocation to the automatic one.
+
 
             % Write the outputs.
 
@@ -457,6 +574,9 @@ classdef lincoa_mod
             % Copy XHIST_LOC to XHIST if needed.
             if nargout >= 5
                 nhist = min(nf_loc, size(xhist_loc, 2));
+                %----------------------------------------------------%
+                memory_obj.alloc_rmatrix_sp(n, nhist); % Removable in F2003.
+                %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
                 % 0. Allocate XHIST as long as it is present, even if the size is 0; otherwise, it will be
@@ -478,6 +598,9 @@ classdef lincoa_mod
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 6
                 nhist = min(nf_loc, numel(fhist_loc));
+                %--------------------------------------------------%
+                memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
+                %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
@@ -485,6 +608,9 @@ classdef lincoa_mod
             % Copy CHIST_LOC to CHIST if needed.
             if nargout >= 7
                 nhist = min(nf_loc, numel(chist_loc));
+                %--------------------------------------------------%
+                memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
+                %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
 
             end
@@ -492,8 +618,41 @@ classdef lincoa_mod
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if nargout >= 5 && maxhist_loc < nf_loc
                 debug_obj.warning(solver, ...
-                                  "Only the history of the last " + int2str(maxhist_loc) ...
+                                  "Only the history of the last " ...
+                                  + string_obj.int2str(maxhist_loc) ...
                                   + " function evaluation(s) is recorded");
+            end
+
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(nf_loc <= maxfun_loc, "NF <= MAXFUN", srname);
+                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
+                                 "SIZE(X) == N, X does not contain NaN", srname);
+                nhist = min(nf_loc, maxhist_loc);
+                if nargout >= 5
+                    debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == nhist, ...
+                                     "SIZE(XHIST) == [N, NHIST]", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist), 'all'), ...
+                                     "XHIST does not contain NaN", srname);
+                end
+                if nargout >= 6
+                    debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) ...
+                                          | infnan_obj.is_posinf(fhist), 'all'), ...
+                                     "FHIST does not contain NaN/+Inf", srname);
+                end
+                if nargout >= 7
+                    debug_obj.assert(numel(chist) == nhist, "SIZE(CHIST) == NHIST", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(chist) ...
+                                          | infnan_obj.is_posinf(chist), 'all'), ...
+                                     "CHIST does not contain NaN/+Inf", srname);
+                end
+                if nargout >= 6 && nargout >= 7
+                    debug_obj.assert(~any(selectx_obj.isbetter10(fhist(1:nhist), chist(1:nhist), ...
+                                                                 f_loc, cstrv_loc, ctol_loc), ...
+                                          'all'), "No point in the history is better than X", ...
+                                     srname);
+                end
             end
 
         end
@@ -514,15 +673,36 @@ classdef lincoa_mod
             % is essential for LINCOA.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
+            memory_obj = prima_mat.common.memory_mod();
 
+            % Inputs
+
+
+            % Outputs
+
+
+            % Local variables
             solver = "LINCOA";
+            srname = "GET_LINCON";
 
             idmat = NaN(numel(x0));
 
+            % Sizes
             n = numel(x0);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(size(Aineq, 1) == numel(bineq) && size(Aineq, 2) == n, ...
+                                 "SIZE(AINEQ) == [SIZE(BINEQ), N]", srname);
+                debug_obj.assert(size(Aeq, 1) == numel(beq) && size(Aeq, 2) == n, ...
+                                 "SIZE(AEQ) == [SIZE(BEQ), N]", srname);
+                debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == SIZE(XU) == N", ...
+                                 srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -531,9 +711,9 @@ classdef lincoa_mod
             % Decide the number of nontrivial and valid (gradient is nonzero) constraints.
             mxl = nnz(xl > -consts_obj.BOUNDMAX);
             mxu = nnz(xu < consts_obj.BOUNDMAX);
-            Aeq_norm = sqrt(sum(Aeq .^ 2, 2));
+            Aeq_norm = fortran.sqrt(fortran.sum(fortran.power(Aeq, 2), 2));
             meq = nnz(Aeq_norm > 0);
-            Aineq_norm = sqrt(sum(Aineq .^ 2, 2));
+            Aineq_norm = fortran.sqrt(fortran.sum(fortran.power(Aineq, 2), 2));
             mineq = nnz(Aineq_norm > 0);
             m = mxl + mxu + 2 * meq + mineq; % The final number of linear inequality constraints.
 
@@ -544,15 +724,19 @@ classdef lincoa_mod
             end
 
             % Allocate memory. Removable in F2003.
-
-
-            amat = NaN(n, m);
+            memory_obj.alloc_ivector(mxl);
+            memory_obj.alloc_ivector(mxu);
+            memory_obj.alloc_ivector(meq);
+            memory_obj.alloc_ivector(mineq);
+            amat = memory_obj.alloc_rmatrix_sp(n, m);
+            memory_obj.alloc_rvector_sp(m);
+            memory_obj.alloc_rvector_sp(2 * meq + mineq);
 
             % Define the indices of the valid and nontrivial constraints.
-            ixl = find(xl > -consts_obj.BOUNDMAX);
-            ixu = find(xu < consts_obj.BOUNDMAX);
-            ieq = find(Aeq_norm > 0);
-            iineq = find(Aineq_norm > 0);
+            ixl = linalg_obj.trueloc(xl > -consts_obj.BOUNDMAX);
+            ixu = linalg_obj.trueloc(xu < consts_obj.BOUNDMAX);
+            ieq = linalg_obj.trueloc(Aeq_norm > 0);
+            iineq = linalg_obj.trueloc(Aineq_norm > 0);
 
             % Wrap the linear constraints.
             % The bound constraint XL <= X <= XU is handled as two constraints -X <= -XL, X <= XU.
@@ -560,7 +744,7 @@ classdef lincoa_mod
             % N.B.:
             % 1. The treatment of the equality constraints is naive. One may choose to eliminate them instead.
             % 2. The code below is quite inefficient in terms of memory, but we prefer readability.
-            idmat(:) = eye(n);
+            idmat(:) = linalg_obj.eye2(n, n);
             amat = ...
                 reshape([reshape(-idmat(:, ixl), 1, []), reshape(idmat(:, ixu), 1, []), ...
                          reshape(-Aeq(ieq, :).', 1, []), reshape(Aeq(ieq, :).', 1, []), ...
@@ -571,8 +755,8 @@ classdef lincoa_mod
             %%bvec = [-xl(ixl); xu(ixu); -beq(ieq); beq(ieq); bineq(iineq)];
 
             % Modify BVEC if necessary so that the initial point is feasible.
-            Aeqx0 = Aeq * x0;
-            Aineqx0 = Aineq * x0;
+            Aeqx0 = linalg_obj.matprod21(Aeq, x0);
+            Aineqx0 = linalg_obj.matprod21(Aineq, x0);
             bvec = max(bvec, [-x0(ixl); x0(ixu); -Aeqx0(ieq); Aeqx0(ieq); Aineqx0(iineq)]);
 
             % Normalize the linear constraints so that each constraint has a gradient of norm 1.
@@ -584,7 +768,7 @@ classdef lincoa_mod
 
 
             % Print a warning if the starting point is sufficiently infeasible and the constraints are modified.
-            smallx = 10.0 ^ max(-6, -(floor(log10(realmax)) - 1)) * rhoend;
+            smallx = fortran.power(consts_obj.TEN, max(-6, -consts_obj.MAXPOW10)) * rhoend;
             constr_modified = ...
                 any(x0 + smallx < xl, 'all') || any(x0 - smallx > xu, 'all') ...
                 || any(abs(Aeqx0 - beq) > smallx * Aeq_norm, 'all') ...
@@ -599,7 +783,18 @@ classdef lincoa_mod
             %  Calculation ends  %
             %====================%
 
-
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(size(amat, 1) == numel(x0) && size(amat, 2) == numel(bvec), ...
+                                 "SIZE(AMAT) == [SIZE(X), SIZE(BVEC)]", srname);
+                debug_obj.assert(all(linalg_obj.matprod12(x0, amat) - bvec ...
+                                     <= max(fortran.power(consts_obj.TEN, ...
+                                                          max(-12, -consts_obj.MAXPOW10)), ...
+                                            100.0 * consts_obj.EPS) ...
+                                        * (consts_obj.ONE + fortran.sum(abs(x0), 'all') ...
+                                           + fortran.sum(abs(bvec), 'all')), 'all'), ...
+                                 "The starting point is feasible", srname);
+            end
         end
 
     end

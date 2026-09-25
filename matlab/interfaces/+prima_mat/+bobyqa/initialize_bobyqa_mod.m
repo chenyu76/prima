@@ -13,8 +13,8 @@ classdef initialize_bobyqa_mod
 
     methods
         function [x0, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, info] = ...
-                initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x0, fhist, fval, ...
-                       xhist, xpt)
+                initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x0, fhist, fval, sl, ...
+                       su, xbase, xhist, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization about the interpolation points & their function values.
             %
@@ -33,26 +33,78 @@ classdef initialize_bobyqa_mod
             % INFO = NAN_INF_F: return because F is either NaN or +Inf
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
             checkexit_obj = prima_mat.common.checkexit_mod();
-
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
+            infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
             message_obj = prima_mat.common.message_mod();
 
             powalg_obj = prima_mat.common.powalg_mod();
             xinbd_obj = prima_mat.common.xinbd_mod();
 
+            % Inputs
+            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
+
+
+            % XL(N)
+            % XU(N)
+
+            % In-outputs
+            % X(N)
+
+            % Outputs
+            % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
+
+
+            % FVAL(NPT)
+            % SL(N)
+            % SU(N)
+            % XBASE(N)
+            % XHIST(N, MAXXHIST)
+            % XPT(N, NPT)
+
+            % Local variables
             solver = "BOBYQA";
+            srname = "INITIALIZE";
 
             evaluated = false(size(xpt, 2), 1);
 
             x = NaN(size(xpt, 1), 1);
 
+            % Sizes.
             n = size(xpt, 1);
             npt = size(xpt, 2);
+            maxxhist = size(xhist, 2);
+            maxfhist = numel(fhist);
+            maxhist = max(maxxhist, maxfhist);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(abs(iprint) <= 3, "IPRINT is 0, 1, -1, 2, -2, 3, or -3", srname);
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(npt >= n + 2, "NPT >= N+2", srname);
+                debug_obj.assert(rhobeg > 0, "RHOBEG > 0", srname);
+                debug_obj.assert(numel(fval) == npt, "SIZE(FVAL) == NPT", srname);
+                debug_obj.assert(numel(sl) == n && numel(su) == n, "SIZE(SL) == N == SIZE(SU)", ...
+                                 srname);
+                debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", ...
+                                 srname);
+                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite(x0), 'all'), ...
+                                 "SIZE(X0) == N, X0 is finite", srname);
+                debug_obj.assert(all(x0 >= xl & (x0 <= xl | x0 - xl >= rhobeg), 'all'), ...
+                                 "X0 == XL or X0 - XL >= RHOBEG", srname);
+                debug_obj.assert(all(x0 <= xu & (x0 >= xu | xu - x0 >= rhobeg), 'all'), ...
+                                 "X0 == XU or XU - X0 >= RHOBEG", srname);
+                debug_obj.assert(numel(xbase) == n, "SIZE(XBASE) == N", srname);
+                debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, ...
+                                 "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
+                debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, ...
+                                 "SIZE(FHIST) == 0 or MAXHIST", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -73,7 +125,7 @@ classdef initialize_bobyqa_mod
             mask01 = ~mask00;
             sl(mask00) = min(sl(mask00), -rhobeg);
             x0(mask01) = xl(mask01);
-            sl(mask01) = 0.0;
+            sl(mask01) = consts_obj.ZERO;
             su(mask01) = xu(mask01) - xl(mask01);
 
             mask00 = su > 0;
@@ -81,7 +133,7 @@ classdef initialize_bobyqa_mod
             su(mask00) = max(su(mask00), rhobeg);
             x0(mask01) = xu(mask01);
             sl(mask01) = xl(mask01) - xu(mask01);
-            su(mask01) = 0.0;
+            su(mask01) = consts_obj.ZERO;
 
             %%MATLAB code for revising X, SL, and SU:
             %%sl(sl < 0) = min(sl(sl < 0), -rhobeg);
@@ -106,12 +158,12 @@ classdef initialize_bobyqa_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist(:) = -realmax;
-            fhist(:) = realmax;
-            fval(:) = realmax;
+            xhist(:) = -consts_obj.REALMAX;
+            fhist(:) = consts_obj.REALMAX;
+            fval(:) = consts_obj.REALMAX;
 
             % Set XPT(:, 2 : N+1)
-            xpt(:) = 0.0;
+            xpt(:) = consts_obj.ZERO;
             for k = 1:n
                 xpt(k, k + 1) = rhobeg;
                 if su(k) <= 0
@@ -124,11 +176,11 @@ classdef initialize_bobyqa_mod
                 xpt(k, k + n + 1) = -rhobeg;
                 if sl(k) >= 0
                     % SL(K) == 0
-                    xpt(k, k + n + 1) = min(2.0 * rhobeg, su(k));
+                    xpt(k, k + n + 1) = min(consts_obj.TWO * rhobeg, su(k));
                 end
                 if su(k) <= 0
                     % SU(K) == 0
-                    xpt(k, k + n + 1) = max(-2.0 * rhobeg, sl(k));
+                    xpt(k, k + n + 1) = max(-consts_obj.TWO * rhobeg, sl(k));
                 end
             end
 
@@ -221,19 +273,92 @@ classdef initialize_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(nf <= npt, "NF <= NPT", srname);
+                debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
+                debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), ...
+                                 "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
+                debug_obj.assert(all(ij >= 1 & ij <= n, 'all'), "1 <= IJ <= N", srname);
+                debug_obj.assert(all(ij(1, :).' ~= ij(2, :).', 'all'), "IJ(1, :) /= IJ(2, :)", ...
+                                 srname);
+                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                                 "SIZE(XBASE) == N, XBASE is finite", srname);
+                debug_obj.assert(all(xbase >= xl & xbase <= xu, 'all'), "XL <= XBASE <= XU", ...
+                                 srname);
+                debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
+                                 "SIZE(XPT) == [N, NPT]", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), ...
+                                 "SL <= XPT <= SU", srname);
+                debug_obj.assert(numel(fval) == npt ...
+                                 && ~any(evaluated ...
+                                         & (infnan_obj.is_nan_sp(fval) ...
+                                            | infnan_obj.is_posinf(fval)), 'all'), ...
+                                 "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), ...
+                                 "FVAL(KOPT) = MINVAL(FVAL)", srname);
+                debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
+                debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
+                                 "SIZE(XHIST) == [N, MAXXHIST]", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), ...
+                                      'all'), "XHIST does not contain NaN", srname);
+                % The last calculated X can be Inf (finite + finite can be Inf numerically).
+                for k = 1:min(nf, maxxhist)
+                    debug_obj.assert(all(xhist(:, k) >= xl, 'all') ...
+                                     && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
+                end
+            end
 
         end
-        function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, hq, pq)
+        function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the quadratic model represented by [GOPT, HQ, PQ] so that its gradient
             % at XBASE + XPT(:, KOPT) is GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
 
+            % Inputs
+            % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
+            % FVAL(NPT)
+            % XPT(N, NPT)
+
+            % Outputs
+
+            % GOPT(N)
+            % HQ(N, N)
+            % PQ(NPT)
+
+            % Local variables
+            srname = "INITQ";
+
+            % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
+                debug_obj.assert(numel(fval) == npt ...
+                                 && ~any(infnan_obj.is_nan_sp(fval) ...
+                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                 "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
+                debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), ...
+                                 "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
+                debug_obj.assert(all(ij >= 1 & ij <= n, 'all'), "1 <= IJ <= N", srname);
+                debug_obj.assert(all(ij(1, :).' ~= ij(2, :).', 'all'), "IJ(1, :) /= IJ(2, :)", ...
+                                 srname);
+                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
+                debug_obj.assert(size(hq, 1) == n && size(hq, 2) == n, "SIZE(HQ) = [N, N]", srname);
+                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -242,13 +367,13 @@ classdef initialize_bobyqa_mod
             fbase = fval(1); % FBASE is the function value at XBASE.
 
             % Set GOPT by the forward difference.
-            gopt = (fval(2:n + 1) - fbase) ./ diag(xpt(:, 2:n + 1));
+            gopt = (fval(2:n + 1) - fbase) ./ linalg_obj.diag(xpt(:, 2:n + 1));
 
             % The interpolation conditions decide GOPT(1:NDIAG) and the first NDIAG diagonal 2nd derivatives of
             % the initial quadratic model by a quadratic interpolation on three points.
             ndiag = min(n, npt - n - 1);
-            xa = diag(xpt(:, 2:ndiag + 1));
-            xb = diag(xpt(:, n + 2:n + ndiag + 1));
+            xa = linalg_obj.diag(xpt(:, 2:ndiag + 1));
+            xb = linalg_obj.diag(xpt(:, n + 2:n + ndiag + 1));
 
             % Revise GOPT(1:NDIAG) to the value provided by the three-point interpolation.
             gopt(1:ndiag) = ...
@@ -258,10 +383,11 @@ classdef initialize_bobyqa_mod
             % Set the diagonal of HQ by the three-point interpolation. If we do this before the revision of
             % GOPT(1:NDIAG), we can avoid the calculation of FVAL(K + 1) - FBASE) / RHOBEG. But we prefer to
             % decouple the initialization of GOPT and HQ. We are not concerned by this amount of flops.
-            hq(:) = 0.0;
+            hq(:) = consts_obj.ZERO;
             for k = 1:ndiag
                 hq(k, k) = ...
-                    2.0 * ((fval(k + 1) - fbase) / xa(k) - (fval(n + k + 1) - fbase) / xb(k)) ...
+                    consts_obj.TWO ...
+                    * ((fval(k + 1) - fbase) / xa(k) - (fval(n + k + 1) - fbase) / xb(k)) ...
                     / (xa(k) - xb(k));
             end
             %%MATLAB:
@@ -279,15 +405,15 @@ classdef initialize_bobyqa_mod
                 hq(j, i) = hq(i, j);
             end
 
-            [~, kopt] = min(fval);
+            kopt = fortran.minloc(fval, 'dim', 1);
             if kopt ~= 1
-                gopt = gopt + hq * xpt(:, kopt);
+                gopt = gopt + linalg_obj.matprod21(hq, xpt(:, kopt));
             end
 
-            pq(:) = 0.0;
+            pq(:) = consts_obj.ZERO;
 
             if nargout >= 4
-                if any(isnan(gopt), 'all') || any(isnan(hq), 'all')
+                if any(infnan_obj.is_nan_sp(gopt), 'all') || any(infnan_obj.is_nan_sp(hq), 'all')
                     info = infos_obj.NAN_INF_MODEL;
                 else
                     info = infos_obj.INFO_DFT;
@@ -298,6 +424,13 @@ classdef initialize_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
+                debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
+                                 "HQ is an NxN symmetric matrix", srname);
+                debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
+            end
 
         end
         function [bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat)
@@ -306,14 +439,45 @@ classdef initialize_bobyqa_mod
             % paper (see also (3.12) of the NEWUOA paper).
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
-
+            linalg_obj = prima_mat.common.linalg_mod();
             %use, non_intrinsic :: powalg_mod, only : errh
 
 
+            % Inputs
+            % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
+            % XPT(N, NPT)
+
+            % Outputs
+
+            % BMAT(N, NPT + N)
+            % ZMAT(NPT, NPT - N - 1)
+
+            % Local variables
+            srname = "INITH";
+
+            % Sizes
             n = size(xpt, 1);
             npt = size(xpt, 2);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
+                debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), ...
+                                 "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
+                debug_obj.assert(all(ij >= 1 & ij <= n, 'all'), "1 <= IJ <= N", srname);
+                debug_obj.assert(all(ij(1, :).' ~= ij(2, :).', 'all'), "IJ(1, :) /= IJ(2, :)", ...
+                                 srname);
+                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
+                                 "SIZE(BMAT)==[N, NPT+N]", srname);
+                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
+                                 "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -321,43 +485,43 @@ classdef initialize_bobyqa_mod
 
             % Some values to be used for setting BMAT and ZMAT.
             rhobeg = max(abs(xpt(:, 2))); % Read RHOBEG from XPT. Note that XPT(:, 1) = 0.
-            rhosq = rhobeg ^ 2;
+            rhosq = fortran.power(rhobeg, 2);
 
             % The interpolation set decides the first NDIAG diagonal 2nd derivatives of the Lagrange polynomials.
             ndiag = min(n, npt - n - 1);
-            xa = diag(xpt(:, 2:ndiag + 1));
-            xb = diag(xpt(:, n + 2:n + ndiag + 1));
+            xa = linalg_obj.diag(xpt(:, 2:ndiag + 1));
+            xb = linalg_obj.diag(xpt(:, n + 2:n + ndiag + 1));
 
-            bmat(:) = 0.0;
+            bmat(:) = consts_obj.ZERO;
             % Set BMAT(1 : NDIAG, :)
             bmat(1:ndiag, 1) = -(xa + xb) ./ (xa .* xb);
             for k = 1:ndiag
-                bmat(k, k + n + 1) = -0.5 / xpt(k, k + 1);
+                bmat(k, k + n + 1) = -consts_obj.HALF / xpt(k, k + 1);
                 bmat(k, k + 1) = -bmat(k, 1) - bmat(k, k + n + 1);
             end
             % Set BMAT(NDIAG+1 : N, :)
             for k = ndiag + 1:n
-                bmat(k, 1) = -1.0 / xpt(k, k + 1);
+                bmat(k, 1) = -consts_obj.ONE / xpt(k, k + 1);
                 bmat(k, k + 1) = -bmat(k, 1);
-                bmat(k, npt + k) = -0.5 * rhosq;
+                bmat(k, npt + k) = -consts_obj.HALF * rhosq;
             end
 
-            zmat(:) = 0.0;
+            zmat(:) = consts_obj.ZERO;
             % Set ZMAT(:, 1 : NDIAG)
-            zmat(1, 1:ndiag) = sqrt(2.0) ./ (xa .* xb);
+            zmat(1, 1:ndiag) = fortran.sqrt(consts_obj.TWO) ./ (xa .* xb);
             for k = 1:ndiag
-                zmat(k + 1, k) = -zmat(1, k) - sqrt(0.5) / rhosq;
-                zmat(k + n + 1, k) = sqrt(0.5) / rhosq;
+                zmat(k + 1, k) = -zmat(1, k) - fortran.sqrt(consts_obj.HALF) / rhosq;
+                zmat(k + n + 1, k) = fortran.sqrt(consts_obj.HALF) / rhosq;
             end
             % Set ZMAT(:, NDIAG+1 : NPT-N-1)
             for k = ndiag + 1:npt - n - 1
-                zmat(1, k) = 1.0 / rhosq;
-                zmat(k + n + 1, k) = 1.0 / rhosq;
-                zmat(ij(:, k - n) + 1, k) = -1.0 / rhosq;
+                zmat(1, k) = consts_obj.ONE / rhosq;
+                zmat(k + n + 1, k) = consts_obj.ONE / rhosq;
+                zmat(ij(:, k - n) + 1, k) = -consts_obj.ONE / rhosq;
             end
 
             if nargout >= 3
-                if any(isnan(bmat), 'all') || any(isnan(zmat), 'all')
+                if any(infnan_obj.is_nan_sp(bmat), 'all') || any(infnan_obj.is_nan_sp(zmat), 'all')
                     info = infos_obj.NAN_INF_MODEL;
                 else
                     info = infos_obj.INFO_DFT;
@@ -368,6 +532,18 @@ classdef initialize_bobyqa_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
+                                 "SIZE(BMAT)==[N, NPT+N]", srname);
+                debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
+                                 "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
+                debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
+                                 "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
+                %call assert(errh(1_IK, bmat, zmat, xpt) <= max(1.0E-3_RP, 1.0E2_RP * real(npt, RP) * EPS) .or. &
+                %    & precision(0.0_RP) < precision(0.0D0), '[BMA, ZMAT] represents H = W^{-1}', srname)
+
+            end
 
         end
 

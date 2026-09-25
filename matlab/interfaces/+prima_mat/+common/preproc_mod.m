@@ -26,19 +26,31 @@ classdef preproc_mod
             consts_obj = prima_mat.common.consts_mod();
 
             debug_obj = prima_mat.common.debug_mod();
-
+            infnan_obj = prima_mat.common.infnan_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
+            memory_obj = prima_mat.common.memory_mod();
             string_obj = prima_mat.common.string_mod();
+
+            % Compulsory inputs
+
+
+            % Optional inputs
+
+
+            % Compulsory in-outputs
+
 
             % Optional in-outputs
 
 
+            % Local variables
+            srname = "PREPROC";
+
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
 
 
-            lbx = false(n, 1);
-            ubx = false(n, 1);
-
+            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'm', NaN);
             addParameter(ipObj, 'npt', NaN);
@@ -71,13 +83,60 @@ classdef preproc_mod
             xl = ipObj.Results.xl;
             xu = ipObj.Results.xu;
             x0 = ipObj.Results.x0;
+            if consts_obj.DEBUGGING
+                debug_obj.validate(n >= 1, "N >= 1", srname);
+                debug_obj.validate(~ismember('npt', ipObj.UsingDefaults) ...
+                                   == (string_obj.lower(solver) == "newuoa" ...
+                                       || string_obj.lower(solver) == "bobyqa" ...
+                                       || string_obj.lower(solver) == "lincoa"), ...
+                                   "NPT is present if and only if SOLVER is NEWUOA, BOBYQA, or LINCOA", ...
+                                   srname);
+                if ~ismember('m', ipObj.UsingDefaults)
+                    debug_obj.validate(m >= 0, "M >= 0", srname);
+                    debug_obj.validate(m == 0 || string_obj.lower(solver) == "cobyla", ...
+                                       "M == 0 unless the solver is COBYLA", srname);
+                end
+                if string_obj.lower(solver) == "cobyla" && ~ismember('m', ipObj.UsingDefaults) ...
+                   && ~ismember('is_constrained', ipObj.UsingDefaults)
+                    debug_obj.validate(m == 0 || is_constrained, ...
+                                       "For COBYLA, M == 0 unless the problem is constrained", ...
+                                       srname);
+                end
+                debug_obj.validate(~ismember('maxfilt', ipObj.UsingDefaults) ...
+                                   == (string_obj.lower(solver) == "lincoa" ...
+                                       || string_obj.lower(solver) == "cobyla"), ...
+                                   "MAXFILT is present if and only if the solver is LINCOA or COBYLA", ...
+                                   srname);
+                if string_obj.lower(solver) == "bobyqa"
+                    debug_obj.validate(~ismember('xl', ipObj.UsingDefaults) ...
+                                       && ~ismember('xu', ipObj.UsingDefaults), ...
+                                       "XL and XU are present if the solver is BOBYQA", srname);
+                    debug_obj.validate(all(xu - xl >= consts_obj.TWO * consts_obj.EPS, 'all'), ...
+                                       "MINVAL(XU-XL) > 2*EPS", srname);
+                end
+                debug_obj.validate(~ismember('honour_x0', ipObj.UsingDefaults) ...
+                                   == ~ismember('x0', ipObj.UsingDefaults) ...
+                                   && ~ismember('honour_x0', ipObj.UsingDefaults) ...
+                                      == ~ismember('has_rhobeg', ipObj.UsingDefaults), ...
+                                   "HONOUR_X0, X0, and HAS_RHOBEG are present or absent simultaneously", ...
+                                   srname);
+                debug_obj.validate(~ismember('honour_x0', ipObj.UsingDefaults) ...
+                                   == (string_obj.lower(solver) == "bobyqa"), ...
+                                   "HONOUR_X0 is present if and only if the solver is BOBYQA", ...
+                                   srname);
+                % N.B.: LINCOA and COBYLA will have HONOUR_X0 as well if we intend to make them respect bounds.
+                % %call validate(present(honour_x0) .eqv. &
+                % %    & (lower(solver) == 'bobyqa' .or. lower(solver) == 'lincoa' .or. lower(solver) == 'cobyla'), &
+                % %    & 'HONOUR_X0 is present if and only if the solver is BOBYQA, LINCOA, or COBYLA', srname)
+
+            end
 
             %====================%
             % Calculation starts %
             %====================%
 
             % Read M, if necessary
-            if lower(solver) == "cobyla" && ~ismember('m', ipObj.UsingDefaults)
+            if string_obj.lower(solver) == "cobyla" && ~ismember('m', ipObj.UsingDefaults)
                 m_loc = m;
             else
                 m_loc = 0;
@@ -95,23 +154,23 @@ classdef preproc_mod
                 iprint_in = iprint;
                 iprint = consts_obj.IPRINT_DFT;
                 debug_obj.warning(solver, ...
-                                  "Invalid IPRINT: " + int2str(iprint_in) ...
+                                  "Invalid IPRINT: " + string_obj.int2str(iprint_in) ...
                                   + "; it should be 0, 1, -1, 2, -2, 3, or -3; it is set to " ...
-                                  + int2str(iprint));
+                                  + string_obj.int2str(iprint));
             end
 
             % Validate MAXFUN
             % N.B.: The INT(N), INT(N+1), and INT(N+2) below convert integers to the default integer kind,
             % which is the kind of MIN_MAXFUN. Fortran compilers may complain without the conversion. It is
             % not needed in Python/MATLAB/Julia/R.
-            switch lower(solver)
+            switch string_obj.lower(solver)
             case "uobyqa"
                 min_maxfun = (n + 1) * (n + 2) / 2 + 1; % INT(*) avoids overflow when IK is 16-bit.
                 min_maxfun_str = "(N+1)(N+2)/2 + 1";
             case "cobyla"
                 min_maxfun = n + 2;
                 min_maxfun_str = "N + 2";
-            otherwise
+            otherwise                % CASE ('NEWUOA', 'BOBYQA', 'LINCOA')
                 min_maxfun = n + 3;
                 min_maxfun_str = "N + 3";
             end
@@ -122,16 +181,19 @@ classdef preproc_mod
                 else                    % We assume that non-positive values of MAXFUN are produced by overflow.
                     maxfun = ...
                         fix(max(min_maxfun, ...
-                                10 ^ min(4, 9))); %%MATLAB: maxfun =  max(min_maxfun, 10^4);
+                                fortran.power(10, ...
+                                              min(4, ...
+                                                  9)))); %%MATLAB: maxfun =  max(min_maxfun, 10^4);
                     % N.B.: Do NOT set MAXFUN to HUGE(MAXFUN), as it may cause overflow and infinite cycling
                     % when used as the upper bound of DO loops. This occurred on 20240225 with gfortran 13. See
                     % https://fortran-lang.discourse.group/t/loop-variable-reaching-integer-huge-causes-infinite-loop
                     % https://fortran-lang.discourse.group/t/loops-dont-behave-like-they-should
                 end
                 debug_obj.warning(solver, ...
-                                  "Invalid MAXFUN: " + int2str(maxfun_in) ...
+                                  "Invalid MAXFUN: " + string_obj.int2str(maxfun_in) ...
                                   + "; it should be at least " + min_maxfun_str + " with N = " ...
-                                  + int2str(n) + "; it is set to " + int2str(maxfun));
+                                  + string_obj.int2str(n) + "; it is set to " ...
+                                  + string_obj.int2str(maxfun));
             end
 
             % Validate MAXHIST
@@ -139,14 +201,14 @@ classdef preproc_mod
                 maxhist_in = maxhist;
                 maxhist = maxfun;
                 debug_obj.warning(solver, ...
-                                  "Invalid MAXHIST: " + int2str(maxhist_in) ...
+                                  "Invalid MAXHIST: " + string_obj.int2str(maxhist_in) ...
                                   + "; it should be a positive integer; it is set to " ...
-                                  + int2str(maxhist));
+                                  + string_obj.int2str(maxhist));
             end
             maxhist = min(maxhist, maxfun); % MAXHIST > MAXFUN is never needed.
 
             % Validate FTARGET
-            if isnan(ftarget)
+            if infnan_obj.is_nan_sp(ftarget)
                 % No warning if FTARGET is NaN, which is interpreted as no target function value is provided.
                 ftarget = -realmax;
             end
@@ -158,10 +220,11 @@ classdef preproc_mod
                     npt_in = npt;
                     npt = min(maxfun - 1, 2 * n + 1);
                     debug_obj.warning(solver, ...
-                                      "Invalid NPT: " + int2str(npt_in) ...
+                                      "Invalid NPT: " + string_obj.int2str(npt_in) ...
                                       + "; it should be an integer in the interval [N+2, (N+1)(N+2)/2] with N = " ...
-                                      + int2str(n) + " and less than MAXFUN = " ...
-                                      + int2str(maxfun) + "; it is set to " + int2str(npt));
+                                      + string_obj.int2str(n) + " and less than MAXFUN = " ...
+                                      + string_obj.int2str(maxfun) + "; it is set to " ...
+                                      + string_obj.int2str(npt));
                 end
             end
 
@@ -175,12 +238,15 @@ classdef preproc_mod
                         max(consts_obj.MIN_MAXFILT, maxfilt); % The inputted MAXFILT is too small.
                 end
                 % Further revise MAXFILT according to MAXHISTMEM.
-                switch lower(solver)
+                switch string_obj.lower(solver)
                 case "lincoa"
-                    unit_memo = (n + 2) * fix(8); % INT(*) avoids overflow when IK is 16-bit.
+                    unit_memo = ...
+                        (n + 2) ...
+                        * memory_obj.size_of_sp(0.0); % INT(*) avoids overflow when IK is 16-bit.
                 case "cobyla"
                     unit_memo = ...
-                        (m_loc + n + 2) * fix(8); % INT(*) avoids overflow when IK is 16-bit.
+                        (m_loc + n + 2) ...
+                        * memory_obj.size_of_sp(0.0); % INT(*) avoids overflow when IK is 16-bit.
                 otherwise                    % The following should not be reached unless there is a bug, but we keep it for safety.
                     unit_memo = 1;
                 end
@@ -194,17 +260,19 @@ classdef preproc_mod
                 if is_constrained_loc
                     if maxfilt_in <= 0
                         debug_obj.warning(solver, ...
-                                          "Invalid MAXFILT: " + int2str(maxfilt_in) ...
+                                          "Invalid MAXFILT: " + string_obj.int2str(maxfilt_in) ...
                                           + "; it should be a positive integer; it is set to " ...
-                                          + int2str(maxfilt));
+                                          + string_obj.int2str(maxfilt));
                     elseif maxfilt_in < min(maxfun, consts_obj.MIN_MAXFILT)
                         debug_obj.warning(solver, ...
-                                          "MAXFILT = " + int2str(maxfilt_in) ...
-                                          + " is too small; it is set to " + int2str(maxfilt));
+                                          "MAXFILT = " + string_obj.int2str(maxfilt_in) ...
+                                          + " is too small; it is set to " ...
+                                          + string_obj.int2str(maxfilt));
                     elseif maxfilt < min(maxfilt_in, maxfun)
                         debug_obj.warning(solver, ...
-                                          "MAXFILT is reduced from " + int2str(maxfilt_in) ...
-                                          + " to " + int2str(maxfilt) + " due to memory limit");
+                                          "MAXFILT is reduced from " ...
+                                          + string_obj.int2str(maxfilt_in) + " to " ...
+                                          + string_obj.int2str(maxfilt) + " due to memory limit");
                     end
                 end
             end
@@ -231,7 +299,7 @@ classdef preproc_mod
                 eta2_in = eta2;
                 % Take ETA1 into account if it has a valid value.
                 if eta1 >= 0 && eta1 < 1
-                    eta2 = (eta1 + 2.0) / 3.0;
+                    eta2 = (eta1 + consts_obj.TWO) / 3.0;
                 else
                     eta2 = consts_obj.ETA2_DFT;
                 end
@@ -257,7 +325,7 @@ classdef preproc_mod
                                   + string_obj.real2str_scalar(gamma1));
             end
 
-            if ~(isfinite(gamma2) && gamma2 >= 1)
+            if ~(infnan_obj.is_finite(gamma2) && gamma2 >= 1)
                 % GAMMA2 = NaN falls into this case.
                 gamma2_in = gamma2;
                 gamma2 = consts_obj.GAMMA2_DFT;
@@ -273,10 +341,11 @@ classdef preproc_mod
             rhoend_in = rhoend;
 
             % Revise the default values for RHOBEG/RHOEND according to the solver.
-            if lower(solver) == "bobyqa"
-                rhobeg_default = max(eps, min(consts_obj.RHOBEG_DFT, min(xu - xl) / 4.0));
+            if string_obj.lower(solver) == "bobyqa"
+                rhobeg_default = ...
+                    max(consts_obj.EPS, min(consts_obj.RHOBEG_DFT, min(xu - xl) / 4.0));
                 rhoend_default = ...
-                    max(eps, ...
+                    max(consts_obj.EPS, ...
                         min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_default, ...
                             consts_obj.RHOEND_DFT));
             else
@@ -284,10 +353,10 @@ classdef preproc_mod
                 rhoend_default = consts_obj.RHOEND_DFT;
             end
 
-            if lower(solver) == "bobyqa"
+            if string_obj.lower(solver) == "bobyqa"
                 % Do NOT merge the IF below into the ELSEIF above! Otherwise, XU and XL may be accessed even if
                 % the solver is not BOBYQA, because the logical evaluation is not short-circuit.
-                if rhobeg > min(xu - xl) / 2.0
+                if rhobeg > min(xu - xl) / consts_obj.TWO
                     % Do NOT make this revision if RHOBEG not positive or not finite, because otherwise RHOBEG
                     % will get a huge value when XU or XL contains huge values that indicate unbounded variables.
                     rhobeg = min(xu - xl) / 4.0; % Here, we do not take RHOBEG_DEFAULT.
@@ -300,12 +369,13 @@ classdef preproc_mod
                 end
             end
 
-            if ~(isfinite(rhobeg) && rhobeg > 0)
+            if ~(infnan_obj.is_finite(rhobeg) && rhobeg > 0)
                 % RHOBEG = NaN falls into this case.
                 % Take RHOEND into account if it has a valid value. We do not do this if the solver is BOBYQA,
                 % which requires that RHOBEG <= (XU-XL)/2.
-                if isfinite(rhoend) && rhoend > 0 && lower(solver) ~= "bobyqa"
-                    rhobeg = max(10.0 * rhoend, rhobeg_default);
+                if infnan_obj.is_finite(rhoend) && rhoend > 0 ...
+                   && string_obj.lower(solver) ~= "bobyqa"
+                    rhobeg = max(consts_obj.TEN * rhoend, rhobeg_default);
                 else
                     rhobeg = rhobeg_default;
                 end
@@ -315,10 +385,10 @@ classdef preproc_mod
                                   + string_obj.real2str_scalar(rhobeg));
             end
 
-            if ~(isfinite(rhoend) && rhoend >= 0 && rhoend <= rhobeg)
+            if ~(infnan_obj.is_finite(rhoend) && rhoend >= 0 && rhoend <= rhobeg)
                 % RHOEND = NaN falls into this case.
                 rhoend = ...
-                    max(eps, ...
+                    max(consts_obj.EPS, ...
                         min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg, ...
                             rhoend_default));
                 debug_obj.warning(solver, ...
@@ -332,19 +402,19 @@ classdef preproc_mod
             % least RHOBEG. If HONOUR_X0 == FALSE, revise X0 if needed; then revise RHOBEG if needed.
             % N.B.: We should do the same for LINCOA and COBYLA if we make them respect the bounds in the future.
             % %if (lower(solver) == 'bobyqa' .or. lower(solver) == 'lincoa' .or. lower(solver) == 'cobyla') then
-            if lower(solver) == "bobyqa"
+            if string_obj.lower(solver) == "bobyqa"
                 % Revise X0 if allowed and needed.
                 if ~honour_x0
                     x0_in = x0; % Recorded to see whether X0 is really revised.
                     % N.B.: The following revision is valid only if XL <= X0 <= XU and RHOBEG <= MINVAL(XU-XL)/2,
                     % which should hold at this point due to the revision of RHOBEG and moderation of X0.
                     % The cases below are mutually exclusive in precise arithmetic as MINVAL(XU-XL) >= 2*RHOBEG.
-                    mask00 = x0 <= xl + 0.5 * rhobeg;
+                    mask00 = x0 <= xl + consts_obj.HALF * rhobeg;
                     mask01 = ~mask00 & x0 < xl + rhobeg;
                     x0(mask00) = xl(mask00);
                     x0(mask01) = xl(mask01) + rhobeg;
 
-                    mask00 = x0 >= xu - 0.5 * rhobeg;
+                    mask00 = x0 >= xu - consts_obj.HALF * rhobeg;
                     mask01 = ~mask00 & x0 > xu - rhobeg;
                     x0(mask00) = xu(mask00);
                     x0(mask01) = xu(mask01) - rhobeg;
@@ -370,19 +440,24 @@ classdef preproc_mod
                 % Revise RHOBEG if needed.
                 % N.B.: If X0 has been revised above (i.e., HONOUR_X0 is FALSE), then the following revision
                 % is unnecessary in precise arithmetic. However, it may still be needed due to rounding errors.
-                lbx(:) = ...
-                    isfinite(xl) & x0 - xl <= eps * max(1.0, abs(xl)); % X0 essentially equals XL
-                ubx(:) = ...
-                    isfinite(xu) & x0 - xu >= -eps * max(1.0, abs(xu)); % X0 essentially equals XU
-                x0(lbx) = xl(lbx);
-                x0(ubx) = xu(ubx);
+                lbx = ...
+                    infnan_obj.is_finite(xl) ...
+                    & x0 - xl ...
+                      <= consts_obj.EPS * max(consts_obj.ONE, abs(xl)); % X0 essentially equals XL
+                ubx = ...
+                    infnan_obj.is_finite(xu) ...
+                    & x0 - xu ...
+                      >= -consts_obj.EPS * max(consts_obj.ONE, abs(xu)); % X0 essentially equals XU
+                x0(linalg_obj.trueloc(lbx)) = xl(linalg_obj.trueloc(lbx));
+                x0(linalg_obj.trueloc(ubx)) = xu(linalg_obj.trueloc(ubx));
                 rhobeg = ...
-                    max(eps, ...
-                        min([rhobeg; x0(find(~lbx)) - xl(find(~lbx))
-                             xu(find(~ubx)) - x0(find(~ubx))], [], 'all'));
-                if rhobeg_in - rhobeg > eps * max(1.0, rhobeg_in)
+                    max(consts_obj.EPS, ...
+                        min([rhobeg; x0(linalg_obj.falseloc(lbx)) - xl(linalg_obj.falseloc(lbx))
+                             xu(linalg_obj.falseloc(ubx)) - x0(linalg_obj.falseloc(ubx))], [], ...
+                            'all'));
+                if rhobeg_in - rhobeg > consts_obj.EPS * max(consts_obj.ONE, rhobeg_in)
                     rhoend = ...
-                        max(eps, ...
+                        max(consts_obj.EPS, ...
                             min(rhoend / rhobeg_in * rhobeg, ...
                                 rhoend)); % We do not revise RHOEND unless RHOBEG is truly revised.
                     if has_rhobeg
@@ -400,8 +475,8 @@ classdef preproc_mod
 
             % The following revision may update RHOBEG and RHOEND slightly. It particularly prevents
             % RHOEND > RHOBEG due to rounding errors, which would not be accepted by the solvers.
-            rhobeg = max(rhobeg, eps);
-            rhoend = min(max(rhoend, eps), rhobeg);
+            rhobeg = max(rhobeg, consts_obj.EPS);
+            rhoend = min(max(rhoend, consts_obj.EPS), rhobeg);
 
             % Validate CTOL (it can be 0)
             if ~ismember('ctol', ipObj.UsingDefaults)
@@ -438,6 +513,41 @@ classdef preproc_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.validate(abs(iprint) <= 3, "IPRINT is 0, 1, -1, 2, -2, 3, or -3", solver);
+                debug_obj.validate(maxhist >= 0 && maxhist <= maxfun, "0 <= MAXHIST <= MAXFUN", ...
+                                   solver);
+                debug_obj.validate(maxfun >= min_maxfun, "MAXFUN >= MIN_MAXFUN", solver);
+                if ~ismember('npt', ipObj.UsingDefaults)
+                    debug_obj.validate(npt >= n + 2 && npt < maxfun ...
+                                       && 2 * npt <= (n + 2) * (n + 1), ...
+                                       "N+2 <= NPT < MAXFUN and 2*NPT <= (N+1)(N+2)", solver);
+                end
+                if ~ismember('maxfilt', ipObj.UsingDefaults)
+                    debug_obj.validate(maxfilt >= min(consts_obj.MIN_MAXFILT, maxfun) ...
+                                       && maxfilt <= maxfun, ...
+                                       "MIN(MIN_MAXFILT, MAXFUN) <= MAXFILT <= MAXFUN", solver);
+                end
+                debug_obj.validate(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, ...
+                                   "0 <= ETA1 <= ETA2 < 1", solver);
+                debug_obj.validate(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, ...
+                                   "0 < GAMMA1 < 1 < GAMMA2", solver);
+                debug_obj.validate(rhobeg >= rhoend && rhoend > 0, "RHOBEG >= RHOEND > 0", solver);
+                if string_obj.lower(solver) == "bobyqa"
+                    debug_obj.validate(all(rhobeg <= (xu - xl) ./ consts_obj.TWO, 'all'), ...
+                                       "RHOBEG <= MINVAL(XU-XL)/2", solver);
+                    debug_obj.validate(all(infnan_obj.is_finite(x0), 'all'), "X0 is finite", ...
+                                       solver);
+                    debug_obj.validate(all(x0 >= xl & (x0 <= xl | x0 - xl >= rhobeg), 'all'), ...
+                                       "X0 == XL or X0 - XL >= RHOBEG", solver);
+                    debug_obj.validate(all(x0 <= xu & (x0 >= xu | xu - x0 >= rhobeg), 'all'), ...
+                                       "X0 == XU or XU - X0 >= RHOBEG", solver);
+                end
+                if ~ismember('ctol', ipObj.UsingDefaults)
+                    debug_obj.validate(ctol >= 0, "CTOL >= 0", solver);
+                end
+            end
 
         end
 

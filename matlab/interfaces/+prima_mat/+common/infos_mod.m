@@ -9,6 +9,7 @@ classdef infos_mod
     % Last Modified: Sunday, May 21, 2023 PM03:00:41
     %--------------------------------------------------------------------------------------------------%
     properties
+        consts_obj;
         INFO_DFT;
         SMALL_TR_RADIUS;
         FTARGET_ACHIEVED;
@@ -30,6 +31,8 @@ classdef infos_mod
 
     methods
         function obj = infos_mod()
+            obj.consts_obj = prima_mat.common.consts_mod();
+
             obj.INFO_DFT = 0;
             obj.SMALL_TR_RADIUS = 0;
             obj.FTARGET_ACHIEVED = 1;

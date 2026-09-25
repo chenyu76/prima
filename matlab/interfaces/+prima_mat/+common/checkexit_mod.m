@@ -23,8 +23,36 @@ classdef checkexit_mod
             % This module checks whether to exit the solver in the unconstrained case.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
+
+            % Inputs
+
+
+            % Outputs
+
+
+            % Local variables
+            srname = "CHECKEXIT_UNC";
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(~any([infos_obj.NAN_INF_X, infos_obj.NAN_INF_F, ...
+                                       infos_obj.FTARGET_ACHIEVED, infos_obj.MAXFUN_REACHED].' ...
+                                      == infos_obj.INFO_DFT, 'all'), ...
+                                 "NAN_INF_X, NAN_INF_F, FTARGET_ACHIEVED, and MAXFUN_REACHED differ from INFO_DFT", ...
+                                 srname);
+                % X does not contain NaN if the initial X does not contain NaN and the subroutines generating
+                % trust-region/geometry steps work properly so that they never produce a step containing NaN/Inf.
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", ...
+                                 srname);
+                % With the moderated extreme barrier, F cannot be NaN/+Inf.
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                                 "F is not NaN/+Inf", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -34,12 +62,12 @@ classdef checkexit_mod
 
             % Although X should not contain NaN unless there is a bug, we include the following for security.
             % X can be Inf, as finite + finite can be Inf numerically.
-            if any(isnan(x) | isinf(x), 'all')
+            if any(infnan_obj.is_nan_sp(x) | infnan_obj.is_inf(x), 'all')
                 info = infos_obj.NAN_INF_X;
             end
 
             % Although NAN_INF_F should not happen unless there is a bug, we include the following for security.
-            if isnan(f) | isinf(f) & f > 0
+            if infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)
                 info = infos_obj.NAN_INF_F;
             end
 
@@ -55,6 +83,14 @@ classdef checkexit_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(any([infos_obj.INFO_DFT, infos_obj.NAN_INF_X, ...
+                                      infos_obj.FTARGET_ACHIEVED, infos_obj.MAXFUN_REACHED].' ...
+                                     == info, 'all'), ...
+                                 "INFO is NAN_INF_X, FTARGET_ACHIEVED, MAXFUN_REACHED, or INFO_DFT", ...
+                                 srname);
+            end
 
         end
         function info = checkexit_con(~, maxfun, nf, cstrv, ctol, f, ftarget, x)
@@ -62,8 +98,38 @@ classdef checkexit_mod
             % This module checks whether to exit the solver in the constrained case.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
+
+            % Inputs
+
+
+            % Outputs
+
+
+            % Local variables
+            srname = "CHECKEXIT_CON";
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(~any([infos_obj.NAN_INF_X, infos_obj.NAN_INF_F, ...
+                                       infos_obj.FTARGET_ACHIEVED, infos_obj.MAXFUN_REACHED].' ...
+                                      == infos_obj.INFO_DFT, 'all'), ...
+                                 "NAN_INF_X, NAN_INF_F, FTARGET_ACHIEVED, and MAXFUN_REACHED differ from INFO_DFT", ...
+                                 srname);
+                % X does not contain NaN if the initial X does not contain NaN and the subroutines generating
+                % trust-region/geometry steps work properly so that they never produce a step containing NaN/Inf.
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", ...
+                                 srname);
+                % With the moderated extreme barrier, F or CSTRV cannot be NaN/+Inf.
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f) ...
+                                   || infnan_obj.is_nan_sp(cstrv) ...
+                                   || infnan_obj.is_posinf(cstrv)), ...
+                                 "F or CSTRV is not NaN/+Inf", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -73,12 +139,13 @@ classdef checkexit_mod
 
             % Although X should not contain NaN unless there is a bug, we include the following for security.
             % X can be Inf, as finite + finite can be Inf numerically.
-            if any(isnan(x) | isinf(x), 'all')
+            if any(infnan_obj.is_nan_sp(x) | infnan_obj.is_inf(x), 'all')
                 info = infos_obj.NAN_INF_X;
             end
 
             % Although NAN_INF_F should not happen unless there is a bug, we include the following for security.
-            if (isnan(f) | isinf(f) & f > 0 || isnan(cstrv)) | isinf(cstrv) & cstrv > 0
+            if infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f) || infnan_obj.is_nan_sp(cstrv) ...
+               || infnan_obj.is_posinf(cstrv)
                 info = infos_obj.NAN_INF_F;
             end
 
@@ -94,6 +161,14 @@ classdef checkexit_mod
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(any([infos_obj.INFO_DFT, infos_obj.NAN_INF_F, ...
+                                      infos_obj.FTARGET_ACHIEVED, infos_obj.MAXFUN_REACHED].' ...
+                                     == info, 'all'), ...
+                                 "INFO is NAN_INF_X, FTARGET_ACHIEVED, MAXFUN_REACHED, or INFO_DFT", ...
+                                 srname);
+            end
 
         end
 

@@ -15,29 +15,95 @@ classdef initialize_cobyla_mod
         function [nf, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, evaluated, ...
                   info] = ...
                 initxfc(~, calcfc, iprint, maxfun, amat, bvec, constr0, ctol, f0, ftarget, ...
-                        rhobeg, x0, chist, conhist, conmat, cval, fhist, fval, sim, xhist, ...
+                        rhobeg, x0, chist, conhist, conmat, cval, fhist, fval, sim, simi, xhist, ...
                         evaluated)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine does the initialization concerning X, function values, and constraints.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
             checkexit_obj = prima_mat.common.checkexit_mod();
-
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
+            infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
-
+            linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
 
+            % Inputs
+            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
+
+
+            % AMAT(N, M_LCON)
+            % BVEC(M_LCON)
+            % CONSTR0(M)
+
+
+            % X0(N)
+
+            % Outputs
+
+
+            % EVALUATED(N+1)
+            % CHIST(MAXCHIST)
+            % CONHIST(M, MAXCONHIST)
+            % CONMAT(M, N+1)
+            % CVAL(N+1)
+            % FHIST(MAXFHIST)
+            % FVAL(N+1)
+            % SIM(N, N+1)
+            % SIMI(N, N)
+            % XHIST(N, MAXXHIST)
+
+            % Local variables
             solver = "COBYLA";
+            srname = "INITIALIZE";
 
             constr = NaN(size(conmat, 1), 1);
 
+            itol = consts_obj.TENTH;
+
+            % Sizes
             m_lcon = numel(bvec);
             m = size(conmat, 1);
             n = size(sim, 1);
+            maxchist = numel(chist);
+            maxconhist = size(conhist, 2);
+            maxfhist = numel(fhist);
+            maxxhist = size(xhist, 2);
+            maxhist = max([maxchist, maxconhist, maxfhist, maxxhist]);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(m >= 0, "M >= 0", srname);
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(abs(iprint) <= 3, "IPRINT is 0, 1, -1, 2, -2, 3, or -3", srname);
+                debug_obj.assert(size(amat, 1) == n && size(amat, 2) == numel(bvec), ...
+                                 "SIZE(AMAT) == [N, SIZE(BVEC)]", srname);
+                debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, ...
+                                 "SIZE(CONMAT) = [M, N+1]", srname);
+                debug_obj.assert(numel(cval) == n + 1, "SIZE(CVAL) == N+1", srname);
+                debug_obj.assert(numel(fval) == n + 1, "SIZE(FVAL) == N+1", srname);
+                debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, ...
+                                 "SIZE(SIM) == [N, N+1]", srname);
+                debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, ...
+                                 "SIZE(SIMI) == [N, N]", srname);
+                debug_obj.assert(numel(evaluated) == n + 1, "SIZE(EVALUATED) == N + 1", srname);
+                debug_obj.assert(maxchist * (maxchist - maxhist) == 0, ...
+                                 "SIZE(CHIST) == 0 or MAXHIST", srname);
+                debug_obj.assert(size(conhist, 1) == m ...
+                                 && maxconhist * (maxconhist - maxhist) == 0, ...
+                                 "SIZE(CONHIST, 1) == M, SIZE(CONHIST, 2) == 0 or MAXHIST", srname);
+                debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, ...
+                                 "SIZE(FHIST) == 0 or MAXHIST", srname);
+                debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, ...
+                                 "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
+                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite(x0), 'all'), ...
+                                 "SIZE(X0) == N, X0 is finite", srname);
+                debug_obj.assert(rhobeg > 0, "RHOBEG > 0", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -48,12 +114,12 @@ classdef initialize_cobyla_mod
             info = infos_obj.INFO_DFT;
 
             % Initialize the simplex. It will be revised during the initialization.
-            sim = eye(n, n + 1) * rhobeg;
+            sim = linalg_obj.eye2(n, n + 1) * rhobeg;
             sim(:, n + 1) = x0;
 
             % Initialize the matrix SIMI. This initial value will be discarded at the end of the initialization.
             % If we do not do this, compilers may complain if we return due to CHECKEXIT before SIMI is set.
-            simi = eye(n) ./ rhobeg;
+            simi = linalg_obj.eye1(n) ./ rhobeg;
 
             % EVALUATED(J) = TRUE iff the function/constraint of SIM(:, J) has been evaluated.
             evaluated(:) = false;
@@ -64,13 +130,13 @@ classdef initialize_cobyla_mod
             % N.B.: 1. Initializing them to NaN would be more reasonable (NaN is not available in Fortran).
             % 2. Do not initialize the models if the current initialization aborts due to abnormality. Otherwise,
             % errors or exceptions may occur, as FVAL and XPT etc are uninitialized.
-            xhist(:) = -realmax;
-            fhist(:) = realmax;
-            chist(:) = realmax;
-            conhist(:) = realmax;
-            fval(:) = realmax;
-            cval(:) = realmax;
-            conmat(:) = realmax;
+            xhist(:) = -consts_obj.REALMAX;
+            fhist(:) = consts_obj.REALMAX;
+            chist(:) = consts_obj.REALMAX;
+            conhist(:) = consts_obj.REALMAX;
+            fval(:) = consts_obj.REALMAX;
+            cval(:) = consts_obj.REALMAX;
+            conmat(:) = consts_obj.REALMAX;
 
             for k = 1:n + 1
                 x = sim(:, n + 1);
@@ -83,13 +149,14 @@ classdef initialize_cobyla_mod
                     j = k - 1;
                     x(j) = x(j) + rhobeg;
                     constr(1:m_lcon) = ...
-                        evaluate_obj.moderatec(amat.' * x - bvec); % Linear constraints.
+                        evaluate_obj.moderatec(linalg_obj.matprod12(x, amat) ...
+                                               - bvec); % Linear constraints.
                     [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m));
                     constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints.
                     % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
                     % linear constraint values here to make CSTRV consistent.
                 end
-                cstrv = max([0.0; constr], [], 'all');
+                cstrv = linalg_obj.maximum1([consts_obj.ZERO; constr]);
 
                 % Print a message about the function/constraint evaluation according to IPRINT.
                 message_obj.fmsg(solver, "Initialization", iprint, k, rhobeg, f, x, ...
@@ -130,13 +197,63 @@ classdef initialize_cobyla_mod
 
             if all(evaluated, 'all')
                 % Initialize SIMI to the inverse of SIM(:, 1:N).
-                simi = inv(sim(:, 1:n));
+                simi = linalg_obj.inv(sim(:, 1:n));
             end
 
             %====================%
             %  Calculation ends  %
             %====================%
 
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
+                debug_obj.assert(numel(evaluated) == n + 1, "SIZE(EVALUATED) == N + 1", srname);
+                debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
+                debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 ...
+                                      | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) ...
+                                      | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), ...
+                                      'all'), ...
+                                 "CHIST does not contain negative values or NaN/+Inf", srname);
+                debug_obj.assert(size(conhist, 1) == m && size(conhist, 2) == maxconhist, ...
+                                 "SIZE(CONHIST) == [M, MAXCONHIST]", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, 1:min(nf, maxconhist))) ...
+                                      | infnan_obj.is_posinf(conhist(:, 1:min(nf, maxconhist))), ...
+                                      'all'), "CONHIST does not contain NaN/+Inf", srname);
+                debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, ...
+                                 "SIZE(CONMAT) = [M, N+1]", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) ...
+                                      | infnan_obj.is_posinf(conmat), 'all'), ...
+                                 "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 ...
+                                 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) ...
+                                         | infnan_obj.is_posinf(cval), 'all'), ...
+                                 "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", ...
+                                 srname);
+                debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
+                debug_obj.assert(maxfhist * (maxfhist - maxhist) == 0, ...
+                                 "SIZE(FHIST) == 0 or MAXHIST", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
+                                      | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                      'all'), "FHIST does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(fval) == n + 1 ...
+                                 && ~any(infnan_obj.is_nan_sp(fval) ...
+                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                 "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
+                debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
+                                 "SIZE(XHIST) == [N, MAXXHIST]", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), ...
+                                      'all'), "XHIST does not contain NaN", srname);
+                debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, ...
+                                 "SIZE(SIM) == [N, N+1]", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
+                debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1).' > 0, 'all'), ...
+                                 "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, ...
+                                 "SIZE(SIMI) == [N, N]", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
+                debug_obj.assert(linalg_obj.isinv(sim(:, 1:n), simi, 'tol', itol) ...
+                                 || any(~evaluated, 'all'), "SIMI = SIM(:, 1:N)^{-1}", srname);
+            end
 
         end
         function [nfilt, cfilt, confilt, ffilt, xfilt] = ...
@@ -151,10 +268,58 @@ classdef initialize_cobyla_mod
             % 2. We decouple INITXFC and INITFILT so that it is easier to parallelize the former if needed.
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
             selectx_obj = prima_mat.common.selectx_mod();
 
+            % Inputs
+
+
+            % In-outputs
+
+
+            % Local variables
+            srname = "INITFILT";
+
+            % Sizes
+            m = size(conmat, 1);
             n = size(sim, 1);
+            maxfilt = numel(ffilt);
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(m >= 0, "M >= 0", srname);
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                debug_obj.assert(maxfilt >= 1, "MAXFILT >= 1", srname);
+                debug_obj.assert(size(confilt, 1) == m && size(confilt, 2) == maxfilt, ...
+                                 "SIZE(CONFILT) == [M, MAXFILT]", srname);
+                debug_obj.assert(numel(cfilt) == maxfilt, "SIZE(CFILT) == MAXFILT", srname);
+                debug_obj.assert(size(xfilt, 1) == n && size(xfilt, 2) == maxfilt, ...
+                                 "SIZE(XFILT) == [N, MAXFILT]", srname);
+                debug_obj.assert(numel(ffilt) == maxfilt, "SIZE(FFILT) == MAXFILT", srname);
+                debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, ...
+                                 "SIZE(CONMAT) = [M, N+1]", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) ...
+                                      | infnan_obj.is_posinf(conmat), 'all'), ...
+                                 "CONMAT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cval) == n + 1 ...
+                                 && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) ...
+                                         | infnan_obj.is_posinf(cval), 'all'), ...
+                                 "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", ...
+                                 srname);
+                debug_obj.assert(numel(fval) == n + 1 ...
+                                 && ~any(infnan_obj.is_nan_sp(fval) ...
+                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                 "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
+                debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, ...
+                                 "SIZE(SIM) == [N, N+1]", srname);
+                debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
+                debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1).' > 0, 'all'), ...
+                                 "SIM(:, 1:N) has no zero column", srname);
+                debug_obj.assert(numel(evaluated) == n + 1, "SIZE(EVALUATED) == N + 1", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -179,7 +344,28 @@ classdef initialize_cobyla_mod
             %  Calculation ends  %
             %====================%
 
-
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(nfilt <= maxfilt, "NFILT <= MAXFILT", srname);
+                debug_obj.assert(size(confilt, 1) == m && size(confilt, 2) == maxfilt, ...
+                                 "SIZE(CONFILT) == [M, MAXFILT]", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(confilt(:, 1:nfilt)) ...
+                                      | infnan_obj.is_posinf(confilt(:, 1:nfilt)), 'all'), ...
+                                 "CONFILT does not contain NaN/+Inf", srname);
+                debug_obj.assert(numel(cfilt) == maxfilt, "SIZE(CFILT) == MAXFILT", srname);
+                debug_obj.assert(~any(cfilt(1:nfilt) < 0 | infnan_obj.is_nan_sp(cfilt(1:nfilt)) ...
+                                      | infnan_obj.is_posinf(cfilt(1:nfilt)), 'all'), ...
+                                 "CFILT does not contain negative values or NaN/Inf", srname);
+                debug_obj.assert(size(xfilt, 1) == n && size(xfilt, 2) == maxfilt, ...
+                                 "SIZE(XFILT) == [N, MAXFILT]", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(xfilt(:, 1:nfilt)), 'all'), ...
+                                 "XFILT does not contain NaN", srname);
+                % The last calculated X can be Inf (finite + finite can be Inf numerically).
+                debug_obj.assert(numel(ffilt) == maxfilt, "SIZE(FFILT) == MAXFILT", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(ffilt(1:nfilt)) ...
+                                      | infnan_obj.is_posinf(ffilt(1:nfilt)), 'all'), ...
+                                 "FFILT does not contain NaN/+Inf", srname);
+            end
         end
 
     end

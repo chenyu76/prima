@@ -28,13 +28,57 @@ classdef string_mod
                    || isnumeric(varargin{1}) ...
                       && (isreal(varargin{1}) && all(fix(varargin{1}) == varargin{1}, 'all'))) ...
                && isscalar(varargin{1})
-                [varargout{1:nargout}] = int2str(varargin{:});
+                [varargout{1:nargout}] = obj.int2str(varargin{:});
             elseif numel(varargin) >= 1 && numel(varargin) <= 3 && isfloat(varargin{1}) ...
                    && isscalar(varargin{1})
                 [varargout{1:nargout}] = obj.real2str_scalar(varargin{:});
             else
                 [varargout{1:nargout}] = obj.real2str_vector(varargin{:});
             end
+        end
+        function y = lower(~, x)
+            %--------------------------------------------------------------------------------------------------%
+            % This function maps the characters of a string to the lower case, if applicable.
+            %--------------------------------------------------------------------------------------------------%
+
+
+            dist = 'A' - 'a';
+
+            y = x;
+            for i = 1:strlength(y)
+                if extractBetween(y, i, i) >= "A" && extractBetween(y, i, i) <= "Z"
+                    y = ...
+                        replaceBetween(y, i, i, ...
+                                       char(double(unicode2native(extractBetween(y, i, i))) ...
+                                            - dist));
+                end
+            end
+        end
+        function y = upper(~, x)
+            %--------------------------------------------------------------------------------------------------%
+            % This function maps the characters of a string to the upper case, if applicable.
+            %--------------------------------------------------------------------------------------------------%
+
+
+            dist = 'A' - 'a';
+
+            y = x;
+            for i = 1:strlength(y)
+                if extractBetween(y, i, i) >= "a" && extractBetween(y, i, i) <= "z"
+                    y = ...
+                        replaceBetween(y, i, i, ...
+                                       char(double(unicode2native(extractBetween(y, i, i))) ...
+                                            + dist));
+                end
+            end
+        end
+        function y = strip(~, x)
+            %--------------------------------------------------------------------------------------------------%
+            % This function removes the leading and trailing spaces of a string.
+            %--------------------------------------------------------------------------------------------------%
+
+
+            y = strtrim(strjust(x, 'left'));
         end
         function y = istr(~, x)
             %--------------------------------------------------------------------------------------------------%
@@ -52,45 +96,75 @@ classdef string_mod
             % This function converts a real scalar to a string. Optionally, NDGT is the number of decimal
             % digits to print, and NEXP is the number of digits in the exponent; they may be reduced if needed.
             %--------------------------------------------------------------------------------------------------%
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            infnan_obj = prima_mat.common.infnan_mod();
+            % Inputs
 
+
+            % Outputs
+
+            % Local variables
+            srname = "REAL2STR_SCALAR";
 
             % The number of decimal digits to print
             % The number of digits in the exponent
             % The width of the printed X
 
-
+            % Preconditions
             ipObj = inputParser();
-            addParameter(ipObj, 'ndgt', ...
-                         min(floor(-log10(eps(class(x)))), floor(-log10(eps('double')))) + 1);
-            addParameter(ipObj, 'nexp', ...
-                         ceil(log10(double(floor(log10(realmax(class(x)))) - 1 + 0.1))));
+            addParameter(ipObj, 'ndgt', NaN);
+            addParameter(ipObj, 'nexp', NaN);
             parse(ipObj, varargin{:});
-            ndgt_loc = ipObj.Results.ndgt;
-            nexp_loc = ipObj.Results.nexp;
+            ndgt = ipObj.Results.ndgt;
+            nexp = ipObj.Results.nexp;
+            if consts_obj.DEBUGGING
+                if ~ismember('ndgt', ipObj.UsingDefaults)
+                    debug_obj.assert(ndgt >= 0 && 2 * ndgt <= obj.MAX_NUM_STR_LEN - 5, ...
+                                     "0 <= NDGT <= " ...
+                                     + obj.int2str(floor(double(obj.MAX_NUM_STR_LEN - 5) ...
+                                                         / 2.0)), srname);
+                end
+                if ~ismember('nexp', ipObj.UsingDefaults)
+                    debug_obj.assert(nexp >= 0 && 2 * nexp <= obj.MAX_NUM_STR_LEN - 5, ...
+                                     "0 <= NEXP <= " ...
+                                     + obj.int2str(floor(double(obj.MAX_NUM_STR_LEN - 5) ...
+                                                         / 2.0)), srname);
+                end
+            end
 
             %====================%
             % Calculation starts %
             %====================%
 
-            % By default, we print at most the same number of decimal digits as the double precision.
-
+            if ismember('ndgt', ipObj.UsingDefaults)
+                % By default, we print at most the same number of decimal digits as the double precision.
+                ndgt_loc = min(floor(-log10(eps(class(x)))), floor(-log10(eps('double')))) + 1;
+            else
+                ndgt_loc = ndgt;
+            end
             ndgt_loc = min(ndgt_loc, floor(double(obj.MAX_NUM_STR_LEN - 5) / 2.0)); % Safeguard
-            % Use + 0.1 in case RANGE(X) = 10^k.
-
+            if ismember('nexp', ipObj.UsingDefaults)
+                nexp_loc = ...
+                    ceil(log10(double(floor(log10(realmax(class(x)))) - 1 ...
+                                      + 0.1))); % Use + 0.1 in case RANGE(X) = 10^k.
+            else
+                nexp_loc = nexp;
+            end
             nexp_loc = min(nexp_loc, floor(double(obj.MAX_NUM_STR_LEN - 5) / 2.0));
 
-            if isfinite(x)
+            if infnan_obj.is_finite(x)
                 wx = ndgt_loc + nexp_loc + 5;
-                if ~(wx <= obj.MAX_NUM_STR_LEN)
-                    error("The width of the printed number is at most " ...
-                          + int2str(obj.MAX_NUM_STR_LEN));
-                end
-
+                debug_obj.validate(wx <= obj.MAX_NUM_STR_LEN, ...
+                                   "The width of the printed number is at most " ...
+                                   + obj.int2str(obj.MAX_NUM_STR_LEN), srname);
+                "(1PE" + obj.int2str(wx) + "." + obj.int2str(ndgt_loc) + "E" ...
+                + obj.int2str(nexp_loc) + ")";
                 str = sprintf('%s \n', num2str(x));
                 s = strtrim(str); % Remove the trailing spaces, but keep the leading ones, if any.
             else
                 str = sprintf('%s \n', num2str(x));
-                s = strip(str); % Remove the leading and trailing spaces, if any.
+                s = obj.strip(str); % Remove the leading and trailing spaces, if any.
 
             end
 
@@ -98,7 +172,37 @@ classdef string_mod
             %  Calculation ends  %
             %====================%
 
-
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(strlength(s) > 0 && strlength(s) <= obj.MAX_NUM_STR_LEN, ...
+                                 "0 < LEN(S) <= MAX_NUM_STR_LEN", srname);
+                debug_obj.assert(infnan_obj.is_nan_sp(x) ...
+                                 == infnan_obj.is_nan_sp(obj.str2real(s)), ...
+                                 "IS_NAN(X) .EQV. IS_NAN(STR2REAL(S))", srname);
+                % The assertions concerning the infiniteness of X may fail due to the limited precision of
+                % printing. Thus we relax the assertions as below.
+                %call assert(is_posinf(x) .eqv. is_posinf(str2real(s)), 'IS_POSINF(X) .EQV. IS_POSINF(STR2REAL(S))', srname)
+                %call assert(is_neginf(x) .eqv. is_neginf(str2real(s)), 'IS_NEGINF(X) .EQV. IS_NEGINF(STR2REAL(S))', srname)
+                debug_obj.assert((x ...
+                                  >= consts_obj.REALMAX ...
+                                     * (1.0 - fortran.power(10.0, -ndgt_loc))) ...
+                                 == (obj.str2real(s) ...
+                                     >= consts_obj.REALMAX ...
+                                        * (1.0 - fortran.power(10.0, -ndgt_loc))), ...
+                                 "IS_POSINF(X) .EQV. IS_POSINF(STR2REAL(S))", srname);
+                debug_obj.assert((x ...
+                                  <= -consts_obj.REALMAX ...
+                                     * (1.0 - fortran.power(10.0, -ndgt_loc))) ...
+                                 == (obj.str2real(s) ...
+                                     <= -consts_obj.REALMAX ...
+                                        * (1.0 - fortran.power(10.0, -ndgt_loc))), ...
+                                 "IS_NEGINF(X) .EQV. IS_NEGINF(STR2REAL(S))", srname);
+                if abs(x) < consts_obj.REALMAX
+                    debug_obj.assert(abs(x - obj.str2real(s)) ...
+                                     <= abs(x) * fortran.power(10.0, -ndgt_loc), ...
+                                     "STR2REAL(S) == X", srname);
+                end
+            end
         end
         function s = real2str_vector(obj, x, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -106,8 +210,16 @@ classdef string_mod
             % digits to print, NEXP is the number of digits in the exponent, and NX is the number of entries
             % printed per row; they may be reduced if needed.
             %--------------------------------------------------------------------------------------------------%
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+            memory_obj = prima_mat.common.memory_mod();
+            % Inputs
 
 
+            % Outputs
+
+            % Local variables
+            srname = "REAL2STR_VECTOR";
             spaces = "  "; % The spaces between two entries in a row
 
 
@@ -119,7 +231,7 @@ classdef string_mod
             % The length of the string
             % The width of each entry in X
 
-
+            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'ndgt', NaN);
             addParameter(ipObj, 'nexp', NaN);
@@ -128,6 +240,23 @@ classdef string_mod
             ndgt = ipObj.Results.ndgt;
             nexp = ipObj.Results.nexp;
             nx = ipObj.Results.nx;
+            if consts_obj.DEBUGGING
+                if ~ismember('ndgt', ipObj.UsingDefaults)
+                    debug_obj.assert(ndgt >= 0 && 2 * ndgt <= obj.MAX_NUM_STR_LEN - 5, ...
+                                     "0 <= NDGT <= " ...
+                                     + obj.int2str(floor(double(obj.MAX_NUM_STR_LEN - 5) ...
+                                                         / 2.0)), srname);
+                end
+                if ~ismember('nexp', ipObj.UsingDefaults)
+                    debug_obj.assert(nexp >= 0 && 2 * nexp <= obj.MAX_NUM_STR_LEN - 5, ...
+                                     "0 <= NEXP <= " ...
+                                     + obj.int2str(floor(double(obj.MAX_NUM_STR_LEN - 5) ...
+                                                         / 2.0)), srname);
+                end
+                if ~ismember('nx', ipObj.UsingDefaults)
+                    debug_obj.assert(nx >= 1, "NX >= 1", srname);
+                end
+            end
 
             %====================%
             % Calculation starts %
@@ -174,7 +303,7 @@ classdef string_mod
             % being sufficient for this project.
             m = ceil(double(n) / double(nx_loc)); % The number of rows
             slen = wx * n + strlength(spaces) * (n - 1) + (1 - strlength(spaces)) * (m - 1);
-            s = repmat("", [slen, 1]);
+            s = memory_obj.alloc_character(slen);
 
             j = 0; % J is the index of the last up-to-date character in S.
             for i = 1:n
@@ -202,16 +331,46 @@ classdef string_mod
             %--------------------------------------------------------------------------------------------------%
             % This function converts a string to a real scalar.
             %--------------------------------------------------------------------------------------------------%
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
 
-
+            srname = "STR2REAL";
+            if consts_obj.DEBUGGING
+                debug_obj.assert(strlength(s) > 0, "LEN(S) > 0", srname);
+            end
             x = sscanf(s, '%f', 1);
+        end
+        function s = int2str(obj, x)
+            %--------------------------------------------------------------------------------------------------%
+            % This function converts an integer scalar to a string.
+            %--------------------------------------------------------------------------------------------------%
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
+
+            srname = "INT2STR";
+
+            % In the following, 'I0' means to use the minimum number of digits needed to print.
+            % It should work also if we use * instead of I0. However, this sometimes lead to a segmentation
+            % fault on Windows Server 2022 with gcc/gfortran 13.
+            str = sprintf('%d\n', x);
+            s = obj.strip(str);
+            if consts_obj.DEBUGGING
+                debug_obj.assert(strlength(s) > 0 && strlength(s) <= obj.MAX_NUM_STR_LEN, ...
+                                 "0 < LEN(S) <= MAX_NUM_STR_LEN", srname);
+                debug_obj.assert(obj.str2int(s) == x, "STR2INT(S) == X", srname);
+            end
         end
         function x = str2int(~, s)
             %--------------------------------------------------------------------------------------------------%
             % This function converts a string to an integer scalar.
             %--------------------------------------------------------------------------------------------------%
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
 
-
+            srname = "STR2INT";
+            if consts_obj.DEBUGGING
+                debug_obj.assert(strlength(s) > 0, "LEN(S) > 0", srname);
+            end
             x = sscanf(s, '%d', 1);
         end
 

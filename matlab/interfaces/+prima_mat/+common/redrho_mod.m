@@ -17,7 +17,21 @@ classdef redrho_mod
             % `RHO = HALF * RHO; IF (RHO <= 1.5_RP * RHOEND) RHO = RHOEND`, as specified in (11) of the COBYLA
             % paper. However, this scheme seems to work better, especially after we introduce DELTA.
             %--------------------------------------------------------------------------------------------------%
+            consts_obj = prima_mat.common.consts_mod();
+            debug_obj = prima_mat.common.debug_mod();
 
+            % Inputs
+
+
+            % Outputs
+
+
+            srname = "REDRHO";
+
+            % Preconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(rho_in > rhoend && rhoend > 0, "RHO_IN > RHOEND > 0", srname);
+            end
 
             %====================%
             % Calculation starts %
@@ -26,18 +40,21 @@ classdef redrho_mod
             rho_ratio = rho_in / rhoend;
 
             if rho_ratio > 250.0
-                rho = 0.1 * rho_in;
+                rho = consts_obj.TENTH * rho_in;
             elseif rho_ratio <= 16.0
                 rho = rhoend;
             else
-                rho = sqrt(rho_ratio) * rhoend; %rho = sqrt(rho_in * rhoend)
+                rho = fortran.sqrt(rho_ratio) * rhoend; %rho = sqrt(rho_in * rhoend)
             end
 
             %====================%
             %  Calculation ends  %
             %====================%
 
-
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(rho_in > rho && rho >= rhoend, "RHO_IN > RHO >= RHOEND", srname);
+            end
         end
 
     end

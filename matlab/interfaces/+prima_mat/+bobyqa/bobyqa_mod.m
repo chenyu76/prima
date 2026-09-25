@@ -184,24 +184,42 @@ classdef bobyqa_mod
             %   %--------------------------------------------------------------------------%
             %--------------------------------------------------------------------------------------------------%
 
-
+            % Common modules
             consts_obj = prima_mat.common.consts_mod();
 
             debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
-
+            infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
+            linalg_obj = prima_mat.common.linalg_mod();
+            memory_obj = prima_mat.common.memory_mod();
 
             preproc_obj = prima_mat.common.preproc_mod();
+            string_obj = prima_mat.common.string_mod();
 
             % Solver-specific modules
             bobyqb_obj = prima_mat.bobyqa.bobyqb_mod();
 
-            fhist = [];
-            xhist = [];
+            % Compulsory arguments
+            % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
+            % X(N)
 
+            % Optional inputs
+
+
+            % XL(N)
+            % XU(N)
+
+            % Optional outputs
+
+
+            fhist = []; % FHIST(MAXFHIST)
+            xhist = []; % XHIST(N, MAXXHIST)
+
+            % Local variables
             solver = "BOBYQA";
+            srname = "BOBYQA";
 
             nf_loc = NaN;
 
@@ -211,22 +229,26 @@ classdef bobyqa_mod
 
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
+            % FHIST_LOC(MAXFHIST)
+            % XHIST_LOC(N, MAXXHIST)
 
+            % Sizes
             n = numel(x);
 
+            % Preconditions
             ipObj = inputParser();
             addParameter(ipObj, 'xl', NaN);
             addParameter(ipObj, 'xu', NaN);
             addParameter(ipObj, 'rhobeg', NaN);
             addParameter(ipObj, 'rhoend', NaN);
-            addParameter(ipObj, 'ftarget', consts_obj.FTARGET_DFT);
-            addParameter(ipObj, 'maxfun', consts_obj.MAXFUN_DIM_DFT * n);
+            addParameter(ipObj, 'ftarget', NaN);
+            addParameter(ipObj, 'maxfun', NaN);
             addParameter(ipObj, 'npt', NaN);
-            addParameter(ipObj, 'iprint', consts_obj.IPRINT_DFT);
+            addParameter(ipObj, 'iprint', NaN);
             addParameter(ipObj, 'eta1', NaN);
             addParameter(ipObj, 'eta2', NaN);
-            addParameter(ipObj, 'gamma1', 0.5);
-            addParameter(ipObj, 'gamma2', 2.0);
+            addParameter(ipObj, 'gamma1', NaN);
+            addParameter(ipObj, 'gamma2', NaN);
             addParameter(ipObj, 'maxhist', NaN);
             addParameter(ipObj, 'honour_x0', false);
             addParameter(ipObj, 'callback_fcn', []);
@@ -235,17 +257,28 @@ classdef bobyqa_mod
             xu = ipObj.Results.xu;
             rhobeg = ipObj.Results.rhobeg;
             rhoend = ipObj.Results.rhoend;
-            ftarget_loc = ipObj.Results.ftarget;
-            maxfun_loc = ipObj.Results.maxfun;
+            ftarget = ipObj.Results.ftarget;
+            maxfun = ipObj.Results.maxfun;
             npt = ipObj.Results.npt;
-            iprint_loc = ipObj.Results.iprint;
+            iprint = ipObj.Results.iprint;
             eta1 = ipObj.Results.eta1;
             eta2 = ipObj.Results.eta2;
-            gamma1_loc = ipObj.Results.gamma1;
-            gamma2_loc = ipObj.Results.gamma2;
+            gamma1 = ipObj.Results.gamma1;
+            gamma2 = ipObj.Results.gamma2;
             maxhist = ipObj.Results.maxhist;
             honour_x0 = ipObj.Results.honour_x0;
             callback_fcn = ipObj.Results.callback_fcn;
+            if consts_obj.DEBUGGING
+                debug_obj.assert(n >= 1, "N >= 1", srname);
+                if ~ismember('xl', ipObj.UsingDefaults)
+                    debug_obj.assert(numel(xl) == n || numel(xl) == 0, ...
+                                     "SIZE(XL) == N unless XL is empty", srname);
+                end
+                if ~ismember('xu', ipObj.UsingDefaults)
+                    debug_obj.assert(numel(xu) == n || numel(xu) == 0, ...
+                                     "SIZE(XU) == N unless XU is empty", srname);
+                end
+            end
 
             % Read the inputs
 
@@ -255,7 +288,9 @@ classdef bobyqa_mod
                     xl_loc = xl;
                 end
             end
-            xl_loc(isnan(xl_loc) | xl_loc < -consts_obj.BOUNDMAX) = -consts_obj.BOUNDMAX;
+            xl_loc(linalg_obj.trueloc(infnan_obj.is_nan_sp(xl_loc) ...
+                                      | xl_loc < -consts_obj.BOUNDMAX)) = ...
+                -consts_obj.BOUNDMAX;
 
             xu_loc(:) = consts_obj.BOUNDMAX;
             if ~ismember('xu', ipObj.UsingDefaults)
@@ -263,19 +298,23 @@ classdef bobyqa_mod
                     xu_loc = xu;
                 end
             end
-            xu_loc(isnan(xu_loc) | xu_loc > consts_obj.BOUNDMAX) = consts_obj.BOUNDMAX;
+            xu_loc(linalg_obj.trueloc(infnan_obj.is_nan_sp(xu_loc) ...
+                                      | xu_loc > consts_obj.BOUNDMAX)) = ...
+                consts_obj.BOUNDMAX;
 
             % The solver requires that MINVAL(XU-XL) >= 2*RHOBEG, and we return if MINVAL(XU-XL) < 2*EPS.
             % It would be better to fix the variables at (XU+XL)/2 wherever XU and XL almost equal, as is done
             % in the MATLAB/Python interface of the solvers. In Fortran, this is doable using internal functions,
             % but we choose not to implement it in the current version.
-            if any(xu_loc - xl_loc < 2.0 * eps, 'all')
+            if any(xu_loc - xl_loc < consts_obj.TWO * consts_obj.EPS, 'all')
                 if nargout >= 6
                     info = infos_obj.NO_SPACE_BETWEEN_BOUNDS;
                 end
                 debug_obj.warning(solver, ...
                                   "There is no space between the lower and upper bounds of variable " ...
-                                  + int2str(min(find(xu_loc - xl_loc < 2.0 * eps))) ...
+                                  + string_obj.int2str(min(linalg_obj.trueloc(xu_loc - xl_loc ...
+                                                                              < consts_obj.TWO ...
+                                                                                * consts_obj.EPS))) ...
                                   + ". The solver cannot continue");
                 return
             end
@@ -292,8 +331,8 @@ classdef bobyqa_mod
                 % combine the evaluation of PRESENT(RHOEND) and the evaluation of IS_FINITE(RHOEND) as
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
-                if isfinite(rhoend) && rhoend > 0
-                    rhobeg_loc = max(10.0 * rhoend, consts_obj.RHOBEG_DFT);
+                if infnan_obj.is_finite(rhoend) && rhoend > 0
+                    rhobeg_loc = max(consts_obj.TEN * rhoend, consts_obj.RHOBEG_DFT);
                 else
                     rhobeg_loc = consts_obj.RHOBEG_DFT;
                 end
@@ -305,11 +344,23 @@ classdef bobyqa_mod
                 rhoend_loc = rhoend;
             elseif rhobeg_loc > 0
                 rhoend_loc = ...
-                    max(eps, ...
+                    max(consts_obj.EPS, ...
                         min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg_loc, ...
                             consts_obj.RHOEND_DFT));
             else
                 rhoend_loc = consts_obj.RHOEND_DFT;
+            end
+
+            if ismember('ftarget', ipObj.UsingDefaults)
+                ftarget_loc = consts_obj.FTARGET_DFT;
+            else
+                ftarget_loc = ftarget;
+            end
+
+            if ismember('maxfun', ipObj.UsingDefaults)
+                maxfun_loc = consts_obj.MAXFUN_DIM_DFT * n;
+            else
+                maxfun_loc = maxfun;
             end
 
             if ~ismember('npt', ipObj.UsingDefaults)
@@ -321,22 +372,40 @@ classdef bobyqa_mod
                 npt_loc = 2 * n + 1;
             end
 
+            if ismember('iprint', ipObj.UsingDefaults)
+                iprint_loc = consts_obj.IPRINT_DFT;
+            else
+                iprint_loc = iprint;
+            end
+
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
             elseif ~ismember('eta2', ipObj.UsingDefaults)
                 if eta2 > 0 && eta2 < 1
-                    eta1_loc = max(eps, eta2 / 7.0);
+                    eta1_loc = max(consts_obj.EPS, eta2 / 7.0);
                 end
             else
-                eta1_loc = 0.1;
+                eta1_loc = consts_obj.TENTH;
             end
 
             if ~ismember('eta2', ipObj.UsingDefaults)
                 eta2_loc = eta2;
             elseif eta1_loc > 0 && eta1_loc < 1
-                eta2_loc = (eta1_loc + 2.0) / 3.0;
+                eta2_loc = (eta1_loc + consts_obj.TWO) / 3.0;
             else
                 eta2_loc = 0.7;
+            end
+
+            if ismember('gamma1', ipObj.UsingDefaults)
+                gamma1_loc = consts_obj.HALF;
+            else
+                gamma1_loc = gamma1;
+            end
+
+            if ismember('gamma2', ipObj.UsingDefaults)
+                gamma2_loc = consts_obj.TWO;
+            else
+                gamma2_loc = gamma2;
             end
 
             if ismember('maxhist', ipObj.UsingDefaults)
@@ -351,7 +420,7 @@ classdef bobyqa_mod
                 honour_x0_loc = honour_x0;
             elseif has_rhobeg
                 % HONOUR_X0 is FALSE if user provides a valid RHOBEG. Is this the best choice?
-                honour_x0_loc = ~(isfinite(rhobeg) && rhobeg > 0);
+                honour_x0_loc = ~(infnan_obj.is_finite(rhobeg) && rhobeg > 0);
             end
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
@@ -396,6 +465,9 @@ classdef bobyqa_mod
             % Copy XHIST_LOC to XHIST if needed.
             if nargout >= 4
                 nhist = min(nf_loc, size(xhist_loc, 2));
+                %----------------------------------------------------%
+                memory_obj.alloc_rmatrix_sp(n, nhist); % Removable in F2003.
+                %----------------------------------------------------%
                 xhist = xhist_loc(:, 1:nhist);
                 % N.B.:
                 % 0. Allocate XHIST as long as it is present, even if the size is 0; otherwise, it will be
@@ -417,6 +489,9 @@ classdef bobyqa_mod
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 5
                 nhist = min(nf_loc, numel(fhist_loc));
+                %--------------------------------------------------%
+                memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
+                %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
 
             end
@@ -424,8 +499,56 @@ classdef bobyqa_mod
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
             if nargout >= 4 && maxhist_loc < nf_loc
                 debug_obj.warning(solver, ...
-                                  "Only the history of the last " + int2str(maxhist_loc) ...
+                                  "Only the history of the last " ...
+                                  + string_obj.int2str(maxhist_loc) ...
                                   + " function evaluation(s) is recorded");
+            end
+
+            % Postconditions
+            if consts_obj.DEBUGGING
+                debug_obj.assert(nf_loc <= maxfun_loc, "NF <= MAXFUN", srname);
+                debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
+                                 "SIZE(X) == N, X does not contain NaN", srname);
+                nhist = min(nf_loc, maxhist_loc);
+                if nargout >= 4
+                    debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == nhist, ...
+                                     "SIZE(XHIST) == [N, NHIST]", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist), 'all'), ...
+                                     "XHIST does not contain NaN", srname);
+                end
+
+                if ~ismember('xl', ipObj.UsingDefaults)
+                    if numel(xl) == numel(x)
+                        debug_obj.assert(all(x >= xl, 'all'), "X >= XL", srname);
+                        if nargout >= 4
+                            for k = 1:nhist
+                                debug_obj.assert(all(xhist(:, k) >= xl, 'all'), "XHIST >= XL", ...
+                                                 srname);
+                            end
+                        end
+                    end
+                end
+
+                if ~ismember('xu', ipObj.UsingDefaults)
+                    if numel(xu) == numel(x)
+                        debug_obj.assert(all(x <= xu, 'all'), "X <= XU", srname);
+                        if nargout >= 4
+                            for k = 1:nhist
+                                debug_obj.assert(all(xhist(:, k) <= xu, 'all'), "XHIST <= XU", ...
+                                                 srname);
+                            end
+                        end
+                    end
+                end
+
+                if nargout >= 5
+                    debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
+                    debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) ...
+                                          | infnan_obj.is_posinf(fhist), 'all'), ...
+                                     "FHIST does not contain NaN/+Inf", srname);
+                    debug_obj.assert(~any(fhist < f_loc, 'all'), "F is the smallest in FHIST", ...
+                                     srname);
+                end
             end
 
         end
