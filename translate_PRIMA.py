@@ -48,7 +48,7 @@ The fortran version is from PRIMA (https://libprima.net) with git commit {commit
 def timer(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        print(func.__name__, end="", flush=True)
+        print(func.__name__.replace("_", " "), end="", flush=True)
         start = time.perf_counter()
         result = func(*args, **kwargs)
         end = time.perf_counter()
@@ -59,7 +59,7 @@ def timer(func):
 
 
 @timer
-def preprocess_sources(src_dir, src_files, output_dir):
+def preprocess(src_dir, src_files, output_dir, debugging=0):
     preprocessed_files = []
     for file_abs_path in src_files:
         file_rel_path = Path(os.path.relpath(file_abs_path, start=src_dir))
@@ -78,7 +78,7 @@ def preprocess_sources(src_dir, src_files, output_dir):
                     "-E",
                     "-cpp",
                     "-P",
-                    # "-DPRIMA_DEBUGGING=1",
+                    f"-DPRIMA_DEBUGGING={debugging}",
                     str(source_path),
                     f"-I{src_dir}",
                     "-o",
@@ -98,7 +98,7 @@ def preprocess_sources(src_dir, src_files, output_dir):
 
 
 @timer
-def extract_source_files(src_dir):
+def extract_source(src_dir):
     """Extracts source file paths from CMake."""
     cmake_file = src_dir / "CMakeLists.txt"
 
@@ -118,27 +118,12 @@ def extract_source_files(src_dir):
 
 
 @timer
-def translate_sources(
-    src_dir, preprocessed_files, output_dir, pkg_name, translator_exec="4ft2pm"
-):
+def translate(options):
     return subprocess.run(
         [
-            translator_exec,
-            "-r",
-            str(src_dir),
-            "-o",
-            str(output_dir),
-            "--create-setup-m",
-            # "--try-bit-consistency",
-            # "--no-simplify",
-            "--prima",
-            "--as-package",
-            pkg_name,
-            # "--preamble",
-            # FILE_PREAMBLE,
-            "--max-column-width",
-            "100",
+            "42mp",
         ]
+        + options
     )
 
 
@@ -153,9 +138,26 @@ if __name__ == "__main__":
         if p.exists():
             shutil.rmtree(p)
 
-    src_files = extract_source_files(src_dir)
-    preprocessed_files = preprocess_sources(src_dir, src_files, preprocess_dir)
-    translate_sources(preprocess_dir, preprocessed_files, output_dir, pkg_name)
+    src_files = extract_source(src_dir)
+    preprocess(src_dir, src_files, preprocess_dir)
+    translate(
+        [
+            "-r",
+            str(preprocess_dir),
+            "-o",
+            str(output_dir),
+            "--create-setup-m",
+            "--try-bit-consistency",
+            # "--no-simplify",
+            # "--prima",
+            "--as-package",
+            pkg_name,
+            # "--preamble",
+            # FILE_PREAMBLE,
+            "--max-column-width",
+            "100",
+        ]
+    )
 
     if preprocess_dir.exists():
         shutil.rmtree(preprocess_dir)
