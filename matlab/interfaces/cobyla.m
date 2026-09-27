@@ -457,7 +457,11 @@ else % The problem turns out 'normal' during preprima
             % Call the pure MATLAB code
             calcfc_matlab = @(x, constr_in) cobyla_calfc_matlab(x, constr_in, fun, nonlcon);
             m_nlcon = m_nlcineq + 2*m_nlceq;
-            co = prima_mat.cobyla.cobyla_mod();
+            if debug_flag
+                co = prima_debug.cobyla.cobyla_mod();
+            else
+                co = prima_mat.cobyla.cobyla_mod();
+            end
             [x, fx, constrviolation, nlconstr, nf, xhist, fhist, chist, nlchist, exitflag] = ...
                 co.cobyla(calcfc_matlab, m_nlcon, x0, ...
                 'Aineq', Aineq, 'bineq', bineq, 'Aeq', Aeq, 'beq', beq, ...

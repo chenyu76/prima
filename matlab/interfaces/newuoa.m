@@ -294,7 +294,11 @@ else
             % In C MEX, however, we have mxGetLogicals.
         else
             % Call the pure MATLAB code
-            no = prima_mat.newuoa.newuoa_mod();
+            if debug_flag
+                no = prima_debug.newuoa.newuoa_mod();
+            else
+                no = prima_mat.newuoa.newuoa_mod();
+            end
             [x, fx, nf, xhist, fhist, exitflag] = no.newuoa( ...
                 fun, x0, 'rhobeg', rhobeg, 'rhoend', rhoend, ...
                 'ftarget', ftarget, 'maxfun', maxfun, 'npt', npt, ...
