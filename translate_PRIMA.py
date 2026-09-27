@@ -132,32 +132,35 @@ if __name__ == "__main__":
     src_dir = (current_dir / "fortran").resolve()
     preprocess_dir = (current_dir / "preprocessed_fortran/").resolve()
     output_dir = (current_dir / "matlab/interfaces/").resolve()
-    pkg_name = "prima_mat"
+    p = output_dir / "+fortran"
+    if p.exists():
+        shutil.rmtree(p)
 
-    for p in [output_dir / "+fortran", output_dir / f"+{pkg_name}"]:
+    for pkg_name, dbg in [("prima_mat", 0), ("prima_debug", 1)]:
+        p = output_dir / f"+{pkg_name}"
         if p.exists():
             shutil.rmtree(p)
 
-    src_files = extract_source(src_dir)
-    preprocess(src_dir, src_files, preprocess_dir)
-    translate(
-        [
-            "-r",
-            str(preprocess_dir),
-            "-o",
-            str(output_dir),
-            "--create-setup-m",
-            "--try-bit-consistency",
-            # "--no-simplify",
-            # "--prima",
-            "--as-package",
-            pkg_name,
-            # "--preamble",
-            # FILE_PREAMBLE,
-            "--max-column-width",
-            "100",
-        ]
-    )
+        src_files = extract_source(src_dir)
+        preprocess(src_dir, src_files, preprocess_dir, debugging=dbg)
+        translate(
+            [
+                "-r",
+                str(preprocess_dir),
+                "-o",
+                str(output_dir),
+                "--create-setup-m",
+                "--try-bit-consistency",
+                # "--no-simplify",
+                # "--prima",
+                "--as-package",
+                pkg_name,
+                # "--preamble",
+                # FILE_PREAMBLE,
+                "--max-column-width",
+                "100",
+            ]
+        )
 
-    if preprocess_dir.exists():
-        shutil.rmtree(preprocess_dir)
+        if preprocess_dir.exists():
+            shutil.rmtree(preprocess_dir)
