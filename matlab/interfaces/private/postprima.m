@@ -570,7 +570,7 @@ if options.debug && ~options.classical
             fhistf = fhistf(chist <= max(cstrv_returned*(1 - eps), 0));
         end
     end
-    minf = min([fhistf, fx]);
+    minf = min([fhistf(:); fx]);
     % Why excluding the case with options.precision = 'quadruple' in the following? Consider two
     % points x1 and x2. Suppose that x1 is returned because it has a slightly smaller constraint
     % violation in quadruple precision. In MATLAB, which uses double precision, x1 may be regarded
@@ -597,7 +597,7 @@ if options.debug && ~options.classical
     if isfield(output, 'constrviolation')
         constrviolation = output.constrviolation;
     end
-    if strcmp(solver, 'bobyqa') && (max([chist, constrviolation]) > 0) && ~probinfo.infeasible
+    if strcmp(solver, 'bobyqa') && (max([chist(:); constrviolation]) > 0) && ~probinfo.infeasible
         % Public/unexpected error
         error(sprintf('%s:InvalidChist', invoker), ...
              '%s: UNEXPECTED ERROR: %s is a feasible solver yet it returns a positive constrviolation.', invoker, solver);
