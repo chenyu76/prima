@@ -103,7 +103,7 @@ classdef debug_mod
                 % N.B.: In Fortran 2008, stop code must be a scalar default character or integer CONSTANT
                 % expression, but Fortran 2018 lifts the requirement on constancy. gfortran is strict in this
                 % aspect. Consequently, for gfortran, compile with either `-std=f2018` or no `-std` at all.
-                error(code);
+                error("Error " + string(code));
             end
             % N.B.
             % 1. ERROR STOP means to stop the whole program.
