@@ -16,7 +16,7 @@ classdef fprint_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
-        function fprint(~, string, varargin)
+        function fprint(~, string_custom, varargin)
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
             string_obj = prima_mat.common.string_mod();
@@ -124,20 +124,25 @@ classdef fprint_mod
             % output" if string is long. This did occur with NAG Fortran Compiler R7.1(Hanzomon) Build 7122.
             % To avoid this problem, we print the string line by line, separated by newlines.
             i = 1;
-            j = fortran.index(string, newline_custom); % Index of the first newline in the string.
-            slen = strlength(string);
+            j = ...
+                fortran.index(string_custom, ...
+                              newline_custom); % Index of the first newline in the string.
+            slen = strlength(string_custom);
             while j >= i                % J < I: No more newline in the string.
-                fprintf(funit_loc, '%s\n', ...
-                        extractBetween(string, i, ...
-                                       j - 1)); % Print the string before the current newline.
+                format_value = extractBetween(string_custom, i, j - 1);
+                fortran.format('write', '(A)', {format_value}, ...
+                               reshape({'character'; 1; strlength(format_value)}, 1, 3), ...
+                               funit_loc); % Print the string before the current newline.
                 i = j + 1; % Index of the character after the current newline.
                 j = ...
-                    i + fortran.index(extractBetween(string, i, slen), newline_custom) ...
+                    i + fortran.index(extractBetween(string_custom, i, slen), newline_custom) ...
                     - 1; % Index of the next newline.
             end
-            if extractBetween(string, i, slen) ~= ""
+            if extractBetween(string_custom, i, slen) ~= ""
                 % Print the string after the last newline.
-                fprintf(funit_loc, '%s\n', extractBetween(string, i, slen));
+                format_value = extractBetween(string_custom, i, slen);
+                fortran.format('write', '(A)', {format_value}, ...
+                               reshape({'character'; 1; strlength(format_value)}, 1, 3), funit_loc);
             end
 
             % Close the file if necessary.
