@@ -472,6 +472,9 @@ else % The problem turns out 'normal' during preprima
                 'maxhist', maxhist, 'maxfilt', maxfilt, ...
                 'f0', f_x0, 'nlconstr0', nlconstr_x0, ...
                 'nlconstr', NaN(m_nlcon, 1));
+            % Match the Fortran backend's row-vector history outputs.
+            fhist = fhist.';
+            chist = chist.';
         end
     catch exception
         if ~isempty(regexp(exception.identifier, sprintf('^%s:', funname), 'once')) % Public error; displayed friendly

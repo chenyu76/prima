@@ -392,6 +392,9 @@ else % The problem turns out 'normal' during preprima
                 'maxfun', maxfun, 'npt', npt, 'iprint', iprint, ...
                 'eta1', eta1, 'eta2', eta2, 'gamma1', gamma1, 'gamma2', gamma2, ...
                 'maxhist', maxhist, 'maxfilt', maxfilt);
+            % Match the Fortran backend's row-vector history outputs.
+            fhist = fhist.';
+            chist = chist.';
         end
     catch exception
         if ~isempty(regexp(exception.identifier, sprintf('^%s:', funname), 'once')) % Public error; displayed friendly

@@ -307,6 +307,8 @@ else
                 'ftarget', ftarget, 'maxfun', maxfun, 'iprint', iprint, ...
                 'eta1', eta1, 'eta2', eta2, 'gamma1', gamma1, 'gamma2', gamma2, ...
                 'maxhist', maxhist);
+            % Match the Fortran backend's row-vector history outputs.
+            fhist = fhist.';
         end
     catch exception
         if ~isempty(regexp(exception.identifier, sprintf('^%s:', funname), 'once')) % Public error; displayed friendly
