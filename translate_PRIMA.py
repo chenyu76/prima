@@ -32,15 +32,17 @@ def format_date_and_commit(text: str) -> str:
 
 
 FILE_PREAMBLE = wrap_as_comment(format_date_and_commit("""
-This file is translated from Fortran by 4ft2pm on {date}.
-4ft2pm is a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.
+This file is translated from Fortran by 42mp on {date}.
+42mp is a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.
 The fortran version is from PRIMA (https://libprima.net) with git commit {commit}.
 """.strip()))
 
+FILE_PREAMBLE = wrap_as_comment("Placeholder")
+
 FOLDER_README = format_date_and_commit("""
 This is the MATLAB of ??????
-Translated from Fortran by 4ft2pm on {date}.
-4ft2pm is a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.
+Translated from Fortran by 42mp on {date}.
+42mp is a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.
 The fortran version is from PRIMA (https://libprima.net) with git commit {commit}.
 """.strip())
 
@@ -121,7 +123,7 @@ def extract_source(src_dir):
 def translate(options):
     return subprocess.run(
         [
-            "42mp",
+            "42mp-cabal",
         ]
         + options
     )
