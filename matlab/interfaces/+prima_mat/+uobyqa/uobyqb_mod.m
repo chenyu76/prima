@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef uobyqb_mod
     %--------------------------------------------------------------------------------------------------%
     % This module performs the major calculations of UOBYQA.
@@ -12,6 +15,8 @@ classdef uobyqb_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [x, nf, f, fhist, xhist, info] = ...
                 uobyqb(~, calfun, iprint, maxfun, eta1, eta2, ftarget, gamma1, gamma2, rhobeg, ...
                        rhoend, x, fhist, xhist, varargin)
@@ -48,7 +53,6 @@ classdef uobyqb_mod
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
             message_obj = prima_mat.common.message_mod();
-
             powalg_obj = prima_mat.common.powalg_mod();
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();
@@ -60,38 +64,29 @@ classdef uobyqb_mod
             trustregion_uobyqa_obj = prima_mat.uobyqa.trustregion_uobyqa_mod();
             update_uobyqa_obj = prima_mat.uobyqa.update_uobyqa_mod();
 
+
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
 
             % In-outputs
             % X(N)
 
             % Outputs
-
-
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
             % Local variables
             solver = "UOBYQA";
             srname = "UOBYQB";
-
             d = NaN(size(x));
-
             distsq = NaN((numel(x) + 1) * (numel(x) + 2) / 2, 1);
-
             dnorm_rec = NaN(2, 1); % Powell's implementation: DNORM_REC(3)
-            fval = NaN(size(distsq));
+            fval = NaN((numel(x) + 1) * (numel(x) + 2) / 2, 1);
             g = NaN(size(x));
-
             h = NaN(numel(x));
-
-            moderr_rec = NaN(size(dnorm_rec));
+            moderr_rec = NaN(2, 1);
             pq = NaN(numel(distsq) + -1, 1);
-
             xbase = NaN(size(x));
-
             xpt = NaN(numel(x), numel(distsq));
             pl = [];
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
@@ -110,7 +105,7 @@ classdef uobyqb_mod
                 debug_obj.assert(n >= 1, "N >= 1", srname);
                 debug_obj.assert(maxfun >= npt + 1, "MAXFUN >= NPT + 1", srname);
                 debug_obj.assert(rhobeg >= rhoend && rhoend > 0, "RHOBEG >= RHOEND > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(x), 'all'), "X is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(x), 'all'), "X is finite", srname);
                 debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", ...
                                  srname);
                 debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, ...
@@ -133,7 +128,6 @@ classdef uobyqb_mod
                                              fval, xbase, xhist, xpt);
 
             % Report the current best value, and check if user asks for early termination.
-
             ipObj = inputParser();
             addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
@@ -162,7 +156,7 @@ classdef uobyqb_mod
 
                 % Initialize the quadratic model represented by PQ.
                 pq = initialize_uobyqa_obj.initq(fval, xpt, pq);
-                if ~all(infnan_obj.is_finite(pq), 'all')
+                if ~all(infnan_obj.is_finite_sp(pq), 'all')
                     subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
@@ -179,7 +173,7 @@ classdef uobyqb_mod
                     debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
                     debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
                                      "SIZE(X) == N, X does not contain NaN", srname);
-                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                      "F is not NaN/+Inf", srname);
                     debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
                                      "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -188,7 +182,7 @@ classdef uobyqb_mod
                     % The last calculated X can be Inf (finite + finite can be Inf numerically).
                     debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                          | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                          | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                           'all'), "FHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), ...
                                      "F is the smallest in FHIST", srname);
@@ -205,7 +199,6 @@ classdef uobyqb_mod
             rho = rhobeg;
             delta = rho;
             shortd = false;
-
             ratio = -consts_obj.ONE;
             ddmove = -consts_obj.ONE;
             dnorm_rec(:) = consts_obj.REALMAX;
@@ -274,7 +267,6 @@ classdef uobyqb_mod
                     delta = consts_obj.TENTH * delta;
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
-
                     end
                 else
                     % Calculate the next value of the objective function.
@@ -316,7 +308,6 @@ classdef uobyqb_mod
                                                      ratio);
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
-
                     end
 
                     % Is the newly generated X better than current best point?
@@ -333,14 +324,13 @@ classdef uobyqb_mod
                         [kopt, fval, pl, pq, xpt] = ...
                             update_uobyqa_obj.update(knew_tr, d, f, moderr, kopt, fval, pl, pq, ...
                                                      xpt);
-                        if ~all(infnan_obj.is_finite(pq), 'all')
+                        if ~all(infnan_obj.is_finite_sp(pq), 'all')
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
                         ddmove = ...
                             fortran.sum(fortran.power(xdrop - xpt(:, kopt), 2), ...
                                         'all'); % KOPT is updated.
-
                     end
 
                     % Check whether to exit
@@ -495,7 +485,7 @@ classdef uobyqb_mod
                     % Update PL, PQ, XPT, FVAL, and KOPT so that XPT(:, KNEW_GEO) becomes XOPT + D.
                     [kopt, fval, pl, pq, xpt] = ...
                         update_uobyqa_obj.update(knew_geo, d, f, moderr, kopt, fval, pl, pq, xpt);
-                    if ~all(infnan_obj.is_finite(pq), 'all')
+                    if ~all(infnan_obj.is_finite_sp(pq), 'all')
                         info = infos_obj.NAN_INF_MODEL;
                         break
                     end
@@ -547,7 +537,6 @@ classdef uobyqb_mod
             % Deallocate PL. F2003 automatically deallocate local ALLOCATABLE variables at exit, yet we prefer
             % to deallocate them immediately when they finish their jobs.
 
-
             % Return from the calculation, after trying the Newton-Raphson step if it has not been tried yet.
             % Ensure that D has not been updated after SHORTD == TRUE occurred, or the code below is incorrect.
             x = xbase + (xpt(:, kopt) + d);
@@ -586,7 +575,7 @@ classdef uobyqb_mod
                 debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
                 debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
                                  "SIZE(X) == N, X does not contain NaN", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN/+Inf", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
                                  "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -595,13 +584,14 @@ classdef uobyqb_mod
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                      | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                      | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                       'all'), "FHIST does not contain NaN/+Inf", srname);
                 debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), ...
                                  "F is the smallest in FHIST", srname);
             end
 
         end
+
 
     end
 end

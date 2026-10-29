@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef linalg_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides some basic linear algebra procedures.
@@ -45,7 +48,6 @@ classdef linalg_mod
     methods
         function obj = linalg_mod()
             % Mathematically, INPROD = DOT_PRODUCT, MATPROD = MATMUL
-
         end
         function varargout = matprod(obj, varargin)
             if numel(varargin) == 2 && isvector(varargin{1}) ...
@@ -157,6 +159,8 @@ classdef linalg_mod
                 [varargout{1:nargout}] = obj.logical_to_int(varargin{:});
             end
         end
+
+
         function A = r1_sym(obj, A, alpha, x)
             %--------------------------------------------------------------------------------------------------%
             % R1_SYM sets
@@ -167,8 +171,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % In-outputs
             % A(SIZE(X), SIZE(X))
             % Local variables
@@ -208,6 +210,8 @@ classdef linalg_mod
                                  "A is N-by-N and symmetric", srname);
             end
         end
+
+
         function A = r1(obj, A, alpha, x, y)
             %--------------------------------------------------------------------------------------------------%
             % R1 sets
@@ -219,8 +223,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % In-outputs
             % A(SIZE(X), SIZE(Y))
             % Local variables
@@ -244,6 +246,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function A = r2_sym(obj, A, alpha, x, y)
             %--------------------------------------------------------------------------------------------------%
             % R2_SYM sets
@@ -254,8 +258,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % In-outputs
             % A(SIZE(X), SIZE(X))
             % Local variables
@@ -292,6 +294,8 @@ classdef linalg_mod
                 debug_obj.assert(obj.issymmetric(A), "A is symmetric", srname);
             end
         end
+
+
         function A = r2(obj, A, alpha, x, y, beta, u, v)
             %--------------------------------------------------------------------------------------------------%
             % R2 sets
@@ -303,8 +307,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % U(SIZE(X))
             % V(SIZE(Y))
             % In-outputs
@@ -332,6 +334,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function z = matprod12(obj, x, y)
             %--------------------------------------------------------------------------------------------------%
             % This procedure calculates the matrix product of X and Y, where X is an M-dimensional vector
@@ -341,8 +345,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
             z = NaN(size(y, 2), 1);
             % Local variables
@@ -373,6 +375,8 @@ classdef linalg_mod
                 debug_obj.assert(numel(z) == size(y, 2), "SIZE(Z) == SIZE(Y, 2)", srname);
             end
         end
+
+
         function z = matprod21(~, x, y)
             %--------------------------------------------------------------------------------------------------%
             % This procedure calculates the matrix product of X and Y, where X is an M-by-N matrix, and Y is an
@@ -382,8 +386,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
             z = NaN(size(x, 1), 1);
             % Local variables
@@ -412,6 +414,8 @@ classdef linalg_mod
                 debug_obj.assert(numel(z) == size(x, 1), "SIZE(Z) == SIZE(X, 1)", srname);
             end
         end
+
+
         function z = matprod22(~, x, y)
             %--------------------------------------------------------------------------------------------------%
             % This procedure calculates the matrix product of X and Y, where X is an M-by-P matrix, and Y is a
@@ -421,8 +425,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
             z = NaN(size(x, 1), size(y, 2));
             % Local variables
@@ -454,6 +456,8 @@ classdef linalg_mod
                                  "[SIZE(Z) == SIZE(X, 1), SIZE(Y, 2)]", srname);
             end
         end
+
+
         function z = inprod(~, x, y)
             %--------------------------------------------------------------------------------------------------%
             % INPROD calculates the inner product of X and Y, i.e., Z = X^T*Y, regarding X and Y as columns.
@@ -462,10 +466,7 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "INPROD";
 
@@ -487,6 +488,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function z = outprod(~, x, y)
             %--------------------------------------------------------------------------------------------------%
             % OUTPROD calculates the outer product of X and Y, i.e., Z = X*Y^T, regarding X and Y as columns.
@@ -495,8 +498,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
             z = NaN(numel(x), numel(y));
             % Local variables
@@ -520,6 +521,8 @@ classdef linalg_mod
                                  "SIZE(Z) == [SIZE(X), SIZE(Y)]", srname);
             end
         end
+
+
         function x = eye1(~, n)
             %--------------------------------------------------------------------------------------------------%
             % EYE1 is the univariate case of EYE, a function similar to the MATLAB function with the same name.
@@ -528,7 +531,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
             % Outputs
             x = NaN(max(n, 0));
             % Local variables
@@ -555,6 +557,8 @@ classdef linalg_mod
                                  "SIZE(X) == [N, N]", srname);
             end
         end
+
+
         function x = eye2(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % EYE2 is the bivariate case of EYE, a function similar to the MATLAB function with the same name.
@@ -563,8 +567,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
             x = NaN(max(m, 0), max(n, 0));
             % Local variables
@@ -591,6 +593,8 @@ classdef linalg_mod
                                  "SIZE(X) == [M, N]", srname);
             end
         end
+
+
         function x = solve(obj, A, b)
             %--------------------------------------------------------------------------------------------------%
             % This function solves the linear system A*X = B. We assume that A is a square matrix that is small
@@ -602,14 +606,11 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
-
             % Outputs
             x = NaN(size(A, 2), 1);
             % Local variables
             srname = "SOLVE";
             P = NaN(size(A, 1), 1);
-
             Q = NaN(size(A, 1));
             R = NaN(size(A, 1), size(A, 2));
 
@@ -626,8 +627,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            if n <= 0
-                % Of course, N < 0 should never happen.
+            if n <= 0 % Of course, N < 0 should never happen.
                 return
             end
 
@@ -640,8 +640,7 @@ classdef linalg_mod
                         (b(i) - obj.inprod(A(i, 1:i - 1).', x(1:i - 1))) ...
                         / A(i, i); % INPROD = 0 if I == 1.
                 end
-            elseif obj.istriu(A)
-                % This case is invoked in LINCOA.
+            elseif obj.istriu(A) % This case is invoked in LINCOA.
                 for i = n:-1:1
                     x(i) = ...
                         (b(i) - obj.inprod(A(i, i + 1:n).', x(i + 1:n))) ...
@@ -666,7 +665,7 @@ classdef linalg_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(numel(x) == size(A, 2), "SIZE(X) == SIZE(A, 2)", srname);
-                if infnan_obj.is_finite(fortran.sum(abs(A), 'all') + fortran.sum(abs(b), 'all'))
+                if infnan_obj.is_finite_sp(fortran.sum(abs(A), 'all') + fortran.sum(abs(b), 'all'))
                     tol = ...
                         max(fortran.power(consts_obj.TEN, max(-8, -consts_obj.MAXPOW10)), ...
                             min(0.1, ...
@@ -679,6 +678,8 @@ classdef linalg_mod
                 end
             end
         end
+
+
         function B = inv(obj, A)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates the inverse of a matrix A, which is ASSUMED TO BE SMALL AND INVERTIBLE.
@@ -692,14 +693,12 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
             % Outputs
             B = NaN(size(A, 1));
             % Local variables
             srname = "INV";
             P = NaN(size(A, 1), 1);
             InvP = NaN(size(A, 1), 1);
-
             Q = NaN(size(A, 1));
             R = NaN(size(A, 1));
 
@@ -715,8 +714,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            if n <= 0
-                % Of course, N < 0 should never happen.
+            if n <= 0 % Of course, N < 0 should never happen.
                 return
             end
 
@@ -766,6 +764,8 @@ classdef linalg_mod
                 debug_obj.assert(obj.isinv(A, B, 'tol', tol), "B = A^{-1}", srname);
             end
         end
+
+
         function is_inv = isinv(obj, A, B, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This procedure tests whether A = B^{-1} up to the tolerance TOL.
@@ -774,10 +774,7 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "ISINV";
 
@@ -817,6 +814,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function [Q, R, P] = qr(obj, A, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine calculates the QR factorization of A, possibly with column pivoting, so that
@@ -827,13 +826,9 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
             % Outputs
-
-
             % Local variables
             srname = "QR";
-
             Q_loc = NaN(size(A, 1));
 
             ipObj = inputParser();
@@ -948,6 +943,8 @@ classdef linalg_mod
                 end
             end
         end
+
+
         function x = lsqr_Rdiag(obj, A, b, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function solves the linear least squares problem min ||A*x - b||_2 by the QR factorization.
@@ -969,9 +966,7 @@ classdef linalg_mod
             x = NaN(size(A, 2), 1);
             % Local variables
             srname = "LSQR_RDIAG";
-
             P = NaN(size(A, 2), 1);
-
             Q_loc = NaN(size(A, 1), min(size(A, 1), size(A, 2)));
 
             % Sizes
@@ -1010,8 +1005,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            if n <= 0
-                % Of course, N < 0 should never happen.
+            if n <= 0 % Of course, N < 0 should never happen.
                 return
             end
 
@@ -1065,6 +1059,8 @@ classdef linalg_mod
             % % & 'A*X is the projection of B to the column space of A', srname)
             %end if
         end
+
+
         function x = lsqr_Rfull(obj, b, Q, R)
             %--------------------------------------------------------------------------------------------------%
             % This function solves the linear least squares problem min ||A*x - b||_2 by the QR factorization.
@@ -1108,8 +1104,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            if n <= 0
-                % Of course, N < 0 should never happen.
+            if n <= 0 % Of course, N < 0 should never happen.
                 return
             end
 
@@ -1131,6 +1126,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function D = diag(~, A, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function takes the K-th diagonal of the matrix A, K = 0 (default) corresponding to the main
@@ -1142,10 +1139,7 @@ classdef linalg_mod
             memory_obj = prima_mat.common.memory_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "DIAG";
 
@@ -1176,6 +1170,8 @@ classdef linalg_mod
                 debug_obj.assert(numel(D) == dlen, "SIZE(D) == DLEN", srname);
             end
         end
+
+
         function is_banded = isbanded(~, A, lwidth, uwidth, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether the matrix A banded within the bandwidth specified by LWIDTH and
@@ -1186,10 +1182,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "ISBANDED";
 
@@ -1235,6 +1228,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function is_tril = istril(obj, A, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether the matrix A is lower triangular up to the tolerance TOL.
@@ -1243,10 +1238,7 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "ISTRIL";
 
@@ -1277,6 +1269,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function is_triu = istriu(obj, A, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether the matrix A is upper triangular up to the tolerance TOL.
@@ -1285,10 +1279,7 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "ISTRIU";
 
@@ -1319,6 +1310,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function is_orth = isorth(obj, A, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether the matrix A has orthonormal columns up to the tolerance TOL.
@@ -1328,10 +1321,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "ISORTH";
 
@@ -1376,6 +1366,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function y = project1(obj, x, v)
             %--------------------------------------------------------------------------------------------------%
             % This function returns the projection of X to SPAN(V).
@@ -1385,8 +1377,6 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
-
             % Outputs
             y = NaN(size(x));
             % Local variables
@@ -1406,11 +1396,10 @@ classdef linalg_mod
                 y(:) = consts_obj.ZERO;
             elseif any(infnan_obj.is_nan_sp(x), 'all') || any(infnan_obj.is_nan_sp(v), 'all')
                 y(:) = fortran.sum(x, 'all') + fortran.sum(v, 'all'); % Set Y to NaN
-
-            elseif any(infnan_obj.is_inf(v), 'all')
+            elseif any(infnan_obj.is_inf_sp(v), 'all')
                 u(:) = consts_obj.ZERO;
-                u(obj.trueloc(infnan_obj.is_inf(v))) = ...
-                    fortran.sign(consts_obj.ONE, v(obj.trueloc(infnan_obj.is_inf(v))));
+                u(obj.trueloc(infnan_obj.is_inf_sp(v))) = ...
+                    fortran.sign(consts_obj.ONE, v(obj.trueloc(infnan_obj.is_inf_sp(v))));
                 %%MATLAB: u = 0; u(isinf(v)) = sign(v(isinf(v)))
                 u = u ./ obj.p_norm(u);
                 y(:) = obj.inprod(x, u) * u;
@@ -1425,7 +1414,7 @@ classdef linalg_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                if infnan_obj.is_finite(obj.p_norm(x)) && infnan_obj.is_finite(obj.p_norm(v))
+                if infnan_obj.is_finite_sp(obj.p_norm(x)) && infnan_obj.is_finite_sp(obj.p_norm(v))
                     tol = ...
                         max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), ...
                             min(0.1, ...
@@ -1446,6 +1435,8 @@ classdef linalg_mod
                 end
             end
         end
+
+
         function y = project2(obj, x, V)
             %--------------------------------------------------------------------------------------------------%
             % This function returns the projection of X to RANGE(V).
@@ -1455,8 +1446,6 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
-
             % Outputs
             y = NaN(size(x));
             % Local variables
@@ -1479,13 +1468,11 @@ classdef linalg_mod
                 y(:) = consts_obj.ZERO;
             elseif any(infnan_obj.is_nan_sp(x), 'all') || any(infnan_obj.is_nan_sp(V), 'all')
                 y(:) = fortran.sum(x, 'all') + fortran.sum(V, 'all'); % Set Y to NaN
-
-            elseif any(infnan_obj.is_inf(V), 'all')
-                mask00 = infnan_obj.is_inf(V);
+            elseif any(infnan_obj.is_inf_sp(V), 'all')
+                mask00 = infnan_obj.is_inf_sp(V);
                 mask01 = ~mask00;
                 V_loc(mask00) = fortran.sign(consts_obj.ONE, V(mask00));
                 V_loc(mask01) = consts_obj.ZERO;
-
                 %%MATLAB: V_loc = 0; V_loc(isinf(V)) = sign(V);
                 U = obj.qr(V_loc, 'Q', U);
                 y(:) = obj.matprod21(U, obj.matprod12(x, U));
@@ -1500,8 +1487,8 @@ classdef linalg_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                if infnan_obj.is_finite(obj.p_norm(x)) ...
-                   && infnan_obj.is_finite(fortran.sum(fortran.power(V, 2), 'all'))
+                if infnan_obj.is_finite_sp(obj.p_norm(x)) ...
+                   && infnan_obj.is_finite_sp(fortran.sum(fortran.power(V, 2), 'all'))
                     tol = ...
                         max(fortran.power(consts_obj.TEN, max(-10, -consts_obj.MAXPOW10)), ...
                             min(0.1, ...
@@ -1523,6 +1510,8 @@ classdef linalg_mod
                 end
             end
         end
+
+
         function r = hypotenuse(~, x1, x2)
             %--------------------------------------------------------------------------------------------------%
             % HYPOTENUSE(X1, X2) returns SQRT(X1^2 + X2^2), handling over/underflow.
@@ -1532,10 +1521,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "HYPOTENUSE";
             y = NaN(2, 1);
@@ -1544,9 +1530,9 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            if ~infnan_obj.is_finite(x1)
+            if ~infnan_obj.is_finite_sp(x1)
                 r = abs(x1);
-            elseif ~infnan_obj.is_finite(x2)
+            elseif ~infnan_obj.is_finite_sp(x2)
                 r = abs(x2);
             else
                 y(:) = abs([x1, x2]);
@@ -1578,6 +1564,8 @@ classdef linalg_mod
                 end
             end
         end
+
+
         function G = planerot(obj, x)
             %--------------------------------------------------------------------------------------------------%
             % As in MATLAB, PLANEROT(X) returns a 2x2 Givens matrix G for X in R^2 so that Y = G*X has Y(2) = 0.
@@ -1595,9 +1583,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
             % Outputs
-
             % Local variables
             srname = "PLANEROT";
 
@@ -1615,12 +1601,11 @@ classdef linalg_mod
                 % In this case, MATLAB sets G to NaN(2, 2). We refrain from doing so to keep G orthogonal.
                 c = consts_obj.ONE;
                 s = consts_obj.ZERO;
-            elseif all(infnan_obj.is_inf(x), 'all')
+            elseif all(infnan_obj.is_inf_sp(x), 'all')
                 % In this case, MATLAB sets G to NaN(2, 2). We refrain from doing so to keep G orthogonal.
                 c = fortran.sign(1 / fortran.sqrt(2.0), x(1));
                 s = fortran.sign(1 / fortran.sqrt(2.0), x(2));
-            elseif abs(x(1)) <= 0 && abs(x(2)) <= 0
-                % X(1) == 0 == X(2).
+            elseif abs(x(1)) <= 0 && abs(x(2)) <= 0 % X(1) == 0 == X(2).
                 c = consts_obj.ONE;
                 s = consts_obj.ZERO;
             elseif abs(x(2)) <= consts_obj.EPS * abs(x(1))
@@ -1637,7 +1622,6 @@ classdef linalg_mod
                 % 20211206 and took a whole day to debug! NEVER use SIGN on arrays unless you are really sure.
                 c = consts_obj.ZERO;
                 s = fortran.sign(consts_obj.ONE, x(2)); %%MATLAB: s = sign(x(2))
-
             else
                 % Here is the normal case. It implements the Givens rotation in a stable & continuous way as in:
                 % Bindel, D., Demmel, J., Kahan, W., and Marques, O. (2002). On computing Givens rotations
@@ -1682,7 +1666,7 @@ classdef linalg_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(size(G, 1) == 2 && size(G, 2) == 2, "SIZE(G) == [2, 2]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(G), 'all'), "G is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(G), 'all'), "G is finite", srname);
                 debug_obj.assert(abs(G(1, 1) - G(2, 2)) + abs(G(1, 2) + G(2, 1)) <= 0, ...
                                  "G(1,1) == G(2,2), G(1,2) = -G(2,1)", srname);
                 tol = ...
@@ -1690,7 +1674,7 @@ classdef linalg_mod
                         min(0.1, ...
                             fortran.power(10.0, min(6, consts_obj.MAXPOW10)) * consts_obj.EPS));
                 debug_obj.assert(obj.isorth(G, 'tol', tol), "G is orthonormal", srname);
-                if all(infnan_obj.is_finite(x) ...
+                if all(infnan_obj.is_finite_sp(x) ...
                        & abs(x) < fortran.sqrt(consts_obj.REALMAX / 2.1), 'all')
                     r = obj.p_norm(x);
                     debug_obj.assert(max(abs(obj.matprod21(G, x) - [r, consts_obj.ZERO].')) ...
@@ -1698,6 +1682,8 @@ classdef linalg_mod
                 end
             end
         end
+
+
         function A = symmetrize(obj, A)
             %--------------------------------------------------------------------------------------------------%
             % SYMMETRIZE(A) symmetrizes A.
@@ -1708,9 +1694,7 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % In-outputs
-
             % Local variables
-
             srname = "SYMMETRIZE";
 
             % Preconditions
@@ -1737,6 +1721,8 @@ classdef linalg_mod
                 debug_obj.assert(obj.issymmetric(A), "A is symmetrized", srname);
             end
         end
+
+
         function is_minor = isminor0(~, x, ref)
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether X is minor compared to REF. It is used by Powell, e.g., in COBYLA.
@@ -1748,10 +1734,7 @@ classdef linalg_mod
             consts_obj = prima_mat.common.consts_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             sensitivity = consts_obj.TENTH;
 
@@ -1768,6 +1751,8 @@ classdef linalg_mod
             %====================%
 
         end
+
+
         function is_minor = isminor1(obj, x, ref)
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether X is minor compared to REF. It is used by Powell, e.g., in COBYLA.
@@ -1776,10 +1761,7 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "ISMINOR1";
 
@@ -1803,6 +1785,8 @@ classdef linalg_mod
                 debug_obj.assert(numel(is_minor) == numel(x), "SIZE(IS_MINOR) == SIZE(X)", srname);
             end
         end
+
+
         function is_symmetric = issymmetric(~, A, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function tests whether A is symmetric up to TOL.
@@ -1812,10 +1796,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "ISSYMMETRIC";
 
@@ -1868,6 +1849,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function y = p_norm(~, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates the P-norm of a vector X.
@@ -1877,10 +1860,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "P_NORM";
 
@@ -1911,15 +1891,15 @@ classdef linalg_mod
                 y = consts_obj.ZERO;
             elseif p_loc <= 0 && ~any(infnan_obj.is_nan_sp(x), 'all')
                 y = double(nnz(abs(x) > 0));
-            elseif ~all(infnan_obj.is_finite(x), 'all')
+            elseif ~all(infnan_obj.is_finite_sp(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf unless P = 0.
                 y = fortran.sum(abs(x), 'all');
             elseif maxabs <= 0
                 % If MAXABS is zero, then Y is zero. Note that we do this only when X does not contain NaN.
                 % Otherwise, MAXABS = 0 does not necessarily guarantee that X is all zero.
                 y = consts_obj.ZERO;
-            else                % Now P > 0 and X is a finite-valued nonzero vector, as we have handled the other cases above.
-                if infnan_obj.is_posinf(p_loc)
+            else % Now P > 0 and X is a finite-valued nonzero vector, as we have handled the other cases above.
+                if infnan_obj.is_posinf_sp(p_loc)
                     y = maxabs;
                 elseif abs(p_loc - consts_obj.ONE) <= 0
                     y = fortran.sum(abs(x), 'all');
@@ -1947,7 +1927,7 @@ classdef linalg_mod
 
                     y = fortran.sqrt(fortran.sum(fortran.power(x, 2), 'all'));
                     % The following code handles over/underflow naively.
-                    if infnan_obj.is_posinf(y) || y <= 0
+                    if infnan_obj.is_posinf_sp(y) || y <= 0
                         scalmin = ...
                             fortran.power(double(radix(consts_obj.ZERO)), ...
                                           max(minexponent(consts_obj.ZERO) - 1, ...
@@ -1966,7 +1946,7 @@ classdef linalg_mod
                         fortran.power(fortran.sum(fortran.power(abs(x), p_loc), 'all'), ...
                                       consts_obj.ONE / p_loc);
                     % The following code handles over/underflow naively.
-                    if infnan_obj.is_posinf(y) || y <= 0
+                    if infnan_obj.is_posinf_sp(y) || y <= 0
                         scalmin = ...
                             fortran.power(double(radix(consts_obj.ZERO)), ...
                                           max(minexponent(consts_obj.ZERO) - 1, ...
@@ -2001,6 +1981,7 @@ classdef linalg_mod
             end
 
         end
+
         function y = named_norm_vec(obj, x, nname)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates named norms of a vector X.
@@ -2011,10 +1992,7 @@ classdef linalg_mod
             string_obj = prima_mat.common.string_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "NAMED_NORM_VEC";
 
@@ -2024,7 +2002,7 @@ classdef linalg_mod
 
             if numel(x) == 0
                 y = consts_obj.ZERO;
-            elseif ~all(infnan_obj.is_finite(x), 'all')
+            elseif ~all(infnan_obj.is_finite_sp(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf.
                 y = fortran.sum(abs(x), 'all');
             elseif ~any(abs(x) > 0, 'all')
@@ -2050,6 +2028,7 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
         function y = named_norm_mat(~, x, nname)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates named norms of a vector X.
@@ -2060,10 +2039,7 @@ classdef linalg_mod
             string_obj = prima_mat.common.string_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "NAMED_NORM_MAT";
 
@@ -2075,7 +2051,7 @@ classdef linalg_mod
 
             if size(x, 1) * size(x, 2) == 0
                 y = consts_obj.ZERO;
-            elseif ~all(infnan_obj.is_finite(x), 'all')
+            elseif ~all(infnan_obj.is_finite_sp(x), 'all')
                 % If X contains NaN, then Y is NaN. Otherwise, Y is Inf when X contains +/-Inf.
                 y = fortran.sum(abs(x), 'all');
             elseif ~any(abs(x) > 0, 'all')
@@ -2102,6 +2078,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function y = sort_i1(~, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function sorts X according to DIRECTION, which should be 'ascend' (default) or 'descend'.
@@ -2110,12 +2088,10 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "SORT_I1";
+
 
             %====================%
             % Calculation starts %
@@ -2134,7 +2110,7 @@ classdef linalg_mod
 
             y = x;
             n = numel(y);
-            while n > 1                % Bubble sort.
+            while n > 1 % Bubble sort.
                 newn = 0;
                 for i = 2:n
                     if y(i - 1) > y(i) && ascending || y(i - 1) < y(i) && ~ascending
@@ -2158,6 +2134,7 @@ classdef linalg_mod
                 end
             end
         end
+
         function y = sort_i2(obj, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function sorts a matrix X according to DIM (1 or 2) and DIRECTION ('ascend' or 'descend').
@@ -2167,10 +2144,7 @@ classdef linalg_mod
             string_obj = prima_mat.common.string_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "SORT_I2";
 
@@ -2232,19 +2206,20 @@ classdef linalg_mod
                 end
             end
         end
+
+
         function y = logical_to_int(~, x)
             %--------------------------------------------------------------------------------------------------%
             % LOGICAL_TO_INT(.TRUE.) = 1, LOGICAL_TO_INT(.FALSE.) = 0
             %--------------------------------------------------------------------------------------------------%
 
-
             % Inputs
-
             % Outputs
-
 
             y = fortran.merge('tsource', 1, 'fsource', 0, 'mask', x);
         end
+
+
         function loc = trueloc(obj, x)
             %--------------------------------------------------------------------------------------------------%
             % Similar to the `find` function in MATLAB, TRUELOC returns the indices where X is true in
@@ -2261,7 +2236,6 @@ classdef linalg_mod
             memory_obj = prima_mat.common.memory_mod();
 
             % Inputs
-
             % Outputs
             % INTEGER(IK) :: LOC(COUNT(X)) does not work with Absoft 22.0
             % Local variables
@@ -2292,6 +2266,8 @@ classdef linalg_mod
                                  "LOC is strictly ascending", srname);
             end
         end
+
+
         function loc = falseloc(obj, x)
             %--------------------------------------------------------------------------------------------------%
             % FALSELOC = TRUELOC(.NOT. X)
@@ -2301,7 +2277,6 @@ classdef linalg_mod
             memory_obj = prima_mat.common.memory_mod();
 
             % Inputs
-
             % Outputs
             % INTEGER(IK) :: LOC(COUNT(.NOT.X)) does not work with Absoft 22.0
             % Local variables
@@ -2328,6 +2303,8 @@ classdef linalg_mod
                                  "LOC is strictly ascending", srname);
             end
         end
+
+
         function y = minimum1(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function returns NaN if X contains NaN; otherwise, it returns MINVAL(X). Vector version.
@@ -2343,9 +2320,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
             % Outputs
-
             % Local variables
             srname = "MINIMUM1";
 
@@ -2376,6 +2351,7 @@ classdef linalg_mod
                                  "Y is NaN if X contains NaN", srname);
             end
         end
+
         function y = minimum2(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function returns NaN if X contains NaN; otherwise, it returns MINVAL(X). Matrix version.
@@ -2391,9 +2367,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
             % Outputs
-
             % Local variables
             srname = "MINIMUM2";
 
@@ -2424,6 +2398,8 @@ classdef linalg_mod
                                  "Y is NaN if X contains NaN", srname);
             end
         end
+
+
         function y = maximum1(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function returns NaN if X contains NaN; otherwise, it returns MAXVAL(X). Vector version.
@@ -2439,9 +2415,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
             % Outputs
-
             % Local variables
             srname = "MAXIMUM1";
 
@@ -2472,6 +2446,7 @@ classdef linalg_mod
                                  "Y is NaN if X contains NaN", srname);
             end
         end
+
         function y = maximum2(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function returns NaN if X contains NaN; otherwise, it returns MAXVAL(X). Matrix version.
@@ -2487,9 +2462,7 @@ classdef linalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
             % Outputs
-
             % Local variables
             srname = "MAXIMUM2";
 
@@ -2520,6 +2493,8 @@ classdef linalg_mod
                                  "Y is NaN if X contains NaN", srname);
             end
         end
+
+
         function x = linspace_r(~, xstart, xstop, n)
             %--------------------------------------------------------------------------------------------------%
             % Similar to the function `linspace` in MATLAB and Python, this function generates N evenly spaced
@@ -2529,8 +2504,6 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
             x = NaN(max(n, 0), 1);
             % Local variables
@@ -2540,8 +2513,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            if n <= 0
-                % Quick return when N <= 0.
+            if n <= 0 % Quick return when N <= 0.
                 return
             end
 
@@ -2560,8 +2532,7 @@ classdef linalg_mod
                 x = xstart + xunit * double((0:nm).');
             end
 
-            if n >= 1
-                % Indeed, N < 1 cannot happen due to the quick return when N <= 0.
+            if n >= 1 % Indeed, N < 1 cannot happen due to the quick return when N <= 0.
                 x(1) = xstart;
                 x(n) = xstop;
             end
@@ -2575,6 +2546,7 @@ classdef linalg_mod
                 debug_obj.assert(numel(x) == max(n, 0), "SIZE(X) == MAX(N, 0)", srname);
             end
         end
+
         function x = linspace_i(obj, xstart, xstop, n)
             %--------------------------------------------------------------------------------------------------%
             % This function returns INT(LINSPACE_R(REAL(XSTART, RP), REAL(XSTOP, RP), N), IK).
@@ -2583,10 +2555,7 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "LINSPACE_I";
 
@@ -2607,6 +2576,8 @@ classdef linalg_mod
                 debug_obj.assert(numel(x) == max(n, 0), "SIZE(X) == MAX(N, 0)", srname);
             end
         end
+
+
         function [A, tdiag, tsubdiag] = hessenberg_hhd_trid(obj, A, tdiag, tsubdiag)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine applies Householder transformations to obtain a tridiagonal matrix that is similar
@@ -2619,15 +2590,10 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % In-outputs
-
             % Outputs
-
-
             % Local variables
             srname = "HESSENBERG_HHD_TRID";
-
             w = NaN(size(A, 1), 1);
-
             z = NaN(size(A, 1), 1);
 
             % Sizes
@@ -2647,8 +2613,7 @@ classdef linalg_mod
             % Calculation starts %
             %====================%
 
-            if n <= 0
-                % Quick return when N <= 0. Of course, N < 0 is impossible.
+            if n <= 0 % Quick return when N <= 0. Of course, N < 0 is impossible.
                 return
             end
 
@@ -2660,8 +2625,7 @@ classdef linalg_mod
                 tdiag(:) = consts_obj.ZERO;
                 tsubdiag(:) = consts_obj.ZERO;
                 return
-            elseif scaling > 1.0e8 || scaling < 1.0e-4
-                % The thresholds are empirical.
+            elseif scaling > 1.0e8 || scaling < 1.0e-4 % The thresholds are empirical.
                 A = A ./ scaling;
                 scaled = true;
             end
@@ -2723,6 +2687,8 @@ classdef linalg_mod
                                  srname);
             end
         end
+
+
         function [H, Q] = hessenberg_full(obj, A, H, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine finds a Hessenberg matrix H (all entries below the subdiagonal are 0) such that
@@ -2732,18 +2698,13 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
             % Outputs
-
-
             % Local variables
             srname = "HESSENBERG_FULL";
-
             v = NaN(size(A, 1), 1);
             w = NaN(size(A, 1), 1);
 
             % Debugging variables
-
 
             % Sizes
             n = size(A, 1);
@@ -2766,8 +2727,7 @@ classdef linalg_mod
                 end
             end
 
-            if n <= 0
-                % Quick return when N <= 0. Of course, N < 0 is impossible.
+            if n <= 0 % Quick return when N <= 0. Of course, N < 0 is impossible.
                 return
             end
 
@@ -2782,8 +2742,7 @@ classdef linalg_mod
             scaled = false;
             if scaling <= 0
                 return
-            elseif scaling > 1000000.0 || scaling < 1.0e-6
-                % 1.0E6 and 1.0E-6 are heuristic.
+            elseif scaling > 1000000.0 || scaling < 1.0e-6 % 1.0E6 and 1.0E-6 are heuristic.
                 H = H ./ scaling;
                 scaled = true;
             end
@@ -2856,6 +2815,8 @@ classdef linalg_mod
                 end
             end
         end
+
+
         function eig_min = eigmin_sym_trid(obj, td, tn, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function approximates the smallest eigenvalue EIG_MIN of a symmetric tridiagonal matrix by a
@@ -2890,15 +2851,10 @@ classdef linalg_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "EIGMIN";
-
             piv = NaN(size(td));
-
             pivnew = NaN(size(td));
 
             % Sizes
@@ -2941,8 +2897,7 @@ classdef linalg_mod
                 end
             end
 
-            if all(piv >= 0, 'all')
-                % The matrix is positive semidefinite.
+            if all(piv >= 0, 'all') % The matrix is positive semidefinite.
                 eminub = min(piv);
                 eminlb = consts_obj.ZERO;
             else
@@ -2953,7 +2908,7 @@ classdef linalg_mod
             ksav = 0;
             pivksv = ...
                 consts_obj.ZERO; % This initial value will not be used, but Fortran compilers may complain without it.
-            for iter = 1:maxiter                % Powell's code is essentially a DO WHILE loop. We impose an explicit MAXITER.
+            for iter = 1:maxiter % Powell's code is essentially a DO WHILE loop. We impose an explicit MAXITER.
                 if eminub - eminlb <= tol_loc * max(abs(eminlb), abs(eminub))
                     break
                 end
@@ -3009,6 +2964,8 @@ classdef linalg_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function smat = vec2smat(obj, vec)
             %--------------------------------------------------------------------------------------------------%
             % This function transforms a vector VEC to a symmetric matrix SMAT with the vector storing the upper
@@ -3017,7 +2974,6 @@ classdef linalg_mod
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
             % Inputs
-
             % Outputs
             smat = NaN((round(fortran.sqrt(double(8 * numel(vec) + 1))) - 1) / 2);
             % Local variables
@@ -3050,6 +3006,8 @@ classdef linalg_mod
                 debug_obj.assert(obj.issymmetric(smat), "SMAT is symmetric", srname);
             end
         end
+
+
         function vec = smat2vec(obj, smat)
             %--------------------------------------------------------------------------------------------------%
             % This function transforms a symmetric matrix SMAT to a vector VEC that stores the upper triangular
@@ -3058,7 +3016,6 @@ classdef linalg_mod
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
             % Inputs
-
             % Outputs
             vec = NaN(size(smat, 1) * (size(smat, 1) + 1) / 2, 1);
             % Local variables
@@ -3084,6 +3041,8 @@ classdef linalg_mod
             %====================%
 
         end
+
+
         function y = smat_mul_vec(obj, smatv, x)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates the product of a symmetric matrix and a vector X, with the upper
@@ -3092,8 +3051,6 @@ classdef linalg_mod
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
             % Inputs
-
-
             % Outputs
             y = NaN(size(x));
             % Local variables
@@ -3123,6 +3080,7 @@ classdef linalg_mod
             %====================%
 
         end
+
 
     end
 end

@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef trustregion_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides subroutines concerning the trust-region calculations of LINCOA.
@@ -15,6 +18,8 @@ classdef trustregion_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [iact, nact, qfac, rfac, s, ngetact] = ...
                 trstep(~, amat, delta, gopt_in, hq_in, pq_in, rescon, tol, xpt, iact, nact, ...
                        qfac, rfac, s)
@@ -50,14 +55,13 @@ classdef trustregion_lincoa_mod
             % Solver-specific modules
             getact_obj = prima_mat.lincoa.getact_mod();
 
+
             % Inputs
             % AMAT(N, M)
-
             % GOPT_IN(N)
             % HQ_IN(N, N)
             % PQ_IN(NPT)
             % RESCON(M)
-
             % XPT(N, NPT)
 
             % In-outputs
@@ -69,29 +73,18 @@ classdef trustregion_lincoa_mod
             % Outputs
             % S(N)
 
-
             % Local variables
             srname = "TRSTEP";
-
             ad = NaN(size(amat, 2), 1);
-
             d = NaN(size(gopt_in));
-
             dproj = NaN(size(gopt_in));
-
             frac = NaN(size(amat, 2), 1);
-
             gamma = NaN;
-
             hd = NaN(size(gopt_in));
-
             orthtol = NaN;
             pg = NaN(size(gopt_in));
-
             psd = NaN(size(gopt_in));
-
             resact = NaN(size(amat, 2), 1);
-
             restmp = NaN(size(amat, 2), 1);
 
             % Sizes.
@@ -111,7 +104,7 @@ classdef trustregion_lincoa_mod
                 debug_obj.assert(numel(rescon) == m, "SIZE(RESCON) == M", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
                                  "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(nact >= 0 && nact <= min(m, n), "0 <= NACT <= MIN(M, N)", srname);
                 debug_obj.assert(numel(iact) == m, "SIZE(IACT) == M", srname);
                 debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), ...
@@ -140,8 +133,7 @@ classdef trustregion_lincoa_mod
             % Note that the trust-region step is scale invariant.
             % N.B.: It is faster and safer to scale by multiplying a reciprocal than by division. See
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
-            if max(abs(gopt_in)) > 1.0e12
-                % The threshold is empirical.
+            if max(abs(gopt_in)) > 1.0e12 % The threshold is empirical.
                 modscal = ...
                     max(consts_obj.TWO * consts_obj.REALMIN, ...
                         consts_obj.ONE / max(abs(gopt_in))); % MAX: precaution against underflow.
@@ -155,7 +147,7 @@ classdef trustregion_lincoa_mod
             end
 
             % Return if G is not finite. Otherwise, GETACT will fail in the debugging mode.
-            if ~infnan_obj.is_finite(fortran.sum(abs(gopt), 'all'))
+            if ~infnan_obj.is_finite_sp(fortran.sum(abs(gopt), 'all'))
                 s(:) = consts_obj.ZERO;
                 if nargout >= 6
                     ngetact = 0;
@@ -209,7 +201,7 @@ classdef trustregion_lincoa_mod
             % The formulation of MAXITER below contains a precaution against overflow. In MATLAB/Python/Julia/R,
             % we can write maxiter = min(10000, 10*(m + n))
             maxiter = fix(min(fortran.power(10, min(4, 9)), 10 * (m + n)));
-            for iter = 1:maxiter                % Powell's code is essentially a DO WHILE loop. We impose an explicit MAXITER.
+            for iter = 1:maxiter % Powell's code is essentially a DO WHILE loop. We impose an explicit MAXITER.
                 if newact
                     % GETACT picks the active set for the current S. It also sets PSD to the vector closest to
                     % -G that is orthogonal to the normals of the active constraints. PSD is scaled to have
@@ -222,8 +214,8 @@ classdef trustregion_lincoa_mod
                         getact_obj.getact(amat, delta, g, iact, nact, qfac, resact, resnew, ...
                                           rfac, psd);
                     dd = linalg_obj.inprod(psd, psd);
-                    if dd <= consts_obj.EPS * delsq || infnan_obj.is_nan_sp(dd)
-                        % Powell's code: IF (DD <= 0) THEN
+                    if dd <= consts_obj.EPS * delsq ...
+                       || infnan_obj.is_nan_sp(dd) % Powell's code: IF (DD <= 0) THEN
                         break
                     end
                     psd = 0.2 * delta / fortran.sqrt(dd) * psd;
@@ -274,7 +266,7 @@ classdef trustregion_lincoa_mod
                             end
                             % GAMMA < 0 should not happen. GAMMA can be 0 or NaN when, e.g., DS or DD becomes
                             % Inf. Powell's code does not handle this.
-                            if gamma < 0 || ~infnan_obj.is_finite(gamma)
+                            if gamma < 0 || ~infnan_obj.is_finite_sp(gamma)
                                 gamma = 0;
                             end
 
@@ -293,7 +285,6 @@ classdef trustregion_lincoa_mod
                             gamma = ...
                                 min([gamma; consts_obj.ONE
                                      frac]); % GAMMA = MINVAL([GAMMA, ONE, FRAC(TRUELOC(AD>0))])
-
                         end
                     end
 
@@ -336,7 +327,7 @@ classdef trustregion_lincoa_mod
                 end
                 % ALPHA < 0 should not happen. ALPHA can be 0 or NaN when, e.g., DS or DD becomes Inf. Powell's
                 % code does not handle this.
-                if alpha <= 0 || ~infnan_obj.is_finite(alpha)
+                if alpha <= 0 || ~infnan_obj.is_finite_sp(alpha)
                     break
                 end
 
@@ -384,13 +375,12 @@ classdef trustregion_lincoa_mod
                 % 1. Since we set ALPHA=1 when ITERCG=0, the ALPHA calculated above is needed only if ITERCG>0.
                 % 2. Zaikun 20220821: In theory, shouldn't this post-processing change nothing? According to
                 % a test on 20220821, it does change ALPHA sometimes. Strange! Why?
-                if itercg == 0
-                    % Iff GETACT has been called, and D is not PSD but a modified step.
+                if itercg == 0 % Iff GETACT has been called, and D is not PSD but a modified step.
                     % By the definition of D, ALPHA = ONE is the largest ALPHA so that S + ALPHA*D satisfies the
                     % linear and trust region constraints.
                     alpha = consts_obj.ONE;
-                elseif itercg == 1 && gamma <= 0
-                    % Iff GETACT has been called, and D is not modified.
+                elseif itercg == 1 ...
+                       && gamma <= 0 % Iff GETACT has been called, and D is not modified.
                     % Due to the scaling of PSD, S + D satisfies the linear and trust region constraints.
                     alpha = max(alpha, consts_obj.ONE);
                 else
@@ -405,12 +395,12 @@ classdef trustregion_lincoa_mod
                 sold = s;
                 s = s + alpha * d;
                 ss = fortran.sum(fortran.power(s, 2), 'all');
-                if ~infnan_obj.is_finite(ss)
+                if ~infnan_obj.is_finite_sp(ss)
                     s = sold;
                     break
                 end
                 g = g + alpha * hd;
-                if ~infnan_obj.is_finite(fortran.sum(abs(g), 'all'))
+                if ~infnan_obj.is_finite_sp(fortran.sum(abs(g), 'all'))
                     break
                 end
 
@@ -435,7 +425,6 @@ classdef trustregion_lincoa_mod
                 if itercg == 0
                     resact(1:nact) = (consts_obj.ONE - alpha * gamma) * resact(1:nact);
                     %resact(1:nact) = (ONE - gamma) * resact(1:nact)  ! Powell's code.
-
                 end
                 %----------------------------------------------------------------------------------------------%
 
@@ -470,8 +459,7 @@ classdef trustregion_lincoa_mod
                 % However, the "active set" is not precisely the true active set, is it? See (3.5) of Powell
                 % (2015) and the comments at the beginning of the GETACT subroutine. Also, we should take into
                 % account the modification after GETACT is called.
-                if itercg >= n - nact
-                    % ITERCG > N - NACT is impossible.
+                if itercg >= n - nact % ITERCG > N - NACT is impossible.
                     break
                 end
 
@@ -487,8 +475,7 @@ classdef trustregion_lincoa_mod
                     %%MATLAB: pg = qfac(:, nact+1:n) * (g' * qfac(:, nact+1:n))';
                 end
 
-                if itercg == 0
-                    % Iff GETACT has been called, and D is not PSD but a modified step.
+                if itercg == 0 % Iff GETACT has been called, and D is not PSD but a modified step.
                     beta = consts_obj.ZERO;
                 else
                     beta = linalg_obj.inprod(pg, hd) / dhd;
@@ -506,7 +493,7 @@ classdef trustregion_lincoa_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(numel(s) == n && all(infnan_obj.is_finite(s), 'all'), ...
+                debug_obj.assert(numel(s) == n && all(infnan_obj.is_finite_sp(s), 'all'), ...
                                  "SIZE(S) == N, S is finite", srname);
                 % Due to rounding, it may happen that ||S|| > DELTA, but ||S|| > 2*DELTA is highly improbable.
                 debug_obj.assert(linalg_obj.p_norm(s) <= consts_obj.TWO * delta, ...
@@ -540,6 +527,8 @@ classdef trustregion_lincoa_mod
         % %end if
         %-----------------------------------------------------------------------%
         %--------------------------------------------------------------------------------------------------%
+
+
         function delta = trrad(~, delta_in, dnorm, eta1, eta2, gamma1, gamma2, ratio)
             %--------------------------------------------------------------------------------------------------%
             % This function updates the trust region radius according to RATIO and DNORM.
@@ -549,6 +538,7 @@ classdef trustregion_lincoa_mod
             consts_obj = prima_mat.common.consts_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             debug_obj = prima_mat.common.debug_mod();
+
 
             % Input
             % Current trust-region radius
@@ -560,7 +550,6 @@ classdef trustregion_lincoa_mod
             % Reduction ratio
 
             % Outputs
-
 
             % Local variables
             srname = "TRRAD";
@@ -587,10 +576,8 @@ classdef trustregion_lincoa_mod
                 delta = gamma1 * dnorm; % Powell's UOBYQA/NEWUOA.
                 %delta = gamma1 * delta_in  ! Powell's COBYLA/LINCOA.
                 %delta = min(gamma1 * delta_in, dnorm)  ! Powell's BOBYQA.
-
             elseif ratio <= eta2
                 delta = max(gamma1 * delta_in, dnorm); % Powell's UOBYQA/NEWUOA/BOBYQA/LINCOA
-
             else
                 delta = max(gamma1 * delta_in, gamma2 * dnorm); % Powell's NEWUOA/BOBYQA.
                 %delta = max(delta_in, 1.25_RP * dnorm, dnorm + rho)  ! Powell's UOBYQA
@@ -619,6 +606,7 @@ classdef trustregion_lincoa_mod
             end
 
         end
+
 
     end
 end

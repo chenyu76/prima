@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef debug_mod
     %--------------------------------------------------------------------------------------------------%
     % This is a module defining some procedures concerning debugging, errors, and warnings.
@@ -8,8 +11,9 @@ classdef debug_mod
     %
     % Last Modified: Tue 09 Sep 2025 11:53:28 PM CST
     %--------------------------------------------------------------------------------------------------%
-
     methods
+
+
         function assert(obj, condition, description, srname)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine checks whether ASSERTION is true.
@@ -17,9 +21,9 @@ classdef debug_mod
             % 'ERROR: ' // SRNAME // 'Assertion fails: ' // DESCRIPTION
             % MATLAB analogue: assert(condition, sprintf('%s: Assertion fails: %s', srname, description))
             % Python analogue: assert condition, srname + ': Assertion fails: ' + description
-            % C analogue: assert(condition)  
-            % N.B.: As in C, we design ASSERT to operate only in the debug mode, i.e., when 0 == 1;
-            % when 0 == 0, ASSERT does nothing. For the checking that should take effect in both
+            % C analogue: assert(condition)  /* An error message will be produced by the compiler */
+            % N.B.: As in C, we design ASSERT to operate only in the debug mode, i.e., when PRIMA_DEBUGGING == 1;
+            % when PRIMA_DEBUGGING == 0, ASSERT does nothing. For the checking that should take effect in both
             % the debug and release modes, use VALIDATE (see below) instead. In the optimized mode of Python
             % (python -O), the Python `assert` will also be ignored. MATLAB does not behave in this way.
             %--------------------------------------------------------------------------------------------------%
@@ -34,6 +38,8 @@ classdef debug_mod
                             'code', infos_obj.ASSERTION_FAILS);
             end
         end
+
+
         function validate(obj, condition, description, srname)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine checks whether CONDITION is true.
@@ -53,6 +59,8 @@ classdef debug_mod
                             'code', infos_obj.VALIDATION_FAILS);
             end
         end
+
+
         function wassert(obj, condition, description, srname)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine checks whether CONDITION is true.
@@ -76,6 +84,8 @@ classdef debug_mod
                             "Assertion fails: " + strtrim(strjust(description, 'left')));
             end
         end
+
+
         function errstop(obj, srname, msg, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints 'ERROR: '//STRIP(SRNAME)//': '//STRIP(MSG)//'.' to STDERR, then stop.
@@ -111,25 +121,32 @@ classdef debug_mod
             % procedures since F2018. Later, when F2018 is better supported, we should take advantage of this
             % feature to make our subroutines PURE whenever possible.
         end
+
+
         function backtr(~)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine calls a compiler-dependent intrinsic to show a backtrace if we are in the
-            % debugging mode, i.e., 0 == 1.
+            % debugging mode, i.e., PRIMA_DEBUGGING == 1.
             % N.B.:
             % 1. The intrinsic is compiler-dependent and does not exist in all compilers. Indeed, it is not
             % standard-conforming. Therefore, compilers may warn that a non-standard intrinsic is in use.
             % 2. More seriously, if the compiler is instructed to conform to the standards (e.g., gfortran with
-            % the option -std=f2018) while 0 is set to 1, then the compilation may FAIL when
+            % the option -std=f2018) while PRIMA_DEBUGGING is set to 1, then the compilation may FAIL when
             % linking, complaining that a subroutine cannot be found (e.g., `backtrace` for gfortran). In that
-            % case, we must either use the `-fall-intrinsics` option of `gfortran`, or set 0 to 0
+            % case, we must either use the `-fall-intrinsics` option of `gfortran`, or set PRIMA_DEBUGGING to 0
             % in ppf.h. This is also why in this subroutine we do not use the constant DEBUGGING defined in the
-            % consts_mod module but use the macro 0 in ppf.h.
+            % consts_mod module but use the macro PRIMA_DEBUGGING in ppf.h.
             % 3. As of gfortran 12.1.0, even without calling `backtrace`, a backtrace is printed when the
             % program is stopped by an error stop. Therefore, in `errstop`, we do not call `backtr` if the
             % compiler is gfortran. However, we cannot remove `backtrace` in `backtr`, because `backtr` is
             % also invoked in `wassert`, where `backtrace` is still needed as error stop is not involved.
             %--------------------------------------------------------------------------------------------------%
+
+            fortran.backtrace(); % gfortran: if `-std=f20xy` is imposed, then `-fall-intrinsics` is needed.
+
         end
+
+
         function warning(~, srname, msg)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints 'Warning: '//STRIP(SRNAME)//': '//STRIP(MSG)//'.' to STDERR.
@@ -143,6 +160,7 @@ classdef debug_mod
                            reshape({'character'; 1; strlength(format_value)}, 1, 3), ...
                            consts_obj.STDERR);
         end
+
 
     end
 end

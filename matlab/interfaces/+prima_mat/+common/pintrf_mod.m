@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef pintrf_mod
     %--------------------------------------------------------------------------------------------------%
     % This is a module specifying the abstract interfaces OBJ, OBJCON, and CALLBACK. OBJ evaluates the
@@ -13,11 +16,6 @@ classdef pintrf_mod
     % Last Modified: Friday, December 22, 2023 PM01:23:44
     %--------------------------------------------------------------------------------------------------%
 
-    methods
-        function obj = pintrf_mod()
-            %%%%%% Users must provide the implementation of OBJ or OBJCON. !!!!!!
+    %%%%%% Users must provide the implementation of OBJ or OBJCON. !!!!!!
 
-        end
-
-    end
 end

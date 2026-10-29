@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef huge_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides a function that returns HUGE(X). See infnan.f90 for more comments.
@@ -19,16 +22,18 @@ classdef huge_mod
                 [varargout{1:nargout}] = obj.huge_value_qp();
             end
         end
+
+
         function y = huge_value_sp(~)
-
             y = realmax;
         end
+
         function y = huge_value_dp(~)
-
             y = realmax;
         end
-        function y = huge_value_qp(~)
 
+
+        function y = huge_value_qp(~)
             y = realmax;
         end
 

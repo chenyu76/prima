@@ -297,11 +297,8 @@ else
             % In C MEX, however, we have mxGetLogicals.
         else
             % Call the pure MATLAB code
-            if debug_flag
-                uo = prima_debug.uobyqa.uobyqa_mod();
-            else
-                uo = prima_mat.uobyqa.uobyqa_mod();
-            end
+            prima_mat.common.consts_mod.debug_state(debug_flag);
+            uo = prima_mat.uobyqa.uobyqa_mod();
             [x, fx, nf, xhist, fhist, exitflag] = uo.uobyqa( ...
                 fun, x0, 'rhobeg', rhobeg, 'rhoend', rhoend, ...
                 'ftarget', ftarget, 'maxfun', maxfun, 'iprint', iprint, ...

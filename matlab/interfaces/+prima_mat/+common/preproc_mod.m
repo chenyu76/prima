@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef preproc_mod
     %--------------------------------------------------------------------------------------------------%
     % PREPROC_MOD is a module that preprocesses the inputs.
@@ -9,14 +12,14 @@ classdef preproc_mod
     % Last Modified: Mon 06 Apr 2026 10:54:37 PM CST
     %--------------------------------------------------------------------------------------------------%
 
-    methods
-        function obj = preproc_mod()
-            % N.B.:
-            % 1. If all the inputs are valid, then PREPROC should do nothing.
-            % 2. In PREPROC, we use VALIDATE instead of ASSERT, so that the parameters are validated even if we
-            %    are not in debug mode.
+    % N.B.:
+    % 1. If all the inputs are valid, then PREPROC should do nothing.
+    % 2. In PREPROC, we use VALIDATE instead of ASSERT, so that the parameters are validated even if we
+    %    are not in debug mode.
 
-        end
+    methods
+
+
         function [iprint, maxfun, maxhist, ftarget, rhobeg, rhoend, npt, maxfilt, ctol, cweight, ...
                   eta1, eta2, gamma1, gamma2, x0] = ...
                 preproc(~, solver, n, iprint, maxfun, maxhist, ftarget, rhobeg, rhoend, varargin)
@@ -24,7 +27,6 @@ classdef preproc_mod
             % This subroutine preprocesses the inputs. It does nothing to the inputs that are valid.
             %--------------------------------------------------------------------------------------------------%
             consts_obj = prima_mat.common.consts_mod();
-
             debug_obj = prima_mat.common.debug_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
@@ -33,22 +35,16 @@ classdef preproc_mod
 
             % Compulsory inputs
 
-
             % Optional inputs
-
 
             % Compulsory in-outputs
 
-
             % Optional in-outputs
-
 
             % Local variables
             srname = "PREPROC";
-
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
-
 
             % Preconditions
             ipObj = inputParser();
@@ -128,7 +124,6 @@ classdef preproc_mod
                 % %call validate(present(honour_x0) .eqv. &
                 % %    & (lower(solver) == 'bobyqa' .or. lower(solver) == 'lincoa' .or. lower(solver) == 'cobyla'), &
                 % %    & 'HONOUR_X0 is present if and only if the solver is BOBYQA, LINCOA, or COBYLA', srname)
-
             end
 
             %====================%
@@ -170,7 +165,7 @@ classdef preproc_mod
             case "cobyla"
                 min_maxfun = n + 2;
                 min_maxfun_str = "N + 2";
-            otherwise                % CASE ('NEWUOA', 'BOBYQA', 'LINCOA')
+            otherwise % CASE ('NEWUOA', 'BOBYQA', 'LINCOA')
                 min_maxfun = n + 3;
                 min_maxfun_str = "N + 3";
             end
@@ -178,7 +173,7 @@ classdef preproc_mod
                 maxfun_in = maxfun;
                 if maxfun > 0
                     maxfun = min_maxfun;
-                else                    % We assume that non-positive values of MAXFUN are produced by overflow.
+                else % We assume that non-positive values of MAXFUN are produced by overflow.
                     maxfun = ...
                         fix(max(min_maxfun, ...
                                 fortran.power(10, ...
@@ -208,15 +203,14 @@ classdef preproc_mod
             maxhist = min(maxhist, maxfun); % MAXHIST > MAXFUN is never needed.
 
             % Validate FTARGET
-            if infnan_obj.is_nan_sp(ftarget)
-                % No warning if FTARGET is NaN, which is interpreted as no target function value is provided.
+            if infnan_obj.is_nan_sp(ftarget) % No warning if FTARGET is NaN, which is interpreted as no target function value is provided.
                 ftarget = -realmax;
             end
 
             % Validate NPT
             if ~ismember('npt', ipObj.UsingDefaults)
-                if npt < n + 2 || npt >= maxfun || 2 * npt > (n + 2) * (n + 1)
-                    %INT(*) avoids overflow when IK is 16-bit
+                if npt < n + 2 || npt >= maxfun ...
+                   || 2 * npt > (n + 2) * (n + 1) %INT(*) avoids overflow when IK is 16-bit
                     npt_in = npt;
                     npt = min(maxfun - 1, 2 * n + 1);
                     debug_obj.warning(solver, ...
@@ -247,14 +241,13 @@ classdef preproc_mod
                     unit_memo = ...
                         (m_loc + n + 2) ...
                         * memory_obj.size_of_sp(0.0); % INT(*) avoids overflow when IK is 16-bit.
-                otherwise                    % The following should not be reached unless there is a bug, but we keep it for safety.
+                otherwise % The following should not be reached unless there is a bug, but we keep it for safety.
                     unit_memo = 1;
                 end
                 % We cannot simply set MAXFILT = MIN(MAXFILT, MAXHISTMEM/...), as they may not have
                 % the same kind, and compilers may complain. We may convert them, but overflow may occur.
                 if maxfilt > consts_obj.MAXHISTMEM / unit_memo
                     maxfilt = fix(consts_obj.MAXHISTMEM / unit_memo); % Integer division.
-
                 end
                 maxfilt = min(maxfun, max(consts_obj.MIN_MAXFILT, maxfilt));
                 if is_constrained_loc
@@ -278,8 +271,7 @@ classdef preproc_mod
             end
 
             % Validate ETA1 and ETA2
-            if ~(eta1 >= 0 && eta1 < 1)
-                % ETA1 = NaN falls into this case.
+            if ~(eta1 >= 0 && eta1 < 1) % ETA1 = NaN falls into this case.
                 eta1_in = eta1;
                 % Take ETA2 into account if it has a valid value.
                 if eta2 >= 0 && eta2 < 1
@@ -294,8 +286,7 @@ classdef preproc_mod
                                   + string_obj.real2str_scalar(eta1));
             end
 
-            if ~(eta2 >= eta1 && eta2 < 1)
-                % ETA2 = NaN falls into this case.
+            if ~(eta2 >= eta1 && eta2 < 1) % ETA2 = NaN falls into this case.
                 eta2_in = eta2;
                 % Take ETA1 into account if it has a valid value.
                 if eta1 >= 0 && eta1 < 1
@@ -315,8 +306,7 @@ classdef preproc_mod
             eta1 = min(eta1, eta2);
 
             % Validate GAMMA1 and GAMMA2
-            if ~(gamma1 > 0 && gamma1 < 1)
-                % GAMMA1 = NaN falls into this case.
+            if ~(gamma1 > 0 && gamma1 < 1) % GAMMA1 = NaN falls into this case.
                 gamma1_in = gamma1;
                 gamma1 = consts_obj.GAMMA1_DFT;
                 debug_obj.warning(solver, ...
@@ -325,8 +315,8 @@ classdef preproc_mod
                                   + string_obj.real2str_scalar(gamma1));
             end
 
-            if ~(infnan_obj.is_finite(gamma2) && gamma2 >= 1)
-                % GAMMA2 = NaN falls into this case.
+            if ~(infnan_obj.is_finite_sp(gamma2) ...
+                 && gamma2 >= 1) % GAMMA2 = NaN falls into this case.
                 gamma2_in = gamma2;
                 gamma2 = consts_obj.GAMMA2_DFT;
                 debug_obj.warning(solver, ...
@@ -369,11 +359,10 @@ classdef preproc_mod
                 end
             end
 
-            if ~(infnan_obj.is_finite(rhobeg) && rhobeg > 0)
-                % RHOBEG = NaN falls into this case.
+            if ~(infnan_obj.is_finite_sp(rhobeg) && rhobeg > 0) % RHOBEG = NaN falls into this case.
                 % Take RHOEND into account if it has a valid value. We do not do this if the solver is BOBYQA,
                 % which requires that RHOBEG <= (XU-XL)/2.
-                if infnan_obj.is_finite(rhoend) && rhoend > 0 ...
+                if infnan_obj.is_finite_sp(rhoend) && rhoend > 0 ...
                    && string_obj.lower(solver) ~= "bobyqa"
                     rhobeg = max(consts_obj.TEN * rhoend, rhobeg_default);
                 else
@@ -385,8 +374,8 @@ classdef preproc_mod
                                   + string_obj.real2str_scalar(rhobeg));
             end
 
-            if ~(infnan_obj.is_finite(rhoend) && rhoend >= 0 && rhoend <= rhobeg)
-                % RHOEND = NaN falls into this case.
+            if ~(infnan_obj.is_finite_sp(rhoend) && rhoend >= 0 ...
+                 && rhoend <= rhobeg) % RHOEND = NaN falls into this case.
                 rhoend = ...
                     max(consts_obj.EPS, ...
                         min(consts_obj.RHOEND_DFT / consts_obj.RHOBEG_DFT * rhobeg, ...
@@ -413,12 +402,10 @@ classdef preproc_mod
                     mask01 = ~mask00 & x0 < xl + rhobeg;
                     x0(mask00) = xl(mask00);
                     x0(mask01) = xl(mask01) + rhobeg;
-
                     mask00 = x0 >= xu - consts_obj.HALF * rhobeg;
                     mask01 = ~mask00 & x0 > xu - rhobeg;
                     x0(mask00) = xu(mask00);
                     x0(mask01) = xu(mask01) - rhobeg;
-
                     %%MATLAB code:
                     %%lbx = (x0 <= xl + 0.5 * rhobeg);
                     %%lbx_plus = (x0 > xl + 0.5 * rhobeg .and. x0 < xl + rhobeg);
@@ -441,11 +428,11 @@ classdef preproc_mod
                 % N.B.: If X0 has been revised above (i.e., HONOUR_X0 is FALSE), then the following revision
                 % is unnecessary in precise arithmetic. However, it may still be needed due to rounding errors.
                 lbx = ...
-                    infnan_obj.is_finite(xl) ...
+                    infnan_obj.is_finite_sp(xl) ...
                     & x0 - xl ...
                       <= consts_obj.EPS * max(consts_obj.ONE, abs(xl)); % X0 essentially equals XL
                 ubx = ...
-                    infnan_obj.is_finite(xu) ...
+                    infnan_obj.is_finite_sp(xu) ...
                     & x0 - xu ...
                       >= -consts_obj.EPS * max(consts_obj.ONE, abs(xu)); % X0 essentially equals XU
                 x0(linalg_obj.trueloc(lbx)) = xl(linalg_obj.trueloc(lbx));
@@ -480,8 +467,7 @@ classdef preproc_mod
 
             % Validate CTOL (it can be 0)
             if ~ismember('ctol', ipObj.UsingDefaults)
-                if ~(ctol >= 0)
-                    % CTOL = NaN falls into this case.
+                if ~(ctol >= 0) % CTOL = NaN falls into this case.
                     ctol_in = ctol;
                     ctol = consts_obj.CTOL_DFT;
                     if is_constrained_loc
@@ -495,8 +481,7 @@ classdef preproc_mod
 
             % Validate CWEIGHT (it can be +Inf)
             if ~ismember('cweight', ipObj.UsingDefaults)
-                if ~(cweight >= 0)
-                    % CWEIGHT = NaN falls into this case.
+                if ~(cweight >= 0) % CWEIGHT = NaN falls into this case.
                     cweight_in = cweight;
                     cweight = consts_obj.CWEIGHT_DFT;
                     if is_constrained_loc
@@ -537,7 +522,7 @@ classdef preproc_mod
                 if string_obj.lower(solver) == "bobyqa"
                     debug_obj.validate(all(rhobeg <= (xu - xl) ./ consts_obj.TWO, 'all'), ...
                                        "RHOBEG <= MINVAL(XU-XL)/2", solver);
-                    debug_obj.validate(all(infnan_obj.is_finite(x0), 'all'), "X0 is finite", ...
+                    debug_obj.validate(all(infnan_obj.is_finite_sp(x0), 'all'), "X0 is finite", ...
                                        solver);
                     debug_obj.validate(all(x0 >= xl & (x0 <= xl | x0 - xl >= rhobeg), 'all'), ...
                                        "X0 == XL or X0 - XL >= RHOBEG", solver);
@@ -550,6 +535,7 @@ classdef preproc_mod
             end
 
         end
+
 
     end
 end

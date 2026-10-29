@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef inf_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides functions that check whether a real number X is infinite or finite.
@@ -9,10 +12,10 @@ classdef inf_mod
     %
     % Last Modified: Tuesday, February 27, 2024 PM10:57:47
     %--------------------------------------------------------------------------------------------------%
+
     properties
         huge_obj;
     end
-
     methods
         function obj = inf_mod()
             obj.huge_obj = prima_mat.common.huge_mod();
@@ -53,54 +56,61 @@ classdef inf_mod
                 [varargout{1:nargout}] = obj.is_inf_qp(varargin{:});
             end
         end
+
+
         function y = is_finite_sp(obj, x)
-
             y = x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp();
         end
+
         function y = is_finite_dp(obj, x)
-
             y = x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp();
         end
+
         function y = is_posinf_sp(obj, x)
-
             y = abs(x) > obj.huge_obj.huge_value_sp() & x > 0;
         end
+
         function y = is_posinf_dp(obj, x)
-
             y = abs(x) > obj.huge_obj.huge_value_sp() & x > 0;
         end
+
         function y = is_neginf_sp(obj, x)
-
             y = abs(x) > obj.huge_obj.huge_value_sp() & x < 0;
         end
+
         function y = is_neginf_dp(obj, x)
-
             y = abs(x) > obj.huge_obj.huge_value_sp() & x < 0;
         end
+
         function y = is_inf_sp(obj, x)
-
             y = abs(x) > obj.huge_obj.huge_value_sp();
         end
+
         function y = is_inf_dp(obj, x)
-
             y = abs(x) > obj.huge_obj.huge_value_sp();
         end
-        function y = is_finite_qp(obj, x)
 
+
+
+
+
+        function y = is_finite_qp(obj, x)
             y = x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp();
         end
-        function y = is_posinf_qp(obj, x)
 
+        function y = is_posinf_qp(obj, x)
             y = abs(x) > obj.huge_obj.huge_value_sp() & x > 0;
         end
-        function y = is_neginf_qp(obj, x)
 
+        function y = is_neginf_qp(obj, x)
             y = abs(x) > obj.huge_obj.huge_value_sp() & x < 0;
         end
-        function y = is_inf_qp(obj, x)
 
+        function y = is_inf_qp(obj, x)
             y = abs(x) > obj.huge_obj.huge_value_sp();
         end
+
+
 
     end
 end

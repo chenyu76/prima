@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef initialize_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module performs the initialization of NEWUOA, described in Section 3 of the NEWUOA paper.
@@ -12,6 +15,8 @@ classdef initialize_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [ij, kopt, nf, fhist, fval, xbase, xhist, xpt, info] = ...
                 initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, ij, fhist, fval, xbase, ...
                        xhist, xpt)
@@ -46,19 +51,15 @@ classdef initialize_newuoa_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-
             powalg_obj = prima_mat.common.powalg_mod();
+
 
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
             % X0(N)
 
             % Outputs
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
-
-
             % FHIST(MAXFHIST)
             % FVAL(NPT)
             % XBASE(N)
@@ -68,7 +69,6 @@ classdef initialize_newuoa_mod
             % Local variables
             solver = "NEWUOA";
             srname = "INITXF";
-
             evaluated = false(size(fval));
 
             % Sizes
@@ -93,7 +93,7 @@ classdef initialize_newuoa_mod
                 debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), ...
                                  "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
                 debug_obj.assert(rhobeg > 0, "RHOBEG > 0", srname);
-                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite(x0), 'all'), ...
+                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite_sp(x0), 'all'), ...
                                  "SIZE(X0) == N, X0 is finite", srname);
                 debug_obj.assert(numel(xbase) == n, "SIZE(XBASE) == N", srname);
             end
@@ -225,15 +225,16 @@ classdef initialize_newuoa_mod
                                  srname);
                 debug_obj.assert(nf <= npt, "NF <= NPT", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= nf, "1 <= KOPT <= NF", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
                                  "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(evaluated ...
                                          & (infnan_obj.is_nan_sp(fval) ...
-                                            | infnan_obj.is_posinf(fval)), 'all'), ...
+                                            | infnan_obj.is_posinf_sp(fval)), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), ...
                                  "FVAL(KOPT) = MINVAL(FVAL)", srname);
@@ -243,6 +244,8 @@ classdef initialize_newuoa_mod
             end
 
         end
+
+
         function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the quadratic model represented by [GOPT, HQ, PQ] so that its gradient
@@ -256,13 +259,13 @@ classdef initialize_newuoa_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
+
             % Inputs
             % IJ(2, MAX(0_IK, NPT - 2_IK * N - 1_IK))
             % FVAL(NPT)
             % XPT(N, NPT)
 
             % Outputs
-
             % GOPT(N)
             % HQ(N, N)
             % PQ(NPT)
@@ -279,7 +282,7 @@ classdef initialize_newuoa_mod
                 debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(infnan_obj.is_nan_sp(fval) ...
-                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(fval), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), ...
                                  "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
@@ -289,7 +292,7 @@ classdef initialize_newuoa_mod
                 debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
                 debug_obj.assert(size(hq, 1) == n && size(hq, 2) == n, "SIZE(HQ) = [N, N]", srname);
                 debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
             end
 
             %====================%
@@ -372,6 +375,8 @@ classdef initialize_newuoa_mod
             end
 
         end
+
+
         function [idz, bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes [IDZ, BMAT, ZMAT] which represents the matrix H in (3.12) of the
@@ -394,8 +399,6 @@ classdef initialize_newuoa_mod
             % ZMAT and BMAT are completely defined by RHOBEG and IJ.
 
             % Outputs
-
-
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
 
@@ -414,7 +417,7 @@ classdef initialize_newuoa_mod
                 debug_obj.assert(all(ij >= 1 & ij <= 2 * n, 'all'), "1 <= IJ <= 2*N", srname);
                 debug_obj.assert(all(ij(1, :).' ~= ij(2, :).', 'all'), "IJ(1, :) /= IJ(2, :)", ...
                                  srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
@@ -494,10 +497,10 @@ classdef initialize_newuoa_mod
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
                 %call assert(errh(idz, bmat, zmat, xpt) <= max(1.0E-3_RP, 1.0E2_RP * real(npt, RP) * EPS), &
                 %    & '[IDZ, BMA, ZMAT] represents H = W^{-1}', srname)
-
             end
 
         end
+
 
     end
 end

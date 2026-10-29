@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef history_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides subroutines that handle the X/F/C histories of the solver, taking into
@@ -11,6 +14,8 @@ classdef history_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [maxhist, xhist, fhist, chist, conhist] = ...
                 prehist(~, maxhist, n, output_xhist, output_fhist, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -26,20 +31,15 @@ classdef history_mod
 
             % Inputs
 
-
             % In-outputs
 
-
             % Outputs
-
-
             chist = [];
             conhist = [];
 
             % Local variables
             srname = "PREHIST";
             % INTEGER(IK) may overflow if IK corresponds to the 16-bit integer.
-
 
             % Preconditions
             ipObj = inputParser();
@@ -89,14 +89,12 @@ classdef history_mod
             end
             unit_memo = ...
                 unit_memo * memory_obj.size_of_sp(0.0); % INT(*) avoids overflow when IK is 16-bit.
-            if unit_memo <= 0
-                % No output of history is requested
+            if unit_memo <= 0 % No output of history is requested
                 maxhist = 0;
             elseif maxhist > consts_obj.MAXHISTMEM / unit_memo
                 maxhist = fix(consts_obj.MAXHISTMEM / unit_memo); % Integer division.
                 % We cannot simply set MAXHIST = MIN(MAXHIST, MAXHISTMEM/UNIT_MEMO), as they may not have
                 % the same kind, and compilers may complain. We may convert them, but overflow may occur.
-
             end
 
             xhist = ...
@@ -155,6 +153,8 @@ classdef history_mod
                 end
             end
         end
+
+
         function [xhist, fhist, chist, conhist] = savehist(~, nf, x, xhist, f, fhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine saves X, F, CSTRV, and CONSTR into XHIST, FHIST, CHIST, and CONHIST respectively.
@@ -166,13 +166,9 @@ classdef history_mod
 
             % Inputs
 
-
             % In-outputs
 
-
             % Local variables
-
-
             srname = "SAVEHIST";
 
             % Sizes
@@ -201,8 +197,7 @@ classdef history_mod
             maxhist = max([maxxhist, maxfhist, maxchist, maxconhist]);
 
             % Preconditions
-            if consts_obj.DEBUGGING
-                % Called after each function evaluation when debugging; can be expensive.
+            if consts_obj.DEBUGGING % Called after each function evaluation when debugging; can be expensive.
                 % Check the presence of CSTRV, CHIST, CONSTR, CONHIST.
                 debug_obj.assert(~ismember('cstrv', ipObj.UsingDefaults) ...
                                  == ~ismember('chist', ipObj.UsingDefaults), ...
@@ -230,10 +225,10 @@ classdef history_mod
                 end
                 % Check the values of XHIST, FHIST, CHIST, CONHIST, up to the (NF - 1)th position.
                 % As long as this subroutine is called, XHIST contains only finite values.
-                debug_obj.assert(all(infnan_obj.is_finite(xhist(:, 1:min(nf - 1, maxxhist))), ...
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xhist(:, 1:min(nf - 1, maxxhist))), ...
                                      'all'), "XHIST is finite", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf - 1, maxfhist))) ...
-                                      | infnan_obj.is_posinf(fhist(1:min(nf - 1, maxfhist))), ...
+                                      | infnan_obj.is_posinf_sp(fhist(1:min(nf - 1, maxfhist))), ...
                                       'all'), "FHIST does not contain NaN/+Inf", srname);
                 if ~ismember('chist', ipObj.UsingDefaults)
                     debug_obj.assert(~any(chist(1:min(nf - 1, maxchist)) < 0, 'all'), ...
@@ -243,15 +238,14 @@ classdef history_mod
                     % %call assert(.not. any(is_nan(chist(1:min(nf - 1_IK, maxchist))) .or. &
                     % %    & is_posinf(chist(1:min(nf - 1_IK, maxchist)))), 'CHIST does not contain NaN/+Inf', srname)
                     %------------------------------------------------------------------------------------------%
-
                 end
                 if ~ismember('conhist', ipObj.UsingDefaults)
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, ...
                                                                        1:min(nf - 1, ...
                                                                              maxconhist))) ...
-                                          | infnan_obj.is_posinf(conhist(:, ...
-                                                                         1:min(nf - 1, ...
-                                                                               maxconhist))), ...
+                                          | infnan_obj.is_posinf_sp(conhist(:, ...
+                                                                            1:min(nf - 1, ...
+                                                                                  maxconhist))), ...
                                           'all'), "CONHIST does not contain NaN/Inf", srname);
                 end
                 % Check the values of X, F, CSTRV, CONSTR.
@@ -259,7 +253,7 @@ classdef history_mod
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", ...
                                  srname);
                 % F cannot be NaN/+Inf due to the moderated extreme barrier.
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN/+Inf", srname);
                 if ~ismember('cstrv', ipObj.UsingDefaults)
                     debug_obj.assert(~(cstrv < 0), "CSTRV is not negative", srname);
@@ -267,12 +261,11 @@ classdef history_mod
                     % The following test is not applicable to LINCOA.
                     % %call assert(.not. (is_nan(cstrv) .or. is_posinf(cstrv)), 'CSTRV is NaN/+Inf', srname)
                     %------------------------------------------------------------------------------------------%
-
                 end
                 if ~ismember('constr', ipObj.UsingDefaults)
                     % CONSTR cannot contain NaN/+Inf due to the moderated extreme barrier.
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(constr) ...
-                                          | infnan_obj.is_posinf(constr), 'all'), ...
+                                          | infnan_obj.is_posinf_sp(constr), 'all'), ...
                                      "CONSTR does not contain NaN/+Inf", srname);
                 end
             end
@@ -292,12 +285,10 @@ classdef history_mod
             if maxfhist > 0
                 fhist(mod(nf - 1, maxfhist) + 1) = f;
             end
-            if maxchist > 0
-                % MAXCHIST > 0 implies PRESENT(CHIST) and PRESENT(CSTRV)
+            if maxchist > 0 % MAXCHIST > 0 implies PRESENT(CHIST) and PRESENT(CSTRV)
                 chist(mod(nf - 1, maxchist) + 1) = cstrv;
             end
-            if maxconhist > 0
-                % MAXCONHIST > 0 implies PRESENT(CONHIST) and PRESENT (CONSTR)
+            if maxconhist > 0 % MAXCONHIST > 0 implies PRESENT(CONHIST) and PRESENT (CONSTR)
                 conhist(:, mod(nf - 1, maxconhist) + 1) = constr;
             end
 
@@ -306,8 +297,7 @@ classdef history_mod
             %====================%
 
             % Postconditions
-            if consts_obj.DEBUGGING
-                % Called after each function evaluation when debugging; can be expensive.
+            if consts_obj.DEBUGGING % Called after each function evaluation when debugging; can be expensive.
                 debug_obj.assert(size(xhist, 1) == numel(x) && size(xhist, 2) == maxxhist, ...
                                  "SIZE(XHIST) == [SIZE(X), MAXXHIST]", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(xhist(:, 1:min(nf, maxxhist))), ...
@@ -315,7 +305,7 @@ classdef history_mod
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                      | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                      | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                       'all'), "FHIST does not contain NaN/+Inf", srname);
                 if ~ismember('chist', ipObj.UsingDefaults)
                     debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
@@ -326,7 +316,6 @@ classdef history_mod
                     % %call assert(.not. any(is_nan(chist(1:min(nf, maxchist))) .or. is_posinf(chist(1:min(nf, maxchist)))), &
                     % %    & 'CHIST does not contain NaN/+Inf', srname)
                     %------------------------------------------------------------------------------------------%
-
                 end
                 if ~ismember('conhist', ipObj.UsingDefaults) ...
                    && ~ismember('constr', ipObj.UsingDefaults)
@@ -335,9 +324,9 @@ classdef history_mod
                                      "SIZE(CONHIST) == [SIZE(CONSTR), MAXCONHIST]", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, ...
                                                                        1:min(nf, maxconhist))) ...
-                                          | infnan_obj.is_posinf(conhist(:, ...
-                                                                         1:min(nf, ...
-                                                                               maxconhist))), ...
+                                          | infnan_obj.is_posinf_sp(conhist(:, ...
+                                                                            1:min(nf, ...
+                                                                                  maxconhist))), ...
                                           'all'), "CONHIST does not contain NaN/+Inf", srname);
                 end
 
@@ -376,6 +365,8 @@ classdef history_mod
             end
 
         end
+
+
         function [xhist, fhist, chist, conhist] = rangehist(~, nf, xhist, fhist, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine arranges FHIST, XHIST, CHIST, and CONHIST in the chronological order.
@@ -386,13 +377,9 @@ classdef history_mod
 
             % Inputs
 
-
             % In-outputs
 
-
             % Local variables
-
-
             srname = "RANGEHIST";
 
             % Sizes
@@ -436,7 +423,7 @@ classdef history_mod
                                       'all'), "XHIST does not contain NaN", srname);
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                      | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                      | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                       'all'), "FHIST does not contain NaN/+Inf", srname);
                 if ~ismember('chist', ipObj.UsingDefaults)
                     debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0, 'all'), ...
@@ -446,14 +433,13 @@ classdef history_mod
                     % %call assert(.not. any(is_nan(chist(1:min(nf, maxchist))) .or. is_posinf(chist(1:min(nf, maxchist)))), &
                     % %    & 'CHIST does not contain NaN/+Inf', srname)
                     %------------------------------------------------------------------------------------------%
-
                 end
                 if ~ismember('conhist', ipObj.UsingDefaults)
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, ...
                                                                        1:min(nf, maxconhist))) ...
-                                          | infnan_obj.is_posinf(conhist(:, ...
-                                                                         1:min(nf, ...
-                                                                               maxconhist))), ...
+                                          | infnan_obj.is_posinf_sp(conhist(:, ...
+                                                                            1:min(nf, ...
+                                                                                  maxconhist))), ...
                                           'all'), "CONHIST does not contain NaN/+Inf", srname);
                 end
             end
@@ -476,7 +462,6 @@ classdef history_mod
                 % 2. The above combination of SHAPE and RESHAPE fulfills our desire thanks to the COLUMN-MAJOR
                 % order of Fortran arrays.
                 % 3. In MATLAB, `xhist = [xhist(:, khist + 1:maxxhist), xhist(:, 1:khist)]` does the same thing.
-
             end
             % The ranging should be done only if 0 < MAXFHIST < NF. Otherwise, it leads to errors/wrong results.
             if maxfhist > 0 && maxfhist < nf
@@ -509,7 +494,7 @@ classdef history_mod
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                      | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                      | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                       'all'), "FHIST does not contain NaN/+Inf", srname);
                 if ~ismember('chist', ipObj.UsingDefaults)
                     debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
@@ -520,21 +505,21 @@ classdef history_mod
                     % %call assert(.not. any(is_nan(chist(1:min(nf, maxchist))) .or. is_posinf(chist(1:min(nf, maxchist)))), &
                     % %    & 'CHIST does not contain NaN/+Inf', srname)
                     %------------------------------------------------------------------------------------------%
-
                 end
                 if ~ismember('conhist', ipObj.UsingDefaults)
                     debug_obj.assert(size(conhist, 1) == m && size(conhist, 2) == maxconhist, ...
                                      "SIZE(CONHIST) == [M, MAXCONHIST]", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, ...
                                                                        1:min(nf, maxconhist))) ...
-                                          | infnan_obj.is_posinf(conhist(:, ...
-                                                                         1:min(nf, ...
-                                                                               maxconhist))), ...
+                                          | infnan_obj.is_posinf_sp(conhist(:, ...
+                                                                            1:min(nf, ...
+                                                                                  maxconhist))), ...
                                           'all'), "CONHIST does not contain NaN/+Inf", srname);
                 end
             end
 
         end
+
 
     end
 end

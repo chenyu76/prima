@@ -1,7 +1,11 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef xinbd_mod
 
-
     methods
+
+
         function x = xinbd(~, xbase, step, xl, xu, sl, su)
             %--------------------------------------------------------------------------------------------------%
             % This function sets X to XBASE + STEP, paying careful attention to the following bounds.
@@ -16,11 +20,10 @@ classdef xinbd_mod
             linalg_obj = prima_mat.common.linalg_mod();
             infnan_obj = prima_mat.common.infnan_mod();
 
+
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "XINBD";
@@ -30,7 +33,7 @@ classdef xinbd_mod
 
             % Preconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", ...
                                  srname);
@@ -67,6 +70,7 @@ classdef xinbd_mod
             end
 
         end
+
 
     end
 end

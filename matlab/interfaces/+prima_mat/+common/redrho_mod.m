@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef redrho_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides a function that calculates RHO when it needs to be reduced.
@@ -10,6 +13,8 @@ classdef redrho_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function rho = redrho(~, rho_in, rhoend)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates RHO when it needs to be reduced.
@@ -22,9 +27,7 @@ classdef redrho_mod
 
             % Inputs
 
-
             % Outputs
-
 
             srname = "REDRHO";
 
@@ -56,6 +59,7 @@ classdef redrho_mod
                 debug_obj.assert(rho_in > rho && rho >= rhoend, "RHO_IN > RHO >= RHOEND", srname);
             end
         end
+
 
     end
 end

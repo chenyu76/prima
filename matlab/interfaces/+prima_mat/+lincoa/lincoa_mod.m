@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef lincoa_mod
     %--------------------------------------------------------------------------------------------------%
     % LINCOA_MOD is a module providing the reference implementation of Powell's LINCOA algorithm.
@@ -40,6 +43,8 @@ classdef lincoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [x, f_loc, cstrv_loc, nf_loc, xhist, fhist, chist, info_loc] = ...
                 lincoa(obj, calfun, x, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -211,14 +216,12 @@ classdef lincoa_mod
 
             % Common modules
             consts_obj = prima_mat.common.consts_mod();
-
             debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
-
             preproc_obj = prima_mat.common.preproc_mod();
             selectx_obj = prima_mat.common.selectx_mod();
             string_obj = prima_mat.common.string_mod();
@@ -226,25 +229,20 @@ classdef lincoa_mod
             % Solver-specific modules
             lincob_obj = prima_mat.lincoa.lincob_mod();
 
+
             % Compulsory arguments
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
             % X(N)
 
             % Optional inputs
-
-
             % Aeq(Meq, N)
             % Aineq(Mineq, N)
             % Beq(Meq)
             % Bineq(Mineq)
-
-
             % XL(N)
             % XU(N)
 
             % Optional outputs
-
-
             chist = []; % CHIST(MAXCHIST)
             fhist = []; % FHIST(MAXFHIST)
             xhist = []; % XHIST(N, MAXXHIST)
@@ -252,9 +250,7 @@ classdef lincoa_mod
             % Local variables
             solver = "LINCOA";
             srname = "LINCOA";
-
             eta1_loc = NaN;
-
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
             % Aeq_LOC(Meq, N)
@@ -423,7 +419,7 @@ classdef lincoa_mod
                 % combine the evaluation of PRESENT(RHOEND) and the evaluation of IS_FINITE(RHOEND) as
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
-                if infnan_obj.is_finite(rhoend) && rhoend > 0
+                if infnan_obj.is_finite_sp(rhoend) && rhoend > 0
                     rhobeg_loc = max(consts_obj.TEN * rhoend, consts_obj.RHOBEG_DFT);
                 else
                     rhobeg_loc = consts_obj.RHOBEG_DFT;
@@ -469,8 +465,7 @@ classdef lincoa_mod
 
             if ~ismember('npt', ipObj.UsingDefaults)
                 npt_loc = npt;
-            elseif maxfun_loc >= n + 3
-                % Take MAXFUN into account if it is valid.
+            elseif maxfun_loc >= n + 3 % Take MAXFUN into account if it is valid.
                 npt_loc = min(maxfun_loc - 1, 2 * n + 1);
             else
                 npt_loc = 2 * n + 1;
@@ -571,6 +566,9 @@ classdef lincoa_mod
             % Write the outputs.
 
 
+
+
+
             % Copy XHIST_LOC to XHIST if needed.
             if nargout >= 5
                 nhist = min(nf_loc, size(xhist_loc, 2));
@@ -589,11 +587,9 @@ classdef lincoa_mod
                 % GARBAGE in XHIST_LOC(:, NF_LOC + 1 : END). Therefore, we MUST cap XHIST at NF_LOC so that
                 % XHIST contains only valid history. For this reason, there is no way to avoid allocating
                 % two copies of memory for XHIST unless we declare it to be a POINTER instead of ALLOCATABLE.
-
             end
             % F2003 automatically deallocate local ALLOCATABLE variables at exit, yet we prefer to deallocate
             % them immediately when they finish their jobs.
-
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 6
@@ -602,7 +598,6 @@ classdef lincoa_mod
                 memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
-
             end
 
             % Copy CHIST_LOC to CHIST if needed.
@@ -612,7 +607,6 @@ classdef lincoa_mod
                 memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
-
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
@@ -638,13 +632,13 @@ classdef lincoa_mod
                 if nargout >= 6
                     debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) ...
-                                          | infnan_obj.is_posinf(fhist), 'all'), ...
+                                          | infnan_obj.is_posinf_sp(fhist), 'all'), ...
                                      "FHIST does not contain NaN/+Inf", srname);
                 end
                 if nargout >= 7
                     debug_obj.assert(numel(chist) == nhist, "SIZE(CHIST) == NHIST", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(chist) ...
-                                          | infnan_obj.is_posinf(chist), 'all'), ...
+                                          | infnan_obj.is_posinf_sp(chist), 'all'), ...
                                      "CHIST does not contain NaN/+Inf", srname);
                 end
                 if nargout >= 6 && nargout >= 7
@@ -656,6 +650,8 @@ classdef lincoa_mod
             end
 
         end
+
+
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, rhoend, xl, xu, x0)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine wraps the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
@@ -679,16 +675,14 @@ classdef lincoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
 
+
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             solver = "LINCOA";
             srname = "GET_LINCON";
-
             idmat = NaN(numel(x0));
 
             % Sizes
@@ -766,7 +760,6 @@ classdef lincoa_mod
 
             % Deallocate memory.
 
-
             % Print a warning if the starting point is sufficiently infeasible and the constraints are modified.
             smallx = fortran.power(consts_obj.TEN, max(-6, -consts_obj.MAXPOW10)) * rhoend;
             constr_modified = ...
@@ -796,6 +789,7 @@ classdef lincoa_mod
                                  "The starting point is feasible", srname);
             end
         end
+
 
     end
 end

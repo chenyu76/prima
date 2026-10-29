@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef cobyla_mod
     %--------------------------------------------------------------------------------------------------%
     % COBYLA_MOD is a module providing the reference implementation of of Powell's COBYLA algorithm in
@@ -46,6 +49,8 @@ classdef cobyla_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [x, f_loc, cstrv_loc, nlconstr, nf_loc, xhist, fhist, chist, nlchist, ...
                   info_loc] = ...
                 cobyla(obj, calcfc, m_nlcon, x, varargin)
@@ -249,7 +254,6 @@ classdef cobyla_mod
 
             % Common modules
             consts_obj = prima_mat.common.consts_mod();
-
             debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
@@ -257,7 +261,6 @@ classdef cobyla_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
-
             selectx_obj = prima_mat.common.selectx_mod();
             preproc_obj = prima_mat.common.preproc_mod();
             string_obj = prima_mat.common.string_mod();
@@ -265,27 +268,22 @@ classdef cobyla_mod
             % Solver-specific modules
             cobylb_obj = prima_mat.cobyla.cobylb_mod();
 
+
             % Compulsory arguments
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
             % X(N)
             % Number of constraints defined in CALCFC
 
             % Optional inputs
-
-
             % Aeq(Meq, N)
             % Aineq(Mineq, N)
             % Beq(Meq)
             % Bineq(Mineq)
             % NLCONSTR0(M_NLCON)
-
-
             % XL(N)
             % XU(N)
 
             % Optional outputs
-
-
             % NLCONSTR(M_NLCON)
             chist = []; % CHIST(MAXCHIST)
             fhist = []; % FHIST(MAXFHIST)
@@ -296,15 +294,10 @@ classdef cobyla_mod
             solver = "COBYLA";
             srname = "COBYLA";
             info_loc = NaN;
-
             nf_loc = NaN;
-
             cstrv_loc = NaN;
-
             eta1_loc = NaN;
-
             f_loc = NaN;
-
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
             % Aeq_LOC(Meq, N)
@@ -391,6 +384,7 @@ classdef cobyla_mod
             m = mxu + mxl + 2 * meq + mineq + m_nlcon;
             n = numel(x);
 
+
             % Preconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(m_nlcon >= 0, "M_NLCON >= 0", srname);
@@ -454,6 +448,7 @@ classdef cobyla_mod
                     end
                 end
             end
+
 
             % Read the inputs.
 
@@ -531,14 +526,15 @@ classdef cobyla_mod
             % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
             % bound/linear constraint values here to make CSTRV consistent.
             if ~ismember('f0', ipObj.UsingDefaults) ...
-               && ~ismember('nlconstr0', ipObj.UsingDefaults) && all(infnan_obj.is_finite(x), 'all')
+               && ~ismember('nlconstr0', ipObj.UsingDefaults) ...
+               && all(infnan_obj.is_finite_sp(x), 'all')
                 f_loc = evaluate_obj.moderatef(f0);
                 constr_loc(m - m_nlcon + 1:m) = evaluate_obj.moderatec(nlconstr0);
             else
                 x = evaluate_obj.moderatex(x);
-                [f_loc, constr_slice] = ...
-                    evaluate_obj.evaluatefc(calcfc, x, constr_loc(m - m_nlcon + 1:m));
-                constr_loc(m - m_nlcon + 1:m) = constr_slice; % Nonlinear constraints
+                [f_loc, constr_loc(m - m_nlcon + 1:m)] = ...
+                    evaluate_obj.evaluatefc(calcfc, x, ...
+                                            constr_loc(m - m_nlcon + 1:m)); % Nonlinear constraints
                 % N.B.: Do NOT call FMSG, SAVEHIST, or SAVEFILT for the function/constraint evaluation at X0.
                 % They will be called during the initialization, which will read the function/constraint at X0.
             end
@@ -554,7 +550,7 @@ classdef cobyla_mod
                 % combine the evaluation of PRESENT(RHOEND) and the evaluation of IS_FINITE(RHOEND) as
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
-                if infnan_obj.is_finite(rhoend) && rhoend > 0
+                if infnan_obj.is_finite_sp(rhoend) && rhoend > 0
                     rhobeg_loc = max(consts_obj.TEN * rhoend, consts_obj.RHOBEG_DFT);
                 else
                     rhobeg_loc = consts_obj.RHOBEG_DFT;
@@ -664,6 +660,7 @@ classdef cobyla_mod
                                     'output_chist', nargout >= 8, 'm', m, ...
                                     'output_conhist', nargout >= 9);
 
+
             %-------------------- Call COBYLB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
                 [constr_loc, f_loc, x, nf_loc, chist_loc, conhist_loc, cstrv_loc, fhist_loc, ...
@@ -690,9 +687,12 @@ classdef cobyla_mod
             % Write the outputs.
 
 
+
             if nargout >= 4 || ~ismember('nlconstr', ipObj.UsingDefaults)
                 nlconstr = constr_loc(m - m_nlcon + 1:m);
             end
+
+
 
             % Copy XHIST_LOC to XHIST if needed.
             if nargout >= 6
@@ -712,11 +712,9 @@ classdef cobyla_mod
                 % GARBAGE in XHIST_LOC(:, NF_LOC + 1 : END). Therefore, we MUST cap XHIST at NF_LOC so that
                 % XHIST contains only valid history. For this reason, there is no way to avoid allocating
                 % two copies of memory for XHIST unless we declare it to be a POINTER instead of ALLOCATABLE.
-
             end
             % F2003 automatically deallocate local ALLOCATABLE variables at exit, yet we prefer to deallocate
             % them immediately when they finish their jobs.
-
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 7
@@ -725,7 +723,6 @@ classdef cobyla_mod
                 memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
-
             end
 
             % Copy CHIST_LOC to CHIST if needed.
@@ -735,7 +732,6 @@ classdef cobyla_mod
                 memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
                 chist = chist_loc(1:nhist); % The same as XHIST, we must cap CHIST at NF_LOC.
-
             end
 
             % Copy CONHIST_LOC to NLCHIST if needed.
@@ -753,7 +749,6 @@ classdef cobyla_mod
                 nlchist = ...
                     conhist_loc(m - m_nlcon + 1:m, ...
                                 1:nhist); % The same as XHIST, we must cap NLCHIST at NF_LOC.
-
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
@@ -779,13 +774,13 @@ classdef cobyla_mod
                 if nargout >= 7
                     debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) ...
-                                          | infnan_obj.is_posinf(fhist), 'all'), ...
+                                          | infnan_obj.is_posinf_sp(fhist), 'all'), ...
                                      "FHIST does not contain NaN/+Inf", srname);
                 end
                 if nargout >= 8
                     debug_obj.assert(numel(chist) == nhist, "SIZE(CHIST) == NHIST", srname);
                     debug_obj.assert(~any(chist < 0 | infnan_obj.is_nan_sp(chist) ...
-                                          | infnan_obj.is_posinf(chist), 'all'), ...
+                                          | infnan_obj.is_posinf_sp(chist), 'all'), ...
                                      "CHIST does not contain nonnegative values or NaN/+Inf", ...
                                      srname);
                 end
@@ -793,7 +788,7 @@ classdef cobyla_mod
                     debug_obj.assert(size(nlchist, 1) == m_nlcon && size(nlchist, 2) == nhist, ...
                                      "SIZE(NLCHIST) == [M_NLCON, NHIST]", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(nlchist) ...
-                                          | infnan_obj.is_posinf(nlchist), 'all'), ...
+                                          | infnan_obj.is_posinf_sp(nlchist), 'all'), ...
                                      "NLCHIST does not contain NaN/+Inf", srname);
                 end
                 if nargout >= 7 && nargout >= 8
@@ -805,6 +800,8 @@ classdef cobyla_mod
             end
 
         end
+
+
         function [amat, bvec] = get_lincon(~, Aeq, Aineq, beq, bineq, xl, xu)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine wraps the linear and bound constraints into a single constraint: AMAT^T*X <= BVEC.
@@ -824,15 +821,13 @@ classdef cobyla_mod
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
 
-            % Inputs
 
+            % Inputs
 
             % Outputs
 
-
             % Local variables
             srname = "GET_LINCON";
-
             idmat = NaN(numel(xl));
 
             % Sizes
@@ -888,7 +883,6 @@ classdef cobyla_mod
 
             % Deallocate memory.
 
-
             %====================%
             %  Calculation ends  %
             %====================%
@@ -899,6 +893,7 @@ classdef cobyla_mod
                                  "SIZE(AMAT) == [SIZE(X), SIZE(BVEC)]", srname);
             end
         end
+
 
     end
 end

@@ -351,11 +351,8 @@ else % The problem turns out 'normal' during preprima
             % In C MEX, however, we have mxGetLogicals.
         else
             % Call the pure MATLAB code
-            if debug_flag
-                bo = prima_debug.bobyqa.bobyqa_mod();
-            else
-                bo = prima_mat.bobyqa.bobyqa_mod();
-            end
+            prima_mat.common.consts_mod.debug_state(debug_flag);
+            bo = prima_mat.bobyqa.bobyqa_mod();
             [x, fx, nf, xhist, fhist, exitflag] = bo.bobyqa( ...
                 fun, x0, 'xl', lb, 'xu', ub, ...
                 'rhobeg', rhobeg, 'rhoend', rhoend, ...

@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef ratio_mod
     %--------------------------------------------------------------------------------------------------%
     % This module calculates the reduction ratio for trust-region methods.
@@ -10,6 +13,8 @@ classdef ratio_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function ratio = redrat(~, ared, pred, rshrink)
             %--------------------------------------------------------------------------------------------------%
             % This function evaluates the reduction ratio of a trust-region step, handling Inf/NaN properly.
@@ -19,12 +24,9 @@ classdef ratio_mod
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
-
-
             % When RATIO <= RSHRINK, DELTA will be shrunk.
 
             % Outputs
-
 
             % Local variables
             srname = "REDRAT";
@@ -52,12 +54,10 @@ classdef ratio_mod
                     % solver will check whether to take a geometry step or reduce RHO.
                     ratio = -consts_obj.REALMAX;
                 end
-            elseif infnan_obj.is_posinf(pred) && infnan_obj.is_posinf(ared)
+            elseif infnan_obj.is_posinf_sp(pred) && infnan_obj.is_posinf_sp(ared)
                 ratio = consts_obj.ONE; % ARED/PRED = NaN if calculated directly.
-
-            elseif infnan_obj.is_posinf(pred) && infnan_obj.is_neginf(ared)
+            elseif infnan_obj.is_posinf_sp(pred) && infnan_obj.is_neginf_sp(ared)
                 ratio = -consts_obj.REALMAX; % ARED/PRED = NaN if calculated directly.
-
             else
                 ratio = ared / pred;
             end
@@ -72,6 +72,7 @@ classdef ratio_mod
             end
 
         end
+
 
     end
 end

@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef getact_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides the GETACT subroutine of LINCOA. It is used only in the trust-region
@@ -16,6 +19,8 @@ classdef getact_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [iact, nact, qfac, resact, resnew, rfac, psd] = ...
                 getact(obj, amat, delta, g, iact, nact, qfac, resact, resnew, rfac, psd)
             %--------------------------------------------------------------------------------------------------%
@@ -76,14 +81,13 @@ classdef getact_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
+
             % Inputs
             % AMAT(N, M)
-
             % G(N)
 
             % In-outputs
             % IACT(M)
-
             % QFAC(N, N)
             % RESACT(M)
             % RESNEW(M)
@@ -94,15 +98,11 @@ classdef getact_mod
 
             % Local variables
             srname = "GETACT";
-
             iter = NaN;
-
             frac = NaN(size(g));
             psdsav = NaN(size(psd));
-
             tol = NaN;
             v = NaN(size(g));
-
             vlam = NaN(size(g));
             vmu = NaN(size(g));
 
@@ -116,7 +116,7 @@ classdef getact_mod
                 debug_obj.assert(n >= 1, "N >= 1", srname);
                 debug_obj.assert(size(amat, 1) == n && size(amat, 2) == m, ...
                                  "SIZE(AMAT) == [N, M]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(g), 'all'), "G is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(g), 'all'), "G is finite", srname);
                 debug_obj.assert(nact >= 0 && nact <= min(m, n), "0 <= NACT <= MIN(M, N)", srname);
                 debug_obj.assert(numel(iact) == m, "SIZE(IACT) == M", srname);
                 debug_obj.assert(all(iact(1:nact) >= 1 & iact(1:nact) <= m, 'all'), ...
@@ -207,8 +207,7 @@ classdef getact_mod
             for iter = 1:maxiter
                 % When NACT == N, exit with PSD = 0. Indeed, with a correctly implemented matrix product, the
                 % lines below this IF should render DD = 0 and trigger an exit. We make it explicit for clarity.
-                if nact >= n
-                    % Indeed, NACT > N should never happen.
+                if nact >= n % Indeed, NACT > N should never happen.
                     psd(:) = consts_obj.ZERO;
                     break
                 end
@@ -249,7 +248,7 @@ classdef getact_mod
                 %---------------------------------------------------------------------------------------%
                 % Powell's code does not handle the following pathological cases.
                 if linalg_obj.inprod(psd, g) > 0 ...
-                   || ~infnan_obj.is_finite(fortran.sum(abs(psd), 'all'))
+                   || ~infnan_obj.is_finite_sp(fortran.sum(abs(psd), 'all'))
                     psd = psdsav;
                     break
                 end
@@ -346,16 +345,15 @@ classdef getact_mod
 
                     violmx = max(violmx - vmult, consts_obj.ZERO);
                     vlam(1:nact) = vlam(1:nact) - vmult * vmu(1:nact);
-                    if icon > 0 && icon <= nact
-                        % Powell: IF (ICON>0). We check ICON<=NACT for safety.
+                    if icon > 0 ...
+                       && icon <= nact % Powell: IF (ICON>0). We check ICON<=NACT for safety.
                         vlam(icon) = consts_obj.ZERO;
                     end
 
                     % Reduce the active set if necessary, so that all components of the new VLAM are negative,
                     % with resetting of the residuals of the constraints that become inactive.
                     for icon = nact:-1:1
-                        if vlam(icon) >= 0
-                            % Powell's version: IF (.NOT. VLAM(ICON) < 0) THEN
+                        if vlam(icon) >= 0 % Powell's version: IF (.NOT. VLAM(ICON) < 0) THEN
                             % Delete the constraint with index IACT(ICON) from the active set; set NACT = NACT-1.
                             [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
                                 obj.delact(icon, iact, nact, qfac, resact, resnew, rfac, vlam);
@@ -404,7 +402,7 @@ classdef getact_mod
                 debug_obj.assert(linalg_obj.istriu(rfac), "RFAC is upper triangular", srname);
                 debug_obj.assert(numel(psd) == n, "SIZE(PSD) == N", srname);
                 % PSD = -G when NACT == 0; G may contain Inf/NaN.
-                debug_obj.assert(all(infnan_obj.is_finite(psd), 'all') || nact == 0, ...
+                debug_obj.assert(all(infnan_obj.is_finite_sp(psd), 'all') || nact == 0, ...
                                  "PSD is finite unless NACT == 0", srname);
                 % In theory, ||PSD||^2 <= GG and -GG <= PSD^T*G <= 0.
                 % N.B. 1. Do not use DD, which may not be up to date. 2. PSD^T*G can be NaN if G is huge.
@@ -416,6 +414,8 @@ classdef getact_mod
             end
 
         end
+
+
         function [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
                 addact(~, l, c, iact, nact, qfac, resact, resnew, rfac, vlam)
             %--------------------------------------------------------------------------------------------------%
@@ -430,12 +430,10 @@ classdef getact_mod
             powalg_obj = prima_mat.common.powalg_mod();
 
             % Inputs
-
             % C(N)
 
             % In-outputs
             % IACT(M)
-
             % QFAC(N, N)
             % RESACT(M)
             % RESNEW(M)
@@ -444,7 +442,6 @@ classdef getact_mod
 
             % Local variables (debugging only)
             srname = "ADD_ACT";
-
             nsave = NaN;
             tol = NaN;
 
@@ -477,7 +474,6 @@ classdef getact_mod
                 debug_obj.assert(numel(resact) == m, "SIZE(RESACT) == M", srname);
                 debug_obj.assert(numel(resnew) == m, "SIZE(RESNEW) == M", srname);
                 nsave = nact; % For debugging only
-
             end
 
             %====================%
@@ -521,6 +517,8 @@ classdef getact_mod
             end
 
         end
+
+
         function [iact, nact, qfac, resact, resnew, rfac, vlam] = ...
                 delact(~, icon, iact, nact, qfac, resact, resnew, rfac, vlam)
             %--------------------------------------------------------------------------------------------------%
@@ -535,10 +533,8 @@ classdef getact_mod
 
             % Inputs
 
-
             % In-outputs
             % IACT(M)
-
             % QFAC(N, N)
             % RESACT(M)
             % RESNEW(M)
@@ -548,7 +544,6 @@ classdef getact_mod
             % Local variables (debugging only)
             srname = "DELACT";
             l = NaN;
-
             nsave = NaN;
             tol = NaN;
 
@@ -580,7 +575,6 @@ classdef getact_mod
                 debug_obj.assert(numel(resnew) == m, "SIZE(RESNEW) == M", srname);
                 nsave = nact; % For debugging only
                 l = iact(icon); % For debugging only
-
             end
 
             %====================%
@@ -591,8 +585,9 @@ classdef getact_mod
             % the old value of IACT(ICON). QREXC implements the updates of QFAC and RFAC by a sequence of Givens
             % rotations. Then NACT is reduced by one.
 
-            [qfac, R_slice] = powalg_obj.qrexc_Rfull(qfac, rfac(:, 1:nact), icon);
-            rfac(:, 1:nact) = R_slice; % QREXC does nothing if ICON == NACT.
+            [qfac, rfac(:, 1:nact)] = ...
+                powalg_obj.qrexc_Rfull(qfac, rfac(:, 1:nact), ...
+                                       icon); % QREXC does nothing if ICON == NACT.
             % Indeed, it suffices to pass QFAC(:, 1:NACT) and RFAC(1:NACT, 1:NACT) to QREXC as follows. However,
             % compilers may create a temporary copy of RFAC(1:NACT, 1:NACT), which is not contiguous in memory.
             % %call qrexc(qfac(:, 1:nact), rfac(1:nact, 1:nact), icon)
@@ -627,6 +622,7 @@ classdef getact_mod
             end
 
         end
+
 
     end
 end

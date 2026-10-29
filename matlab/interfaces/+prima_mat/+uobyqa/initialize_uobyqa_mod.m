@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef initialize_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module performs the initialization of UOBYQA, described in Section 4 of the UOBYQA paper.
@@ -12,6 +15,8 @@ classdef initialize_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [kopt, nf, fhist, fval, xbase, xhist, xpt, info] = ...
                 initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, x0, fhist, fval, xbase, ...
                        xhist, xpt)
@@ -31,17 +36,13 @@ classdef initialize_uobyqa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
 
+
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
             % X0(N)
 
             % Outputs
-
-
             % FHIST(MAXFHIST)
-
             % XBASE(N)
             % XHIST(N, MAXXHIST)
             % XPT(N, NPT)
@@ -49,11 +50,8 @@ classdef initialize_uobyqa_mod
             % Local variables
             solver = "UOBYQA";
             srname = "INITXF";
-
             kk = NaN(size(x0));
-
             evaluated = false(size(xpt, 2), 1);
-
             xw = NaN(size(x0));
 
             % Sizes
@@ -77,7 +75,7 @@ classdef initialize_uobyqa_mod
                 debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, ...
                                  "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
                 debug_obj.assert(rhobeg > 0, "RHOBEG > 0", srname);
-                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite(x0), 'all'), ...
+                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite_sp(x0), 'all'), ...
                                  "SIZE(X0) == N, X0 is finite", srname);
                 debug_obj.assert(numel(xbase) == n, "SIZE(XBASE) == N", srname);
             end
@@ -135,7 +133,6 @@ classdef initialize_uobyqa_mod
                     if fval(k) < fval(1)
                         xpt(:, k + 1) = ...
                             consts_obj.TWO * xpt(:, k); % XPT(K / 2, K + 1) = TWO * RHOBEG
-
                     else
                         xpt(:, k + 1) = -xpt(:, k); % XPT(K / 2, K + 1) = -RHOBEG
                     end
@@ -196,15 +193,16 @@ classdef initialize_uobyqa_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(nf <= npt, "NF <= NPT", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
                                  "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(evaluated ...
                                          & (infnan_obj.is_nan_sp(fval) ...
-                                            | infnan_obj.is_posinf(fval)), 'all'), ...
+                                            | infnan_obj.is_posinf_sp(fval)), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), ...
                                  "FVAL(KOPT) = MINVAL(FVAL)", srname);
@@ -214,6 +212,8 @@ classdef initialize_uobyqa_mod
             end
 
         end
+
+
         function [pq, info] = initq(~, fval, xpt, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the quadratic model, whose coefficients are stored in PQ, where
@@ -227,17 +227,16 @@ classdef initialize_uobyqa_mod
             infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
 
+
             % Inputs
             % XPT(N, NPT)
             % XPT(N, NPT)
 
             % Outputs
-
             % PQ((N + 1) * (N + 2) / 2 - 1)
 
             % Local variables
             srname = "INITQ";
-
             deriv = NaN(size(xpt, 1), 1);
 
             % Sizes
@@ -250,10 +249,10 @@ classdef initialize_uobyqa_mod
                                  "N >= 1, NPT == (N+1)*(N+2)/2", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
                                  "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(infnan_obj.is_nan_sp(fval) ...
-                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(fval), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
             end
 
@@ -271,11 +270,10 @@ classdef initialize_uobyqa_mod
                 k1 = 2 * k + 1;
                 % Find the (K, K) element of the Hessian.
                 ih = n + k * (k + 1) / 2;
-                if xpt(k, k1) > 0
-                    % XPT(K, K1) = 2*RHO
+                if xpt(k, k1) > 0 % XPT(K, K1) = 2*RHO
                     deriv(k) = (fbase + fval(k1) - consts_obj.TWO * fval(k0)) / rhosq;
                     pq(k) = (4.0 * fval(k0) - 3.0 * fbase - fval(k1)) / (consts_obj.TWO * rhobeg);
-                else                    % XPT(K, K1) = -RHO
+                else % XPT(K, K1) = -RHO
                     deriv(k) = (fval(k0) + fval(k1) - consts_obj.TWO * fbase) / rhosq;
                     pq(k) = (fval(k0) - fval(k1)) / (consts_obj.TWO * rhobeg);
                 end
@@ -317,6 +315,8 @@ classdef initialize_uobyqa_mod
             end
 
         end
+
+
         function [pl, info] = initl(~, xpt, pl)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the Lagrange functions. The coefficients of the K-th Lagrange function
@@ -330,11 +330,11 @@ classdef initialize_uobyqa_mod
             infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
 
+
             % Inputs
             % XPT(N, NPT)
 
             % Outputs
-
             % PL((N + 1) * (N + 2) / 2 - 1, (N + 1) * (N + 2) / 2)
 
             % Local variables
@@ -350,7 +350,7 @@ classdef initialize_uobyqa_mod
                                  "N >= 1, NPT == (N+1)*(N+2)/2", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
                                  "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
             end
 
             %====================%
@@ -367,13 +367,12 @@ classdef initialize_uobyqa_mod
                 k0 = 2 * k;
                 k1 = 2 * k + 1;
                 ih = n + k * (k + 1) / 2; % The (K, K) entry of the Hessian
-                if xpt(k, k1) > 0
-                    % XPT(K, K1) = 2*RHO
+                if xpt(k, k1) > 0 % XPT(K, K1) = 2*RHO
                     pl(k, 1) = -1.5 / rhobeg;
                     pl(ih, 1) = consts_obj.ONE / rhosq;
                     pl(k, k0) = consts_obj.TWO / rhobeg;
                     pl(ih, k0) = -consts_obj.TWO / rhosq;
-                else                    % XPT(K, K1) = -RHO
+                else % XPT(K, K1) = -RHO
                     pl(ih, 1) = -consts_obj.TWO / rhosq;
                     pl(k, k0) = consts_obj.HALF / rhobeg;
                     pl(ih, k0) = consts_obj.ONE / rhosq;
@@ -431,6 +430,7 @@ classdef initialize_uobyqa_mod
             end
 
         end
+
 
     end
 end

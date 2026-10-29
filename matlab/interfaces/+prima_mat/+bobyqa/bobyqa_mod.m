@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
     % BOBYQA_MOD is a module providing the reference implementation of Powell's BOBYQA algorithm in
@@ -29,6 +32,8 @@ classdef bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [x, f_loc, nf_loc, xhist, fhist, info] = bobyqa(~, calfun, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % Among all the arguments, only CALFUN and X are obligatory. The others are OPTIONAL and you can
@@ -186,7 +191,6 @@ classdef bobyqa_mod
 
             % Common modules
             consts_obj = prima_mat.common.consts_mod();
-
             debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
@@ -194,39 +198,31 @@ classdef bobyqa_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
-
             preproc_obj = prima_mat.common.preproc_mod();
             string_obj = prima_mat.common.string_mod();
 
             % Solver-specific modules
             bobyqb_obj = prima_mat.bobyqa.bobyqb_mod();
 
+
             % Compulsory arguments
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
             % X(N)
 
             % Optional inputs
-
-
             % XL(N)
             % XU(N)
 
             % Optional outputs
-
-
             fhist = []; % FHIST(MAXFHIST)
             xhist = []; % XHIST(N, MAXXHIST)
 
             % Local variables
             solver = "BOBYQA";
             srname = "BOBYQA";
-
             nf_loc = NaN;
-
             eta1_loc = NaN;
-
             f_loc = NaN;
-
             xl_loc = NaN(size(x));
             xu_loc = NaN(size(x));
             % FHIST_LOC(MAXFHIST)
@@ -331,7 +327,7 @@ classdef bobyqa_mod
                 % combine the evaluation of PRESENT(RHOEND) and the evaluation of IS_FINITE(RHOEND) as
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
-                if infnan_obj.is_finite(rhoend) && rhoend > 0
+                if infnan_obj.is_finite_sp(rhoend) && rhoend > 0
                     rhobeg_loc = max(consts_obj.TEN * rhoend, consts_obj.RHOBEG_DFT);
                 else
                     rhobeg_loc = consts_obj.RHOBEG_DFT;
@@ -365,8 +361,7 @@ classdef bobyqa_mod
 
             if ~ismember('npt', ipObj.UsingDefaults)
                 npt_loc = npt;
-            elseif maxfun_loc >= n + 3
-                % Take MAXFUN into account if it is valid.
+            elseif maxfun_loc >= n + 3 % Take MAXFUN into account if it is valid.
                 npt_loc = min(maxfun_loc - 1, 2 * n + 1);
             else
                 npt_loc = 2 * n + 1;
@@ -420,8 +415,9 @@ classdef bobyqa_mod
                 honour_x0_loc = honour_x0;
             elseif has_rhobeg
                 % HONOUR_X0 is FALSE if user provides a valid RHOBEG. Is this the best choice?
-                honour_x0_loc = ~(infnan_obj.is_finite(rhobeg) && rhobeg > 0);
+                honour_x0_loc = ~(infnan_obj.is_finite_sp(rhobeg) && rhobeg > 0);
             end
+
 
             % Preprocess the inputs in case some of them are invalid. It does nothing if all inputs are valid.
             [iprint_loc, maxfun_loc, maxhist_loc, ftarget_loc, rhobeg_loc, rhoend_loc, npt_loc, ...
@@ -440,6 +436,7 @@ classdef bobyqa_mod
             [maxhist_loc, xhist_loc, fhist_loc] = ...
                 history_obj.prehist(maxhist_loc, n, nargout >= 4, nargout >= 5);
 
+
             %-------------------- Call BOBYQB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
                 [x, nf_loc, f_loc, fhist_loc, xhist_loc, info_loc] = ...
@@ -456,6 +453,7 @@ classdef bobyqa_mod
             %--------------------------------------------------------------------------------------------------%
 
             % Write the outputs.
+
 
 
             if nargout >= 6
@@ -480,11 +478,9 @@ classdef bobyqa_mod
                 % GARBAGE in XHIST_LOC(:, NF_LOC + 1 : END). Therefore, we MUST cap XHIST at NF_LOC so that
                 % XHIST contains only valid history. For this reason, there is no way to avoid allocating
                 % two copies of memory for XHIST unless we declare it to be a POINTER instead of ALLOCATABLE.
-
             end
             % F2003 automatically deallocate local ALLOCATABLE variables at exit, yet we prefer to deallocate
             % them immediately when they finish their jobs.
-
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 5
@@ -493,7 +489,6 @@ classdef bobyqa_mod
                 memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
-
             end
 
             % If NF_LOC > MAXHIST_LOC, warn that not all history is recorded.
@@ -544,7 +539,7 @@ classdef bobyqa_mod
                 if nargout >= 5
                     debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) ...
-                                          | infnan_obj.is_posinf(fhist), 'all'), ...
+                                          | infnan_obj.is_posinf_sp(fhist), 'all'), ...
                                      "FHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(~any(fhist < f_loc, 'all'), "F is the smallest in FHIST", ...
                                      srname);
@@ -552,6 +547,7 @@ classdef bobyqa_mod
             end
 
         end
+
 
     end
 end

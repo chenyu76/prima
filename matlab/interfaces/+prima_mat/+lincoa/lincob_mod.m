@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 %TODO:
 % 1. Check whether it is possible to change the definition of RESCON, RESNEW, RESTMP, RESACT so that
 % we do not need to encode information into their signs.
@@ -19,6 +22,8 @@ classdef lincob_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [x, nf, chist, cstrv, f, fhist, xhist, info] = ...
                 lincob(~, calfun, iprint, maxfilt, maxfun, npt, Aeq, Aineq, amat, beq, bineq, ...
                        bvec, ctol, cweight, eta1, eta2, ftarget, gamma1, gamma2, rhobeg, rhoend, ...
@@ -76,7 +81,6 @@ classdef lincob_mod
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
             message_obj = prima_mat.common.message_mod();
-
             powalg_obj = prima_mat.common.powalg_mod();
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();
@@ -89,10 +93,9 @@ classdef lincob_mod
             trustregion_lincoa_obj = prima_mat.lincoa.trustregion_lincoa_mod();
             update_lincoa_obj = prima_mat.lincoa.update_lincoa_mod();
 
+
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
             % Aeq(Meq, N)
             % Aineq(Mineq, N)
             % AMAT(N, M)
@@ -100,16 +103,11 @@ classdef lincob_mod
             % Bineq(Mineq)
             % BVEC(M)
 
-
             % In-outputs
             % X(N)
 
             % Outputs
-
-
             % CHIST(MAXCHIST)
-
-
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
@@ -118,11 +116,8 @@ classdef lincob_mod
             srname = "LINCOB";
             iact = NaN(size(bvec));
             idz = NaN;
-
             evaluated = false(npt, 1);
-
             qalt_better = false(3, 1);
-
             bmat = NaN(numel(x), npt + numel(x));
             cfilt = NaN(maxfilt, 1);
             constr = ...
@@ -131,27 +126,20 @@ classdef lincob_mod
             constr_leq = NaN(size(beq));
             cval = NaN(npt, 1);
             d = NaN(size(x));
-
             distsq = NaN(npt, 1);
             dnorm = NaN;
             dnorm_rec = NaN(3, 1); % Powell's implementation: DNORM_REC(5)
             ffilt = NaN(maxfilt, 1);
             fval = NaN(npt, 1);
             galt = NaN(size(x));
-
             gopt = NaN(size(x));
             hq = NaN(numel(x));
-
             pq = NaN(npt, 1);
             pqalt = NaN(npt, 1);
             qfac = NaN(numel(x));
-
             rfac = NaN(numel(x));
-
             xbase = NaN(size(x));
-
             xfilt = NaN(numel(x), maxfilt);
-
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
@@ -182,7 +170,7 @@ classdef lincob_mod
                 debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, ...
                                  "0 < GAMMA1 < 1 < GAMMA2", srname);
                 debug_obj.assert(rhobeg >= rhoend && rhoend > 0, "RHOBEG >= RHOEND > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(x), 'all'), "X is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(x), 'all'), "X is finite", srname);
                 debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", ...
                                  srname);
                 debug_obj.assert(maxfilt >= min(consts_obj.MIN_MAXFILT, maxfun) ...
@@ -216,7 +204,6 @@ classdef lincob_mod
                                              cval, fhist, fval, xbase, xhist, xpt, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
-
             ipObj = inputParser();
             addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
@@ -233,7 +220,6 @@ classdef lincob_mod
             % N.B.: We must set CONSTR and CSTRV. Otherwise, if REDUCE_RHO is TRUE after the very first
             % iteration due to SHORTD, then RHOMSG will be called with CONSTR and CSTRV uninitialized.
             x = xbase + xpt(:, kopt);
-
             constr_leq(:) = linalg_obj.matprod21(Aeq, x) - beq;
             constr(:) = ...
                 [xl(ixl) - x(ixl); x(ixu) - xu(ixu); -constr_leq; constr_leq
@@ -270,9 +256,9 @@ classdef lincob_mod
                     + powalg_obj.hess_mul(xpt(:, kopt), xpt, pq);
                 pqalt = pq;
                 galt = gopt;
-                if ~(all(infnan_obj.is_finite(gopt), 'all') ...
-                     && all(infnan_obj.is_finite(hq), 'all') ...
-                     && all(infnan_obj.is_finite(pq), 'all'))
+                if ~(all(infnan_obj.is_finite_sp(gopt), 'all') ...
+                     && all(infnan_obj.is_finite_sp(hq), 'all') ...
+                     && all(infnan_obj.is_finite_sp(pq), 'all'))
                     subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
@@ -299,7 +285,7 @@ classdef lincob_mod
                     debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
                     debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
                                      "SIZE(X) == N, X does not contain NaN", srname);
-                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                      "F is not NaN/+Inf", srname);
                     debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
                                      "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -308,12 +294,12 @@ classdef lincob_mod
                     % The last calculated X can be Inf (finite + finite can be Inf numerically).
                     debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                          | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                          | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                           'all'), "FHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
                     debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 ...
                                           | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) ...
-                                          | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), ...
+                                          | infnan_obj.is_posinf_sp(chist(1:min(nf, maxchist))), ...
                                           'all'), ...
                                      "CHIST does not contain negative values or NaN/+Inf", srname);
                     nhist = min([nf, maxfhist, maxchist]);
@@ -341,10 +327,8 @@ classdef lincob_mod
             ratio = -consts_obj.ONE;
             dnorm_rec(:) = consts_obj.REALMAX;
             shortd = false;
-
             qalt_better(:) = false;
             knew_tr = 0;
-
             qfac(:) = linalg_obj.eye1(n);
             rfac(:) = consts_obj.ZERO;
             nact = 0;
@@ -409,8 +393,7 @@ classdef lincob_mod
                 % geometry of the interpolation set to reducing RHO in the subsequent three or more iterations.
                 % This is important for the performance of LINCOA.
                 % Zaikun 20230609: This does not exist in NEWUOA/BOBYQA/UOBYQA. Try it!
-                if delta > rho || ~shortd
-                    % Another possibility: IF (DELTA > RHO) THEN
+                if delta > rho || ~shortd % Another possibility: IF (DELTA > RHO) THEN
                     dnorm_rec(:) = consts_obj.REALMAX;
                 end
 
@@ -432,7 +415,6 @@ classdef lincob_mod
                     delta = consts_obj.HALF * delta;
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
-
                     end
                 else
                     % Calculate the next value of the objective function.
@@ -486,7 +468,6 @@ classdef lincob_mod
                                                      ratio);
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
-
                     end
 
                     % Is the newly generated X better than current best point?
@@ -518,9 +499,9 @@ classdef lincob_mod
                             update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), ...
                                                       xpt(:, kopt), xpt, zmat, qalt_better, ...
                                                       gopt, pq, hq, galt, pqalt);
-                        if ~(all(infnan_obj.is_finite(gopt), 'all') ...
-                             && all(infnan_obj.is_finite(hq), 'all') ...
-                             && all(infnan_obj.is_finite(pq), 'all'))
+                        if ~(all(infnan_obj.is_finite_sp(gopt), 'all') ...
+                             && all(infnan_obj.is_finite_sp(hq), 'all') ...
+                             && all(infnan_obj.is_finite_sp(pq), 'all'))
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
@@ -688,9 +669,9 @@ classdef lincob_mod
                         update_lincoa_obj.tryqalt(idz, bmat, fval - fval(kopt), xpt(:, kopt), ...
                                                   xpt, zmat, qalt_better, gopt, pq, hq, galt, ...
                                                   pqalt);
-                    if ~(all(infnan_obj.is_finite(gopt), 'all') ...
-                         && all(infnan_obj.is_finite(hq), 'all') ...
-                         && all(infnan_obj.is_finite(pq), 'all'))
+                    if ~(all(infnan_obj.is_finite_sp(gopt), 'all') ...
+                         && all(infnan_obj.is_finite_sp(hq), 'all') ...
+                         && all(infnan_obj.is_finite_sp(pq), 'all'))
                         info = infos_obj.NAN_INF_MODEL;
                         break
                     end
@@ -784,7 +765,6 @@ classdef lincob_mod
 
             % Deallocate IXL and IXU as they have finished their job.
 
-
             % Arrange CHIST, FHIST, and XHIST so that they are in the chronological order.
             [xhist, fhist, chist] = history_obj.rangehist(nf, xhist, fhist, 'chist', chist);
 
@@ -800,7 +780,7 @@ classdef lincob_mod
                 debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
                 debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
                                  "SIZE(X) == N, X does not contain NaN", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN/+Inf", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
                                  "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -809,12 +789,12 @@ classdef lincob_mod
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                      | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                      | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                       'all'), "FHIST does not contain NaN/+Inf", srname);
                 debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
                 debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 ...
                                       | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) ...
-                                      | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), ...
+                                      | infnan_obj.is_posinf_sp(chist(1:min(nf, maxchist))), ...
                                       'all'), ...
                                  "CHIST does not contain negative values or NaN/+Inf", srname);
                 nhist = min([nf, maxfhist, maxchist]);
@@ -824,6 +804,7 @@ classdef lincob_mod
             end
 
         end
+
 
     end
 end

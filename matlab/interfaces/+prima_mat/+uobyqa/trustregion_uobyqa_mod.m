@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef trustregion_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides subroutines concerning the trust-region calculations of UOBYQA.
@@ -12,6 +15,8 @@ classdef trustregion_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [d, crvmin] = trstep(~, delta, g, h, tol, d)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine solves the trust-region subproblem
@@ -55,29 +60,21 @@ classdef trustregion_uobyqa_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
 
+            % Inputs
             % G(N)
             % H(N, N)
-
 
             % In-outputs
             % D(N)
 
-
             % Local variables
             srname = "TRSTEP";
-
             % Newton-Raphson step; only calculated when N = 1.
-
             dold = NaN(size(g));
-
             piv = NaN(size(g));
-
             td = NaN(size(g));
-
             tn = NaN(numel(g) + -1, 1);
-
             z = NaN(size(g));
 
             % Sizes.
@@ -107,8 +104,7 @@ classdef trustregion_uobyqa_mod
             % changed. Note that CRVMIN must be scaled back if it is nonzero, but the step is scale invariant.
             % N.B.: It is faster and safer to scale by multiplying a reciprocal than by division. See
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
-            if max(abs(g)) > 1.0e8
-                % The threshold is empirical.
+            if max(abs(g)) > 1.0e8 % The threshold is empirical.
                 modscal = ...
                     max(consts_obj.TWO * consts_obj.REALMIN, ...
                         consts_obj.ONE / max(abs(g))); % MAX: precaution against underflow.
@@ -151,7 +147,6 @@ classdef trustregion_uobyqa_mod
                     if abs(dnewton(1)) <= delta
                         d = dnewton;
                         crvmin = h(1, 1); % If we use HH(1, 1) here, then we need to scale it back!
-
                     end
                 end
                 return
@@ -180,8 +175,9 @@ classdef trustregion_uobyqa_mod
             % This is probably because the behavior of MAX is undefined if it receives NaN (if GNORM and HNORM
             % are both Inf, then GNORM/DELTA - HNORM = NaN).
             %--------------------------------------------------------------------------------------------------%
-            if ~infnan_obj.is_finite(fortran.sum(abs(gg), 'all') + fortran.sum(abs(hh), 'all') ...
-                                     + fortran.sum(abs(td), 'all') + fortran.sum(abs(tn), 'all'))
+            if ~infnan_obj.is_finite_sp(fortran.sum(abs(gg), 'all') ...
+                                        + fortran.sum(abs(hh), 'all') ...
+                                        + fortran.sum(abs(td), 'all') + fortran.sum(abs(tn), 'all'))
                 return
             end
 
@@ -204,14 +200,13 @@ classdef trustregion_uobyqa_mod
             paruest = consts_obj.ZERO; % Estimation for PARU
             posdef = false;
             dold(:) = consts_obj.ZERO;
-
             maxiter = min(1000, 100 * n); % Unlikely to be reached.
             % Zaikun 26-06-2019: Powell's original code can encounter infinite cycling, which did happen when
             % testing the CUTEst problems GAUSS1LS, GAUSS2LS, and GAUSS3LS. Indeed, in all these cases, Inf
             % and NaN appear in D due to extremely large values in the Hessian matrix (up to 10^219).
 
             for iter = 1:maxiter
-                if infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+                if infnan_obj.is_finite_sp(fortran.sum(abs(d), 'all'))
                     dold = d;
                 else
                     d = dold;
@@ -234,10 +229,9 @@ classdef trustregion_uobyqa_mod
                 for k = 1:n - 1
                     if piv(k) > 0
                         piv(k + 1) = td(k + 1) + par - fortran.power(tn(k), 2) / piv(k);
-                    elseif abs(piv(k)) + abs(tn(k)) <= 0
-                        % PIV(K) == 0 == TN(K)
+                    elseif abs(piv(k)) + abs(tn(k)) <= 0 % PIV(K) == 0 == TN(K)
                         piv(k + 1) = td(k + 1) + par;
-                    else                        % PIV(K) < 0 .OR. (PIV(K) == 0 .AND. TN(K) /= 0)
+                    else % PIV(K) < 0 .OR. (PIV(K) == 0 .AND. TN(K) /= 0)
                         break
                     end
                 end
@@ -245,7 +239,6 @@ classdef trustregion_uobyqa_mod
                 % Zaikun 20220509
                 if any(infnan_obj.is_nan_sp(piv), 'all')
                     break % Better action to take???
-
                 end
 
                 % NEGCRV is TRUE iff H + PAR*I has at least one negative eigenvalue (CRV means curvature).
@@ -256,8 +249,7 @@ classdef trustregion_uobyqa_mod
                 if gsq <= 0 && ~negcrv
                     paru = par;
                     paruest = par;
-                    if par <= 0
-                        % PAR == 0. A rare case: the trust region center is optimal.
+                    if par <= 0 % PAR == 0. A rare case: the trust region center is optimal.
                         break
                     end
                 end
@@ -279,6 +271,7 @@ classdef trustregion_uobyqa_mod
                 % At this point, K == 0 iff H + PAR*I is positive definite.
                 % Handle the case where H + PAR*I has at least one nonpositive eigenvalue.
                 if k >= 1
+
                     % Set D to a direction of nonpositive curvature of the tridiagonal matrix, and revise PARLEST.
 
                     %------------------------------------------------------------------------------------------%
@@ -348,6 +341,7 @@ classdef trustregion_uobyqa_mod
                         partmp = paruest;
                     end
                     if paruest > 0 && parlest >= partmp
+
                         %--------------------------------------------------------------------------------------%
                         % Zaikun 20220512:
                         % The definition of D below requires that D is initialized. In Powell's code, it may
@@ -361,10 +355,9 @@ classdef trustregion_uobyqa_mod
                         %--------------------------------------------------------------------------------------%
 
                         dtg = linalg_obj.inprod(d, gg);
-                        if dtg > 0
-                            % Has DSQ got the correct value?
+                        if dtg > 0 % Has DSQ got the correct value?
                             d = -(delta / fortran.sqrt(dsq)) * d;
-                        else                            % This ELSE covers the unlikely yet possible case where DTG is zero or even NaN.
+                        else % This ELSE covers the unlikely yet possible case where DTG is zero or even NaN.
                             d = delta / fortran.sqrt(dsq) * d;
                         end
                         % N.B.: As per Powell's code, the lines above would be D = -SIGN(DELTA/SQRT(DSQ), DTG)*D.
@@ -392,7 +385,7 @@ classdef trustregion_uobyqa_mod
                         d(k) = d(k) - tn(k) * d(k + 1) / piv(k);
                     end
 
-                    if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+                    if ~infnan_obj.is_finite_sp(fortran.sum(abs(d), 'all'))
                         d = dold;
                         break
                     end
@@ -400,8 +393,7 @@ classdef trustregion_uobyqa_mod
                     dsq = fortran.sum(fortran.power(d, 2), 'all');
 
                     % Return if the Newton-Raphson step is feasible, setting CRVMIN to the least eigenvalue of H.
-                    if par <= 0 && dsq <= delsq
-                        % PAR <= 0 indeed means PAR == 0.
+                    if par <= 0 && dsq <= delsq % PAR <= 0 indeed means PAR == 0.
                         crvmin = linalg_obj.eigmin_sym_trid(td, tn, 'tol', 1.0e-2);
                         %%MATLAB:
                         %%% It is critical for the efficiency to use `spdiags` to construct `tridh` sparsely.
@@ -431,14 +423,12 @@ classdef trustregion_uobyqa_mod
                         if posdef
                             if phi <= phil
                                 break % Has PHIL got the correct value
-
                             end
                             slope = (phi - phil) / (par - parl);
                             parlest = par - phi / slope;
                         end
                         if paru > 0
                             slope = (phiu - phi) / (paru - par); % Has PHIU got the correct value?
-
                         else
                             slope = consts_obj.ONE / gnorm;
                         end
@@ -486,8 +476,7 @@ classdef trustregion_uobyqa_mod
                                     tempa ...
                                     / (fortran.sign(tempb, dtz) ...
                                        + dtz); %%MATLAB: gam = tempa / (sign(dtz)*tempb + dtz)
-
-                            else                                % This ELSE covers the unlikely yet possible case where DTZ is zero or even NaN.
+                            else % This ELSE covers the unlikely yet possible case where DTZ is zero or even NaN.
                                 gam = fortran.sqrt(tempa / zsq);
                             end
                             if tol * (wsq + par * delsq) - gam * gam * wwsq >= 0
@@ -502,7 +491,6 @@ classdef trustregion_uobyqa_mod
                         if paru > 0
                             if phi >= phiu
                                 break % Has PHIU got the correct value?
-
                             end
                             slope = (phiu - phi) / (paru - par);
                         end
@@ -518,8 +506,7 @@ classdef trustregion_uobyqa_mod
                 end
 
                 % Pick the value of PAR for the next iteration.
-                if paru <= 0
-                    % PARU == 0
+                if paru <= 0 % PARU == 0
                     par = consts_obj.TWO * parlest + gnorm / delta;
                 else
                     par = consts_obj.HALF * (parl + paru);
@@ -559,7 +546,7 @@ classdef trustregion_uobyqa_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 % Due to rounding, it may happen that ||D|| > DELTA, but ||D|| > 2*DELTA is highly improbable.
                 debug_obj.assert(linalg_obj.p_norm(d) <= consts_obj.TWO * delta, ...
@@ -568,6 +555,8 @@ classdef trustregion_uobyqa_mod
             end
 
         end
+
+
         function delta = trrad(~, delta_in, dnorm, eta1, eta2, gamma1, gamma2, ratio)
             %--------------------------------------------------------------------------------------------------%
             % This function updates the trust region radius according to RATIO and DNORM.
@@ -577,6 +566,7 @@ classdef trustregion_uobyqa_mod
             consts_obj = prima_mat.common.consts_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             debug_obj = prima_mat.common.debug_mod();
+
 
             % Input
             % Current trust-region radius
@@ -588,7 +578,6 @@ classdef trustregion_uobyqa_mod
             % Reduction ratio
 
             % Outputs
-
 
             % Local variables
             srname = "TRRAD";
@@ -615,10 +604,8 @@ classdef trustregion_uobyqa_mod
                 delta = gamma1 * dnorm; % Powell's UOBYQA/NEWUOA
                 %delta = gamma1 * delta_in  ! Powell's COBYLA/LINCOA.
                 %delta = min(gamma1 * delta_in, dnorm)  ! Powell's BOBYQA.
-
             elseif ratio <= eta2
                 delta = max(gamma1 * delta_in, dnorm); % Powell's UOBYQA/NEWUOA/BOBYQA/LINCOA
-
             else
                 delta = ...
                     max(gamma1 * delta_in, ...
@@ -647,6 +634,7 @@ classdef trustregion_uobyqa_mod
             end
 
         end
+
 
     end
 end

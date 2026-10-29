@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef message_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides some subroutines that print messages to terminal/files.
@@ -14,14 +17,17 @@ classdef message_mod
     %
     % Last Modified: Sunday, March 31, 2024 PM04:55:58
     %--------------------------------------------------------------------------------------------------%
+
     properties (Access = private)
         spaces;
     end
-
     methods
         function obj = message_mod()
+
             obj.spaces = "   ";
         end
+
+
         function retmsg(obj, solver, info, iprint, nf, f, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints messages at return.
@@ -35,14 +41,11 @@ classdef message_mod
 
             % Compulsory inputs
 
-
             % Optional inputs
-
 
             % Local variables
             newline_custom = newline;
             srname = "RETMSG";
-
             funit = NaN; % File storage unit for the writing. Should be an integer of default kind.
             valid_exit_flags = ...
                 [infos_obj.FTARGET_ACHIEVED, infos_obj.MAXFUN_REACHED, infos_obj.MAXTR_REACHED, ...
@@ -60,14 +63,12 @@ classdef message_mod
             % Calculation starts %
             %====================%
 
-            if abs(iprint) < 1
-                % No printing
+            if abs(iprint) < 1 % No printing
                 return
-            elseif iprint > 0
-                % Print the message to the standard out.
+            elseif iprint > 0 % Print the message to the standard out.
                 funit = consts_obj.STDOUT;
                 fname = "";
-            else                % Print the message to a file named FNAME.
+            else % Print the message to a file named FNAME.
                 fname = string_obj.strip(solver) + "_output.txt";
             end
 
@@ -91,7 +92,6 @@ classdef message_mod
                 cstrv_loc = ...
                     linalg_obj.maximum([consts_obj.ZERO
                                         -constr]); % N.B.: We assume that the constraint is CONSTR >= 0.
-
             else
                 cstrv_loc = consts_obj.ZERO;
             end
@@ -132,7 +132,6 @@ classdef message_mod
                 x_message = ...
                     newline_custom + "The corresponding X is: " ...
                     + string_obj.real2str_vector(x); % Printed in one line
-
             else
                 x_message = ...
                     newline_custom + "The corresponding X is:" + newline_custom ...
@@ -156,7 +155,6 @@ classdef message_mod
                     constr_message = ...
                         newline_custom + "The constraint value is: " ...
                         + string_obj.real2str_vector(constr); % Printed in one line
-
                 else
                     constr_message = ...
                         newline_custom + "The constraint value is:" + newline_custom ...
@@ -184,6 +182,8 @@ classdef message_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function rhomsg(obj, solver, iprint, nf, delta, f, rho, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints messages when RHO is updated.
@@ -195,28 +195,22 @@ classdef message_mod
 
             % Compulsory inputs
 
-
             % Optional inputs
-
 
             % Local variables
             newline_custom = newline;
-
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
-
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if abs(iprint) < 2
-                % No printing
+            if abs(iprint) < 2 % No printing
                 return
-            elseif iprint > 0
-                % Print the message to the standard out.
+            elseif iprint > 0 % Print the message to the standard out.
                 funit = consts_obj.STDOUT;
                 fname = "";
-            else                % Print the message to a file named FNAME.
+            else % Print the message to a file named FNAME.
                 fname = string_obj.strip(solver) + "_output.txt";
             end
 
@@ -242,7 +236,6 @@ classdef message_mod
                 cstrv_loc = ...
                     linalg_obj.maximum([consts_obj.ZERO
                                         -constr]); % N.B.: We assume that the constraint is CONSTR >= 0.
-
             else
                 cstrv_loc = consts_obj.ZERO;
             end
@@ -262,7 +255,6 @@ classdef message_mod
                 x_message = ...
                     newline_custom + "The corresponding X is: " ...
                     + string_obj.real2str_vector(x); % Printed in one line
-
             else
                 x_message = ...
                     newline_custom + "The corresponding X is:" + newline_custom ...
@@ -286,7 +278,6 @@ classdef message_mod
                     constr_message = ...
                         newline_custom + "The constraint value is: " ...
                         + string_obj.real2str_vector(constr); % Printed in one line
-
                 else
                     constr_message = ...
                         newline_custom + "The constraint value is:" + newline_custom ...
@@ -312,6 +303,8 @@ classdef message_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function cpenmsg(~, solver, iprint, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints a message when CPEN is updated.
@@ -322,27 +315,22 @@ classdef message_mod
 
             % Compulsory inputs
 
-
             % Optional inputs
-
 
             % Local variables
             newline_custom = newline;
-
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if abs(iprint) < 2
-                % No printing
+            if abs(iprint) < 2 % No printing
                 return
-            elseif iprint > 0
-                % Print the message to the standard out.
+            elseif iprint > 0 % Print the message to the standard out.
                 funit = consts_obj.STDOUT;
                 fname = "";
-            else                % Print the message to a file named FNAME.
+            else % Print the message to a file named FNAME.
                 fname = string_obj.strip(solver) + "_output.txt";
             end
 
@@ -368,6 +356,8 @@ classdef message_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function fmsg(obj, solver, state, iprint, nf, delta, f, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine prints messages for each evaluation of the objective function.
@@ -378,32 +368,25 @@ classdef message_mod
             string_obj = prima_mat.common.string_mod();
 
             % Compulsory inputs
-
             % `state` is a string indicating the solver's state when the function evaluation is invoked. Its
             % value can be 'Initialization', 'Trust region', 'Geometry', or 'Rescue'.
 
-
             % Optional inputs
-
 
             % Local variables
             newline_custom = newline;
-
             funit = NaN; % Logical unit for the writing. Should be an integer of default kind.
-
 
             %====================%
             % Calculation starts %
             %====================%
 
-            if abs(iprint) < 3
-                % No printing
+            if abs(iprint) < 3 % No printing
                 return
-            elseif iprint > 0
-                % Print the message to the standard out.
+            elseif iprint > 0 % Print the message to the standard out.
                 funit = consts_obj.STDOUT;
                 fname = "";
-            else                % Print the message to a file named FNAME.
+            else % Print the message to a file named FNAME.
                 fname = string_obj.strip(solver) + "_output.txt";
             end
 
@@ -427,7 +410,6 @@ classdef message_mod
                 cstrv_loc = ...
                     linalg_obj.maximum([consts_obj.ZERO
                                         -constr]); % N.B.: We assume that the constraint is CONSTR >= 0.
-
             else
                 cstrv_loc = consts_obj.ZERO;
             end
@@ -450,7 +432,6 @@ classdef message_mod
                 x_message = ...
                     newline_custom + "The corresponding X is: " ...
                     + string_obj.real2str_vector(x); % Printed in one line
-
             else
                 x_message = ...
                     newline_custom + "The corresponding X is:" + newline_custom ...
@@ -462,7 +443,6 @@ classdef message_mod
                     constr_message = ...
                         newline_custom + "The constraint value is: " ...
                         + string_obj.real2str_vector(constr); % Printed in one line
-
                 else
                     constr_message = ...
                         newline_custom + "The constraint value is:" + newline_custom ...
@@ -484,6 +464,7 @@ classdef message_mod
             %  Calculation ends  %
             %====================%
         end
+
 
     end
 end

@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef update_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides subroutines concerning the updates when XPT(:, KNEW) becomes XNEW = XOPT + D.
@@ -12,6 +15,8 @@ classdef update_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [kopt, fval, xpt] = updatexf(~, knew, ximproved, f, xnew, kopt, fval, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates [XPT, FVAL, KOPT] so that XPT(:, KNEW) is updated to XNEW.
@@ -22,14 +27,11 @@ classdef update_newuoa_mod
             debug_obj = prima_mat.common.debug_mod();
             infnan_obj = prima_mat.common.infnan_mod();
 
+
             % Inputs
-
-
             % XNEW(N)
 
             % In-outputs
-
-
             % FVAL(NPT)
             % XPT(N, NPT)
 
@@ -49,14 +51,14 @@ classdef update_newuoa_mod
                                  srname);
                 debug_obj.assert(knew ~= kopt || ximproved, "KNEW /= KOPT unless X is improved", ...
                                  srname);
-                debug_obj.assert(numel(xnew) == n && all(infnan_obj.is_finite(xnew), 'all'), ...
+                debug_obj.assert(numel(xnew) == n && all(infnan_obj.is_finite_sp(xnew), 'all'), ...
                                  "SIZE(XNEW) == N, XNEW is finite", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN or +Inf", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(infnan_obj.is_nan_sp(fval) ...
-                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(fval), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", ...
                                  srname);
@@ -67,8 +69,7 @@ classdef update_newuoa_mod
             %====================%
 
             % Do essentially nothing when KNEW is 0. This can only happen after a trust-region step.
-            if knew <= 0
-                % KNEW < 0 is impossible if the input is correct.
+            if knew <= 0 % KNEW < 0 is impossible if the input is correct.
                 return
             end
 
@@ -88,7 +89,7 @@ classdef update_newuoa_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt ...
-                                 && all(infnan_obj.is_finite(xpt), 'all'), ...
+                                 && all(infnan_obj.is_finite_sp(xpt), 'all'), ...
                                  "SIZE(XPT) == [N, NPT], XPT is finite", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
                 debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", ...
@@ -96,6 +97,8 @@ classdef update_newuoa_mod
             end
 
         end
+
+
         function [gopt, hq, pq] = ...
                 updateq(~, idz, knew, ximproved, bmat, d, moderr, xdrop, xosav, xpt, zmat, gopt, ...
                         hq, pq)
@@ -120,12 +123,10 @@ classdef update_newuoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+
             % Inputs
-
-
             % BMAT(N, NPT + N)
             % D(:)
-
             % XDROP(N)
             % XOSAV(N)
             % XPT(N, NPT)
@@ -138,7 +139,6 @@ classdef update_newuoa_mod
 
             % Local variables
             srname = "UPDATEQ";
-
             pqinc = NaN(size(pq));
 
             % Sizes
@@ -153,9 +153,11 @@ classdef update_newuoa_mod
                 debug_obj.assert(knew >= 0 && knew <= npt, "0 <= KNEW <= NPT", srname);
                 debug_obj.assert(knew >= 1 || ~ximproved, "KNEW >= 1 unless X is not improved", ...
                                  srname);
-                debug_obj.assert(numel(xdrop) == n && all(infnan_obj.is_finite(xdrop), 'all'), ...
+                debug_obj.assert(numel(xdrop) == n ...
+                                 && all(infnan_obj.is_finite_sp(xdrop), 'all'), ...
                                  "SIZE(XDROP) == N, XDROP is finite", srname);
-                debug_obj.assert(numel(xosav) == n && all(infnan_obj.is_finite(xosav), 'all'), ...
+                debug_obj.assert(numel(xosav) == n ...
+                                 && all(infnan_obj.is_finite_sp(xosav), 'all'), ...
                                  "SIZE(XOSAV) == N, XOSAV is finite", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
@@ -163,7 +165,7 @@ classdef update_newuoa_mod
                                  "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
                                  "HQ is an NxN symmetric matrix", srname);
             end
@@ -173,8 +175,7 @@ classdef update_newuoa_mod
             %====================%
 
             % Do nothing when KNEW is 0. This can only happen after a trust-region step.
-            if knew <= 0
-                % KNEW < 0 is impossible if the input is correct.
+            if knew <= 0 % KNEW < 0 is impossible if the input is correct.
                 return
             end
 
@@ -211,6 +212,8 @@ classdef update_newuoa_mod
             end
 
         end
+
+
         function [itest, gopt, hq, pq] = ...
                 tryqalt(~, idz, bmat, fval, ratio, xopt, xpt, zmat, itest, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
@@ -227,17 +230,15 @@ classdef update_newuoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
-            % Inputs
 
+            % Inputs
             % BMAT(N, NPT+N)
             % FVAL(NPT)
-
             % XOPT(N)
             % XOPT(N, NPT)
             % ZMAT(NPT, NPT-N-1)
 
             % In-output
-
             % GOPT(N)
             % HQ(N, N)
             % PQ(NPT)
@@ -250,7 +251,6 @@ classdef update_newuoa_mod
 
             % Local variables
             srname = "TRYQALT";
-
             galt = NaN(size(gopt));
             pqalt = NaN(size(pq));
 
@@ -266,7 +266,7 @@ classdef update_newuoa_mod
                 debug_obj.assert(~infnan_obj.is_nan_sp(ratio), "RATIO is not NaN", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(infnan_obj.is_nan_sp(fval) ...
-                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(fval), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
@@ -319,6 +319,7 @@ classdef update_newuoa_mod
             end
 
         end
+
 
     end
 end

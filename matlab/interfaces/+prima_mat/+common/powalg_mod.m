@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef powalg_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides some Powell-style linear algebra procedures.
@@ -26,16 +29,13 @@ classdef powalg_mod
 
     methods
         function obj = powalg_mod()
+
             %--------------------------------------------------------------------------------------------------%
             % QR:
-
             %--------------------------------------------------------------------------------------------------%
             % QUADRATIC:
-
-
             %--------------------------------------------------------------------------------------------------%
             % LAGINT (quadratic LAGrange INTerpolation):
-
         end
         function varargout = qradd(obj, varargin)
             if numel(varargin) == 4 && isvector(varargin{3})
@@ -74,7 +74,9 @@ classdef powalg_mod
                 [varargout{1:nargout}] = obj.calvlag_qint(varargin{:});
             end
         end
-        function [Q, Rdiag, n] = qradd_Rdiag(~, c, Q, Rdiag, n)            % Used in COBYLA
+
+
+        function [Q, Rdiag, n] = qradd_Rdiag(~, c, Q, Rdiag, n) % Used in COBYLA
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates the QR factorization of an MxN matrix A of full column rank, attempting to
             % add a new column C is to this matrix as the LAST column while maintaining the full-rankness.
@@ -105,15 +107,12 @@ classdef powalg_mod
             % C(M)
 
             % In-outputs
-
             % Q(M, M)
             % MIN(M, N+1) <= SIZE(Rdiag) <= M
 
             % Local variables
             srname = "QRADD_RDIAG";
-
             cqa = NaN(size(Q, 2), 1);
-
             %------------------------------------------------------------%
             Qsave = NaN(size(Q, 1), n); % Debugging only
             Rdsave = NaN(n, 1); % Debugging only
@@ -139,7 +138,6 @@ classdef powalg_mod
                                  "The columns of Q are orthonormal", srname); % Costly!
                 Qsave = Q(:, 1:n); % For debugging only
                 Rdsave = Rdiag(1:n); % For debugging only
-
             end
 
             %====================%
@@ -167,7 +165,6 @@ classdef powalg_mod
                     cq(k) = ...
                         linalg_obj.hypotenuse(cq(k), ...
                                               cq(k + 1)); %cq(k) = sqrt(cq(k)**2 + cq(k + 1)**2)
-
                 end
             end
 
@@ -183,10 +180,8 @@ classdef powalg_mod
 
             % Update RDIAG so that RDIAG(N) = CQ(N) = INPROD(C, Q(:, N)). Note that N may have been augmented.
             % Zaikun 20230903: Different from QRADD_RFULL, Powell did not maintain the positiveness of RDIAG.
-            if n >= 1 && n <= m
-                % Indeed, N > M should not happen unless the input is wrong.
+            if n >= 1 && n <= m % Indeed, N > M should not happen unless the input is wrong.
                 Rdiag(n) = cq(n); % Indeed, RDIAG(N) = INPROD(C, Q(:, N))
-
             end
 
             %====================%
@@ -208,21 +203,22 @@ classdef powalg_mod
                 debug_obj.assert(all(abs(Rdiag(1:n - 1) - Rdsave(1:n - 1)) <= 0, 'all'), ...
                                  "Rdiag(1:N-1) is unchanged", srname);
 
-                if n < m && infnan_obj.is_finite(linalg_obj.p_norm(c))
+                if n < m && infnan_obj.is_finite_sp(linalg_obj.p_norm(c))
                     debug_obj.assert(linalg_obj.p_norm(linalg_obj.matprod12(c, Q(:, n + 1:m))) ...
                                      <= max(tol, tol * linalg_obj.p_norm(c)), ...
                                      "C^T*Q(:, N+1:M) == 0", srname);
                 end
-                if n >= 1
-                    % N = 0 is possible.
+                if n >= 1 % N = 0 is possible.
                     debug_obj.assert(abs(linalg_obj.inprod(c, Q(:, n)) - Rdiag(n)) ...
                                      <= max(tol, tol * linalg_obj.inprod(abs(c), abs(Q(:, n)))) ...
-                                     || ~infnan_obj.is_finite(Rdiag(n)), ...
+                                     || ~infnan_obj.is_finite_sp(Rdiag(n)), ...
                                      "C^T*Q(:, N) == Rdiag(N)", srname);
                 end
             end
         end
-        function [Q, R, n] = qradd_Rfull(~, c, Q, R, n)            % Used in LINCOA
+
+
+        function [Q, R, n] = qradd_Rfull(~, c, Q, R, n) % Used in LINCOA
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates the QR factorization of an MxN matrix A = Q*R(:, 1:N) when a new column C
             % is appended to this matrix A as the LAST column.
@@ -240,13 +236,11 @@ classdef powalg_mod
             % C(M)
 
             % In-outputs
-
             % Q(M, M)
             % R(M, :), N+1 <= SIZE(R, 2) <= M
 
             % Local variables
             srname = "QRADD_RFULL";
-
             %------------------------------------------------------------%
             Anew = NaN(size(Q, 1), n + 1); % Debugging only
             Qsave = NaN(size(Q, 1), n); % Debugging only
@@ -277,7 +271,6 @@ classdef powalg_mod
                 Anew(:) = [reshape(linalg_obj.matprod22(Q, R(:, 1:n)), 1, []), c.'];
                 Qsave = Q(:, 1:n); % For debugging only.
                 Rsave = R(:, 1:n); % For debugging only.
-
             end
 
             cq = linalg_obj.matprod12(c, Q);
@@ -286,8 +279,7 @@ classdef powalg_mod
             % Givens rotation to Q(:, [K, K+1]) from the right to zero C'*Q(:, K+1) out for K = N+1, ..., M-1.
             % Nothing will be done if N >= M-1.
             for k = m - 1:-1:n + 1
-                if abs(cq(k + 1)) > 0
-                    % Powell: IF (ABS(CQ(K + 1)) > 1.0D-20 * ABS(CQ(K))) THEN
+                if abs(cq(k + 1)) > 0 % Powell: IF (ABS(CQ(K + 1)) > 1.0D-20 * ABS(CQ(K))) THEN
                     G = linalg_obj.planerot(cq([k, k + 1]));
                     Q(:, [k, k + 1]) = linalg_obj.matprod22(Q(:, [k, k + 1]), G.');
                     cq(k) = fortran.sqrt(fortran.power(cq(k), 2) + fortran.power(cq(k + 1), 2));
@@ -330,7 +322,9 @@ classdef powalg_mod
                                  "Anew = Q*R", srname);
             end
         end
-        function [Q, Rdiag] = qrexc_Rdiag(~, A, Q, Rdiag, i)            % Used in COBYLA
+
+
+        function [Q, Rdiag] = qrexc_Rdiag(~, A, Q, Rdiag, i) % Used in COBYLA
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates the QR factorization for an MxN matrix A = Q*R so that the updated Q and
             % R form a QR factorization of [A_1, ..., A_{I-1}, A_{I+1}, ..., A_N, A_I], which is the matrix
@@ -353,10 +347,8 @@ classdef powalg_mod
             % Q(M, :), N <= SIZE(Q, 2) <= M
             % Rdiag(N)
 
-
             % Local variables
             srname = "QREXC_RDIAG";
-
             %------------------------------------------------------------%
             Anew = NaN(size(A, 1), size(A, 2)); % Debugging only
             Qsave = NaN(size(Q, 1), size(Q, 2)); % Debugging only
@@ -385,7 +377,6 @@ classdef powalg_mod
                                  "The columns of Q are orthonormal", srname); % Costly!
                 Qsave = Q; % For debugging only.
                 Rdsave = Rdiag(1:i); % For debugging only.
-
             end
 
             %====================%
@@ -463,10 +454,11 @@ classdef powalg_mod
                                                                      (1:n)'))), ...
                                  "Rdiag == diag(Q^T*Anew)", srname);
                 %%MATLAB: norm(diag(QtAnew) - Rdiag) <= max(tol, tol * norm(sum(abs(Q(:, 1:n)) .* abs(Anew), 1)))
-
             end
         end
-        function [Q, R] = qrexc_Rfull(~, Q, R, i)            % Used in LINCOA
+
+
+        function [Q, R] = qrexc_Rfull(~, Q, R, i) % Used in LINCOA
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates the QR factorization for an MxN matrix A = Q*R so that the updated Q and
             % R form a QR factorization of [A_1, ..., A_{I-1}, A_{I+1}, ..., A_N, A_I], which is the matrix
@@ -483,14 +475,12 @@ classdef powalg_mod
 
             % Inputs
 
-
             % In-outputs
             % Q(M, :), SIZE(Q, 2) <= M
             % R(:, N), SIZE(R, 1) >= N
 
             % Local variables
             srname = "QREXC_RFULL";
-
             %------------------------------------------------------------%
             Anew = NaN(size(Q, 1), size(R, 2)); % Debugging only
             Qsave = NaN(size(Q, 1), size(Q, 2)); % Debugging only
@@ -527,7 +517,6 @@ classdef powalg_mod
                              Anew(:, i).'], size(Anew));
                 Qsave = Q; % For debugging only.
                 Rsave = R(:, 1:i); % For debugging only.
-
             end
 
             %====================%
@@ -619,6 +608,8 @@ classdef powalg_mod
             end
 
         end
+
+
         function qinc = quadinc_d0(~, d, xpt, gq, pq, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function evaluates QINC = Q(D) - Q(0) with Q being the quadratic function defined
@@ -642,10 +633,8 @@ classdef powalg_mod
 
             % Output
 
-
             % Local variable
             srname = "QUADINC_D0";
-
             dxpt = NaN(size(pq));
 
             % Sizes
@@ -659,9 +648,9 @@ classdef powalg_mod
             hq = ipObj.Results.hq;
             if consts_obj.DEBUGGING
                 debug_obj.assert(n >= 1, "N >= 1", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(gq) == n, "SIZE(GQ) = N", srname);
                 debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
                 if ~ismember('hq', ipObj.UsingDefaults)
@@ -725,6 +714,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function qinc = quadinc_ghv(~, ghv, d, x)
             %--------------------------------------------------------------------------------------------------%
             % This function evaluates QINC = Q(X+D) - Q(X) with Q being the quadratic function defined via GHV by
@@ -736,13 +727,9 @@ classdef powalg_mod
             debug_obj = prima_mat.common.debug_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "QUADINC_GHV";
-
             w = NaN(size(ghv));
 
             % Sizes
@@ -774,6 +761,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function err = errquad(obj, fval, xpt, gq, pq, hq, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates the maximal relative error of Q in interpolating FVAL on XPT.
@@ -796,9 +785,7 @@ classdef powalg_mod
             % PQ(NPT)
             % HQ(N, N)
 
-
             % Outputs
-
 
             % Local variables
             srname = "ERRQUAD";
@@ -815,9 +802,10 @@ classdef powalg_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(n >= 1, "N >= 1", srname);
                 debug_obj.assert(numel(fval) == npt, "SIZE(FVAL) == NPT", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), ...
-                                      'all'), "FVAL is not NaN/+Inf", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fval) ...
+                                      | infnan_obj.is_posinf_sp(fval), 'all'), ...
+                                 "FVAL is not NaN/+Inf", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(gq) == n, "SIZE(GQ) == N", srname);
                 debug_obj.assert(numel(pq) == npt, "SIZE(PQ) == NPT", srname);
                 debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
@@ -845,7 +833,7 @@ classdef powalg_mod
             %%else
             %%    qval = cellfun(@(x) quadinc(x, xpt, gq, pq, hq), num2cell(xpt, 1));  % Row vector
             %%end
-            if all(infnan_obj.is_finite(qval), 'all')
+            if all(infnan_obj.is_finite_sp(qval), 'all')
                 fmq = fval - qval;
                 err = (max(fmq) - min(fmq)) / max([consts_obj.ONE; abs(fval)], [], 'all');
             else
@@ -857,6 +845,8 @@ classdef powalg_mod
             %====================%
             %
         end
+
+
         function y = hess_mul(~, x, xpt, pq, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates HESSIAN*X, with HESSIAN consisting of an explicit part HQ (0 if absent)
@@ -891,7 +881,7 @@ classdef powalg_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(n >= 1, "N >= 1", srname);
                 debug_obj.assert(numel(x) == n, "SIZE(Y) == N", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(pq) == npt, "SIZE(PQ) == NPT", srname);
                 if ~ismember('hq', ipObj.UsingDefaults)
                     debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
@@ -918,6 +908,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function y = omega_col(~, idz, zmat, k)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates Y = column K of OMEGA. As Powell did in NEWUOA, BOBYQA, and LINCOA,
@@ -930,9 +922,7 @@ classdef powalg_mod
 
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "OMEGA_COL";
@@ -958,6 +948,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function y = omega_mul(~, idz, zmat, x)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates Y = OMEGA*X. As Powell did in NEWUOA, BOBYQA, and LINCOA,
@@ -970,9 +962,7 @@ classdef powalg_mod
 
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "OMEGA_MUL";
@@ -997,6 +987,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function p = omega_inprod(~, idz, zmat, x, y)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates P = X^T*OMEGA*Y. As Powell did in NEWUOA, BOBYQA, and LINCOA,
@@ -1009,9 +1001,7 @@ classdef powalg_mod
 
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "OMEGA_INPROD";
@@ -1038,6 +1028,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function err = errh(~, idz, bmat, zmat, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates the error in H as the inverse of W. See (3.12) of the NEWUOA paper.
@@ -1053,20 +1045,15 @@ classdef powalg_mod
 
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "ERRH";
-
             A = NaN(size(xpt, 2));
             e = NaN(3);
-
             Omega = NaN(size(xpt, 2));
             U = NaN(size(xpt, 2));
             V = NaN(size(xpt, 1), size(xpt, 2));
-
             t = NaN(size(xpt, 2), 1);
 
             % Sizes
@@ -1084,7 +1071,7 @@ classdef powalg_mod
                                  "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
                                  "SIZE(ZMAT) == [NPT, NPT-N-1]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
             end
 
             %====================%
@@ -1125,6 +1112,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function [idz, bmat, zmat, info] = updateh(obj, knew, kref, d, xpt, idz, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates arrays [BMAT, ZMAT, IDZ], in order to replace the interpolation point
@@ -1169,24 +1158,18 @@ classdef powalg_mod
             string_obj = prima_mat.common.string_mod();
 
             % Inputs
-
-
             % D(N)
             % XPT(N, NPT)
 
             % In-outputs
-
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
 
             % Outputs
 
-
             % Local variables
             srname = "UPDATEH";
-
             hcol = NaN(size(bmat, 2), 1);
-
             v1 = NaN(size(bmat, 1), 1);
             v2 = NaN(size(bmat, 1), 1);
             vlag = NaN(size(bmat, 2), 1);
@@ -1208,7 +1191,7 @@ classdef powalg_mod
                 debug_obj.assert(kref >= 1 && kref <= npt, "1 <= KREF <= NPT", srname);
                 debug_obj.assert(idz >= 1 && idz <= size(zmat, 2) + 1, ...
                                  "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
@@ -1226,7 +1209,7 @@ classdef powalg_mod
                                      srname);
                 end
 
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
 
                 % Theoretically, CALVLAG and CALBETA should be independent of the reference point XPT(:, KREF).
                 % So we test the following. By the implementation of CALVLAG and CALBETA, we are indeed testing
@@ -1247,7 +1230,6 @@ classdef powalg_mod
                 % The following is too expensive to check.
                 %call wassert(errh(idz, bmat, zmat, xpt) <= tol .or. precision(0.0_RP) < precision(0.0D0), &
                 %    & 'H = W^{-1} in (3.12) of the NEWUOA paper', srname)
-
             end
 
             %====================%
@@ -1259,8 +1241,7 @@ classdef powalg_mod
             end
 
             % We must not do anything if KNEW is 0. This can only happen sometimes after a trust-region step.
-            if knew <= 0
-                % KNEW < 0 is impossible if the input is correct.
+            if knew <= 0 % KNEW < 0 is impossible if the input is correct.
                 return
             end
 
@@ -1290,8 +1271,8 @@ classdef powalg_mod
             % Quite rarely, due to rounding errors, VLAG or BETA may not be finite, and ABS(DENOM) may not be
             % positive. In such cases, [BMAT, ZMAT] would be destroyed by the update, and hence we would rather
             % not update them at all. Or should we simply terminate the algorithm?
-            if ~(infnan_obj.is_finite(fortran.sum(abs(hcol), 'all') ...
-                                      + fortran.sum(abs(vlag), 'all') + abs(beta)) ...
+            if ~(infnan_obj.is_finite_sp(fortran.sum(abs(hcol), 'all') ...
+                                         + fortran.sum(abs(vlag), 'all') + abs(beta)) ...
                  && abs(denom) > 0)
                 if nargout >= 4
                     info = infos_obj.DAMAGING_ROUNDING;
@@ -1307,8 +1288,7 @@ classdef powalg_mod
                 + linalg_obj.outprod(v2, hcol); %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             % Numerically, the update above does not guarantee BMAT(:, NPT+1 : NPT+N) to be symmetric.
-            A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n));
-            bmat(:, npt + 1:npt + n) = A_slice;
+            bmat(:, npt + 1:npt + n) = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n));
 
             % Apply Givens rotations to put zeros in the KNEW-th row of ZMAT and set JL. After this,
             % ZMAT(KNEW, :) contains at most two nonzero entries ZMAT(KNEW, 1) and ZMAT(KNEW, JL), one
@@ -1330,8 +1310,8 @@ classdef powalg_mod
 
                 % Powell's condition in NEWUOA/LINCOA for the IF ... THEN below: IF (ZMAT(KNEW, J) /= 0) THEN
                 % A possible alternative: IF (ABS(ZMAT(KNEW, J)) > 1.0E-20 * ABS(ZMAT(KNEW, JL))) THEN
-                if abs(zmat(knew, j)) > 1.0e-20 * max(abs(zmat), [], 'all')
-                    % Threshold comes from Powell's BOBYQA
+                if abs(zmat(knew, j)) ...
+                   > 1.0e-20 * max(abs(zmat), [], 'all') % Threshold comes from Powell's BOBYQA
                     % Multiply a Givens rotation to ZMAT from the right so that ZMAT(KNEW, [JL,J]) becomes [*,0].
                     grot = ...
                         linalg_obj.planerot(zmat(knew, ...
@@ -1396,7 +1376,6 @@ classdef powalg_mod
                 % %    end if
                 % %end if
                 %----------------------------------------------------------------------------------------------%
-
             else
                 % Complete the updating of ZMAT in the alternative case: ZMAT(KNEW, :) has 2 nonzeros. See (4.19)
                 % and (4.20) of the NEWUOA paper.
@@ -1404,16 +1383,14 @@ classdef powalg_mod
                 % and corresponds to [Z2, Z1] in (4.20) when BETA<0. In this way, the update of ZMAT(:, [JA, JB])
                 % follows the same scheme regardless of BETA. Indeed, since S_1 = 1 and S_2 = -1 in (4.19)-(4.20)
                 % as elaborated above the equations, ZMAT(:, [1, JL]) always correspond to [Z_2, Z_1].
-                if beta >= 0
-                    % ZMAT(:, [JA, JB]) corresponds to [Z_1, Z_2] in (4.19)
+                if beta >= 0 % ZMAT(:, [JA, JB]) corresponds to [Z_1, Z_2] in (4.19)
                     ja = jl;
                     jb = 1;
-                else                    % ZMAT(:, [JA, JB]) corresponds to [Z_2, Z_1] in (4.20)
+                else % ZMAT(:, [JA, JB]) corresponds to [Z_2, Z_1] in (4.20)
                     ja = 1;
                     jb = jl;
                 end
                 % Now update ZMAT(:, [ja, jb]) according to (4.19)--(4.20) of the NEWUOA paper.
-
                 %tempa = temp * beta
                 %tempb = temp * tau
                 tempa = beta / denom * zmat(knew, jb);
@@ -1459,11 +1436,9 @@ classdef powalg_mod
             % DENOM < 0, in which case one of the S_J will flip the sign when multiplied by SIGN(DENOM), leading
             % to an increase of IDZ (if S_J flipped from 1 to -1) or a decrease (if S_J flipped from -1 to 1).
             if denom < 0
-                if idz == 1 || idz < npt - n && beta < 0
-                    % (4.18), (4.20) of the NEWUOA paper
+                if idz == 1 || idz < npt - n && beta < 0 % (4.18), (4.20) of the NEWUOA paper
                     idz = idz + 1;
-                elseif idz == npt - n || idz > 1 && beta >= 0
-                    % (4.18), (4.19) of the NEWUOA paper
+                elseif idz == npt - n || idz > 1 && beta >= 0 % (4.18), (4.19) of the NEWUOA paper
                     idz = idz - 1;
                     % Exchange ZMAT(:, 1) and ZMAT(:. IDZ) if IDZ > 1. Why? No matter whether the update is
                     % given by (4.18) (IDZ = NPT-N) or (4.19) (1 < IDZ < NPT-N and BETA >= 0), we have S_1 = +1
@@ -1508,9 +1483,10 @@ classdef powalg_mod
                 %call wassert(errh(idz, bmat, zmat, xpt_test) <= tol .or. precision(0.0_RP) < precision(0.0D0), &
                 %    & 'H = W^{-1} in (3.12) of the NEWUOA paper', srname)
                 %deallocate (xpt_test)
-
             end
         end
+
+
         %--------------------------------------------------------------------------------------------------%
         % CALVLAG, CALBETA, and CALDEN are subroutine that calculate VLAG, BETA, and DEN for a given step D.
         % VLAG(K), BETA, and DEN(K) are critical for the updating procedure of H when the interpolation set
@@ -1579,6 +1555,7 @@ classdef powalg_mod
         % 8. Assume that the ||D|| ~ DELTA, ||XPT|| ~ ||XREF||, and DELTA < ||XREF||. Then WCHECK is of the
         % order DELTA*||XREF||^3, which can be huge at the beginning of the algorithm and quickly become tiny.
         %--------------------------------------------------------------------------------------------------%
+
         function vlag = calvlag_lfqint(obj, kref, bmat, d, xpt, zmat, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates VLAG = H*w for a given step D with respect to XREF = XPT(:, KREF). This
@@ -1592,8 +1569,8 @@ classdef powalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
 
+            % Inputs
             % BMAT(N, NPT + N)
             % D(N)
             % XPT(N, NPT)
@@ -1605,7 +1582,6 @@ classdef powalg_mod
 
             % Local variables
             srname = "CALVLAG";
-
             % For debugging only
             wcheck = NaN(size(zmat, 1), 1);
 
@@ -1635,9 +1611,9 @@ classdef powalg_mod
                                  "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
             end
 
             %====================%
@@ -1680,6 +1656,8 @@ classdef powalg_mod
             end
 
         end
+
+
         function beta = calbeta(obj, kref, bmat, d, xpt, zmat, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates BETA for a given step D with respect to XREF = XPT(:, KREF). This
@@ -1693,8 +1671,8 @@ classdef powalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
 
+            % Inputs
             % BMAT(N, NPT + N)
             % D(N)
             % XPT(N, NPT)
@@ -1703,10 +1681,8 @@ classdef powalg_mod
 
             % Outputs
 
-
             % Local variables
             srname = "CALBETA";
-
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
             wcheck = NaN(size(zmat, 1), 1);
             wmv = NaN(size(xpt, 1) + size(xpt, 2), 1);
@@ -1737,9 +1713,9 @@ classdef powalg_mod
                                  "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
             end
 
             %====================%
@@ -1801,6 +1777,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function den = calden(obj, kref, bmat, d, xpt, zmat, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates DEN for a given step D with respect to XREF = XPT(:, KREF). DEN is an
@@ -1817,8 +1795,8 @@ classdef powalg_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
 
+            % Inputs
             % BMAT(N, NPT + N)
             % D(N)
             % XPT(N, NPT)
@@ -1826,7 +1804,6 @@ classdef powalg_mod
             % Absent in BOBYQA, being equivalent to IDZ = 1
 
             % Outputs
-
 
             % Local variables
             srname = "CALDEN";
@@ -1857,9 +1834,9 @@ classdef powalg_mod
                                  "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
             end
 
             %====================%
@@ -1878,6 +1855,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function vlag = calvlag_qint(~, pl, d, xref, kref)
             %--------------------------------------------------------------------------------------------------%
             % This function evaluates VLAG = [LFUNC_1(XREF+D), ..., LFUNC_NPT(XREF+D)] for a quadratic
@@ -1896,13 +1875,9 @@ classdef powalg_mod
             debug_obj = prima_mat.common.debug_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "CALVLAG_QINT";
-
             w = NaN(size(pl, 1), 1);
 
             % Sizes
@@ -1937,6 +1912,8 @@ classdef powalg_mod
             %====================%
 
         end
+
+
         function ij = setij(~, n, npt, varargin)
             %--------------------------------------------------------------------------------------------------%
             % Set IJ to a 2-by-(NPT-2*N-1) integer array so that IJ(:, K) = [P(K + 2*N + 1), Q(K + 2*N + 1)],
@@ -1957,8 +1934,6 @@ classdef powalg_mod
             string_obj = prima_mat.common.string_mod();
 
             % Inputs
-
-
             % Outputs
             ij = NaN(2, max(0, npt - 2 * n - 1));
             % Local variables
@@ -1986,7 +1961,6 @@ classdef powalg_mod
                     linalg_obj.sort_i2(ij, 'dim', 1, ...
                                        'direction', ...
                                        sorting_direction); % SORTING_DIRECTION is 'DESCEND' of 'ASCEND'
-
             end
             %%MATLAB: (N.B.: Fortran MODULO == MATLAB `mod`, Fortran MOD == MATLAB `rem`)
             %%ell = floor((n : npt-n-2) / n);
@@ -2019,6 +1993,7 @@ classdef powalg_mod
                 end
             end
         end
+
 
     end
 end

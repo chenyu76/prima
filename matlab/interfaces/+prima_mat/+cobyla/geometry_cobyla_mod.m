@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef geometry_cobyla_mod
     %--------------------------------------------------------------------------------------------------%
     % This module contains subroutines concerning the geometry-improving of the interpolation set.
@@ -12,6 +15,8 @@ classdef geometry_cobyla_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function jdrop = setdrop_tr(~, ximproved, d, delta, rho, sim, simi)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine finds (the index) of a current interpolation point to be replaced with the
@@ -29,22 +34,17 @@ classdef geometry_cobyla_mod
             infnan_obj = prima_mat.common.infnan_mod();
             debug_obj = prima_mat.common.debug_mod();
 
+
             % Inputs
-
             % D(N)
-
-
             % SIM(N, N+1)
             % SIMI(N, N)
 
             % Outputs
 
-
             % Local variables
             srname = "SETDROP_TR";
-
             distsq = NaN(size(sim, 2), 1);
-
             %real(RP) :: sigbar(size(sim, 1))
             %real(RP) :: veta(size(sim, 1))
             %real(RP) :: vsig(size(sim, 1))
@@ -56,17 +56,18 @@ classdef geometry_cobyla_mod
             % Preconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(n >= 1, "N >= 1", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 debug_obj.assert(delta >= rho && rho > 0, "DELTA >= RHO > 0", srname);
                 debug_obj.assert(size(sim, 1) == n && size(sim, 2) == n + 1, ...
                                  "SIZE(SIM) == [N, N+1]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(sim), 'all'), "SIM is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(sim), 'all'), "SIM is finite", srname);
                 debug_obj.assert(all(fortran.sum(abs(sim(:, 1:n)), 1).' > 0, 'all'), ...
                                  "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, ...
                                  "SIZE(SIMI) == [N, N]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(simi), 'all'), "SIMI is finite", ...
+                                 srname);
                 debug_obj.assert(linalg_obj.isinv(sim(:, 1:n), simi, 'tol', itol), ...
                                  "SIMI = SIM(:, 1:N)^{-1}", srname);
             end
@@ -172,15 +173,12 @@ classdef geometry_cobyla_mod
             jdrop = 0;
             % The following IF works a bit better than `IF (ANY(SCORE > 1) .OR. ANY(SCORE > 0) .AND. XIMPROVED)`
             % from Powell's UOBYQA and NEWUOA code.
-            if any(score > 0, 'all')
-                % Powell's BOBYQA and LINCOA code
+            if any(score > 0, 'all') % Powell's BOBYQA and LINCOA code
                 jdrop = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, jdrop] = max(score);
-
             end
 
-            if ximproved && jdrop == 0 || jdrop < 0
-                % JDROP < 0 is impossible in theory.
+            if ximproved && jdrop == 0 || jdrop < 0 % JDROP < 0 is impossible in theory.
                 jdrop = fortran.maxloc(distsq, 'dim', 1);
             end
 
@@ -197,10 +195,11 @@ classdef geometry_cobyla_mod
                                  srname);
                 % JDROP >= 1 when XIMPROVED = TRUE unless NaN occurs in DISTSQ, which should not happen if the
                 % starting point does not contain NaN and the trust-region/geometry steps never contain NaN.
-
             end
 
         end
+
+
         function d = geostep(~, jdrop, amat, bvec, conmat, cpen, cval, delbar, fval, simi)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates a geometry step so that the geometry of the interpolation set is improved
@@ -213,13 +212,10 @@ classdef geometry_cobyla_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
+
             % Inputs
-
-
             % CONMAT(M, N+1)
-
             % CVAL(N+1)
-
             % FVAL(N+1)
             % SIMI(N, N)
 
@@ -228,9 +224,7 @@ classdef geometry_cobyla_mod
 
             % Local variables
             srname = "GEOSTEP";
-
             A = NaN(size(simi, 1), size(conmat, 1));
-
             g = NaN(size(simi, 1), 1);
 
             % Sizes
@@ -246,19 +240,20 @@ classdef geometry_cobyla_mod
                 debug_obj.assert(cpen > 0, "CPEN > 0", srname);
                 debug_obj.assert(size(simi, 1) == n && size(simi, 2) == n, ...
                                  "SIZE(SIMI) == [N, N]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(simi), 'all'), "SIMI is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(simi), 'all'), "SIMI is finite", ...
+                                 srname);
                 debug_obj.assert(numel(fval) == n + 1 ...
                                  && ~any(infnan_obj.is_nan_sp(fval) ...
-                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(fval), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(size(conmat, 1) == m && size(conmat, 2) == n + 1, ...
                                  "SIZE(CONMAT) == [M, N+1]", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) ...
-                                      | infnan_obj.is_posinf(conmat), 'all'), ...
+                                      | infnan_obj.is_posinf_sp(conmat), 'all'), ...
                                  "CONMAT does not contain NaN/+Inf", srname);
                 debug_obj.assert(numel(cval) == n + 1 ...
                                  && ~any(cval < 0 | infnan_obj.is_nan_sp(cval) ...
-                                         | infnan_obj.is_posinf(cval), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(cval), 'all'), ...
                                  "SIZE(CVAL) == NPT and CVAL does not contain negative NaN/+Inf", ...
                                  srname);
                 debug_obj.assert(jdrop >= 1 && jdrop <= n, "1 <= JDROP <= N", srname);
@@ -303,7 +298,7 @@ classdef geometry_cobyla_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 % In theory, ||S|| == DELBAR, which may be false due to rounding, but not too far.
                 % It is crucial to ensure that the geometry step is nonzero, which holds in theory.
@@ -312,6 +307,7 @@ classdef geometry_cobyla_mod
                                  srname);
             end
         end
+
 
     end
 end

@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef shiftbase_mod
     %--------------------------------------------------------------------------------------------------%
     % This module contains a subroutine that shifts the base point from XBASE to XBASE + XPT. It is
@@ -22,6 +25,8 @@ classdef shiftbase_mod
                 [varargout{1:nargout}] = obj.shiftbase_qint(varargin{:});
             end
         end
+
+
         function [xbase, xpt, bmat, hq] = ...
                 shiftbase_lfqint(~, kopt, xbase, xpt, zmat, bmat, pq, hq, varargin)
             %--------------------------------------------------------------------------------------------------%
@@ -47,8 +52,8 @@ classdef shiftbase_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
 
+            % Inputs
             % PQ(NPT)
             % ZMAT(NPT, NPT - N - 1)
             % Absent in BOBYQA, being equivalent to IDZ = 1
@@ -61,14 +66,10 @@ classdef shiftbase_mod
 
             % Local variables
             srname = "SHIFTBASE_LFQINT";
-
             bymat = NaN(numel(xbase));
             %real(RP) :: htol
-
-
             v = NaN(size(xbase));
             vxopt = NaN(numel(xbase));
-
             ymat = NaN(size(xpt, 1), size(xpt, 2));
             yzmat = NaN(numel(xbase), size(zmat, 2));
 
@@ -89,9 +90,10 @@ classdef shiftbase_mod
             % Preconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
                 debug_obj.assert(idz_loc >= 1 && idz_loc <= size(zmat, 2) + 1, ...
                                  "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
@@ -107,7 +109,6 @@ classdef shiftbase_mod
                 % The following test cannot be passed.
                 %htol = max(TEN**max(-10, -MAXPOW10), min(1.0E-1_RP, TEN**min(10, MAXPOW10) * EPS)) ! Tolerance for error in H
                 %call assert(errh(idz_loc, bmat, zmat, xpt) <= htol, 'H = W^{-1} in (3.12) of the NEWUOA paper', srname)
-
             end
 
             %====================%
@@ -170,12 +171,13 @@ classdef shiftbase_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
                                  "SIZE(XPT) == [N, NPT]", srname);
                 debug_obj.assert(all(abs(xpt(:, kopt)) <= 0, 'all'), "XPT(:, KOPT) == 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
@@ -184,10 +186,11 @@ classdef shiftbase_mod
                                  "HQ is an NxN symmetric matrix", srname);
                 % The following test cannot be passed.
                 %call assert(errh(idz_loc, bmat, zmat, xpt) <= htol, 'H = W^{-1} in (3.12) of the NEWUOA paper', srname)
-
             end
 
         end
+
+
         function [pl, pq, xbase, xpt] = shiftbase_qint(~, kopt, pl, pq, xbase, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine shifts the base point from XBASE to XBASE + XOPT, and make the corresponding
@@ -201,8 +204,8 @@ classdef shiftbase_mod
             infnan_obj = prima_mat.common.infnan_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
-            % Inputs
 
+            % Inputs
 
             % In-outputs
             % XBASE(N)
@@ -224,10 +227,11 @@ classdef shiftbase_mod
                 debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, ...
                                  "SIZE(PL) == [NPT-1, NPT]", srname);
                 debug_obj.assert(numel(pq) == npt - 1, "SIZE(PQ) == NPT-1", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XOPT) == N, XOPT is finite", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt ...
-                                 && all(infnan_obj.is_finite(xpt), 'all'), ...
+                                 && all(infnan_obj.is_finite_sp(xpt), 'all'), ...
                                  "SIZE(XPT) == [N, NPT], XPT is finite", srname);
             end
 
@@ -258,14 +262,16 @@ classdef shiftbase_mod
                 debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, ...
                                  "SIZE(PL) == [NPT-1, NPT]", srname);
                 debug_obj.assert(numel(pq) == npt - 1, "SIZE(PQ) == NPT-1", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt ...
-                                 && all(infnan_obj.is_finite(xpt), 'all'), ...
+                                 && all(infnan_obj.is_finite_sp(xpt), 'all'), ...
                                  "SIZE(XPT) == [N, NPT], XPT is finite", srname);
             end
 
         end
+
 
     end
 end

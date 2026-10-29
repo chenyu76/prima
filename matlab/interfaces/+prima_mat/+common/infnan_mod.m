@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef infnan_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides functions that check whether a real number X is infinite, NaN, or finite.
@@ -63,11 +66,11 @@ classdef infnan_mod
     %
     % Last Modified: Tuesday, February 27, 2024 PM10:56:47
     %--------------------------------------------------------------------------------------------------%
+
     properties
         huge_obj;
         inf_obj;
     end
-
     methods
         function obj = infnan_mod()
             obj.huge_obj = prima_mat.common.huge_mod();
@@ -85,14 +88,14 @@ classdef infnan_mod
         function varargout = is_finite(obj, varargin)
             [varargout{1:nargout}] = obj.inf_obj.is_finite(varargin{:});
         end
-        function varargout = is_posinf(obj, varargin)
-            [varargout{1:nargout}] = obj.inf_obj.is_posinf(varargin{:});
+        function varargout = is_inf(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_inf(varargin{:});
         end
         function varargout = is_neginf(obj, varargin)
             [varargout{1:nargout}] = obj.inf_obj.is_neginf(varargin{:});
         end
-        function varargout = is_inf(obj, varargin)
-            [varargout{1:nargout}] = obj.inf_obj.is_inf(varargin{:});
+        function varargout = is_posinf(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_posinf(varargin{:});
         end
         function varargout = is_finite_sp(obj, varargin)
             [varargout{1:nargout}] = obj.inf_obj.is_finite_sp(varargin{:});
@@ -100,17 +103,8 @@ classdef infnan_mod
         function varargout = is_finite_dp(obj, varargin)
             [varargout{1:nargout}] = obj.inf_obj.is_finite_dp(varargin{:});
         end
-        function varargout = is_posinf_sp(obj, varargin)
-            [varargout{1:nargout}] = obj.inf_obj.is_posinf_sp(varargin{:});
-        end
-        function varargout = is_posinf_dp(obj, varargin)
-            [varargout{1:nargout}] = obj.inf_obj.is_posinf_dp(varargin{:});
-        end
-        function varargout = is_neginf_sp(obj, varargin)
-            [varargout{1:nargout}] = obj.inf_obj.is_neginf_sp(varargin{:});
-        end
-        function varargout = is_neginf_dp(obj, varargin)
-            [varargout{1:nargout}] = obj.inf_obj.is_neginf_dp(varargin{:});
+        function varargout = is_finite_qp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_finite_qp(varargin{:});
         end
         function varargout = is_inf_sp(obj, varargin)
             [varargout{1:nargout}] = obj.inf_obj.is_inf_sp(varargin{:});
@@ -118,33 +112,61 @@ classdef infnan_mod
         function varargout = is_inf_dp(obj, varargin)
             [varargout{1:nargout}] = obj.inf_obj.is_inf_dp(varargin{:});
         end
+        function varargout = is_inf_qp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_inf_qp(varargin{:});
+        end
+        function varargout = is_neginf_sp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_neginf_sp(varargin{:});
+        end
+        function varargout = is_neginf_dp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_neginf_dp(varargin{:});
+        end
+        function varargout = is_neginf_qp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_neginf_qp(varargin{:});
+        end
+        function varargout = is_posinf_sp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_posinf_sp(varargin{:});
+        end
+        function varargout = is_posinf_dp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_posinf_dp(varargin{:});
+        end
+        function varargout = is_posinf_qp(obj, varargin)
+            [varargout{1:nargout}] = obj.inf_obj.is_posinf_qp(varargin{:});
+        end
+
+
         function y = is_nan_sp(obj, x)
-
             %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
             %y = (.not. is_finite(x) .and. .not. (abs(x) > huge_value(x))) .or. y
-            y = ~obj.inf_obj.is_finite(x) & ~obj.inf_obj.is_inf(x);
+            y = ~obj.inf_obj.is_finite_sp(x) & ~obj.inf_obj.is_inf_sp(x);
             y = ...
-                ~obj.inf_obj.is_inf(x) ...
+                ~obj.inf_obj.is_inf_sp(x) ...
                 & ~(x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp()) | y;
         end
+
         function y = is_nan_dp(obj, x)
-
             %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
             %y = (.not. is_finite(x) .and. .not. (abs(x) > huge_value(x))) .or. y
-            y = ~obj.inf_obj.is_finite(x) & ~obj.inf_obj.is_inf(x);
+            y = ~obj.inf_obj.is_finite_sp(x) & ~obj.inf_obj.is_inf_sp(x);
             y = ...
-                ~obj.inf_obj.is_inf(x) ...
+                ~obj.inf_obj.is_inf_sp(x) ...
                 & ~(x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp()) | y;
         end
+
+
+
+
+
         function y = is_nan_qp(obj, x)
-
             %y = ((.not. (x <= huge_value(x) .and. x >= -huge_value(x)))) .and. (.not. abs(x) > huge_value(x))
             %y = (.not. is_finite(x) .and. .not. (abs(x) > huge_value(x))) .or. y
-            y = ~obj.inf_obj.is_finite(x) & ~obj.inf_obj.is_inf(x);
+            y = ~obj.inf_obj.is_finite_sp(x) & ~obj.inf_obj.is_inf_sp(x);
             y = ...
-                ~obj.inf_obj.is_inf(x) ...
+                ~obj.inf_obj.is_inf_sp(x) ...
                 & ~(x <= obj.huge_obj.huge_value_sp() & x >= -obj.huge_obj.huge_value_sp()) | y;
         end
+
+
 
     end
 end

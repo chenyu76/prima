@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef evaluate_mod
     %--------------------------------------------------------------------------------------------------%
     % This is a module evaluating the objective/constraint function with Nan/Inf handling.
@@ -17,6 +20,8 @@ classdef evaluate_mod
                 [varargout{1:nargout}] = obj.evaluatefc(varargin{:});
             end
         end
+
+
         function y = moderatex(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function moderates a decision variable. It replaces NaN by 0 and Inf/-Inf by REALMAX/-REALMAX.
@@ -26,14 +31,14 @@ classdef evaluate_mod
             linalg_obj = prima_mat.common.linalg_mod();
 
             % Inputs
-
             % Outputs
-
 
             y = x;
             y(linalg_obj.trueloc(infnan_obj.is_nan_sp(x))) = consts_obj.ZERO;
             y = max(-consts_obj.REALMAX, min(consts_obj.REALMAX, y));
         end
+
+
         function y = moderatef(~, f)
             %--------------------------------------------------------------------------------------------------%
             % This function moderates the function value of a MINIMIZATION problem. It replaces NaN and any
@@ -43,9 +48,7 @@ classdef evaluate_mod
             infnan_obj = prima_mat.common.infnan_mod();
 
             % Inputs
-
             % Outputs
-
 
             y = f;
             if infnan_obj.is_nan_sp(y)
@@ -55,6 +58,8 @@ classdef evaluate_mod
             % We may moderate huge negative function values as follows, but we decide not to.
             %y = max(-FUNCMAX, min(FUNCMAX, y))
         end
+
+
         function y = moderatec(~, c)
             %--------------------------------------------------------------------------------------------------%
             % This function moderates the constraint value, the constraint demanding this value to be NONNEGATIVE.
@@ -66,14 +71,14 @@ classdef evaluate_mod
             linalg_obj = prima_mat.common.linalg_mod();
 
             % Inputs
-
             % Outputs
-
 
             y = c;
             y(linalg_obj.trueloc(infnan_obj.is_nan_sp(c))) = consts_obj.CONSTRMAX;
             y = max(-consts_obj.CONSTRMAX, min(consts_obj.CONSTRMAX, y));
         end
+
+
         function f = evaluatef(obj, calfun, x)
             %--------------------------------------------------------------------------------------------------%
             % This function evaluates CALFUN at X, setting F to the objective function value. Nan/Inf are
@@ -87,9 +92,7 @@ classdef evaluate_mod
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
-
             % Output
-
 
             % Local variables
             srname = "EVALUATEF";
@@ -109,7 +112,6 @@ classdef evaluate_mod
             if any(infnan_obj.is_nan_sp(x), 'all')
                 % Although this should not happen unless there is a bug, we include this case for robustness.
                 f = fortran.sum(x, 'all'); % Set F to NaN
-
             else
                 f = calfun(obj.moderatex(x)); % Evaluate F; We moderate X before doing so.
 
@@ -118,6 +120,7 @@ classdef evaluate_mod
                 f = obj.moderatef(f);
             end
 
+
             %====================%
             %  Calculation ends  %
             %====================%
@@ -125,11 +128,13 @@ classdef evaluate_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 % With X not containing NaN, and with the moderated extreme barrier, F cannot be NaN/+Inf.
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN/+Inf", srname);
             end
 
         end
+
+
         function [f, constr] = evaluatefc(obj, calcfc, x, constr)
             %--------------------------------------------------------------------------------------------------%
             % This function evaluates CALCFC at X, setting F to the objective function value and CONSTR to the
@@ -143,9 +148,7 @@ classdef evaluate_mod
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
-
             % Outputs
-
 
             % Local variables
             srname = "EVALUATEFC";
@@ -186,14 +189,15 @@ classdef evaluate_mod
             if consts_obj.DEBUGGING
                 % With X not containing NaN, and with the moderated extreme barrier, F cannot be NaN/+Inf, and
                 % CONSTR cannot be NaN/+Inf.
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN/+Inf", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(constr) ...
-                                      | infnan_obj.is_posinf(constr), 'all'), ...
+                                      | infnan_obj.is_posinf_sp(constr), 'all'), ...
                                  "CONSTR does not contain NaN/+Inf", srname);
             end
 
         end
+
 
     end
 end

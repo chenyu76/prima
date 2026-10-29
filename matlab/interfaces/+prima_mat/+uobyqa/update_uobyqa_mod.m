@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef update_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides subroutines concerning the updates when XPT(:, KNEW) becomes XNEW = XOPT + D.
@@ -12,6 +15,8 @@ classdef update_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [kopt, fval, pl, pq, xpt] = update(~, knew, d, f, moderr, kopt, fval, pl, pq, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine updates PL, PQ, XPT, KOPT, and FVAL when XPT(:, KNEW) becomes XNEW.
@@ -26,12 +31,9 @@ classdef update_uobyqa_mod
             powalg_obj = prima_mat.common.powalg_mod();
 
             % Inputs
-
             % D(N)
 
-
             % In-outputs
-
             % FVAL(NPT)
             % PL(NPT-1, NPT)
             % PQ(NPT-1)
@@ -39,7 +41,6 @@ classdef update_uobyqa_mod
 
             % Local variables
             srname = "UPDATE";
-
             vlag = NaN(size(xpt, 2), 1);
 
             % Sizes
@@ -55,13 +56,13 @@ classdef update_uobyqa_mod
                                  "KNEW >= 1 unless X is not improved", srname);
                 debug_obj.assert(knew ~= kopt || f < fval(kopt), ...
                                  "KNEW /= KOPT unless X is improved", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN or +Inf", srname);
                 debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", ...
                                  srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, ...
                                  "SIZE(PL) == [NPT-1, NPT]", srname);
                 debug_obj.assert(numel(pq) == npt - 1, "SIZE(PQ) == NPT-1", srname);
@@ -72,8 +73,7 @@ classdef update_uobyqa_mod
             %====================%
 
             % Do essentially nothing when KNEW is 0. This can only happen after a trust-region step.
-            if knew <= 0
-                % KNEW < 0 is impossible if the input is correct.
+            if knew <= 0 % KNEW < 0 is impossible if the input is correct.
                 return
             end
 
@@ -105,7 +105,7 @@ classdef update_uobyqa_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt ...
-                                 && all(infnan_obj.is_finite(xpt), 'all'), ...
+                                 && all(infnan_obj.is_finite_sp(xpt), 'all'), ...
                                  "SIZE(XPT) == [N, NPT], XPT is finite", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
                 debug_obj.assert(~any(fval < fval(kopt), 'all'), "FVAL(KOPT) = MINVAL(FVAL)", ...
@@ -116,6 +116,7 @@ classdef update_uobyqa_mod
             end
 
         end
+
 
     end
 end

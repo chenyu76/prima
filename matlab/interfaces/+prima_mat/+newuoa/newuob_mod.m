@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef newuob_mod
     %--------------------------------------------------------------------------------------------------%
     % This module performs the major calculations of NEWUOA.
@@ -12,6 +15,8 @@ classdef newuob_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [x, nf, f, fhist, xhist, info] = ...
                 newuob(~, calfun, iprint, maxfun, npt, eta1, eta2, ftarget, gamma1, gamma2, ...
                        rhobeg, rhoend, x, fhist, xhist, varargin)
@@ -54,7 +59,6 @@ classdef newuob_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-
             powalg_obj = prima_mat.common.powalg_mod();
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();
@@ -66,16 +70,14 @@ classdef newuob_mod
             trustregion_newuoa_obj = prima_mat.newuoa.trustregion_newuoa_mod();
             update_newuoa_obj = prima_mat.newuoa.update_newuoa_mod();
 
+
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
 
             % In-outputs
             % X(N)
 
             % Outputs
-
-
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
@@ -84,24 +86,16 @@ classdef newuob_mod
             srname = "NEWUOB";
             idz = NaN;
             ij = NaN(2, max(0, npt - 2 * numel(x) - 1));
-
             bmat = NaN(numel(x), npt + numel(x));
-
             d = NaN(size(x));
-
             distsq = NaN(npt, 1);
-
             dnorm_rec = NaN(2, 1); % Powell's implementation: DNORM_REC(3)
             fval = NaN(npt, 1);
-
             gopt = NaN(size(x));
             hq = NaN(numel(x));
-
-            moderr_rec = NaN(size(dnorm_rec));
+            moderr_rec = NaN(2, 1);
             pq = NaN(npt, 1);
-
             xbase = NaN(size(x));
-
             xpt = NaN(numel(x), npt);
             zmat = NaN(npt, npt - numel(x) + -1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
@@ -118,7 +112,7 @@ classdef newuob_mod
                 debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
                 debug_obj.assert(maxfun >= npt + 1, "MAXFUN >= NPT + 1", srname);
                 debug_obj.assert(rhobeg >= rhoend && rhoend > 0, "RHOBEG >= RHOEND > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(x), 'all'), "X is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(x), 'all'), "X is finite", srname);
                 debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", ...
                                  srname);
                 debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, ...
@@ -141,7 +135,6 @@ classdef newuob_mod
                                              fhist, fval, xbase, xhist, xpt);
 
             % Report the current best value, and check if user asks for early termination.
-
             ipObj = inputParser();
             addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
@@ -167,9 +160,9 @@ classdef newuob_mod
                 % Initialize the quadratic represented by [GOPT, HQ, PQ], so that its gradient at XBASE+XOPT is
                 % GOPT; its Hessian is HQ + sum_{K=1}^NPT PQ(K)*XPT(:, K)*XPT(:, K)'.
                 [gopt, hq, pq] = initialize_newuoa_obj.initq(ij, fval, xpt, gopt, hq, pq);
-                if ~(all(infnan_obj.is_finite(gopt), 'all') ...
-                     && all(infnan_obj.is_finite(hq), 'all') ...
-                     && all(infnan_obj.is_finite(pq), 'all'))
+                if ~(all(infnan_obj.is_finite_sp(gopt), 'all') ...
+                     && all(infnan_obj.is_finite_sp(hq), 'all') ...
+                     && all(infnan_obj.is_finite_sp(pq), 'all'))
                     subinfo = infos_obj.NAN_INF_MODEL;
                 end
             end
@@ -186,7 +179,7 @@ classdef newuob_mod
                     debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
                     debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
                                      "SIZE(X) == N, X does not contain NaN", srname);
-                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                      "F is not NaN/+Inf", srname);
                     debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
                                      "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -195,7 +188,7 @@ classdef newuob_mod
                     % The last calculated X can be Inf (finite + finite can be Inf numerically).
                     debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                          | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                          | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                           'all'), "FHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), ...
                                      "F is the smallest in FHIST", srname);
@@ -212,12 +205,10 @@ classdef newuob_mod
             rho = rhobeg;
             delta = rho;
             shortd = false;
-
             ratio = -consts_obj.ONE;
             dnorm_rec(:) = consts_obj.REALMAX;
             moderr_rec(:) = consts_obj.REALMAX;
             knew_tr = 0;
-
             itest = 0;
 
             % If DELTA <= GAMMA3*RHO after an update, we set DELTA to RHO. GAMMA3 must be less than GAMMA2. The
@@ -272,7 +263,6 @@ classdef newuob_mod
                     delta = consts_obj.TENTH * delta;
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
-
                     end
                 else
                     % Calculate the next value of the objective function.
@@ -314,7 +304,6 @@ classdef newuob_mod
                                                      ratio);
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
-
                     end
 
                     % Is the newly generated X better than current best point?
@@ -367,9 +356,9 @@ classdef newuob_mod
                         [itest, gopt, hq, pq] = ...
                             update_newuoa_obj.tryqalt(idz, bmat, fval - fval(kopt), ratio, ...
                                                       xpt(:, kopt), xpt, zmat, itest, gopt, hq, pq);
-                        if ~(all(infnan_obj.is_finite(gopt), 'all') ...
-                             && all(infnan_obj.is_finite(hq), 'all') ...
-                             && all(infnan_obj.is_finite(pq), 'all'))
+                        if ~(all(infnan_obj.is_finite_sp(gopt), 'all') ...
+                             && all(infnan_obj.is_finite_sp(hq), 'all') ...
+                             && all(infnan_obj.is_finite_sp(pq), 'all'))
                             info = infos_obj.NAN_INF_MODEL;
                             break
                         end
@@ -596,9 +585,9 @@ classdef newuob_mod
                     [gopt, hq, pq] = ...
                         update_newuoa_obj.updateq(idz, knew_geo, ximproved, bmat, d, moderr, ...
                                                   xdrop, xosav, xpt, zmat, gopt, hq, pq);
-                    if ~(all(infnan_obj.is_finite(gopt), 'all') ...
-                         && all(infnan_obj.is_finite(hq), 'all') ...
-                         && all(infnan_obj.is_finite(pq), 'all'))
+                    if ~(all(infnan_obj.is_finite_sp(gopt), 'all') ...
+                         && all(infnan_obj.is_finite_sp(hq), 'all') ...
+                         && all(infnan_obj.is_finite_sp(pq), 'all'))
                         info = infos_obj.NAN_INF_MODEL;
                         break
                     end
@@ -690,7 +679,7 @@ classdef newuob_mod
                 debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
                 debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
                                  "SIZE(X) == N, X does not contain NaN", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN/+Inf", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
                                  "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -699,13 +688,14 @@ classdef newuob_mod
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                      | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                      | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                       'all'), "FHIST does not contain NaN/+Inf", srname);
                 debug_obj.assert(~any(fhist(1:min(nf, maxfhist)) < f, 'all'), ...
                                  "F is the smallest in FHIST", srname);
             end
 
         end
+
 
     end
 end

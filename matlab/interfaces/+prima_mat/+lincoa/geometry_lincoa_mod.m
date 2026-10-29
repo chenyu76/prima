@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef geometry_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module contains subroutines concerning the geometry-improving of the interpolation set XPT.
@@ -12,6 +15,8 @@ classdef geometry_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function knew = setdrop_tr(~, idz, kopt, ximproved, bmat, d, delta, rho, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine sets KNEW to the index of the interpolation point to be deleted AFTER A TRUST
@@ -34,22 +39,17 @@ classdef geometry_lincoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+
             % Inputs
-
-
             % BMAT(N, NPT + N)
             % D(N)
-
-
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
             % Outputs
 
-
             % Local variables
             srname = "SETDROP_TR";
-
             distsq = NaN(size(xpt, 2), 1);
 
             % Sizes
@@ -62,10 +62,10 @@ classdef geometry_lincoa_mod
                 debug_obj.assert(idz >= 1 && idz <= size(zmat, 2) + 1, ...
                                  "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 debug_obj.assert(delta >= rho && rho > 0, "DELTA >= RHO > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
@@ -95,7 +95,6 @@ classdef geometry_lincoa_mod
             if ximproved
                 distsq(:) = fortran.sum(fortran.power(xpt - (xpt(:, kopt) + d), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column!! Implicit expansion
-
             else
                 distsq(:) = fortran.sum(fortran.power(xpt - xpt(:, kopt), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
@@ -161,11 +160,9 @@ classdef geometry_lincoa_mod
             knew = 0;
             % The following IF works a bit better than `IF (ANY(SCORE > 1) .OR. ANY(SCORE > 0) .AND. XIMPROVED)`
             % from Powell's UOBYQA and NEWUOA code.
-            if any(score > 0, 'all')
-                % Powell's BOBYQA and LINCOA code
+            if any(score > 0, 'all') % Powell's BOBYQA and LINCOA code
                 knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
-
             end
 
             % Powell's code does not include the following instructions. With Powell's code, if DEN consists of
@@ -173,8 +170,7 @@ classdef geometry_lincoa_mod
             % to make sure that the new trial point is included in the interpolation set. However, the updating
             % subroutine will likely need to skip the update of the Lagrange polynomials (i.e., H), or they
             % would be destroyed by the NaNs.
-            if ximproved && knew == 0 || knew < 0
-                % KNEW < 0 is impossible in theory.
+            if ximproved && knew == 0 || knew < 0 % KNEW < 0 is impossible in theory.
                 knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
@@ -191,9 +187,10 @@ classdef geometry_lincoa_mod
                                  srname);
                 % KNEW >= 1 when XIMPROVED = TRUE unless NaN occurs in DISTSQ, which should not happen if the
                 % starting point does not contain NaN and the trust-region/geometry steps never contain NaN.
-
             end
         end
+
+
         function [feasible, s] = ...
                 geostep(~, iact, idz, knew, kopt, nact, amat, bmat, delbar, qfac, rescon, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
@@ -263,31 +260,24 @@ classdef geometry_lincoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+
             % Inputs
             % IACT(M)
-
-
             % AMAT(N, M)
             % BMAT(N, NPT+N)
-
             % QFAC(N, N)
             % RESCON(M)
             % XPT(N, NPT)
             % ZMAT(NPT, NPT-N-1)
 
             % Outputs
-
             % S(N)
 
             % Local variables
             srname = "GEOSTEP";
-
             rstat = NaN(size(amat, 2), 1);
-
             distsq = NaN(size(xpt, 2), 1);
-
             pglag = NaN(size(xpt, 1), 1);
-
             pqlag = NaN(size(xpt, 2), 1);
 
             % Sizes.
@@ -324,7 +314,7 @@ classdef geometry_lincoa_mod
                 debug_obj.assert(size(qfac, 1) == n && size(qfac, 2) == n, ...
                                  "SIZE(QFAC) == [N, N]", srname);
                 debug_obj.assert(numel(rescon) == m, "SIZE(RESCON) == M", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
                                  "SIZE(ZMAT) == [NPT, NPT- N-1]", srname);
             end
@@ -374,7 +364,6 @@ classdef geometry_lincoa_mod
             if any(vlagabs > vlagabs(knew), 'all')
                 k = fortran.maxloc(vlagabs, 'mask', ~infnan_obj.is_nan_sp(vlagabs), 'dim', 1);
                 %%MATLAB: [~, k] = max(vlagabs, [], 'omitnan');
-
             end
             % Set S to the step corresponding to VLAGABS(K), and calculate DENABS for it.
             s = stplen(k) * (xpt(:, k) - xopt);
@@ -385,10 +374,10 @@ classdef geometry_lincoa_mod
 
             % Replace S with a steepest ascent step from XOPT if the latter provides a larger value of DENABS.
             gnorm = linalg_obj.p_norm(glag);
-            if gnorm > consts_obj.EPS && infnan_obj.is_finite(gnorm)
+            if gnorm > consts_obj.EPS && infnan_obj.is_finite_sp(gnorm)
                 gstp = delbar / gnorm * glag;
-                if linalg_obj.inprod(gstp, powalg_obj.hess_mul(gstp, xpt, pqlag)) < 0
-                    % <GSTP, HESS_LAG*GSTP> is negative
+                if linalg_obj.inprod(gstp, powalg_obj.hess_mul(gstp, xpt, pqlag)) ...
+                   < 0 % <GSTP, HESS_LAG*GSTP> is negative
                     gstp = -gstp;
                 end
                 den = ...
@@ -428,10 +417,10 @@ classdef geometry_lincoa_mod
                                      linalg_obj.matprod12(glag, qfac(:, nact + 1:n)));
             %%MATLAB: pglag = qfac(:, nact+1:n) * (glag' * qfac(:, nact+1:n))';
             gnorm = linalg_obj.p_norm(pglag);
-            if nact > 0 && gnorm > consts_obj.EPS && infnan_obj.is_finite(gnorm)
+            if nact > 0 && gnorm > consts_obj.EPS && infnan_obj.is_finite_sp(gnorm)
                 pgstp = delbar / gnorm * pglag;
-                if linalg_obj.inprod(pgstp, powalg_obj.hess_mul(pgstp, xpt, pqlag)) < 0
-                    % <PGSTP, HESS_LAG*PGSTP> is negative.
+                if linalg_obj.inprod(pgstp, powalg_obj.hess_mul(pgstp, xpt, pqlag)) ...
+                   < 0 % <PGSTP, HESS_LAG*PGSTP> is negative.
                     pgstp = -pgstp;
                 end
 
@@ -471,7 +460,8 @@ classdef geometry_lincoa_mod
 
             % In case S is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to
             % XOPT. Powell's code does not have this.
-            if fortran.sum(abs(s), 'all') <= 0 || ~infnan_obj.is_finite(fortran.sum(abs(s), 'all'))
+            if fortran.sum(abs(s), 'all') <= 0 ...
+               || ~infnan_obj.is_finite_sp(fortran.sum(abs(s), 'all'))
                 s = xpt(:, knew) - xopt;
                 scaling = delbar / linalg_obj.p_norm(s);
                 s = ...
@@ -494,7 +484,7 @@ classdef geometry_lincoa_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(numel(s) == n, "SIZE(S) == N", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(s), 'all'), "S is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(s), 'all'), "S is finite", srname);
                 % In theory, ||S|| = DELBAR. Considering rounding errors, we check that DELBAR/2 < ||S|| < 2*DELBAR.
                 % It is crucial to ensure that the geometry step is nonzero.
                 debug_obj.assert(linalg_obj.p_norm(s) > consts_obj.HALF * delbar ...
@@ -503,6 +493,7 @@ classdef geometry_lincoa_mod
             end
 
         end
+
 
     end
 end

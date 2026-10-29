@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef string_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides some procedures for manipulating strings.
@@ -8,13 +11,14 @@ classdef string_mod
     %
     % Last Modified: Sunday, March 31, 2024 PM09:44:38
     %--------------------------------------------------------------------------------------------------%
+
     properties (Access = private)
         MAX_NUM_STR_LEN;
         MAX_WIDTH;
     end
-
     methods
         function obj = string_mod()
+
             % MAX_NUM_STR_LEN is the maximum length of a string that is needed to represent a real or integer
             % number. Assuming that such a number is represented by at most 128 bits, it is safe to set this
             % maximum length to 128. We set this number to 1024 to be on the safe side.
@@ -22,7 +26,7 @@ classdef string_mod
             % MAX_WIDTH is the maximum number of characters printed in each row when printing arrays.
             obj.MAX_WIDTH = 100;
         end
-        function varargout = num2str_custom(obj, varargin)
+        function varargout = num2str(obj, varargin)
             if numel(varargin) == 1 ...
                && (isinteger(varargin{1}) ...
                    || isnumeric(varargin{1}) ...
@@ -36,10 +40,13 @@ classdef string_mod
                 [varargout{1:nargout}] = obj.real2str_vector(varargin{:});
             end
         end
+
+
         function y = lower(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function maps the characters of a string to the lower case, if applicable.
             %--------------------------------------------------------------------------------------------------%
+
 
 
             dist = 'A' - 'a';
@@ -48,16 +55,21 @@ classdef string_mod
             for i = 1:strlength(y)
                 if extractBetween(y, i, i) >= "A" && extractBetween(y, i, i) <= "Z"
                     y = ...
-                        replaceBetween(y, i, i, ...
-                                       char(double(unicode2native(extractBetween(y, i, i))) ...
-                                            - dist));
+                        fortran.assignCharacterSubstring(y, i, i, ...
+                                                         char(double(unicode2native(extractBetween(y, ...
+                                                                                                   i, ...
+                                                                                                   i))) ...
+                                                              - dist));
                 end
             end
         end
-        function y = upper_custom(~, x)
+
+
+        function y = upper(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function maps the characters of a string to the upper case, if applicable.
             %--------------------------------------------------------------------------------------------------%
+
 
 
             dist = 'A' - 'a';
@@ -66,20 +78,27 @@ classdef string_mod
             for i = 1:strlength(y)
                 if extractBetween(y, i, i) >= "a" && extractBetween(y, i, i) <= "z"
                     y = ...
-                        replaceBetween(y, i, i, ...
-                                       char(double(unicode2native(extractBetween(y, i, i))) ...
-                                            + dist));
+                        fortran.assignCharacterSubstring(y, i, i, ...
+                                                         char(double(unicode2native(extractBetween(y, ...
+                                                                                                   i, ...
+                                                                                                   i))) ...
+                                                              + dist));
                 end
             end
         end
+
+
         function y = strip(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function removes the leading and trailing spaces of a string.
             %--------------------------------------------------------------------------------------------------%
 
 
+
             y = strtrim(strjust(x, 'left'));
         end
+
+
         function y = istr(~, x)
             %--------------------------------------------------------------------------------------------------%
             % This function converts a string to an integer array.
@@ -91,6 +110,8 @@ classdef string_mod
                          (1:fix(strlength(x)))');
 
         end
+
+
         function s = real2str_scalar(obj, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function converts a real scalar to a string. Optionally, NDGT is the number of decimal
@@ -100,13 +121,9 @@ classdef string_mod
             debug_obj = prima_mat.common.debug_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "REAL2STR_SCALAR";
-
             % The number of decimal digits to print
             % The number of digits in the exponent
             % The width of the printed X
@@ -153,7 +170,7 @@ classdef string_mod
             end
             nexp_loc = min(nexp_loc, floor(double(obj.MAX_NUM_STR_LEN - 5) / 2.0));
 
-            if infnan_obj.is_finite(x)
+            if infnan_obj.is_finite_sp(x)
                 wx = ndgt_loc + nexp_loc + 5;
                 debug_obj.validate(wx <= obj.MAX_NUM_STR_LEN, ...
                                    "The width of the printed number is at most " ...
@@ -169,7 +186,6 @@ classdef string_mod
             else
                 str = sprintf('%s \n', num2str(x));
                 s = obj.strip(str); % Remove the leading and trailing spaces, if any.
-
             end
 
             %====================%
@@ -208,6 +224,7 @@ classdef string_mod
                 end
             end
         end
+
         function s = real2str_vector(obj, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % This function converts a real vector to a string. Optionally, NDGT is the number of decimal
@@ -218,15 +235,10 @@ classdef string_mod
             debug_obj = prima_mat.common.debug_mod();
             memory_obj = prima_mat.common.memory_mod();
             % Inputs
-
-
             % Outputs
-
             % Local variables
             srname = "REAL2STR_VECTOR";
             spaces = "  "; % The spaces between two entries in a row
-
-
             % The number of rows
             % N = SIZE(X)
             % The number of decimal digits to print
@@ -312,17 +324,18 @@ classdef string_mod
             j = 0; % J is the index of the last up-to-date character in S.
             for i = 1:n
                 s = ...
-                    replaceBetween(s, j + 1, j + wx, ...
-                                   obj.real2str_scalar(x(i), 'ndgt', ndgt_loc, 'nexp', nexp_loc));
+                    fortran.assignCharacterSubstring(s, j + 1, j + wx, ...
+                                                     obj.real2str_scalar(x(i), 'ndgt', ndgt_loc, ...
+                                                                         'nexp', nexp_loc));
                 if i == n
                     break
                 end
                 j = j + wx;
                 if mod(i, nx_loc) == 0
-                    s = replaceBetween(s, j + 1, j + 1, newline);
+                    s = fortran.assignCharacterSubstring(s, j + 1, j + 1, newline);
                     j = j + 1;
                 else
-                    s = replaceBetween(s, j + 1, j + strlength(spaces), spaces);
+                    s = fortran.assignCharacterSubstring(s, j + 1, j + strlength(spaces), spaces);
                     j = j + strlength(spaces);
                 end
             end
@@ -331,28 +344,28 @@ classdef string_mod
             %  Calculation ends  %
             %====================%
         end
+
         function x = str2real(~, s)
             %--------------------------------------------------------------------------------------------------%
             % This function converts a string to a real scalar.
             %--------------------------------------------------------------------------------------------------%
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
-
             srname = "STR2REAL";
             if consts_obj.DEBUGGING
                 debug_obj.assert(strlength(s) > 0, "LEN(S) > 0", srname);
             end
             x = sscanf(s, '%f', 1);
         end
+
+
         function s = int2str(obj, x)
             %--------------------------------------------------------------------------------------------------%
             % This function converts an integer scalar to a string.
             %--------------------------------------------------------------------------------------------------%
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
-
             srname = "INT2STR";
-
             % In the following, 'I0' means to use the minimum number of digits needed to print.
             % It should work also if we use * instead of I0. However, this sometimes lead to a segmentation
             % fault on Windows Server 2022 with gcc/gfortran 13.
@@ -367,19 +380,20 @@ classdef string_mod
                 debug_obj.assert(obj.str2int(s) == x, "STR2INT(S) == X", srname);
             end
         end
+
         function x = str2int(~, s)
             %--------------------------------------------------------------------------------------------------%
             % This function converts a string to an integer scalar.
             %--------------------------------------------------------------------------------------------------%
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
-
             srname = "STR2INT";
             if consts_obj.DEBUGGING
                 debug_obj.assert(strlength(s) > 0, "LEN(S) > 0", srname);
             end
             x = sscanf(s, '%d', 1);
         end
+
 
     end
 end

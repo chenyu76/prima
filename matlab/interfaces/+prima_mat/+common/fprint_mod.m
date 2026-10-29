@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef fprint_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides a subroutine that prints a string to STDOUT, STDERR, or a normal file.
@@ -16,6 +19,8 @@ classdef fprint_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function fprint(~, string_custom, varargin)
             consts_obj = prima_mat.common.consts_mod();
             debug_obj = prima_mat.common.debug_mod();
@@ -23,11 +28,9 @@ classdef fprint_mod
 
             % Inputs
 
-
             % Local variables
             newline_custom = newline;
             srname = "FPRINT";
-
             fexist = false;
 
             % Preconditions
@@ -68,7 +71,6 @@ classdef fprint_mod
                     funit_loc = consts_obj.STDOUT; % Print the message to the standard out.
                 else
                     funit_loc = -1; % This value will not be used.
-
                 end
             else
                 funit_loc = funit;
@@ -95,13 +97,10 @@ classdef fprint_mod
             iostat = 0;
             if strlength(fname_loc) > 0
                 % Decide the position for OPEN. This is the only place where FACTION is used.
-
                 if ~ismember('faction', ipObj.UsingDefaults)
                     switch faction
                     case {"write", "w"}
-
                     case {"append", "a"}
-
                     otherwise
                         debug_obj.warning(srname, "Unknown file action """ + faction + """");
                     end
@@ -110,9 +109,7 @@ classdef fprint_mod
                 inquire('file', fname_loc, 'exist', fexist);
                 fortran.merge('tsource', "old", 'fsource', "new", 'mask', fexist);
                 % Open the file.
-
                 funit_loc = fopen(fname_loc, 'w');
-
                 if iostat ~= 0
                     debug_obj.warning(srname, "Failed to open file " + fname_loc);
                     return
@@ -128,7 +125,7 @@ classdef fprint_mod
                 fortran.index(string_custom, ...
                               newline_custom); % Index of the first newline in the string.
             slen = strlength(string_custom);
-            while j >= i                % J < I: No more newline in the string.
+            while j >= i % J < I: No more newline in the string.
                 format_value = extractBetween(string_custom, i, j - 1);
                 fortran.format('write', '(A)', {format_value}, ...
                                reshape({'character'; 1; strlength(format_value)}, 1, 3), ...
@@ -138,8 +135,8 @@ classdef fprint_mod
                     i + fortran.index(extractBetween(string_custom, i, slen), newline_custom) ...
                     - 1; % Index of the next newline.
             end
-            if extractBetween(string_custom, i, slen) ~= ""
-                % Print the string after the last newline.
+            if extractBetween(string_custom, i, slen) ...
+               ~= "" % Print the string after the last newline.
                 format_value = extractBetween(string_custom, i, slen);
                 fortran.format('write', '(A)', {format_value}, ...
                                reshape({'character'; 1; strlength(format_value)}, 1, 3), funit_loc);
@@ -154,6 +151,7 @@ classdef fprint_mod
             %  Calculation ends  %
             %====================%
         end
+
 
     end
 end

@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef infos_mod
     %--------------------------------------------------------------------------------------------------%
     % This is a module defining exit flags.
@@ -8,6 +11,7 @@ classdef infos_mod
     %
     % Last Modified: Sunday, May 21, 2023 PM03:00:41
     %--------------------------------------------------------------------------------------------------%
+
     properties
         consts_obj;
         INFO_DFT;
@@ -28,10 +32,10 @@ classdef infos_mod
         VALIDATION_FAILS;
         MEMORY_ALLOCATION_FAILS;
     end
-
     methods
         function obj = infos_mod()
             obj.consts_obj = prima_mat.common.consts_mod();
+
 
             obj.INFO_DFT = 0;
             obj.SMALL_TR_RADIUS = 0;
@@ -54,6 +58,5 @@ classdef infos_mod
             obj.VALIDATION_FAILS = 102;
             obj.MEMORY_ALLOCATION_FAILS = 103;
         end
-
     end
 end

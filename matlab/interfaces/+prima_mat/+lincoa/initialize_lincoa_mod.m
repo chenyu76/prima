@@ -1,4 +1,8 @@
+%-------------%
+% Placeholder %
+%-------------%
 % FIXME: The definitions of CVAL, FEASIBLE, and KOPT are questionable.
+
 classdef initialize_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module performs the initialization of LINCOA.
@@ -13,6 +17,8 @@ classdef initialize_lincoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [b, ij, kopt, nf, chist, cval, fhist, fval, xbase, xhist, xpt, evaluated, ...
                   info] = ...
                 initxf(~, calfun, iprint, maxfun, Aeq, Aineq, amat, beq, bineq, ctol, ftarget, ...
@@ -47,20 +53,16 @@ classdef initialize_lincoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             memory_obj = prima_mat.common.memory_mod();
             message_obj = prima_mat.common.message_mod();
-
             powalg_obj = prima_mat.common.powalg_mod();
+
 
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
             % AMAT(Meq, N)
             % AMAT(Mineq, N)
             % AMAT(N, M)
             % Beq(M)
             % Bineq(M)
-
-
             % XL(N)
             % XU(N)
             % X0(N)
@@ -69,10 +71,7 @@ classdef initialize_lincoa_mod
             % B(M)
 
             % Outputs
-
             % IJ(2, MAX(0_IK, NPT-2*N-1))
-
-
             % EVALUATED(NPT)
             % CHIST(MAXCHIST)
             % CVAL(NPT)
@@ -85,7 +84,6 @@ classdef initialize_lincoa_mod
             % Local variables
             solver = "LINCOA";
             srname = "INITXF";
-
             constr = ...
                 NaN(nnz(xl > -consts_obj.BOUNDMAX) + nnz(xu < consts_obj.BOUNDMAX) ...
                     + 2 * numel(beq) + numel(bineq), 1);
@@ -116,7 +114,7 @@ classdef initialize_lincoa_mod
                 debug_obj.assert(numel(xbase) == n, "SIZE(XBASE) == N", srname);
                 debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", ...
                                  srname);
-                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite(x0), 'all'), ...
+                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite_sp(x0), 'all'), ...
                                  "SIZE(X0) == N, X0 is finite", srname);
                 debug_obj.assert(numel(fval) == npt, "SIZE(FVAL) == NPT", srname);
                 debug_obj.assert(numel(cval) == npt, "SIZE(CVAL) == NPT", srname);
@@ -241,7 +239,6 @@ classdef initialize_lincoa_mod
 
             % Deallocate IXL and IXU as they have finished their job.
 
-
             nf = nnz(evaluated);
             % Since the starting point is supposed to be feasible, there should be at least one feasible point.
             % We set feasible to TRUE for the evaluated point with the smallest constraint violation. This is
@@ -265,20 +262,21 @@ classdef initialize_lincoa_mod
                                  srname);
                 debug_obj.assert(nf <= npt, "NF <= NPT", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= nf, "1 <= KOPT <= NF", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
                                  "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(cval) == npt ...
                                  && ~any(evaluated ...
                                          & (infnan_obj.is_nan_sp(cval) ...
-                                            | infnan_obj.is_posinf(cval)), 'all'), ...
+                                            | infnan_obj.is_posinf_sp(cval)), 'all'), ...
                                  "SIZE(CVAL) == NPT and CVAL is not NaN or +Inf", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(evaluated ...
                                          & (infnan_obj.is_nan_sp(fval) ...
-                                            | infnan_obj.is_posinf(fval)), 'all'), ...
+                                            | infnan_obj.is_posinf_sp(fval)), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(evaluated & feasible & fval < fval(kopt), 'all'), ...
                                  "FVAL(KOPT) = MINVAL(FVAL)", srname);
@@ -300,6 +298,8 @@ classdef initialize_lincoa_mod
             end
 
         end
+
+
         function [idz, bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes [IDZ, BMAT, ZMAT] which represents the matrix H in (3.12) of the
@@ -321,8 +321,6 @@ classdef initialize_lincoa_mod
             % ZMAT and BMAT are completely defined by RHOBEG and IJ.
 
             % Outputs
-
-
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
 
@@ -341,7 +339,7 @@ classdef initialize_lincoa_mod
                 debug_obj.assert(all(ij >= 1 & ij <= 2 * n, 'all'), "1 <= IJ <= 2*N", srname);
                 debug_obj.assert(all(ij(1, :).' ~= ij(2, :).', 'all'), "IJ(1, :) /= IJ(2, :)", ...
                                  srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
@@ -421,10 +419,10 @@ classdef initialize_lincoa_mod
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
                 %call assert(errh(idz, bmat, zmat, xpt) <= max(1.0E-3_RP, 1.0E2_RP * real(npt, RP) * EPS), &
                 %    & '[IDZ, BMA, ZMAT] represents H = W^{-1}', srname)
-
             end
 
         end
+
 
     end
 end

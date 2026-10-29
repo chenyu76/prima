@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 %TODO: merge CHECKEXIT_UNC and CHECKEXIT_CON, using optional CSTRV and CTOL.
 classdef checkexit_mod
     %--------------------------------------------------------------------------------------------------%
@@ -18,6 +21,8 @@ classdef checkexit_mod
                 [varargout{1:nargout}] = obj.checkexit_unc(varargin{:});
             end
         end
+
+
         function info = checkexit_unc(~, maxfun, nf, f, ftarget, x)
             %--------------------------------------------------------------------------------------------------%
             % This module checks whether to exit the solver in the unconstrained case.
@@ -29,11 +34,10 @@ classdef checkexit_mod
             infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
 
+
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "CHECKEXIT_UNC";
@@ -50,7 +54,7 @@ classdef checkexit_mod
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", ...
                                  srname);
                 % With the moderated extreme barrier, F cannot be NaN/+Inf.
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN/+Inf", srname);
             end
 
@@ -62,12 +66,12 @@ classdef checkexit_mod
 
             % Although X should not contain NaN unless there is a bug, we include the following for security.
             % X can be Inf, as finite + finite can be Inf numerically.
-            if any(infnan_obj.is_nan_sp(x) | infnan_obj.is_inf(x), 'all')
+            if any(infnan_obj.is_nan_sp(x) | infnan_obj.is_inf_sp(x), 'all')
                 info = infos_obj.NAN_INF_X;
             end
 
             % Although NAN_INF_F should not happen unless there is a bug, we include the following for security.
-            if infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)
+            if infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)
                 info = infos_obj.NAN_INF_F;
             end
 
@@ -93,6 +97,8 @@ classdef checkexit_mod
             end
 
         end
+
+
         function info = checkexit_con(~, maxfun, nf, cstrv, ctol, f, ftarget, x)
             %--------------------------------------------------------------------------------------------------%
             % This module checks whether to exit the solver in the constrained case.
@@ -104,11 +110,10 @@ classdef checkexit_mod
             infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
 
+
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "CHECKEXIT_CON";
@@ -125,9 +130,9 @@ classdef checkexit_mod
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(x), 'all'), "X does not contain NaN", ...
                                  srname);
                 % With the moderated extreme barrier, F or CSTRV cannot be NaN/+Inf.
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f) ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f) ...
                                    || infnan_obj.is_nan_sp(cstrv) ...
-                                   || infnan_obj.is_posinf(cstrv)), ...
+                                   || infnan_obj.is_posinf_sp(cstrv)), ...
                                  "F or CSTRV is not NaN/+Inf", srname);
             end
 
@@ -139,13 +144,13 @@ classdef checkexit_mod
 
             % Although X should not contain NaN unless there is a bug, we include the following for security.
             % X can be Inf, as finite + finite can be Inf numerically.
-            if any(infnan_obj.is_nan_sp(x) | infnan_obj.is_inf(x), 'all')
+            if any(infnan_obj.is_nan_sp(x) | infnan_obj.is_inf_sp(x), 'all')
                 info = infos_obj.NAN_INF_X;
             end
 
             % Although NAN_INF_F should not happen unless there is a bug, we include the following for security.
-            if infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f) || infnan_obj.is_nan_sp(cstrv) ...
-               || infnan_obj.is_posinf(cstrv)
+            if infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f) ...
+               || infnan_obj.is_nan_sp(cstrv) || infnan_obj.is_posinf_sp(cstrv)
                 info = infos_obj.NAN_INF_F;
             end
 
@@ -171,6 +176,7 @@ classdef checkexit_mod
             end
 
         end
+
 
     end
 end

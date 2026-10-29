@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef memory_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides subroutines concerning memory management.
@@ -59,59 +62,58 @@ classdef memory_mod
                 [varargout{1:nargout}] = obj.alloc_rmatrix_qp(varargin{:});
             end
         end
+
+
         function y = size_of_sp(~, x)
             %--------------------------------------------------------------------------------------------------%
             % Return the storage size of X in Bytes, X being a REAL(SP) scalar.
             %--------------------------------------------------------------------------------------------------%
-
             % Inputs
-
             % Outputs
-
 
             % We prefer STORAGE_SIZE to C_SIZEOF, because the former is intrinsic while the later requires the
             % intrinsic module ISO_C_BINDING.
             y = fix(whos('x').bytes / numel(x) * 8 / 8); % Y = INT(C_SIZEOF(X), KIND(Y))
         end
+
+
         function y = size_of_dp(~, x)
             %--------------------------------------------------------------------------------------------------%
             % Return the storage size of X in Bytes, X being a REAL(DP) scalar.
             %--------------------------------------------------------------------------------------------------%
-
             % Inputs
-
             % Outputs
-
 
             y = fix(whos('x').bytes / numel(x) * 8 / 8);
         end
+
+
+
+
+
         function y = size_of_qp(~, x)
             %--------------------------------------------------------------------------------------------------%
             % Return the storage size of X in Bytes, X being a REAL(QP) scalar.
             %--------------------------------------------------------------------------------------------------%
-
             % Inputs
-
             % Outputs
-
 
             y = fix(whos('x').bytes / numel(x) * 8 / 8);
         end
+
+
+
         function x = alloc_rvector_sp(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(SP) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_RVECTOR_SP";
 
             % Preconditions (checked even not debugging)
@@ -122,7 +124,8 @@ classdef memory_mod
             % deallocated. So the following line is unnecessary since F2003 as X is INTENT(OUT):
             % %if (allocated(x)) deallocate (x)
             % Allocate memory for X. Initialize X to a compiler-independent strange value.
-            x = NaN(n, 1); alloc_status = 0;
+            x = NaN(n, 1);
+            alloc_status = 0;
             x(:) = -realmax; % Costly if X is of a large size.
             % N.B.: Do not write ALLOCATE (X(1:N), STAT=ALLOC_STATUS, SOURCE=-HUGE(X)), because
             % 1. It is invalid to put X in the SOURCE specifier when it is being allocated;
@@ -135,21 +138,19 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
+
+
         function x = alloc_rmatrix_sp(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(SP) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
-
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_RMATRIX_SP";
 
             % Preconditions (checked even not debugging)
@@ -169,21 +170,19 @@ classdef memory_mod
             debug_obj.validate(size(x, 1) == m, "LBOUND(X, 1) == 1, UBOUND(X, 1) == M", srname);
             debug_obj.validate(size(x, 2) == n, "LBOUND(X, 2) == 1, UBOUND(X, 2) == N", srname);
         end
+
+
         function x = alloc_rvector_dp(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(DP) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_RVECTOR_DP";
 
             % Preconditions (checked even not debugging)
@@ -205,21 +204,19 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
+
+
         function x = alloc_rmatrix_dp(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(DP) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
-
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_RMATRIX_DP";
 
             % Preconditions (checked even not debugging)
@@ -239,21 +236,22 @@ classdef memory_mod
             debug_obj.validate(size(x, 1) == m, "LBOUND(X, 1) == 1, UBOUND(X, 1) == M", srname);
             debug_obj.validate(size(x, 2) == n, "LBOUND(X, 2) == 1, UBOUND(X, 2) == N", srname);
         end
+
+
+
+
+
         function x = alloc_rvector_qp(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(QP) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_RVECTOR_QP";
 
             % Preconditions (checked even not debugging)
@@ -275,21 +273,19 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
+
+
         function x = alloc_rmatrix_qp(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable REAL(QP) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
-
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_RMATRIX_QP";
 
             % Preconditions (checked even not debugging)
@@ -309,21 +305,20 @@ classdef memory_mod
             debug_obj.validate(size(x, 1) == m, "LBOUND(X, 1) == 1, UBOUND(X, 1) == M", srname);
             debug_obj.validate(size(x, 2) == n, "LBOUND(X, 2) == 1, UBOUND(X, 2) == N", srname);
         end
+
+
+
         function x = alloc_lvector(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable LOGICAL vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_LVECTOR";
 
             % Preconditions (checked even not debugging)
@@ -342,21 +337,19 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
+
+
         function x = alloc_ivector(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable INTEGER(IK) vector X, whose size is N after allocation.
             %--------------------------------------------------------------------------------------------------%
-
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_IVECTOR";
 
             % Preconditions (checked even not debugging)
@@ -375,21 +368,19 @@ classdef memory_mod
             debug_obj.validate(numel(x) == n, "SIZE(X) == N", srname);
             debug_obj.validate(size(x, 1) == n, "LBOUND(X, 1) == 1, UBOUND(X, 1) == N", srname);
         end
+
+
         function x = alloc_imatrix(~, m, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for a INTEGER(IK) matrix X, whose size is (M, N) after allocation.
             %--------------------------------------------------------------------------------------------------%
-
             debug_obj = prima_mat.common.debug_mod();
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_IMATRIX";
 
             % Preconditions (checked even not debugging)
@@ -409,6 +400,8 @@ classdef memory_mod
             debug_obj.validate(size(x, 1) == m, "LBOUND(X, 1) == 1, UBOUND(X, 1) == M", srname);
             debug_obj.validate(size(x, 2) == n, "LBOUND(X, 2) == 1, UBOUND(X, 2) == N", srname);
         end
+
+
         function x = alloc_character(~, n)
             %--------------------------------------------------------------------------------------------------%
             % Allocate space for an allocatable character X, whose length is N after allocation.
@@ -422,12 +415,9 @@ classdef memory_mod
 
             % Inputs
 
-
             % Outputs
 
-
             % Local variables
-
             srname = "ALLOC_CHARACTER";
 
             % Preconditions (checked even not debugging)
@@ -444,6 +434,7 @@ classdef memory_mod
             debug_obj.validate(~isequal(x, []), "X is allocated", srname);
             debug_obj.validate(strlength(x) == n, "LEN(X) == N", srname);
         end
+
 
     end
 end

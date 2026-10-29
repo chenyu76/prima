@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef geometry_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module contains subroutines concerning the geometry-improving of the interpolation set XPT.
@@ -12,6 +15,8 @@ classdef geometry_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function knew = setdrop_tr(~, idz, kopt, ximproved, bmat, d, delta, rho, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine sets KNEW to the index of the interpolation point to be deleted AFTER A TRUST
@@ -36,22 +41,17 @@ classdef geometry_newuoa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+
             % Inputs
-
-
             % BMAT(N, NPT + N)
             % D(N)
-
-
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
             % Outputs
 
-
             % Local variables
             srname = "SETDROP_TR";
-
             distsq = NaN(size(xpt, 2), 1);
 
             % Sizes
@@ -64,10 +64,10 @@ classdef geometry_newuoa_mod
                 debug_obj.assert(idz >= 1 && idz <= size(zmat, 2) + 1, ...
                                  "1 <= IDZ <= SIZE(ZMAT, 2) + 1", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 debug_obj.assert(delta >= rho && rho > 0, "DELTA >= RHO > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
@@ -97,7 +97,6 @@ classdef geometry_newuoa_mod
             if ximproved
                 distsq(:) = fortran.sum(fortran.power(xpt - (xpt(:, kopt) + d), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
-
             else
                 distsq(:) = fortran.sum(fortran.power(xpt - xpt(:, kopt), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
@@ -128,12 +127,11 @@ classdef geometry_newuoa_mod
 
             knew = 0;
             % The following IF works a bit better than `IF (ANY(SCORE > 0))` from Powell's BOBYQA/LINCOA code.
-            if any(score > 1, 'all') || ximproved && any(score > 0, 'all')
-                % Powell's UOBYQA and NEWUOA code
+            if any(score > 1, 'all') ...
+               || ximproved && any(score > 0, 'all') % Powell's UOBYQA and NEWUOA code
                 % See (7.5) of the NEWUOA paper for the definition of KNEW in this case.
                 knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
-
             end
 
             % Powell's code does not include the following instructions. With Powell's code, if DEN consists of
@@ -141,8 +139,7 @@ classdef geometry_newuoa_mod
             % to make sure that the new trial point is included in the interpolation set. However, the updating
             % subroutine will likely need to skip the update of the Lagrange polynomials (i.e., H), or they
             % would be destroyed by the NaNs.
-            if ximproved && knew == 0 || knew < 0
-                % KNEW < 0 is impossible in theory.
+            if ximproved && knew == 0 || knew < 0 % KNEW < 0 is impossible in theory.
                 knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
@@ -159,10 +156,11 @@ classdef geometry_newuoa_mod
                                  srname);
                 % KNEW >= 1 when XIMPROVED = TRUE unless NaN occurs in DISTSQ, which should not happen if the
                 % starting point does not contain NaN and the trust-region/geometry steps never contain NaN.
-
             end
 
         end
+
+
         function d = geostep(obj, idz, knew, kopt, bmat, delbar, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine finds a step D that intends to improve the geometry of the interpolation set when
@@ -184,10 +182,7 @@ classdef geometry_newuoa_mod
             powalg_obj = prima_mat.common.powalg_mod();
 
             % Inputs
-
-
             % BMAT(N, NPT + N)
-
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
@@ -196,7 +191,6 @@ classdef geometry_newuoa_mod
 
             % Local variables
             srname = "GEOSTEP";
-
             pqlag = NaN(size(xpt, 2), 1);
 
             % Sizes
@@ -216,7 +210,7 @@ classdef geometry_newuoa_mod
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
                                  "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(delbar > 0, "DELBAR > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
             end
@@ -261,13 +255,13 @@ classdef geometry_newuoa_mod
 
             % In case D is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to
             % XOPT. Powell's code does not have this.
-            if fortran.sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+            if fortran.sum(abs(d), 'all') <= 0 ...
+               || ~infnan_obj.is_finite_sp(fortran.sum(abs(d), 'all'))
                 d = xpt(:, knew) - xpt(:, kopt);
                 scaling = delbar / linalg_obj.p_norm(d);
                 d = ...
                     max(0.6 * scaling, min(consts_obj.HALF, scaling)) ...
                     * d; % 0.6: ensure |D| > DELBAR/2
-
             end
 
             %====================%
@@ -276,7 +270,7 @@ classdef geometry_newuoa_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 % In theory, ||D|| = DELBAR. Considering rounding errors, we check that DELBAR/2 < ||D|| < 2*DELBAR.
                 % It is crucial to ensure that the geometry step is nonzero.
@@ -286,6 +280,8 @@ classdef geometry_newuoa_mod
             end
 
         end
+
+
         function d = biglag(obj, idz, knew, bmat, delbar, x, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine calculates a D by approximately solving
@@ -303,11 +299,9 @@ classdef geometry_newuoa_mod
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
 
+
             % Inputs
-
-
             % BMAT(N, NPT + N)
-
             % X(N)
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
@@ -317,18 +311,12 @@ classdef geometry_newuoa_mod
 
             % Local variables
             srname = "BIGLAG";
-
             cf = NaN(5, 1);
-
             dold = NaN(size(x));
-
             gd = NaN(size(x));
-
             pqlag = NaN(size(xpt, 2), 1);
             s = NaN(size(x));
-
             % LFUNC(X)
-
             w = NaN(size(x));
 
             % Sizes
@@ -346,9 +334,9 @@ classdef geometry_newuoa_mod
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
                                  "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
                 debug_obj.assert(delbar > 0, "DELBAR > 0", srname);
-                debug_obj.assert(numel(x) == n && all(infnan_obj.is_finite(x), 'all'), ...
+                debug_obj.assert(numel(x) == n && all(infnan_obj.is_finite_sp(x), 'all'), ...
                                  "SIZE(X) == N, X is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
             end
@@ -387,7 +375,7 @@ classdef geometry_newuoa_mod
             if gg * fortran.power(delbar, 2) < 1.0e-2 * fortran.power(tau, 2)
                 t = consts_obj.ONE;
             end
-            if infnan_obj.is_finite(fortran.sum(abs(scaling * d), 'all'))
+            if infnan_obj.is_finite_sp(fortran.sum(abs(scaling * d), 'all'))
                 d = scaling * d;
                 gd = scaling * gd;
                 s = gc + t * gd;
@@ -460,7 +448,7 @@ classdef geometry_newuoa_mod
                 d = cth * d + sth * s;
 
                 % Exit in case of Inf/NaN in D.
-                if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+                if ~infnan_obj.is_finite_sp(fortran.sum(abs(d), 'all'))
                     d(:) = dold;
                     break
                 end
@@ -482,7 +470,7 @@ classdef geometry_newuoa_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 % In theory, ||D|| = DELBAR. Considering rounding errors, we check that DELBAR/2 < ||D|| < 2*DELBAR.
                 % It is crucial to ensure that the geometry step is nonzero.
@@ -492,6 +480,8 @@ classdef geometry_newuoa_mod
             end
 
         end
+
+
         function d = bigden(obj, idz, knew, kopt, bmat, d0, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % BIGDEN calculates a D by approximately solving
@@ -516,11 +506,9 @@ classdef geometry_newuoa_mod
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
 
+
             % Inputs
-
-
             % BMAT(N, NPT+N)
-
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
@@ -529,18 +517,13 @@ classdef geometry_newuoa_mod
 
             % Local variable
             srname = "BIGDEN";
-
             den = NaN(9, 1);
             denex = NaN(9, 1);
-
             dstemp = NaN(size(xpt, 2), 1);
-
             par = NaN(5, 1);
             pqlag = NaN(size(xpt, 2), 1);
             prod_custom = NaN(size(xpt, 1) + size(xpt, 2), 5);
-
             sstemp = NaN(size(xpt, 2), 1);
-
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
             w = NaN(size(xpt, 1) + size(xpt, 2), 5);
 
@@ -560,9 +543,9 @@ classdef geometry_newuoa_mod
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
                                  "BMAT(:, NPT+1:NPT+N) is symmetric", srname);
-                debug_obj.assert(numel(d0) == n && all(infnan_obj.is_finite(d0), 'all'), ...
+                debug_obj.assert(numel(d0) == n && all(infnan_obj.is_finite_sp(d0), 'all'), ...
                                  "SIZE(D0) == N, D0 is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
             end
@@ -753,7 +736,7 @@ classdef geometry_newuoa_mod
                 d = fortran.cos(angle) * d + fortran.sin(angle) * s;
 
                 % Exit in case of Inf/NaN in D.
-                if ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+                if ~infnan_obj.is_finite_sp(fortran.sum(abs(d), 'all'))
                     d = dold;
                     break
                 end
@@ -788,7 +771,7 @@ classdef geometry_newuoa_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 % In theory, ||D|| = DELBAR. Considering rounding errors, we check that DELBAR/2 < ||D|| < 2*DELBAR.
                 % It is crucial to ensure that the geometry step is nonzero.
@@ -798,6 +781,8 @@ classdef geometry_newuoa_mod
             end
 
         end
+
+
         function f = circle_fun_biglag(~, theta, args)
             %--------------------------------------------------------------------------------------------------%
             % This function defines the objective function of the 2-dimensional search on a circle in BIGLAG.
@@ -806,9 +791,7 @@ classdef geometry_newuoa_mod
             debug_obj = prima_mat.common.debug_mod();
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "CIRCLE_FUN_BIGLAG";
@@ -830,6 +813,8 @@ classdef geometry_newuoa_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function f = circle_fun_bigden(~, theta, args)
             %--------------------------------------------------------------------------------------------------%
             % This function defines the objective function of the 2-dimensional search on a circle in BIGDEN.
@@ -838,11 +823,10 @@ classdef geometry_newuoa_mod
             debug_obj = prima_mat.common.debug_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
+
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "CIRCLE_FUN_BIGDEN";
@@ -866,6 +850,7 @@ classdef geometry_newuoa_mod
             %  Calculation ends  %
             %====================%
         end
+
 
     end
 end

@@ -4,9 +4,12 @@ import re
 import shutil
 import subprocess
 import time
+import tempfile
 from pathlib import Path
 from functools import wraps
 import datetime
+
+from postprocess_PRIMA import postprocess
 
 
 def wrap_as_comment(text: str) -> str:
@@ -60,6 +63,58 @@ def timer(func):
     return wrapper
 
 
+class FortranCommentProtector:
+    """
+    Keep Fortran comments unchanged while CPP processes the code.
+
+    A line in const.F90 includes `PRIMA_DEBUGGING` as a part of comments.
+    This class prevent it being replaced by gfortran.
+    """
+
+    def __init__(self):
+        self.comments = {}
+        self.counter = 0
+
+    def protect(self, content):
+        """
+        Hide free-form Fortran comments, respecting quoted strings.
+        """
+        lines = []
+        quote = None
+        for line in content.splitlines(keepends=True):
+            # Do not treat the ! in #if !defined(...) as a comment.
+            if line.lstrip().startswith("#"):
+                lines.append(line)
+                continue
+            # Whole-line comments may also appear inside a continued string.
+            comment_only = line.lstrip().startswith("!")
+            for index, char in enumerate(line):
+                if char == "!" and (comment_only or quote is None):
+                    comment = line[index:].rstrip("\r\n")
+                    token = f"!__PRIMA_COMMENT_{self.counter}__"
+                    self.comments[token] = comment
+                    self.counter += 1
+                    line = line[:index] + token + line[index + len(comment) :]
+                    break
+                if comment_only:
+                    continue
+                if quote:
+                    if char == quote:
+                        quote = None
+                elif char in ("'", '"'):
+                    quote = char
+            lines.append(line)
+        return "".join(lines)
+
+    def restore(self, content):
+        """Replace placeholders with the original comments."""
+        return re.sub(
+            r"!__PRIMA_COMMENT_\d+__",
+            lambda match: self.comments.get(match.group(), match.group()),
+            content,
+        )
+
+
 @timer
 def preprocess(src_dir, src_files, output_dir, debugging=0):
     preprocessed_files = []
@@ -74,21 +129,32 @@ def preprocess(src_dir, src_files, output_dir, debugging=0):
 
         # .F90 -> Preprocess with gfortran
         if source_path.suffix == ".F90":
-            subprocess.run(
-                [
-                    "gfortran",
-                    "-E",
-                    "-cpp",
-                    "-P",
-                    f"-DPRIMA_DEBUGGING={debugging}",
-                    str(source_path),
-                    f"-I{src_dir}",
-                    "-o",
-                    str(target_path),
-                ],
-                check=True,
+            comment_protector = FortranCommentProtector()
+            protected = comment_protector.protect(
+                source_path.read_text(encoding="utf-8", errors="ignore")
             )
+            with tempfile.TemporaryDirectory(
+                prefix="prima-preprocess-"
+            ) as tmp:
+                protected_path = Path(tmp) / source_path.name
+                protected_path.write_text(protected, encoding="utf-8")
+                subprocess.run(
+                    [
+                        "gfortran",
+                        "-E",
+                        "-cpp",
+                        "-P",
+                        f"-DPRIMA_DEBUGGING={debugging}",
+                        str(protected_path),
+                        f"-I{source_path.parent}",
+                        f"-I{src_dir}",
+                        "-o",
+                        str(target_path),
+                    ],
+                    check=True,
+                )
             content = target_path.read_text(encoding="utf-8", errors="ignore")
+            content = comment_protector.restore(content)
             # .strip() removes all leading/trailing whitespace and newlines
             # We append a single "\n" at the end as per standard POSIX
             # file conventions
@@ -131,6 +197,7 @@ def translate(options):
 
 if __name__ == "__main__":
     current_dir = Path(__file__).parent
+    package_name = "prima_mat"
     src_dir = (current_dir / "fortran").resolve()
     preprocess_dir = (current_dir / "preprocessed_fortran/").resolve()
     output_dir = (current_dir / "matlab/interfaces/").resolve()
@@ -138,31 +205,32 @@ if __name__ == "__main__":
     if p.exists():
         shutil.rmtree(p)
 
-    for pkg_name, dbg in [("prima_mat", 0), ("prima_debug", 1)]:
-        p = output_dir / f"+{pkg_name}"
-        if p.exists():
-            shutil.rmtree(p)
+    p = output_dir / f"+{package_name}"
+    if p.exists():
+        shutil.rmtree(p)
 
-        src_files = extract_source(src_dir)
-        preprocess(src_dir, src_files, preprocess_dir, debugging=dbg)
-        translate(
-            [
-                "-r",
-                str(preprocess_dir),
-                "-o",
-                str(output_dir),
-                "--create-setup-m",
-                "--try-bit-consistency",
-                # "--no-simplify",
-                # "--prima",
-                "--as-package",
-                pkg_name,
-                # "--preamble",
-                # FILE_PREAMBLE,
-                "--max-column-width",
-                "100",
-            ]
-        )
+    src_files = extract_source(src_dir)
+    preprocess(src_dir, src_files, preprocess_dir, debugging=1)
+    translate(
+        [
+            "-r",
+            str(preprocess_dir),
+            "-o",
+            str(output_dir),
+            "--create-setup-m",
+            "--try-bit-consistency",
+            # "--no-simplify",
+            # "--prima",
+            "--as-package",
+            package_name,
+            "--preamble",
+            FILE_PREAMBLE,
+            "--max-column-width",
+            "100",
+        ]
+    )
 
-        if preprocess_dir.exists():
-            shutil.rmtree(preprocess_dir)
+    if preprocess_dir.exists():
+        shutil.rmtree(preprocess_dir)
+
+    postprocess(package_name)

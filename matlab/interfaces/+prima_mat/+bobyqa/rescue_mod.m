@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef rescue_mod
     %--------------------------------------------------------------------------------------------------%
     % This module contains the RESCUE subroutine described in Section 5 of the BOBYQA paper.
@@ -22,6 +25,8 @@ classdef rescue_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [kopt, nf, fhist, fval, gopt, hq, pq, sl, su, xbase, xhist, xpt, bmat, zmat, ...
                   info] = ...
                 rescue(obj, calfun, solver, iprint, maxfun, delta, ftarget, xl, xu, kopt, nf, ...
@@ -95,20 +100,16 @@ classdef rescue_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-
             powalg_obj = prima_mat.common.powalg_mod();
             string_obj = prima_mat.common.string_mod();
             xinbd_obj = prima_mat.common.xinbd_mod();
 
+
             % Inputs
-
-
             % XL(N)
             % XU(N)
 
             % In-outputs
-
-
             % FHIST(MAXFHIST)
             % FVAL(NPT)
             % GOPT(N)
@@ -121,30 +122,23 @@ classdef rescue_mod
             % XPT(N, NPT)
 
             % Outputs
-
             %  BMAT(N, NPT + N)
             % ZMAT(NPT, NPT-N-1)
 
             % Local variables
             srname = "RESCUE";
             ij = NaN(2, max(0, size(xpt, 2) - 2 * size(xpt, 1) - 1));
-
             den = NaN(size(xpt, 2), 1);
-
             hcol = NaN(size(bmat, 2), 1);
             hdiag = NaN(size(xpt, 2), 1);
-
             pqinc = NaN(size(xpt, 2), 1);
             ptsaux = NaN(2, size(xpt, 1));
             ptsid = NaN(size(xpt, 2), 1);
             score = NaN(size(xpt, 2), 1);
-
             vlag = NaN(size(xpt, 1) + size(xpt, 2), 1);
-
             wmv = NaN(size(xpt, 1) + size(xpt, 2), 1);
             x = NaN(size(xpt, 1), 1);
             xnew = NaN(size(xpt, 1), 1);
-
             xxpt = NaN(size(xpt, 2), 1);
 
             n = size(xpt, 1);
@@ -163,7 +157,7 @@ classdef rescue_mod
                 debug_obj.assert(delta > 0, "DELTA > 0", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(infnan_obj.is_nan_sp(fval) ...
-                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(fval), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(~any(fval < fval(kopt), 'all'), ...
                                  "FVAL(KOPT) is the smallest in FVAL", srname);
@@ -179,19 +173,20 @@ classdef rescue_mod
                 debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
                                  "HQ is n-by-n and symmetric", srname);
                 debug_obj.assert(numel(pq) == npt, "SIZE(PQ) == NPT", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(all(xbase >= xl & xbase <= xu, 'all'), "XL <= XBASE <= XU", ...
                                  srname);
                 debug_obj.assert(size(xhist, 1) == n && maxxhist * (maxxhist - maxhist) == 0, ...
                                  "SIZE(XHIST, 1) == N, SIZE(XHIST, 2) == 0 or MAXHIST", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xhist(:, 1:min(nf, maxxhist))), ...
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xhist(:, 1:min(nf, maxxhist))), ...
                                      'all'), "XHIST is finite", srname);
                 for k = 1:min(nf, maxxhist)
                     debug_obj.assert(all(xhist(:, k) >= xl, 'all') ...
                                      && all(xhist(:, k) <= xu, 'all'), "XL <= XHIST <= XU", srname);
                 end
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), ...
                                  "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
@@ -313,8 +308,7 @@ classdef rescue_mod
                 % %DO WHILE (ANY(SCORE > 0) .AND. NPROV > 1)   ! WHILE version.
                 % %IF (ALL(SCORE <= 0) .AND. NPROV <= 0) THEN ! Powell's code. May not take any provisional point.
                 % %IF (ALL(SCORE <= 0) .AND. NPROV <= 2) THEN  ! Retain at least two provisional points.
-                if all(score <= 0, 'all') || nprov <= 1
-                    % Retain at least one provisional point.
+                if all(score <= 0, 'all') || nprov <= 1 % Retain at least one provisional point.
                     break
                 end
 
@@ -339,8 +333,7 @@ classdef rescue_mod
                 for k = 1:npt
                     if k == kopt
                         wmv(k) = consts_obj.ZERO;
-                    elseif ptsid(k) <= 0
-                        % Indeed, PTSID >= 0. So PTSID(K) <= 0 means PTSID(K) = 0.
+                    elseif ptsid(k) <= 0 % Indeed, PTSID >= 0. So PTSID(K) <= 0 means PTSID(K) = 0.
                         wmv(k) = linalg_obj.inprod(xpt(:, korig), xpt(:, k));
                     else
                         ip = floor(ptsid(k)); % IP = 0 if 0 < PTSID(K) < 1.
@@ -413,7 +406,7 @@ classdef rescue_mod
                 % point will be ranked lower if it fails to fulfill MAXVAL(DEN) > C*MAXVAL(VLAG(1:NPT)**2).
                 % Even if KORIG cannot satisfy this condition for now, it may validate the inequality in future
                 % attempts, as BMAT and ZMAT will be updated.
-                if ~(infnan_obj.is_finite(fortran.sum(abs(vlag), 'all')) ...
+                if ~(infnan_obj.is_finite_sp(fortran.sum(abs(vlag), 'all')) ...
                      && any(den > 5.0e-2 * max(fortran.power(vlag(1:npt), 2)), 'all'))
                     % The above condition works a bit better than Powell's version below due to the factor 0.05.
                     % %IF (.NOT. (ANY(DEN > 1.0E-2_RP * MAXVAL(VLAG(1:NPT)**2)))) THEN  ! Powell' code
@@ -481,12 +474,10 @@ classdef rescue_mod
                         xnew(ip) = xp;
                         xq = ptsaux(1, iq);
                         xnew(iq) = xq;
-                    elseif ip > 0
-                        % IP > 0, IQ == 0
+                    elseif ip > 0 % IP > 0, IQ == 0
                         xp = ptsaux(1, ip);
                         xnew(ip) = xp;
-                    elseif iq > 0
-                        % IP == 0, IQ > 0
+                    elseif iq > 0 % IP == 0, IQ > 0
                         xq = ptsaux(2, iq);
                         xnew(iq) = xq;
                     end
@@ -501,7 +492,7 @@ classdef rescue_mod
                     % between [BMAT, ZMAT] and XPT, since the former has been updated, but it is not severe as
                     % the difference between XNEW and XPT(:, KPT) is tiny.
                     if fortran.sum(abs(xnew - xpt(:, kpt)), 'all') <= 1.0e-2 * delta ...
-                       || ~infnan_obj.is_finite(fortran.sum(abs(xnew), 'all'))
+                       || ~infnan_obj.is_finite_sp(fortran.sum(abs(xnew), 'all'))
                         continue
                     end
                     xpt(:, kpt) = xnew;
@@ -541,12 +532,10 @@ classdef rescue_mod
                         vquad = vquad + xq * (gopt(iq) + consts_obj.HALF * xq * hq(iq, iq));
                         vquad = vquad + xp * xq * hq(ip, iq);
                         xxpt = xp * xpt(ip, :).' + xq * xpt(iq, :).';
-                    elseif ip > 0
-                        % IP > 0, IQ == 0
+                    elseif ip > 0 % IP > 0, IQ == 0
                         vquad = vquad + xp * (gopt(ip) + consts_obj.HALF * xp * hq(ip, ip));
                         xxpt = xp * xpt(ip, :).';
-                    elseif iq > 0
-                        % IP == 0, IQ > 0
+                    elseif iq > 0 % IP == 0, IQ > 0
                         vquad = vquad + xq * (gopt(iq) + consts_obj.HALF * xq * hq(iq, iq));
                         xxpt = xq * xpt(iq, :).';
                     end
@@ -570,11 +559,9 @@ classdef rescue_mod
                             hq(iq, iq) = hq(iq, iq) + pqinc(k) * fortran.power(ptsaux(1, iq), 2);
                             hq(ip, iq) = hq(ip, iq) + pqinc(k) * ptsaux(1, ip) * ptsaux(1, iq);
                             hq(iq, ip) = hq(ip, iq);
-                        elseif ip > 0
-                            % IP > 0, IQ == 0
+                        elseif ip > 0 % IP > 0, IQ == 0
                             hq(ip, ip) = hq(ip, ip) + pqinc(k) * fortran.power(ptsaux(1, ip), 2);
-                        elseif iq > 0
-                            % IP == 0, IP > 0
+                        elseif iq > 0 % IP == 0, IP > 0
                             hq(iq, iq) = hq(iq, iq) + pqinc(k) * fortran.power(ptsaux(2, iq), 2);
                         end
                     end
@@ -613,7 +600,7 @@ classdef rescue_mod
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(infnan_obj.is_nan_sp(fval) ...
-                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(fval), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN/+Inf", srname);
                 debug_obj.assert(~any(fval < fval(kopt), 'all'), ...
                                  "FVAL(KOPT) is the smallest in FVAL", srname);
@@ -623,7 +610,8 @@ classdef rescue_mod
                 debug_obj.assert(size(hq, 1) == n && linalg_obj.issymmetric(hq), ...
                                  "HQ is n-by-n and symmetric", srname);
                 debug_obj.assert(numel(pq) == npt, "SIZE(PQ) == NPT", srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(all(xbase >= xl & xbase <= xu, 'all'), "XL <= XBASE <= XU", ...
                                  srname);
@@ -638,7 +626,7 @@ classdef rescue_mod
                 end
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
                                  "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), ...
                                  "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
@@ -659,6 +647,8 @@ classdef rescue_mod
             end
 
         end
+
+
         function [bmat, zmat, info] = updateh_rsc(~, knew, beta, vlag_in, bmat, zmat)
             % %%% N.B.: UPDATEH_RSC is only used by RESCUE.
             %--------------------------------------------------------------------------------------------------%
@@ -680,8 +670,6 @@ classdef rescue_mod
             string_obj = prima_mat.common.string_mod();
 
             % Inputs
-
-
             % VLAG(NPT + N)
 
             % In-outputs
@@ -690,12 +678,9 @@ classdef rescue_mod
 
             % Outputs
 
-
             % Local variables
             srname = "UPDATEH_RSC";
-
             hcol = NaN(size(bmat, 2), 1);
-
             v1 = NaN(size(bmat, 1), 1);
             v2 = NaN(size(bmat, 1), 1);
 
@@ -729,7 +714,6 @@ classdef rescue_mod
                 %tol = 1.0E-2_RP
                 %call wassert(errh(bmat, zmat, xpt) <= tol .or. precision(0.0_RP) < precision(0.0D0), &
                 %    & 'H = W^{-1} in (2.7) of the BOBYQA paper', srname)
-
             end
 
             %====================%
@@ -741,8 +725,7 @@ classdef rescue_mod
             end
 
             % We must not do anything if KNEW is 0. This can only happen sometimes after a trust-region step.
-            if knew <= 0
-                % KNEW < 0 is impossible if the input is correct.
+            if knew <= 0 % KNEW < 0 is impossible if the input is correct.
                 return
             end
 
@@ -758,7 +741,7 @@ classdef rescue_mod
             % Quite rarely, due to rounding errors, VLAG or BETA may not be finite, or DENOM may not be
             % positive. In such cases, [BMAT, ZMAT] would be destroyed by the update, and hence we would rather
             % not update them at all. Or should we simply terminate the algorithm?
-            if ~(infnan_obj.is_finite(fortran.sum(abs(vlag), 'all') + abs(beta)) && denom > 0)
+            if ~(infnan_obj.is_finite_sp(fortran.sum(abs(vlag), 'all') + abs(beta)) && denom > 0)
                 if nargout >= 3
                     info = infos_obj.DAMAGING_ROUNDING;
                 end
@@ -771,8 +754,8 @@ classdef rescue_mod
             % Apply Givens rotations to put zeros in the KNEW-th row of ZMAT. After this, ZMAT(KNEW, :) contains
             % only one nonzero at ZMAT(KNEW, 1). Entries of ZMAT are treated as 0 if the moduli are quite small.
             for j = 2:npt - n - 1
-                if abs(zmat(knew, j)) > 1.0e-20 * max(abs(zmat), [], 'all')
-                    % This threshold is by Powell
+                if abs(zmat(knew, j)) ...
+                   > 1.0e-20 * max(abs(zmat), [], 'all') % This threshold is by Powell
                     grot = linalg_obj.planerot(zmat(knew, [1, j]).');
                     zmat(:, [1, j]) = linalg_obj.matprod22(zmat(:, [1, j]), grot.');
                 end
@@ -799,8 +782,7 @@ classdef rescue_mod
                 + linalg_obj.outprod(v2, hcol); %call r2update(bmat, ONE, v1, vlag, ONE, v2, hcol)
             % N.B.: The use of OUTPROD is expensive memory-wise, but it is not our concern in this implementation.
             % Numerically, the update above does not guarantee BMAT(:, NPT+1 : NPT+N) to be symmetric.
-            A_slice = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n));
-            bmat(:, npt + 1:npt + n) = A_slice;
+            bmat(:, npt + 1:npt + n) = linalg_obj.symmetrize(bmat(:, npt + 1:npt + n));
 
             %====================%
             %  Calculation ends  %
@@ -831,9 +813,9 @@ classdef rescue_mod
                 % %    call assert(errh(bmat, zmat, xpt_test) <= tol .or. precision(0.0_RP) < precision(0.0D0), &
                 % %        & 'H = W^{-1} in (2.7) of the BOBYQA paper', srname)
                 % %end if
-
             end
         end
+
 
     end
 end

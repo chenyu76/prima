@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef geometry_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module contains subroutines concerning the geometry-improving of the interpolation set XPT.
@@ -12,6 +15,8 @@ classdef geometry_uobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function knew = setdrop_tr(~, kopt, ximproved, d, pl, rho, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine sets KNEW to the index of the interpolation point to be deleted AFTER A TRUST
@@ -37,22 +42,17 @@ classdef geometry_uobyqa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+
             % Inputs
-
-
             % D(N)
             % PL(NPT-1, NPT)
-
             % XPT(N, NPT)
 
             % Outputs
 
-
             % Local variables
             srname = "SETDROP_TR";
-
             distsq = NaN(size(xpt, 2), 1);
-
             vlag = NaN(size(xpt, 2), 1);
 
             % Sizes
@@ -63,9 +63,9 @@ classdef geometry_uobyqa_mod
             if consts_obj.DEBUGGING
                 debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, ...
                                  "SIZE(PL)==[NPT - 1, NPT]", srname);
             end
@@ -91,7 +91,6 @@ classdef geometry_uobyqa_mod
             if ximproved
                 distsq(:) = fortran.sum(fortran.power(xpt - (xpt(:, kopt) + d), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
-
             else
                 distsq(:) = fortran.sum(fortran.power(xpt - xpt(:, kopt), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
@@ -131,11 +130,10 @@ classdef geometry_uobyqa_mod
             knew = 0;
             % It makes almost no difference if we change the IF below to `IF (ANY(SCORE>0))`, which is used
             % in Powell's BOBYQA and LINCOA code.
-            if any(score > 1, 'all') || ximproved && any(score > 0, 'all')
-                % Powell's UOBYQA and NEWUOA code
+            if any(score > 1, 'all') ...
+               || ximproved && any(score > 0, 'all') % Powell's UOBYQA and NEWUOA code
                 knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
-
             end
 
             % Powell's code does not include the following instructions. With Powell's code, if VLAG consists of
@@ -143,8 +141,7 @@ classdef geometry_uobyqa_mod
             % to make sure that the new trial point is included in the interpolation set. However, the updating
             % subroutine will likely need to skip the update of the Lagrange polynomial, or they would be
             % destroyed by the NaNs.
-            if ximproved && knew == 0 || knew < 0
-                % KNEW < 0 is impossible in theory.
+            if ximproved && knew == 0 || knew < 0 % KNEW < 0 is impossible in theory.
                 knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
@@ -161,10 +158,11 @@ classdef geometry_uobyqa_mod
                                  srname);
                 % KNEW >= 1 when XIMPROVED = TRUE unless NaN occurs in DISTSQ, which should not happen if the
                 % starting point does not contain NaN and the trust-region/geometry steps never contain NaN.
-
             end
 
         end
+
+
         function d = geostep(~, knew, kopt, delbar, pl, xpt)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates a step D that approximately solves
@@ -193,9 +191,8 @@ classdef geometry_uobyqa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+
             % Inputs
-
-
             % PL(NPT-1, NPT)
             % XPT(N, NPT)
 
@@ -204,12 +201,9 @@ classdef geometry_uobyqa_mod
 
             % Local variables
             srname = "GEOSTEP";
-
             g = NaN(size(xpt, 1), 1);
-
             h = NaN(size(xpt, 1));
             hv = NaN(size(xpt, 1), 1);
-
             vlag = NaN(size(xpt, 2), 1);
             vlagc = NaN(size(xpt, 2), 1);
 
@@ -227,7 +221,7 @@ classdef geometry_uobyqa_mod
                 debug_obj.assert(delbar > 0, "DELBAR > 0", srname);
                 debug_obj.assert(size(pl, 1) == npt - 1 && size(pl, 2) == npt, ...
                                  "SIZE(PL) == [NPT-1, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
             end
 
             %====================%
@@ -246,12 +240,12 @@ classdef geometry_uobyqa_mod
             ghg = linalg_obj.inprod(g, linalg_obj.matprod21(h, g));
 
             % Calculate the Cauchy step as a backup. Powell's code does not have this, and D may be 0 or NaN.
-            if gg > 0 && infnan_obj.is_finite(gg)
+            if gg > 0 && infnan_obj.is_finite_sp(gg)
                 dcauchy = delbar / fortran.sqrt(gg) * g;
                 if ghg < 0
                     dcauchy = -dcauchy;
                 end
-            else                % GG is 0 or NaN due to rounding errors. Set DCAUCHY to a displacement from XOPT to XPT(:, KNEW).
+            else % GG is 0 or NaN due to rounding errors. Set DCAUCHY to a displacement from XOPT to XPT(:, KNEW).
                 dcauchy = xpt(:, knew) - xopt;
                 scaling = delbar / linalg_obj.p_norm(dcauchy);
                 dcauchy = ...
@@ -337,7 +331,7 @@ classdef geometry_uobyqa_mod
             if ~(gnorm * dd > 5.0e-3 * delbar * abs(dhd) && vv > 1.0e-4 * dd)
                 % It may happen that D = 0 due to overflow in DD, which is used to define SCALING.
                 if fortran.sum(abs(d), 'all') <= 0 ...
-                   || ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+                   || ~infnan_obj.is_finite_sp(fortran.sum(abs(d), 'all'))
                     d = dcauchy;
                 end
                 return
@@ -426,7 +420,7 @@ classdef geometry_uobyqa_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
                 % In theory, ||D|| = DELBAR. Considering rounding errors, we check that DELBAR/2 < ||D|| < 2*DELBAR.
                 % It is crucial to ensure that the geometry step is nonzero.
@@ -435,6 +429,7 @@ classdef geometry_uobyqa_mod
                                  "DELBAR/2 < ||D|| < 2*DELBAR", srname);
             end
         end
+
 
     end
 end

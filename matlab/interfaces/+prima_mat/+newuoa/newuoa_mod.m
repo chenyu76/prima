@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef newuoa_mod
     %--------------------------------------------------------------------------------------------------%
     % NEWUOA_MOD is a module providing the reference implementation of Powell's NEWUOA algorithm in
@@ -26,6 +29,8 @@ classdef newuoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [x, f_loc, nf_loc, xhist, fhist, info_loc] = newuoa(~, calfun, x, varargin)
             %--------------------------------------------------------------------------------------------------%
             % Among all the arguments, only CALFUN and X are obligatory. The others are OPTIONAL and you can
@@ -155,36 +160,30 @@ classdef newuoa_mod
 
             % Common modules
             consts_obj = prima_mat.common.consts_mod();
-
             debug_obj = prima_mat.common.debug_mod();
             evaluate_obj = prima_mat.common.evaluate_mod();
             history_obj = prima_mat.common.history_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             memory_obj = prima_mat.common.memory_mod();
-
             preproc_obj = prima_mat.common.preproc_mod();
             string_obj = prima_mat.common.string_mod();
 
             % Solver-specific modules
             newuob_obj = prima_mat.newuoa.newuob_mod();
 
+
             % Compulsory arguments
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
 
-
             % Optional inputs
 
-
             % Optional outputs
-
-
             fhist = [];
             xhist = [];
 
             % Local variables
             solver = "NEWUOA";
             srname = "NEWUOA";
-
             eta1_loc = NaN;
 
             % Sizes
@@ -231,7 +230,7 @@ classdef newuoa_mod
                 % combine the evaluation of PRESENT(RHOEND) and the evaluation of IS_FINITE(RHOEND) as
                 % "IF (PRESENT(RHOEND) .AND. IS_FINITE(RHOEND))". The compiler may choose to evaluate the
                 % IS_FINITE(RHOEND) even if PRESENT(RHOEND) is false!
-                if infnan_obj.is_finite(rhoend) && rhoend > 0
+                if infnan_obj.is_finite_sp(rhoend) && rhoend > 0
                     rhobeg_loc = max(consts_obj.TEN * rhoend, consts_obj.RHOBEG_DFT);
                 else
                     rhobeg_loc = consts_obj.RHOBEG_DFT;
@@ -251,14 +250,16 @@ classdef newuoa_mod
                 rhoend_loc = consts_obj.RHOEND_DFT;
             end
 
+
+
             if ~ismember('npt', ipObj.UsingDefaults)
                 npt_loc = npt;
-            elseif maxfun_loc >= n + 3
-                % Take MAXFUN into account if it is valid.
+            elseif maxfun_loc >= n + 3 % Take MAXFUN into account if it is valid.
                 npt_loc = min(maxfun_loc - 1, 2 * n + 1);
             else
                 npt_loc = 2 * n + 1;
             end
+
 
             if ~ismember('eta1', ipObj.UsingDefaults)
                 eta1_loc = eta1;
@@ -277,6 +278,8 @@ classdef newuoa_mod
             else
                 eta2_loc = 0.7;
             end
+
+
 
             if ismember('maxhist', ipObj.UsingDefaults)
                 maxhist_loc = max([maxfun_loc, n + 3, consts_obj.MAXFUN_DIM_DFT * n]);
@@ -298,6 +301,7 @@ classdef newuoa_mod
             [maxhist_loc, xhist_loc, fhist_loc] = ...
                 history_obj.prehist(maxhist_loc, n, nargout >= 4, nargout >= 5);
 
+
             %-------------------- Call NEWUOB, which performs the real calculations. --------------------------%
             if ismember('callback_fcn', ipObj.UsingDefaults)
                 [x, nf_loc, f_loc, fhist_loc, xhist_loc, info_loc] = ...
@@ -315,6 +319,8 @@ classdef newuoa_mod
 
 
             % Write the outputs.
+
+
 
 
             % Copy XHIST_LOC to XHIST if needed.
@@ -335,11 +341,9 @@ classdef newuoa_mod
                 % GARBAGE in XHIST_LOC(:, NF_LOC + 1 : END). Therefore, we MUST cap XHIST at NF_LOC so that
                 % XHIST contains only valid history. For this reason, there is no way to avoid allocating
                 % two copies of memory for XHIST unless we declare it to be a POINTER instead of ALLOCATABLE.
-
             end
             % F2003 automatically deallocate local ALLOCATABLE variables at exit, yet we prefer to deallocate
             % them immediately when they finish their jobs.
-
 
             % Copy FHIST_LOC to FHIST if needed.
             if nargout >= 5
@@ -348,7 +352,6 @@ classdef newuoa_mod
                 memory_obj.alloc_rvector_sp(nhist); % Removable in F2003.
                 %--------------------------------------------------%
                 fhist = fhist_loc(1:nhist); % The same as XHIST, we must cap FHIST at NF_LOC.
-
             end
 
             % If MAXFHIST_IN >= NF_LOC > MAXFHIST_LOC, warn that not all history is recorded.
@@ -374,7 +377,7 @@ classdef newuoa_mod
                 if nargout >= 5
                     debug_obj.assert(numel(fhist) == nhist, "SIZE(FHIST) == NHIST", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist) ...
-                                          | infnan_obj.is_posinf(fhist), 'all'), ...
+                                          | infnan_obj.is_posinf_sp(fhist), 'all'), ...
                                      "FHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(~any(fhist < f_loc, 'all'), "F is the smallest in FHIST", ...
                                      srname);
@@ -382,6 +385,7 @@ classdef newuoa_mod
             end
 
         end
+
 
     end
 end

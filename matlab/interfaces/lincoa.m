@@ -380,11 +380,8 @@ else % The problem turns out 'normal' during preprima
             % In C MEX, however, we have mxGetLogicals.
         else
             % Call the pure MATLAB code
-            if debug_flag
-                lo = prima_debug.lincoa.lincoa_mod();
-            else
-                lo = prima_mat.lincoa.lincoa_mod();
-            end
+            prima_mat.common.consts_mod.debug_state(debug_flag);
+            lo = prima_mat.lincoa.lincoa_mod();
             [x, fx, constrviolation, nf, xhist, fhist, chist, exitflag] = lo.lincoa( ...
                 fun, x0, 'Aineq', Aineq, 'bineq', bineq, 'Aeq', Aeq, 'beq', beq, ...
                 'xl', lb, 'xu', ub, 'rhobeg', rhobeg, 'rhoend', rhoend, ...

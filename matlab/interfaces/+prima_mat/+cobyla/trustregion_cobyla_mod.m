@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef trustregion_cobyla_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides subroutines concerning the trust-region calculations of COBYLA.
@@ -12,6 +15,8 @@ classdef trustregion_cobyla_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function d = trstlp(obj, A, b, delta, g)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine calculates an N-component vector D by the following two stages. In the first
@@ -64,7 +69,6 @@ classdef trustregion_cobyla_mod
             % Inputs
             % A(N, M)
             % B(M)
-
             % G(N)
 
             % Outputs
@@ -72,13 +76,10 @@ classdef trustregion_cobyla_mod
 
             % Local variables
             srname = "TRSTLP";
-
             iact = NaN(numel(b) + 1, 1);
-
             nact = NaN;
             A_aug = NaN(size(A, 1), size(A, 2) + 1);
             b_aug = NaN(numel(b) + 1, 1);
-
             vmultc = NaN(numel(b) + 1, 1);
             z = NaN(numel(d));
 
@@ -109,7 +110,7 @@ classdef trustregion_cobyla_mod
             % Note that the trust-region step is scale invariant.
             % N.B.: It is faster and safer to scale by multiplying a reciprocal than by division. See
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
-            for i = 1:m + 1                % Note that SIZE(A, 2) = SIZE(B) = M + 1 /= M.
+            for i = 1:m + 1 % Note that SIZE(A, 2) = SIZE(B) = M + 1 /= M.
                 if max(abs(A_aug(:, i))) > 1.0e12
                     modscal = ...
                         max(consts_obj.TWO * consts_obj.REALMIN, ...
@@ -120,9 +121,9 @@ classdef trustregion_cobyla_mod
             end
 
             % Stage 1: minimize the l_infinity constraint violation of the linearized constraints.
-            [iact_slice, nact, d, vmultc_slice, z] = ...
+            [iact(1:m), nact, d, vmultc(1:m), z] = ...
                 obj.trstlp_sub(iact(1:m), nact, 1, A_aug(:, 1:m), b_aug(1:m), delta, d, ...
-                               vmultc(1:m), z); iact(1:m) = iact_slice; vmultc(1:m) = vmultc_slice;
+                               vmultc(1:m), z);
 
             % Stage 2: minimize the linearized objective without increasing the l_infinity constraint violation.
             [iact, nact, d, vmultc, z] = ...
@@ -135,12 +136,14 @@ classdef trustregion_cobyla_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(d), 'all'), "D is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(d), 'all'), "D is finite", srname);
                 % Due to rounding, it may happen that ||D|| > DELTA, but ||D|| > 2*DELTA is highly improbable.
                 debug_obj.assert(linalg_obj.p_norm(d) <= consts_obj.TWO * delta, ...
                                  "||D|| <= 2*DELTA", srname);
             end
         end
+
+
         function [iact, nact, d, vmultc, z] = ...
                 trstlp_sub(~, iact, nact, stage, A, b, delta, d, vmultc, z)
             %--------------------------------------------------------------------------------------------------%
@@ -162,29 +165,22 @@ classdef trustregion_cobyla_mod
             powalg_obj = prima_mat.common.powalg_mod();
 
             % Inputs
-
             % A(N, MCON)
             % B(M)
 
-
             % In-outputs
             % IACT(MCON)
-
             % D(N)
             % VMULTC(MCON)
             % Z(N, N)
 
             % Local variables
             srname = "TRSTLP_SUB";
-
             %real(RP) :: cvold
             cvsabs = NaN(size(b));
             cvshift = NaN(size(b));
-
             fracmult = NaN(size(vmultc));
-
             sdirn = NaN(size(d));
-
             vmultd = NaN(size(vmultc));
             zdasav = NaN(size(z, 2), 1);
             zdota = NaN(size(z, 2), 1);
@@ -206,7 +202,7 @@ classdef trustregion_cobyla_mod
                 debug_obj.assert(size(z, 1) == n && size(z, 2) == n, "SIZE(Z) == [N, N]", srname);
                 debug_obj.assert(delta > 0, "DELTA > 0", srname);
                 if stage == 2
-                    debug_obj.assert(all(infnan_obj.is_finite(d), 'all') ...
+                    debug_obj.assert(all(infnan_obj.is_finite_sp(d), 'all') ...
                                      && linalg_obj.p_norm(d) <= consts_obj.TWO * delta, ...
                                      "D is finite and ||D|| <= 2*DELTA at the beginning of stage 2", ...
                                      srname);
@@ -217,7 +213,6 @@ classdef trustregion_cobyla_mod
                                      || all(vmultc(1:mcon - 1) >= 0, 'all'), ...
                                      "VMULTC >= 0 at the beginning of stage 2", srname);
                     % N.B.: Stage 1 defines only VMULTC(1:M); VMULTC(M+1) is undefined!
-
                 end
             end
 
@@ -382,9 +377,8 @@ classdef trustregion_cobyla_mod
                             % We must exit, as NACT-1 is used as an index below. Powell's code does not have this.
                             break
                         end
-                        [z, Rdiag_slice] = ...
+                        [z, zdota(1:nact)] = ...
                             powalg_obj.qrexc_Rdiag(A(:, iact(1:nact)), z, zdota(1:nact), nact - 1);
-                        zdota(1:nact) = Rdiag_slice;
                         % Indeed, it suffices to pass Z(:, 1:NACT) to QREXC as follows.
                         % %call qrexc(A(:, iact(1:nact)), z(:, 1:nact), zdota(1:nact), nact - 1_IK)
                         iact([nact - 1, nact]) = iact([nact, nact - 1]);
@@ -416,14 +410,14 @@ classdef trustregion_cobyla_mod
                         % SDIRN^T*A(:, IACT(NACT)) = 1, SDIRN is orthogonal to A(:, IACT(1:NACT-1)) and is
                         % parallel to Z(:, NACT).
                     end
-                else                    % ICON <= NACT
+                else % ICON <= NACT
                     % Delete the constraint with the index IACT(ICON) from the active set, which is done by
                     % reordering IACT(ICONT:NACT) into [IACT(ICON+1:NACT), IACT(ICON)] by pairwise exchanges
                     % and then reduce NACT to NACT - 1. In theory, ICON > 0.
                     debug_obj.validate(icon > 0, "ICON > 0", srname);
-                    [z, Rdiag_slice] = ...
-                        powalg_obj.qrexc_Rdiag(A(:, iact(1:nact)), z, zdota(1:nact), icon);
-                    zdota(1:nact) = Rdiag_slice; % QREXC does nothing if ICON==NACT.
+                    [z, zdota(1:nact)] = ...
+                        powalg_obj.qrexc_Rdiag(A(:, iact(1:nact)), z, zdota(1:nact), ...
+                                               icon); % QREXC does nothing if ICON==NACT.
                     % Indeed, it suffices to pass Z(:, 1:NACT) to QREXC as follows.
                     % %call qrexc(A(:, iact(1:nact)), z(:, 1:nact), zdota(1:nact), icon)
                     iact(icon:nact) = [iact(icon + 1:nact); iact(icon)];
@@ -440,7 +434,6 @@ classdef trustregion_cobyla_mod
                     % random tests. Maybe NACT is theoretically positive even in stage 1?
                     if stage == 2 && nact <= 0
                         break % If this case ever occurs, we have to exit, as NACT is used as an index below.
-
                     end
                     if nact > 0
                         if infnan_obj.is_nan_sp(zdota(nact)) ...
@@ -454,7 +447,6 @@ classdef trustregion_cobyla_mod
                     if stage == 1
                         sdirn = sdirn - linalg_obj.inprod(sdirn, z(:, nact + 1)) * z(:, nact + 1);
                         % SDIRN is orthogonal to Z(:, NACT+1)
-
                     else
                         sdirn = -(consts_obj.ONE / zdota(nact)) * z(:, nact);
                         % SDIRN = Z(:, NACT)/(A(:,IACT(NACT))^T*Z(:, NACT))
@@ -485,7 +477,7 @@ classdef trustregion_cobyla_mod
                     step = (sqrtd - sd) / ss;
                 end
                 % STEP < 0 should not happen. STEP can be 0 or NaN when, e.g., SD or SS becomes Inf.
-                if step <= 0 || ~infnan_obj.is_finite(step)
+                if step <= 0 || ~infnan_obj.is_finite_sp(step)
                     break
                 end
                 % Powell's approach and comments are as follows.
@@ -528,7 +520,6 @@ classdef trustregion_cobyla_mod
                                              linalg_obj.matprod12(dnew, A(:, iact(1:nact))) ...
                                              - b(iact(1:nact))]);
                     % N.B.: CVIOL will be used when calculating VMULTD(NACT+1 : MCON).
-
                 end
 
                 % Zaikun 20211011:
@@ -543,7 +534,6 @@ classdef trustregion_cobyla_mod
                                            'Rdiag', zdota(1:nact));
                 if stage == 2
                     vmultd(nact) = max(consts_obj.ZERO, vmultd(nact)); % This seems never activated.
-
                 end
                 % Complete VMULTD by finding the new constraint residuals. (Powell wrote "Complete VMULTC ...")
                 cvshift(:) = ...
@@ -570,8 +560,8 @@ classdef trustregion_cobyla_mod
                 d = (consts_obj.ONE - frac) * d + frac * dnew;
                 vmultc = max(consts_obj.ZERO, (consts_obj.ONE - frac) * vmultc + frac * vmultd);
                 % Exit in case of Inf/NaN in D or VMULTC.
-                if ~(infnan_obj.is_finite(fortran.sum(abs(d), 'all')) ...
-                     && infnan_obj.is_finite(fortran.sum(abs(vmultc), 'all')))
+                if ~(infnan_obj.is_finite_sp(fortran.sum(abs(d), 'all')) ...
+                     && infnan_obj.is_finite_sp(fortran.sum(abs(vmultc), 'all')))
                     d = dold; % Should we restore also IACT, NACT, VMULTC, and Z?
                     break
                 end
@@ -601,7 +591,7 @@ classdef trustregion_cobyla_mod
                 debug_obj.assert(floor(-log10(eps('double'))) < floor(-log10(eps('double'))) ...
                                  || all(vmultc >= 0, 'all'), "VMULTC >= 0", srname);
                 debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(d), 'all'), "D is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(d), 'all'), "D is finite", srname);
                 debug_obj.assert(linalg_obj.p_norm(d) <= consts_obj.TWO * delta, ...
                                  "||D|| <= 2*DELTA", srname);
                 debug_obj.assert(size(z, 1) == n && size(z, 2) == n, "SIZE(Z) == [N, N]", srname);
@@ -610,6 +600,8 @@ classdef trustregion_cobyla_mod
             end
 
         end
+
+
         function delta = trrad(~, delta_in, dnorm, eta1, eta2, gamma1, gamma2, ratio)
             %--------------------------------------------------------------------------------------------------%
             % This function updates the trust region radius according to RATIO and DNORM.
@@ -619,6 +611,7 @@ classdef trustregion_cobyla_mod
             consts_obj = prima_mat.common.consts_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             debug_obj = prima_mat.common.debug_mod();
+
 
             % Input
             % Current trust-region radius
@@ -630,7 +623,6 @@ classdef trustregion_cobyla_mod
             % Reduction ratio
 
             % Outputs
-
 
             % Local variables
             srname = "TRRAD";
@@ -657,10 +649,8 @@ classdef trustregion_cobyla_mod
                 delta = gamma1 * dnorm; % Powell's UOBYQA/NEWUOA.
                 %delta = gamma1 * delta_in  ! Powell's COBYLA/LINCOA.
                 %delta = min(gamma1 * delta_in, dnorm)  ! Powell's BOBYQA.
-
             elseif ratio <= eta2
                 delta = max(gamma1 * delta_in, dnorm); % Powell's UOBYQA/NEWUOA/BOBYQA/LINCOA
-
             else
                 delta = max(gamma1 * delta_in, gamma2 * dnorm); % Powell's NEWUOA/BOBYQA.
                 %delta = max(delta_in, gamma2 * dnorm)  ! Modified version. Works well for UOBYQA.
@@ -689,6 +679,7 @@ classdef trustregion_cobyla_mod
             end
 
         end
+
 
     end
 end

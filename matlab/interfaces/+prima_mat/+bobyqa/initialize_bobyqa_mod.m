@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef initialize_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module performs the initialization of BOBYQA, described in Section 2 of the BOBYQA paper.
@@ -12,6 +15,8 @@ classdef initialize_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [x0, ij, kopt, nf, fhist, fval, sl, su, xbase, xhist, xpt, info] = ...
                 initxf(~, calfun, iprint, maxfun, ftarget, rhobeg, xl, xu, x0, fhist, fval, sl, ...
                        su, xbase, xhist, xpt)
@@ -42,14 +47,12 @@ classdef initialize_bobyqa_mod
             infnan_obj = prima_mat.common.infnan_mod();
             infos_obj = prima_mat.common.infos_mod();
             message_obj = prima_mat.common.message_mod();
-
             powalg_obj = prima_mat.common.powalg_mod();
             xinbd_obj = prima_mat.common.xinbd_mod();
 
+
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
             % XL(N)
             % XU(N)
 
@@ -58,8 +61,6 @@ classdef initialize_bobyqa_mod
 
             % Outputs
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
-
-
             % FVAL(NPT)
             % SL(N)
             % SU(N)
@@ -70,9 +71,7 @@ classdef initialize_bobyqa_mod
             % Local variables
             solver = "BOBYQA";
             srname = "INITIALIZE";
-
             evaluated = false(size(xpt, 2), 1);
-
             x = NaN(size(xpt, 1), 1);
 
             % Sizes.
@@ -93,7 +92,7 @@ classdef initialize_bobyqa_mod
                                  srname);
                 debug_obj.assert(numel(xl) == n && numel(xu) == n, "SIZE(XL) == N == SIZE(XU)", ...
                                  srname);
-                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite(x0), 'all'), ...
+                debug_obj.assert(numel(x0) == n && all(infnan_obj.is_finite_sp(x0), 'all'), ...
                                  "SIZE(X0) == N, X0 is finite", srname);
                 debug_obj.assert(all(x0 >= xl & (x0 <= xl | x0 - xl >= rhobeg), 'all'), ...
                                  "X0 == XL or X0 - XL >= RHOBEG", srname);
@@ -127,14 +126,12 @@ classdef initialize_bobyqa_mod
             x0(mask01) = xl(mask01);
             sl(mask01) = consts_obj.ZERO;
             su(mask01) = xu(mask01) - xl(mask01);
-
             mask00 = su > 0;
             mask01 = ~mask00;
             su(mask00) = max(su(mask00), rhobeg);
             x0(mask01) = xu(mask01);
             sl(mask01) = xl(mask01) - xu(mask01);
             su(mask01) = consts_obj.ZERO;
-
             %%MATLAB code for revising X, SL, and SU:
             %%sl(sl < 0) = min(sl(sl < 0), -rhobeg);
             %%x0(sl >= 0) = xl(sl >= 0);
@@ -166,20 +163,17 @@ classdef initialize_bobyqa_mod
             xpt(:) = consts_obj.ZERO;
             for k = 1:n
                 xpt(k, k + 1) = rhobeg;
-                if su(k) <= 0
-                    % SU(K) == 0
+                if su(k) <= 0 % SU(K) == 0
                     xpt(k, k + 1) = -rhobeg;
                 end
             end
             % Set XPT(:, N+2 : MIN(2*N + 1, NPT)).
             for k = 1:min(npt - n - 1, n)
                 xpt(k, k + n + 1) = -rhobeg;
-                if sl(k) >= 0
-                    % SL(K) == 0
+                if sl(k) >= 0 % SL(K) == 0
                     xpt(k, k + n + 1) = min(consts_obj.TWO * rhobeg, su(k));
                 end
-                if su(k) <= 0
-                    % SU(K) == 0
+                if su(k) <= 0 % SU(K) == 0
                     xpt(k, k + n + 1) = max(-consts_obj.TWO * rhobeg, sl(k));
                 end
             end
@@ -223,7 +217,6 @@ classdef initialize_bobyqa_mod
                     fval([k, k + n]) = fval([k + n, k]);
                     xpt(:, [k, k + n]) = xpt(:, [k + n, k]);
                     % Indeed, only XPT(K-1, [K, K+N]) needs switching, as the other entries are zero.
-
                 end
             end
 
@@ -282,19 +275,20 @@ classdef initialize_bobyqa_mod
                 debug_obj.assert(all(ij >= 1 & ij <= n, 'all'), "1 <= IJ <= N", srname);
                 debug_obj.assert(all(ij(1, :).' ~= ij(2, :).', 'all'), "IJ(1, :) /= IJ(2, :)", ...
                                  srname);
-                debug_obj.assert(numel(xbase) == n && all(infnan_obj.is_finite(xbase), 'all'), ...
+                debug_obj.assert(numel(xbase) == n ...
+                                 && all(infnan_obj.is_finite_sp(xbase), 'all'), ...
                                  "SIZE(XBASE) == N, XBASE is finite", srname);
                 debug_obj.assert(all(xbase >= xl & xbase <= xu, 'all'), "XL <= XBASE <= XU", ...
                                  srname);
                 debug_obj.assert(size(xpt, 1) == n && size(xpt, 2) == npt, ...
                                  "SIZE(XPT) == [N, NPT]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), ...
                                  "SL <= XPT <= SU", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(evaluated ...
                                          & (infnan_obj.is_nan_sp(fval) ...
-                                            | infnan_obj.is_posinf(fval)), 'all'), ...
+                                            | infnan_obj.is_posinf_sp(fval)), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(~any(evaluated & fval < fval(kopt), 'all'), ...
                                  "FVAL(KOPT) = MINVAL(FVAL)", srname);
@@ -311,6 +305,8 @@ classdef initialize_bobyqa_mod
             end
 
         end
+
+
         function [gopt, hq, pq, info] = initq(~, ij, fval, xpt, gopt, hq, pq)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes the quadratic model represented by [GOPT, HQ, PQ] so that its gradient
@@ -324,13 +320,13 @@ classdef initialize_bobyqa_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
 
+
             % Inputs
             % IJ(2, MAX(0_IK, NPT-2*N-1_IK))
             % FVAL(NPT)
             % XPT(N, NPT)
 
             % Outputs
-
             % GOPT(N)
             % HQ(N, N)
             % PQ(NPT)
@@ -347,7 +343,7 @@ classdef initialize_bobyqa_mod
                 debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
                 debug_obj.assert(numel(fval) == npt ...
                                  && ~any(infnan_obj.is_nan_sp(fval) ...
-                                         | infnan_obj.is_posinf(fval), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(fval), 'all'), ...
                                  "SIZE(FVAL) == NPT and FVAL is not NaN or +Inf", srname);
                 debug_obj.assert(size(ij, 1) == 2 && size(ij, 2) == max(0, npt - 2 * n - 1), ...
                                  "SIZE(IJ) == [2, NPT - 2*N - 1]", srname);
@@ -357,7 +353,7 @@ classdef initialize_bobyqa_mod
                 debug_obj.assert(numel(gopt) == n, "SIZE(GOPT) = N", srname);
                 debug_obj.assert(size(hq, 1) == n && size(hq, 2) == n, "SIZE(HQ) = [N, N]", srname);
                 debug_obj.assert(numel(pq) == npt, "SIZE(PQ) = NPT", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
             end
 
             %====================%
@@ -433,6 +429,8 @@ classdef initialize_bobyqa_mod
             end
 
         end
+
+
         function [bmat, zmat, info] = inith(~, ij, xpt, bmat, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine initializes [BMAT, ZMAT] which represents the matrix H in (2.7) of the BOBYQA
@@ -453,7 +451,6 @@ classdef initialize_bobyqa_mod
             % XPT(N, NPT)
 
             % Outputs
-
             % BMAT(N, NPT + N)
             % ZMAT(NPT, NPT - N - 1)
 
@@ -472,7 +469,7 @@ classdef initialize_bobyqa_mod
                 debug_obj.assert(all(ij >= 1 & ij <= n, 'all'), "1 <= IJ <= N", srname);
                 debug_obj.assert(all(ij(1, :).' ~= ij(2, :).', 'all'), "IJ(1, :) /= IJ(2, :)", ...
                                  srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
                 debug_obj.assert(size(zmat, 1) == npt && size(zmat, 2) == npt - n - 1, ...
@@ -542,10 +539,10 @@ classdef initialize_bobyqa_mod
                                  "SIZE(ZMAT) == [NPT, NPT - N - 1]", srname);
                 %call assert(errh(1_IK, bmat, zmat, xpt) <= max(1.0E-3_RP, 1.0E2_RP * real(npt, RP) * EPS) .or. &
                 %    & precision(0.0_RP) < precision(0.0D0), '[BMA, ZMAT] represents H = W^{-1}', srname)
-
             end
 
         end
+
 
     end
 end

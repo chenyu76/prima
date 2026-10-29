@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef univar_mod
     %--------------------------------------------------------------------------------------------------%
     % This module implements functions that approximately optimizes univariate functions. They are used
@@ -21,6 +24,8 @@ classdef univar_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function angle = circle_min(~, fun, args, grid_size)
             %--------------------------------------------------------------------------------------------------%
             % This function seeks an approximate minimizer of a 2*PI-periodic function FUN(X, ARGS), where the
@@ -38,9 +43,7 @@ classdef univar_mod
 
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "CIRCLE_MIN";
@@ -79,11 +82,10 @@ classdef univar_mod
                 step = consts_obj.HALF * (fprev - fnext) / (fprev + fnext);
             end
 
-            if infnan_obj.is_finite(step) && abs(step) > 0
+            if infnan_obj.is_finite_sp(step) && abs(step) > 0
                 unit_angle = consts_obj.TWO * consts_obj.PI / double(grid_size);
                 angle = (double(kopt - 1) + step) * unit_angle;
                 % 1. AGRID(KOPT) = (KOPT-1) * UNIT_ANGLE. 2. ANGLE may not be in [0, 2*PI].
-
             else
                 angle = agrid(kopt);
             end
@@ -94,10 +96,12 @@ classdef univar_mod
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(infnan_obj.is_finite(angle), "ANGLE is finite", srname);
+                debug_obj.assert(infnan_obj.is_finite_sp(angle), "ANGLE is finite", srname);
             end
 
         end
+
+
         function angle = circle_maxabs(~, fun, args, grid_size)
             %--------------------------------------------------------------------------------------------------%
             % This function seeks an approximate maximizer of the absolute value of a 2*PI-periodic function
@@ -115,9 +119,7 @@ classdef univar_mod
 
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "CIRCLE_MAXABS";
@@ -156,21 +158,22 @@ classdef univar_mod
                 step = consts_obj.HALF * (fprev - fnext) / (fprev + fnext);
             end
 
-            if infnan_obj.is_finite(step) && abs(step) > 0
+            if infnan_obj.is_finite_sp(step) && abs(step) > 0
                 unit_angle = consts_obj.TWO * consts_obj.PI / double(grid_size);
                 angle = (double(kopt - 1) + step) * unit_angle;
                 % 1. AGRID(KOPT) = (KOPT-1) * UNIT_ANGLE. 2. ANGLE may not be in [0, 2*PI].
-
             else
                 angle = agrid(kopt);
             end
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(infnan_obj.is_finite(angle), "ANGLE is finite", srname);
+                debug_obj.assert(infnan_obj.is_finite_sp(angle), "ANGLE is finite", srname);
             end
 
         end
+
+
         function x = interval_max(~, fun, lb, ub, args, grid_size)
             %--------------------------------------------------------------------------------------------------%
             % This function seeks an approximate maximizer of a function F(X, ARGS) for X in [LB, UB], where
@@ -186,16 +189,14 @@ classdef univar_mod
 
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "INTERVAL_MAX";
 
             % Preconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(infnan_obj.is_finite(lb) && infnan_obj.is_finite(ub) ...
+                debug_obj.assert(infnan_obj.is_finite_sp(lb) && infnan_obj.is_finite_sp(ub) ...
                                  && lb <= ub, "LB <= UB and they are finite", srname);
                 debug_obj.assert(grid_size >= 3, "GRID_SIZE >= 3", srname);
             end
@@ -233,11 +234,10 @@ classdef univar_mod
                 if abs(fprev - fnext) > 0
                     step = consts_obj.HALF * ((fnext - fprev) / (fopt + fopt - fprev - fnext));
                 end
-                if infnan_obj.is_finite(step) && abs(step) > 0
+                if infnan_obj.is_finite_sp(step) && abs(step) > 0
                     x = lb + (ub - lb) * (double(kopt - 1) + step) / double(grid_size - 1);
                     % N.B.: 1. XGRID(KOPT) = LB + (UB-LB)*(KOPT - 1)/(GRID_SIZE -1)
                     % 2. XGRID(KOPT-1) <= X <= XGRID(KOPT+1), as X maximizes the quadratic interpolant.
-
                 else
                     x = xgrid(kopt);
                 end
@@ -253,6 +253,7 @@ classdef univar_mod
             end
 
         end
+
 
     end
 end

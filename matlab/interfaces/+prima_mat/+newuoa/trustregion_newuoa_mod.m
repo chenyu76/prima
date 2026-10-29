@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef trustregion_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module provides subroutines concerning the trust-region calculations of NEWUOA.
@@ -12,6 +15,8 @@ classdef trustregion_newuoa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [crvmin, s, info_loc] = trsapp(obj, delta, gopt_in, hq_in, pq_in, tol, xpt, s)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine finds an approximate solution to the N-dimensional trust region subproblem
@@ -47,28 +52,21 @@ classdef trustregion_newuoa_mod
             powalg_obj = prima_mat.common.powalg_mod();
             univar_obj = prima_mat.common.univar_mod();
 
-            % Inputs
 
+            % Inputs
             % GOPT_IN(N)
             % HQ_IN(N, N)
             % PQ_IN(NPT)
-
             % XPT(N, NPT)
 
             % Outputs
-
             % S(N)
-
 
             % Local variables
             srname = "TRSAPP";
-
             iter = NaN;
-
             args = NaN(4, 1);
-
             hd = NaN(size(gopt_in));
-
             hs = NaN(size(gopt_in));
 
             % Sizes
@@ -83,7 +81,7 @@ classdef trustregion_newuoa_mod
                 debug_obj.assert(size(hq_in, 1) == n && linalg_obj.issymmetric(hq_in), ...
                                  "HQ is an NxN symmetric matrix", srname);
                 debug_obj.assert(numel(pq_in) == npt, "SIZE(PQ) = NPT", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(numel(s) == n, "SIZE(S) == N", srname);
             end
 
@@ -95,8 +93,7 @@ classdef trustregion_newuoa_mod
             % Note that CRVMIN must be scaled back if it is nonzero, but the step is scale invariant.
             % N.B.: It is faster and safer to scale by multiplying a reciprocal than by division. See
             % https://fortran-lang.discourse.group/t/ifort-ifort-2021-8-0-1-0e-37-1-0e-38-0/
-            if max(abs(gopt_in)) > 1.0e12
-                % The threshold is empirical.
+            if max(abs(gopt_in)) > 1.0e12 % The threshold is empirical.
                 modscal = ...
                     max(consts_obj.TWO * consts_obj.REALMIN, ...
                         consts_obj.ONE / max(abs(gopt_in))); % MAX: precaution against underflow.
@@ -201,7 +198,7 @@ classdef trustregion_newuoa_mod
                 if bstep <= 0
                     break
                 end
-                if ~infnan_obj.is_finite(bstep)
+                if ~infnan_obj.is_finite_sp(bstep)
                     info_loc = -1;
                     break
                 end
@@ -241,7 +238,7 @@ classdef trustregion_newuoa_mod
                 % the 2-dimensional minimization if any.
                 % Exit in case of Inf/NaN in S. This should come the first! Otherwise, we may return an S that
                 % contains NaN and fulfills other exit conditions.
-                if ~infnan_obj.is_finite(fortran.sum(abs(s), 'all'))
+                if ~infnan_obj.is_finite_sp(fortran.sum(abs(s), 'all'))
                     s = sold;
                     info_loc = -1;
                     break
@@ -361,7 +358,7 @@ classdef trustregion_newuoa_mod
                 s = cth * s + sth * d;
 
                 % Exit in case of Inf/NaN in S.
-                if ~infnan_obj.is_finite(fortran.sum(abs(s), 'all'))
+                if ~infnan_obj.is_finite_sp(fortran.sum(abs(s), 'all'))
                     s = sold;
                     info_loc = -1;
                     break
@@ -392,13 +389,14 @@ classdef trustregion_newuoa_mod
                 crvmin = crvmin / modscal;
             end
 
+
             %====================%
             %  Calculation ends  %
             %====================%
 
             % Postconditions
             if consts_obj.DEBUGGING
-                debug_obj.assert(numel(s) == n && all(infnan_obj.is_finite(s), 'all'), ...
+                debug_obj.assert(numel(s) == n && all(infnan_obj.is_finite_sp(s), 'all'), ...
                                  "SIZE(S) == N, S is finite", srname);
                 % Due to rounding, it may happen that ||S|| > DELTA, but ||S|| > 2*DELTA is highly improbable.
                 debug_obj.assert(linalg_obj.p_norm(s) <= consts_obj.TWO * delta, ...
@@ -407,6 +405,8 @@ classdef trustregion_newuoa_mod
             end
 
         end
+
+
         function f = circle_fun_trsapp(~, theta, args)
             %--------------------------------------------------------------------------------------------------%
             % This function defines the objective function of the 2-dimensional search on a circle in TRSAPP.
@@ -415,9 +415,7 @@ classdef trustregion_newuoa_mod
             debug_obj = prima_mat.common.debug_mod();
             % Inputs
 
-
             % Outputs
-
 
             % Local variables
             srname = "CIRCLE_FUN_TRSAPP";
@@ -439,6 +437,8 @@ classdef trustregion_newuoa_mod
             %  Calculation ends  %
             %====================%
         end
+
+
         function delta = trrad(~, delta_in, dnorm, eta1, eta2, gamma1, gamma2, ratio)
             %--------------------------------------------------------------------------------------------------%
             % This function updates the trust region radius according to RATIO and DNORM.
@@ -448,6 +448,7 @@ classdef trustregion_newuoa_mod
             consts_obj = prima_mat.common.consts_mod();
             infnan_obj = prima_mat.common.infnan_mod();
             debug_obj = prima_mat.common.debug_mod();
+
 
             % Input
             % Current trust-region radius
@@ -459,7 +460,6 @@ classdef trustregion_newuoa_mod
             % Reduction ratio
 
             % Outputs
-
 
             % Local variables
             srname = "TRRAD";
@@ -486,10 +486,8 @@ classdef trustregion_newuoa_mod
                 delta = gamma1 * dnorm; % Powell's UOBYQA/NEWUOA.
                 %delta = gamma1 * delta_in  ! Powell's COBYLA/LINCOA. Works poorly here.
                 %delta = min(gamma1 * delta_in, dnorm)  ! Powell's BOBYQA.
-
             elseif ratio <= eta2
                 delta = max(gamma1 * delta_in, dnorm); % Powell's UOBYQA/NEWUOA/BOBYQA/LINCOA
-
             else
                 delta = max(gamma1 * delta_in, gamma2 * dnorm); % Powell's NEWUOA/BOBYQA.
                 %delta = max(delta_in, gamma2 * dnorm)  ! Modified version. Works well for UOBYQA.
@@ -518,6 +516,7 @@ classdef trustregion_newuoa_mod
             end
 
         end
+
 
     end
 end

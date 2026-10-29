@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 classdef geometry_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module contains subroutines concerning the geometry-improving of the interpolation set XPT.
@@ -12,6 +15,8 @@ classdef geometry_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function knew = setdrop_tr(~, kopt, ximproved, bmat, d, delta, rho, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine sets KNEW to the index of the interpolation point to be deleted AFTER A TRUST
@@ -37,22 +42,17 @@ classdef geometry_bobyqa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+
             % Inputs
-
-
             % BMAT(N, NPT + N)
             % D(N)
-
-
             % XPT(N, NPT)
             % ZMAT(NPT, NPT - N - 1)
 
             % Outputs
 
-
             % Local variables
             srname = "SETDROP_TR";
-
             distsq = NaN(size(xpt, 2), 1);
 
             % Sizes
@@ -64,9 +64,9 @@ classdef geometry_bobyqa_mod
                 debug_obj.assert(n >= 1 && npt >= n + 2, "N >= 1, NPT >= N + 2", srname);
                 debug_obj.assert(kopt >= 1 && kopt <= npt, "1 <= KOPT <= NPT", srname);
                 debug_obj.assert(delta >= rho && rho > 0, "DELTA >= RHO > 0", srname);
-                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite(d), 'all'), ...
+                debug_obj.assert(numel(d) == n && all(infnan_obj.is_finite_sp(d), 'all'), ...
                                  "SIZE(D) == N, D is finite", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
                                  "SIZE(BMAT)==[N, NPT+N]", srname);
                 debug_obj.assert(linalg_obj.issymmetric(bmat(:, npt + 1:npt + n)), ...
@@ -96,7 +96,6 @@ classdef geometry_bobyqa_mod
             if ximproved
                 distsq(:) = fortran.sum(fortran.power(xpt - (xpt(:, kopt) + d), 2), 1);
                 %%MATLAB: distsq = sum((xpt - (xpt(:, kopt) + d)).^2)  % d should be a column! Implicit expansion
-
             else
                 distsq(:) = fortran.sum(fortran.power(xpt - xpt(:, kopt), 2), 1);
                 %%MATLAB: distsq = sum((xpt - xpt(:, kopt)).^2)  % Implicit expansion
@@ -135,12 +134,11 @@ classdef geometry_bobyqa_mod
 
             knew = 0;
             % The following IF works slightly better than `IF (ANY(SCORE > 0))` from Powell's BOBYQA/LINCOA code.
-            if any(score > 1, 'all') || ximproved && any(score > 0, 'all')
-                % Powell's UOBYQA and NEWUOA code.
+            if any(score > 1, 'all') ...
+               || ximproved && any(score > 0, 'all') % Powell's UOBYQA and NEWUOA code.
                 % See (6.1) of the BOBYQA paper for the definition of KNEW in this case.
                 knew = fortran.maxloc(score, 'dim', 1);
                 %%MATLAB: [~, knew] = max(score);
-
             end
 
             % Powell's code does not include the following instructions. With Powell's code, if DEN consists of
@@ -148,8 +146,7 @@ classdef geometry_bobyqa_mod
             % to make sure that the new trial point is included in the interpolation set. However, the updating
             % subroutine will likely need to skip the update of the Lagrange polynomials (i.e., H), or they
             % would be destroyed by the NaNs.
-            if ximproved && knew == 0 || knew < 0
-                % KNEW < 0 is impossible in theory.
+            if ximproved && knew == 0 || knew < 0 % KNEW < 0 is impossible in theory.
                 knew = fortran.maxloc(distsq, 'dim', 1);
             end
 
@@ -166,10 +163,11 @@ classdef geometry_bobyqa_mod
                                  srname);
                 % KNEW >= 1 when XIMPROVED = TRUE unless NaN occurs in DISTSQ, which should not happen if the
                 % starting point does not contain NaN and the trust-region/geometry steps never contain NaN.
-
             end
 
         end
+
+
         function d = geostep(~, knew, kopt, bmat, delbar, sl, su, xpt, zmat)
             %--------------------------------------------------------------------------------------------------%
             % This subroutine finds a step D that intends to improve the geometry of the interpolation set
@@ -196,11 +194,9 @@ classdef geometry_bobyqa_mod
             linalg_obj = prima_mat.common.linalg_mod();
             powalg_obj = prima_mat.common.powalg_mod();
 
+
             % Inputs
-
-
             % BMAT(N, NPT + N)
-
             % SL(N)
             % SU(N)
             % XPT(N, NPT)
@@ -211,21 +207,13 @@ classdef geometry_bobyqa_mod
 
             % Local variables
             srname = "GEOSTEP";
-
             isbd = NaN(3, size(xpt, 2));
-
             distsq = NaN(size(xpt, 2), 1);
-
             pqlag = NaN(size(xpt, 2), 1);
-
             s = NaN(size(xpt, 1), 1);
-
             slbd_test = NaN(size(xpt, 1), 1);
-
             stplen = NaN(3, size(xpt, 2));
-
             subd_test = NaN(size(xpt, 1), 1);
-
             x = NaN(size(xpt, 1), 1);
 
             % Sizes.
@@ -243,7 +231,7 @@ classdef geometry_bobyqa_mod
                                  "SIZE(SL) == N, SL <= 0", srname);
                 debug_obj.assert(numel(su) == n && all(su >= 0, 'all'), ...
                                  "SIZE(SU) == N, SU >= 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(xpt), 'all'), "XPT is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(xpt), 'all'), "XPT is finite", srname);
                 debug_obj.assert(all(xpt >= sl, 'all') && all(xpt <= su, 'all'), ...
                                  "SL <= XPT <= SU", srname);
                 debug_obj.assert(size(bmat, 1) == n && size(bmat, 2) == npt + n, ...
@@ -273,7 +261,7 @@ classdef geometry_bobyqa_mod
             % In case GLAG contains NaN, set D to a displacement from XOPT to XPT(:, KNEW) and return. Powell's
             % code does not have this, and D may be NaN in the end. Note that it is crucial to ensure that a
             % geometry step is nonzero.
-            if ~infnan_obj.is_finite(fortran.sum(abs(glag), 'all'))
+            if ~infnan_obj.is_finite_sp(fortran.sum(abs(glag), 'all'))
                 d = xpt(:, knew) - xopt;
                 d = ...
                     min(consts_obj.HALF, delbar / linalg_obj.p_norm(d)) ...
@@ -357,7 +345,6 @@ classdef geometry_bobyqa_mod
                     %%MATLAB:
                     %%[slbd, ilbd] = max(slbd_test, [], 'omitnan');
                     %%ilbd = -ilbd * sign(xdiff(ilbd));
-
                 end
 
                 % Second, revise SUBD. Note that SUBD_TEST >= 0 unless the input violates XOPT <= SU.
@@ -374,7 +361,6 @@ classdef geometry_bobyqa_mod
                     %%[subd, iubd] = min(subd_test, [], 'omitnan');
                     %%subd = max(sumin, subd);
                     %%iubd = iubd * sign(xdiff(iubd));
-
                 end
 
                 if consts_obj.DEBUGGING
@@ -579,19 +565,18 @@ classdef geometry_bobyqa_mod
             % Take the Cauchy step if it is likely to render a larger denominator.
             %IF (VLAGSQ_CAUCHY > MAX(DEN_LINE(KNEW), ZERO) .OR. IS_NAN(DEN_LINE(KNEW))) THEN  ! Powell's version
             if den_cauchy(knew) > max(den_line(knew), consts_obj.ZERO) ...
-               || infnan_obj.is_nan_sp(den_line(knew))
-                % Works better
+               || infnan_obj.is_nan_sp(den_line(knew)) % Works better
                 d = s;
             end
 
             % In case D is zero or contains Inf/NaN, replace it with a displacement from XPT(:, KNEW) to XOPT.
             % Powell's code does not have this. Note that it is crucial to ensure that a geometry step is nonzero.
-            if fortran.sum(abs(d), 'all') <= 0 || ~infnan_obj.is_finite(fortran.sum(abs(d), 'all'))
+            if fortran.sum(abs(d), 'all') <= 0 ...
+               || ~infnan_obj.is_finite_sp(fortran.sum(abs(d), 'all'))
                 d = xpt(:, knew) - xopt;
                 d = ...
                     min(consts_obj.HALF, delbar / linalg_obj.p_norm(d)) ...
                     * d; % Since XPT respects the bounds, so does XOPT + D.
-
             end
 
             %====================%
@@ -601,7 +586,7 @@ classdef geometry_bobyqa_mod
             % Postconditions
             if consts_obj.DEBUGGING
                 debug_obj.assert(numel(d) == n, "SIZE(D) == N", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(d), 'all'), "D is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(d), 'all'), "D is finite", srname);
                 % In theory, ||D|| <= DELBAR, which may be false due to rounding, but ||D|| >= 2*DELBAR is unlikely.
                 % It is crucial to ensure that the geometry step is nonzero, which holds in theory. However, due
                 % to the bound constraints, ||D|| may be much smaller than DELBAR.
@@ -621,6 +606,7 @@ classdef geometry_bobyqa_mod
             end
 
         end
+
 
     end
 end

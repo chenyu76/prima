@@ -1,3 +1,6 @@
+%-------------%
+% Placeholder %
+%-------------%
 % TODO: Implement GETMODEL to get the model of the objective function and constraints, i.e., g and A.
 classdef cobylb_mod
     %--------------------------------------------------------------------------------------------------%
@@ -21,6 +24,8 @@ classdef cobylb_mod
     %--------------------------------------------------------------------------------------------------%
 
     methods
+
+
         function [constr, f, x, nf, chist, conhist, cstrv, fhist, xhist, info] = ...
                 cobylb(obj, calcfc, iprint, maxfilt, maxfun, amat, bvec, ctol, cweight, eta1, ...
                        eta2, ftarget, gamma1, gamma2, rhobeg, rhoend, constr, f, x, chist, ...
@@ -43,7 +48,6 @@ classdef cobylb_mod
             infos_obj = prima_mat.common.infos_mod();
             linalg_obj = prima_mat.common.linalg_mod();
             message_obj = prima_mat.common.message_mod();
-
             ratio_obj = prima_mat.common.ratio_mod();
             redrho_obj = prima_mat.common.redrho_mod();
             selectx_obj = prima_mat.common.selectx_mod();
@@ -54,57 +58,44 @@ classdef cobylb_mod
             trustregion_cobyla_obj = prima_mat.cobyla.trustregion_cobyla_mod();
             update_cobyla_obj = prima_mat.cobyla.update_cobyla_mod();
 
+
             % Inputs
             % N.B.: INTENT cannot be specified if a dummy procedure is not a POINTER
-
-
             % AMAT(N, M_LCON)
             % BVEC(M_LCON)
-
 
             % In-outputs
             % On entry, [X, F, CONSTR] = [X0, F(X0), CONSTR(X0)]
             % CONSTR(M)
-
             % X(N)
 
             % Outputs
-
-
             % CHIST(MAXCHIST)
             % CONHIST(M, MAXCONHIST)
-
             % FHIST(MAXFHIST)
             % XHIST(N, MAXXHIST)
 
             % Local variables
             solver = "COBYLA";
             srname = "COBYLB";
-
             evaluated = false(numel(x) + 1, 1);
-
             A = ...
                 NaN(numel(x), ...
                     numel(constr)); % A contains the approximate gradient for the constraints
-
             cfilt = NaN(min(max(maxfilt, 1), maxfun), 1);
             confilt = NaN(numel(constr), numel(cfilt));
             conmat = NaN(numel(constr), numel(x) + 1);
             % Penalty parameter for constraint in merit function (PARMU in Powell's code)
             cval = NaN(numel(x) + 1, 1);
             d = NaN(size(x));
-
             distsq = NaN(numel(x) + 1, 1);
-
             ffilt = NaN(size(cfilt));
             fval = NaN(numel(x) + 1, 1);
             g = NaN(size(x));
-
             % Predicted reduction in constraint violation
             % Predicted reduction in objective Function
             % Predicted reduction in merit function
             % Reduction ratio: ACTREM/PREREM
-
             sim = NaN(numel(x), numel(x) + 1);
             simi = NaN(numel(x));
             xfilt = NaN(numel(x), numel(cfilt));
@@ -137,7 +128,7 @@ classdef cobylb_mod
                 debug_obj.assert(n >= 1, "N >= 1", srname);
                 debug_obj.assert(maxfun >= n + 2, "MAXFUN >= N + 2", srname);
                 debug_obj.assert(rhobeg >= rhoend && rhoend > 0, "RHOBEG >= RHOEND > 0", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(x), 'all'), "X is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(x), 'all'), "X is finite", srname);
                 debug_obj.assert(eta1 >= 0 && eta1 <= eta2 && eta2 < 1, "0 <= ETA1 <= ETA2 < 1", ...
                                  srname);
                 debug_obj.assert(gamma1 > 0 && gamma1 < 1 && gamma2 > 1, ...
@@ -178,7 +169,6 @@ classdef cobylb_mod
                                               cval, fhist, fval, sim, simi, xhist, evaluated);
 
             % Report the current best value, and check if user asks for early termination.
-
             ipObj = inputParser();
             addParameter(ipObj, 'callback_fcn', []);
             parse(ipObj, varargin{:});
@@ -222,7 +212,7 @@ classdef cobylb_mod
                     debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
                     debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
                                      "SIZE(X) == N, X does not contain NaN", srname);
-                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                    debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                      "F is not NaN/+Inf", srname);
                     debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
                                      "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -231,20 +221,20 @@ classdef cobylb_mod
                     % The last calculated X can be Inf (finite + finite can be Inf numerically).
                     debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                          | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                          | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                           'all'), "FHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(size(conhist, 1) == m && size(conhist, 2) == maxconhist, ...
                                      "SIZE(CONHIST) == [M, MAXCONHIST]", srname);
                     debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, ...
                                                                        1:min(nf, maxconhist))) ...
-                                          | infnan_obj.is_posinf(conhist(:, ...
-                                                                         1:min(nf, ...
-                                                                               maxconhist))), ...
+                                          | infnan_obj.is_posinf_sp(conhist(:, ...
+                                                                            1:min(nf, ...
+                                                                                  maxconhist))), ...
                                           'all'), "CONHIST does not contain NaN/+Inf", srname);
                     debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
                     debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 ...
                                           | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) ...
-                                          | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), ...
+                                          | infnan_obj.is_posinf_sp(chist(1:min(nf, maxchist))), ...
                                           'all'), ...
                                      "CHIST does not contain negative values or NaN/+Inf", srname);
                     nhist = min([nf, maxfhist, maxchist]);
@@ -268,10 +258,7 @@ classdef cobylb_mod
             delta = rhobeg;
             cpen = ...
                 max(cpenmin, min(1000.0, obj.fcratio(conmat, fval))); % Powell's code: CPEN = ZERO
-
-
             shortd = false;
-
             ratio = -consts_obj.ONE;
             jdrop_tr = 0;
 
@@ -321,7 +308,6 @@ classdef cobylb_mod
                 if subinfo == infos_obj.DAMAGING_ROUNDING
                     info = subinfo;
                     break % Better action to take? Geometry step, or simply continue?
-
                 end
 
                 % Does the interpolation set have adequate geometry? It affects IMPROVE_GEO and REDUCE_RHO.
@@ -382,7 +368,6 @@ classdef cobylb_mod
                     delta = consts_obj.TENTH * delta;
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
-
                     end
                 else
                     % Calculate the next value of the objective and constraint functions.
@@ -406,9 +391,9 @@ classdef cobylb_mod
                         constr(1:m_lcon) = ...
                             evaluate_obj.moderatec(linalg_obj.matprod12(x, amat) ...
                                                    - bvec); % Linear constraints
-                        [f, constr_slice] = ...
-                            evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m));
-                        constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
+                        [f, constr(m_lcon + 1:m)] = ...
+                            evaluate_obj.evaluatefc(calcfc, x, ...
+                                                    constr(m_lcon + 1:m)); % Nonlinear constraints
                         % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
                         % linear constraint values here to make CSTRV consistent.
                         cstrv = linalg_obj.maximum([consts_obj.ZERO; constr]);
@@ -459,7 +444,6 @@ classdef cobylb_mod
                                                      ratio);
                     if delta <= gamma3 * rho
                         delta = rho; % Set DELTA to RHO when it is close to or below.
-
                     end
 
                     % Is the newly generated X better than current best point?
@@ -480,7 +464,6 @@ classdef cobylb_mod
                     if subinfo == infos_obj.DAMAGING_ROUNDING
                         info = subinfo;
                         break % Better action to take? Geometry step, or a RESCUE as in BOBYQA?
-
                     end
 
                     % Check whether to exit due to MAXFUN, FTARGET, etc.
@@ -627,9 +610,9 @@ classdef cobylb_mod
                         constr(1:m_lcon) = ...
                             evaluate_obj.moderatec(linalg_obj.matprod12(x, amat) ...
                                                    - bvec); % Linear constraints
-                        [f, constr_slice] = ...
-                            evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m));
-                        constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
+                        [f, constr(m_lcon + 1:m)] = ...
+                            evaluate_obj.evaluatefc(calcfc, x, ...
+                                                    constr(m_lcon + 1:m)); % Nonlinear constraints
                         % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the
                         % linear constraint values here to make CSTRV consistent.
                         cstrv = linalg_obj.maximum([consts_obj.ZERO; constr]);
@@ -657,7 +640,6 @@ classdef cobylb_mod
                     if subinfo == infos_obj.DAMAGING_ROUNDING
                         info = subinfo;
                         break % Better action to take? Geometry step, or simply continue?
-
                     end
 
                     % Check whether to exit due to MAXFUN, FTARGET, etc.
@@ -691,7 +673,6 @@ classdef cobylb_mod
                     if subinfo == infos_obj.DAMAGING_ROUNDING
                         info = subinfo;
                         break % Better action to take? Geometry step, or simply continue?
-
                     end
                 end % End of IF (REDUCE_RHO). The procedure of reducing RHO ends.
 
@@ -716,8 +697,9 @@ classdef cobylb_mod
                 constr(1:m_lcon) = ...
                     evaluate_obj.moderatec(linalg_obj.matprod12(x, amat) ...
                                            - bvec); % Linear constraints
-                [f, constr_slice] = evaluate_obj.evaluatefc(calcfc, x, constr(m_lcon + 1:m));
-                constr(m_lcon + 1:m) = constr_slice; % Nonlinear constraints
+                [f, constr(m_lcon + 1:m)] = ...
+                    evaluate_obj.evaluatefc(calcfc, x, ...
+                                            constr(m_lcon + 1:m)); % Nonlinear constraints
                 % Note that EVALUATE moderates the nonlinear constraint values. Thus we also moderate the linear
                 % constraint values here to make CSTRV consistent.
                 cstrv = linalg_obj.maximum([consts_obj.ZERO; constr]);
@@ -759,7 +741,7 @@ classdef cobylb_mod
                 debug_obj.assert(nf <= maxfun, "NF <= MAXFUN", srname);
                 debug_obj.assert(numel(x) == n && ~any(infnan_obj.is_nan_sp(x), 'all'), ...
                                  "SIZE(X) == N, X does not contain NaN", srname);
-                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf(f)), ...
+                debug_obj.assert(~(infnan_obj.is_nan_sp(f) || infnan_obj.is_posinf_sp(f)), ...
                                  "F is not NaN/+Inf", srname);
                 debug_obj.assert(size(xhist, 1) == n && size(xhist, 2) == maxxhist, ...
                                  "SIZE(XHIST) == [N, MAXXHIST]", srname);
@@ -768,17 +750,18 @@ classdef cobylb_mod
                 % The last calculated X can be Inf (finite + finite can be Inf numerically).
                 debug_obj.assert(numel(fhist) == maxfhist, "SIZE(FHIST) == MAXFHIST", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(fhist(1:min(nf, maxfhist))) ...
-                                      | infnan_obj.is_posinf(fhist(1:min(nf, maxfhist))), ...
+                                      | infnan_obj.is_posinf_sp(fhist(1:min(nf, maxfhist))), ...
                                       'all'), "FHIST does not contain NaN/+Inf", srname);
                 debug_obj.assert(size(conhist, 1) == m && size(conhist, 2) == maxconhist, ...
                                  "SIZE(CONHIST) == [M, MAXCONHIST]", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(conhist(:, 1:min(nf, maxconhist))) ...
-                                      | infnan_obj.is_posinf(conhist(:, 1:min(nf, maxconhist))), ...
+                                      | infnan_obj.is_posinf_sp(conhist(:, ...
+                                                                        1:min(nf, maxconhist))), ...
                                       'all'), "CONHIST does not contain NaN/+Inf", srname);
                 debug_obj.assert(numel(chist) == maxchist, "SIZE(CHIST) == MAXCHIST", srname);
                 debug_obj.assert(~any(chist(1:min(nf, maxchist)) < 0 ...
                                       | infnan_obj.is_nan_sp(chist(1:min(nf, maxchist))) ...
-                                      | infnan_obj.is_posinf(chist(1:min(nf, maxchist))), ...
+                                      | infnan_obj.is_posinf_sp(chist(1:min(nf, maxchist))), ...
                                       'all'), ...
                                  "CHIST does not contain negative values or NaN/+Inf", srname);
                 nhist = min([nf, maxfhist, maxchist]);
@@ -788,6 +771,8 @@ classdef cobylb_mod
             end
 
         end
+
+
         function cpen = ...
                 getcpen(~, amat, bvec, conmat_in, cpen_in, cval_in, delta, fval_in, rho, sim_in, ...
                         simi_in)
@@ -807,24 +792,18 @@ classdef cobylb_mod
             trustregion_cobyla_obj = prima_mat.cobyla.trustregion_cobyla_mod();
             update_cobyla_obj = prima_mat.cobyla.update_cobyla_mod();
 
-            % Inputs
 
+            % Inputs
 
             % Outputs
 
-
             % Local variables
             srname = "getcpen";
-
             A = NaN(size(sim_in, 1), size(conmat_in, 1));
             conmat = NaN(size(conmat_in, 1), size(conmat_in, 2));
-
             d = NaN(size(sim_in, 1), 1);
-
             g = NaN(size(sim_in, 1), 1);
-
             sim = NaN(size(sim_in, 1), size(sim_in, 2));
-
             itol = consts_obj.ONE;
 
             % Sizes
@@ -842,25 +821,26 @@ classdef cobylb_mod
                 debug_obj.assert(size(conmat_in, 1) == m && size(conmat_in, 2) == n + 1, ...
                                  "SIZE(CONMAT) = [M, N+1]", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat_in) ...
-                                      | infnan_obj.is_posinf(conmat_in), 'all'), ...
+                                      | infnan_obj.is_posinf_sp(conmat_in), 'all'), ...
                                  "CONMAT does not contain NaN/+Inf", srname);
                 debug_obj.assert(numel(cval_in) == n + 1 ...
                                  && ~any(cval_in < 0 | infnan_obj.is_nan_sp(cval_in) ...
-                                         | infnan_obj.is_posinf(cval_in), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(cval_in), 'all'), ...
                                  "SIZE(CVAL) == N+1 and CVAL does not contain negative values or NaN/+Inf", ...
                                  srname);
                 debug_obj.assert(numel(fval_in) == n + 1 ...
                                  && ~any(infnan_obj.is_nan_sp(fval_in) ...
-                                         | infnan_obj.is_posinf(fval_in), 'all'), ...
+                                         | infnan_obj.is_posinf_sp(fval_in), 'all'), ...
                                  "SIZE(FVAL) == N+1 and FVAL does not contain NaN/+Inf", srname);
                 debug_obj.assert(size(sim_in, 1) == n && size(sim_in, 2) == n + 1, ...
                                  "SIZE(SIM) == [N, N+1]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(sim_in), 'all'), "SIM is finite", srname);
+                debug_obj.assert(all(infnan_obj.is_finite_sp(sim_in), 'all'), "SIM is finite", ...
+                                 srname);
                 debug_obj.assert(all(fortran.sum(abs(sim_in(:, 1:n)), 1).' > 0, 'all'), ...
                                  "SIM(:, 1:N) has no zero column", srname);
                 debug_obj.assert(size(simi_in, 1) == n && size(simi_in, 2) == n, ...
                                  "SIZE(SIMI) == [N, N]", srname);
-                debug_obj.assert(all(infnan_obj.is_finite(simi_in), 'all'), "SIMI is finite", ...
+                debug_obj.assert(all(infnan_obj.is_finite_sp(simi_in), 'all'), "SIMI is finite", ...
                                  srname);
                 debug_obj.assert(linalg_obj.isinv(sim_in(:, 1:n), simi_in, 'tol', itol), ...
                                  "SIMI = SIM(:, 1:N)^{-1}", srname);
@@ -922,8 +902,7 @@ classdef cobylb_mod
                     - linalg_obj.maximum1([consts_obj.ZERO
                                            conmat(:, n + 1) + linalg_obj.matprod12(d, A)]);
 
-                if ~(prerec > 0 && preref < 0)
-                    % PREREC <= 0 or PREREF >= 0 or either is NaN.
+                if ~(prerec > 0 && preref < 0) % PREREC <= 0 or PREREF >= 0 or either is NaN.
                     break
                 end
 
@@ -949,11 +928,14 @@ classdef cobylb_mod
                 debug_obj.assert(preref + cpen * prerec > 0 ...
                                  || info == infos_obj.DAMAGING_ROUNDING ...
                                  || ~(prerec >= 0 && max(prerec, preref) > 0) ...
-                                 || ~infnan_obj.is_finite(preref) || cpen >= consts_obj.REALMAX, ...
+                                 || ~infnan_obj.is_finite_sp(preref) ...
+                                 || cpen >= consts_obj.REALMAX, ...
                                  "PREREF + CPEN*PREREC > 0 unless the rounding is damaging", ...
                                  srname);
             end
         end
+
+
         function r = fcratio(~, conmat, fval)
             %--------------------------------------------------------------------------------------------------%
             % This function calculates the ratio between the "typical change" of F and that of CONSTR.
@@ -970,10 +952,7 @@ classdef cobylb_mod
 
             % Outputs
 
-
             % Local variables
-
-
             srname = "FCRATIO";
 
             % Preconditions
@@ -982,10 +961,11 @@ classdef cobylb_mod
                 debug_obj.assert(size(conmat, 2) == numel(fval), ...
                                  "SIZE(CONMAT, 2) == SIZE(FVAL)", srname);
                 debug_obj.assert(~any(infnan_obj.is_nan_sp(conmat) ...
-                                      | infnan_obj.is_posinf(conmat), 'all'), ...
+                                      | infnan_obj.is_posinf_sp(conmat), 'all'), ...
                                  "CONMAT does not contain NaN/+Inf", srname);
-                debug_obj.assert(~any(infnan_obj.is_nan_sp(fval) | infnan_obj.is_posinf(fval), ...
-                                      'all'), "FVAL does not contain NaN/+Inf", srname);
+                debug_obj.assert(~any(infnan_obj.is_nan_sp(fval) ...
+                                      | infnan_obj.is_posinf_sp(fval), 'all'), ...
+                                 "FVAL does not contain NaN/+Inf", srname);
             end
 
             %====================%
@@ -1019,6 +999,7 @@ classdef cobylb_mod
                 debug_obj.assert(r >= 0, "R >= 0", srname);
             end
         end
+
 
     end
 end
