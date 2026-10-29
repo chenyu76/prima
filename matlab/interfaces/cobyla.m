@@ -458,7 +458,9 @@ else % The problem turns out 'normal' during preprima
             calcfc_matlab = @(x, constr_in) cobyla_calfc_matlab(x, constr_in, fun, nonlcon);
             m_nlcon = m_nlcineq + 2*m_nlceq;
 
-            prima_mat.common.consts_mod.debug_state(debug_flag);
+            previous_debug = prima_mat.common.consts_mod.debug_mode(debug_flag);
+            debug_cleanup = onCleanup( ...
+                @() prima_mat.common.consts_mod.debug_mode(previous_debug));
             co = prima_mat.cobyla.cobyla_mod();
             [x, fx, constrviolation, nlconstr, nf, xhist, fhist, chist, nlchist, exitflag] = ...
                 co.cobyla(calcfc_matlab, m_nlcon, x0, ...
@@ -470,6 +472,7 @@ else % The problem turns out 'normal' during preprima
                 'maxhist', maxhist, 'maxfilt', maxfilt, ...
                 'f0', f_x0, 'nlconstr0', nlconstr_x0, ...
                 'nlconstr', NaN(m_nlcon, 1));
+            clear debug_cleanup;
             % Match the Fortran backend's row-vector history outputs.
             fhist = fhist.';
             chist = chist.';

@@ -107,15 +107,17 @@ classdef consts_mod
     end
 
     methods (Static)
-        function value = debug_state(varargin)
+        function previous = debug_mode(varargin)
+            % DEBUG_MODE Get or set debug mode, returning the previous mode.
             persistent debugging
+            % Persistent variables start as []; test emptiness, not existence.
             if isempty(debugging)
                 debugging = false;
             end
+            previous = debugging;
             if nargin > 0
                 debugging = varargin{1};
             end
-            value = debugging;
         end
     end
     methods
@@ -127,7 +129,7 @@ classdef consts_mod
 
 
 
-            obj.DEBUGGING = prima_mat.common.consts_mod.debug_state(); % Whether we are in debugging mode
+            obj.DEBUGGING = prima_mat.common.consts_mod.debug_mode(); % Whether we are in debugging mode
             obj.IK_DFT = 4; % Default integer kind
             obj.RP_DFT = 4; % Default real kind
 

@@ -351,7 +351,9 @@ else % The problem turns out 'normal' during preprima
             % In C MEX, however, we have mxGetLogicals.
         else
             % Call the pure MATLAB code
-            prima_mat.common.consts_mod.debug_state(debug_flag);
+            previous_debug = prima_mat.common.consts_mod.debug_mode(debug_flag);
+            debug_cleanup = onCleanup( ...
+                @() prima_mat.common.consts_mod.debug_mode(previous_debug));
             bo = prima_mat.bobyqa.bobyqa_mod();
             [x, fx, nf, xhist, fhist, exitflag] = bo.bobyqa( ...
                 fun, x0, 'xl', lb, 'xu', ub, ...
@@ -359,6 +361,7 @@ else % The problem turns out 'normal' during preprima
                 'ftarget', ftarget, 'maxfun', maxfun, 'npt', npt, ...
                 'iprint', iprint, 'eta1', eta1, 'eta2', eta2, ...
                 'gamma1', gamma1, 'gamma2', gamma2, 'maxhist', maxhist);
+            clear debug_cleanup;
             % Match the Fortran backend's row-vector history outputs.
             fhist = fhist.';
         end

@@ -380,7 +380,9 @@ else % The problem turns out 'normal' during preprima
             % In C MEX, however, we have mxGetLogicals.
         else
             % Call the pure MATLAB code
-            prima_mat.common.consts_mod.debug_state(debug_flag);
+            previous_debug = prima_mat.common.consts_mod.debug_mode(debug_flag);
+            debug_cleanup = onCleanup( ...
+                @() prima_mat.common.consts_mod.debug_mode(previous_debug));
             lo = prima_mat.lincoa.lincoa_mod();
             [x, fx, constrviolation, nf, xhist, fhist, chist, exitflag] = lo.lincoa( ...
                 fun, x0, 'Aineq', Aineq, 'bineq', bineq, 'Aeq', Aeq, 'beq', beq, ...
@@ -389,6 +391,7 @@ else % The problem turns out 'normal' during preprima
                 'maxfun', maxfun, 'npt', npt, 'iprint', iprint, ...
                 'eta1', eta1, 'eta2', eta2, 'gamma1', gamma1, 'gamma2', gamma2, ...
                 'maxhist', maxhist, 'maxfilt', maxfilt);
+            clear debug_cleanup;
             % Match the Fortran backend's row-vector history outputs.
             fhist = fhist.';
             chist = chist.';

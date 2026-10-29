@@ -5,15 +5,17 @@ from pathlib import Path
 
 DEBUG_METHOD = """
     methods (Static)
-        function value = debug_state(varargin)
+        function previous = debug_mode(varargin)
+            % DEBUG_MODE Get or set debug mode, returning the previous mode.
             persistent debugging
+            % Persistent variables start as []; test emptiness, not existence.
             if isempty(debugging)
                 debugging = false;
             end
+            previous = debugging;
             if nargin > 0
                 debugging = varargin{1};
             end
-            value = debugging;
         end
     end
 """
@@ -31,7 +33,7 @@ def postprocess(package_name):
     text = consts_mod_path.read_text(encoding="utf-8")
     text = text.replace(
         "obj.DEBUGGING = true;",
-        f"obj.DEBUGGING = {package_name}.common.consts_mod.debug_state();",
+        f"obj.DEBUGGING = {package_name}.common.consts_mod.debug_mode();",
     )
     text = text.replace(
         "    methods\n",
