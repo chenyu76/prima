@@ -105,21 +105,6 @@ classdef consts_mod
         HALF_MAXPOW10;
         MHM;
     end
-
-    methods (Static)
-        function previous = debug_mode(varargin)
-            % DEBUG_MODE Get or set debug mode, returning the previous mode.
-            persistent debugging
-            % Persistent variables start as []; test emptiness, not existence.
-            if isempty(debugging)
-                debugging = false;
-            end
-            previous = debugging;
-            if nargin > 0
-                debugging = varargin{1};
-            end
-        end
-    end
     methods
         function obj = consts_mod()
             obj.iso_fortran_env_obj = fortran.iso_fortran_env();
@@ -129,7 +114,7 @@ classdef consts_mod
 
 
 
-            obj.DEBUGGING = prima_mat.common.consts_mod.debug_mode(); % Whether we are in debugging mode
+            obj.DEBUGGING = true; % Whether we are in debugging mode
             obj.IK_DFT = 4; % Default integer kind
             obj.RP_DFT = 4; % Default real kind
 

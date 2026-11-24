@@ -177,7 +177,7 @@ classdef trustregion_bobyqa_mod
             % Powell commented in the BOBYQA paper (the paragraph above (3.7)) that "numerical experiments show
             % that it is very unusual for subroutine TRSBOX to make more than ten changes to d when seeking an
             % approximate solution to the subproblem (1.8), even if there are hundreds of variables."
-            maxiter = fix(min(fortran.power(10, min(4, 9)), fortran.power(n - nact, 2)));
+            maxiter = fix(min(fortran.power(10, 4), fortran.power(n - nact, 2)));
             for iter = 1:maxiter
                 resid = ...
                     delsq - fortran.sum(fortran.power(d(linalg_obj.trueloc(xbdi == 0)), 2), 'all');

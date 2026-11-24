@@ -93,11 +93,11 @@ classdef newuob_mod
             fval = NaN(npt, 1);
             gopt = NaN(size(x));
             hq = NaN(numel(x));
-            moderr_rec = NaN(2, 1);
+            moderr_rec = NaN(size(dnorm_rec));
             pq = NaN(npt, 1);
             xbase = NaN(size(x));
             xpt = NaN(numel(x), npt);
-            zmat = NaN(npt, npt - numel(x) + -1);
+            zmat = NaN(npt, npt - numel(x) - 1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
             % Sizes

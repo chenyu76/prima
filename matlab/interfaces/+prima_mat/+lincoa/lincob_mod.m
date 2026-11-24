@@ -141,7 +141,7 @@ classdef lincob_mod
             xbase = NaN(size(x));
             xfilt = NaN(numel(x), maxfilt);
             xpt = NaN(numel(x), npt);
-            zmat = NaN(npt, npt - numel(x) + -1);
+            zmat = NaN(npt, npt - numel(x) - 1);
             trtol = 1.0e-2; % Convergence tolerance of trust-region subproblem solver
 
             % Sizes.

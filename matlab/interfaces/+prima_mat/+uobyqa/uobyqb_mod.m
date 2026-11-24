@@ -81,11 +81,11 @@ classdef uobyqb_mod
             d = NaN(size(x));
             distsq = NaN((numel(x) + 1) * (numel(x) + 2) / 2, 1);
             dnorm_rec = NaN(2, 1); % Powell's implementation: DNORM_REC(3)
-            fval = NaN((numel(x) + 1) * (numel(x) + 2) / 2, 1);
+            fval = NaN(size(distsq));
             g = NaN(size(x));
             h = NaN(numel(x));
-            moderr_rec = NaN(2, 1);
-            pq = NaN(numel(distsq) + -1, 1);
+            moderr_rec = NaN(size(dnorm_rec));
+            pq = NaN(numel(distsq) - 1, 1);
             xbase = NaN(size(x));
             xpt = NaN(numel(x), numel(distsq));
             pl = [];

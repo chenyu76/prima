@@ -74,7 +74,7 @@ classdef trustregion_uobyqa_mod
             dold = NaN(size(g));
             piv = NaN(size(g));
             td = NaN(size(g));
-            tn = NaN(numel(g) + -1, 1);
+            tn = NaN(numel(g) - 1, 1);
             z = NaN(size(g));
 
             % Sizes.

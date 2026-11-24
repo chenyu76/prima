@@ -302,8 +302,7 @@ classdef rescue_mod
             % N.B.: Overflow will occur in NPT^2 if NPT > 180 and IK = 16. The following is a workaround, which
             % is **not needed in Python/MATLAB/Julia/R. In MATLAB, we can just take maxiter = npt^2**.
             maxiter = ...
-                fix(min(fortran.power(10, min(9, 9)), ...
-                        fortran.power(npt, 2))); %%MATLAB: maxiter = npt^2;
+                fix(min(fortran.power(10, 9), fortran.power(npt, 2))); %%MATLAB: maxiter = npt^2;
             for iter = 1:maxiter
                 % %DO WHILE (ANY(SCORE > 0) .AND. NPROV > 1)   ! WHILE version.
                 % %IF (ALL(SCORE <= 0) .AND. NPROV <= 0) THEN ! Powell's code. May not take any provisional point.
