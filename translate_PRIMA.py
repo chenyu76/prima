@@ -204,6 +204,7 @@ if __name__ == "__main__":
     p = output_dir / "+fortran"
     if p.exists():
         shutil.rmtree(p)
+    (output_dir / "setup_mex.m").unlink(missing_ok=True)
 
     p = output_dir / f"+{package_name}"
     if p.exists():
@@ -211,6 +212,8 @@ if __name__ == "__main__":
 
     src_files = extract_source(src_dir)
     preprocess(src_dir, src_files, preprocess_dir, debugging=1)
+
+    prima_mode = False
     translate(
         [
             "-r",
@@ -218,9 +221,8 @@ if __name__ == "__main__":
             "-o",
             str(output_dir),
             "--create-setup-m",
-            # "--try-bit-consistency",
+            "--prima" if prima_mode else "--try-bit-consistency",
             # "--no-simplify",
-            "--prima",
             "--as-package",
             package_name,
             "--preamble",
@@ -233,4 +235,5 @@ if __name__ == "__main__":
     if preprocess_dir.exists():
         shutil.rmtree(preprocess_dir)
 
-    postprocess(package_name)
+    if prima_mode:
+        postprocess(package_name)
