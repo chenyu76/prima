@@ -4,14 +4,14 @@
 from pathlib import Path
 import re
 
-DEBUG_STATE_FUNCTION = """function previous = debug_state(varargin)
+DEBUG_STATE_FUNCTION = """function previous_state = debug_state(varargin)
     % DEBUG_STATE Get or set debug mode, returning the previous mode.
     persistent debugging
     % Persistent variables start as []; test emptiness, not existence.
     if isempty(debugging)
         debugging = false;
     end
-    previous = debugging;
+    previous_state = debugging;
     if nargin > 0
         debugging = varargin{1};
     end
@@ -22,7 +22,30 @@ end
 def postprocess(package_name):
     generate_debug_state_function(package_name)
     replace_debugging_references(package_name)
+    remove_mods_imported(package_name, ["consts_mod"])
+    remove_mods_file(package_name, ["consts_mod"])
     replace_maxpow10_references(package_name)
+
+
+def remove_mods_imported(package_name, mod_list):
+    for mod in mod_list:
+        transform_package_files(
+            package_name,
+            lambda text: re.sub(
+                r"^[ \t]*consts_obj = prima_mat.common.consts_mod\(\);\n?",
+                "",
+                text,
+                flags=re.MULTILINE,
+            ),
+        )
+
+
+def remove_mods_file(package_name, mod_list):
+    package_dir = (
+        Path(__file__).parent / "matlab" / "interfaces" / f"+{package_name}"
+    )
+    for mod in mod_list:
+        (package_dir / "+common" / (mod + ".m")).unlink(missing_ok=True)
 
 
 def replace_maxpow10_references(package_name):
@@ -41,7 +64,7 @@ def replace_debugging_references(package_name):
         package_name,
         lambda text: replace_variable(
             text,
-            "const_obj.DEBUGGING",
+            "consts_obj.DEBUGGING",
             f"{package_name}.common.debug_state()",
         ),
     )
