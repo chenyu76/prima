@@ -1,6 +1,9 @@
-%-------------%
-% Placeholder %
-%-------------%
+%------------------------------------------------------------------------------------%
+% This file is translated from Fortran by 42mp on 2026-11.                           %
+% 42mpis a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.                 %
+% The fortran version is from PRIMA (https://libprima.net) with git commit 1d76fb88. %
+% Check https://github.com/chenyu76/42mp for more information about the translator.  %
+%------------------------------------------------------------------------------------%
 classdef initialize_bobyqa_mod
     %--------------------------------------------------------------------------------------------------%
     % This module performs the initialization of BOBYQA, described in Section 2 of the BOBYQA paper.

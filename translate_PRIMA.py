@@ -24,7 +24,7 @@ def wrap_as_comment(text: str) -> str:
 
 
 def format_date_and_commit(text: str) -> str:
-    today = datetime.date.today().strftime("%Y-%m-%d")
+    today = datetime.date.today().strftime("%Y-%m")
     commit = subprocess.run(
         ["git", "rev-parse", "--short=8", "main"],
         capture_output=True,
@@ -36,14 +36,14 @@ def format_date_and_commit(text: str) -> str:
 
 FILE_PREAMBLE = wrap_as_comment(format_date_and_commit("""
 This file is translated from Fortran by 42mp on {date}.
-42mp is a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.
+42mpis a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.
 The fortran version is from PRIMA (https://libprima.net) with git commit {commit}.
+Check https://github.com/chenyu76/42mp for more information about the translator.
 """.strip()))
 
-FILE_PREAMBLE = wrap_as_comment("Placeholder")
-
+# Not in use yet.
 FOLDER_README = format_date_and_commit("""
-This is the MATLAB of ??????
+This is the MATLAB version of PRIMA.
 Translated from Fortran by 42mp on {date}.
 42mp is a Fortran-to-Matlab translator by CHEN Yu and ZHANG Zaikun.
 The fortran version is from PRIMA (https://libprima.net) with git commit {commit}.
